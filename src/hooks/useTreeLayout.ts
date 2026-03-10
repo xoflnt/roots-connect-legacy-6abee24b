@@ -9,7 +9,7 @@ const NODE_HEIGHT = 250;
 export function useTreeLayout() {
   return useMemo(() => {
     const g = new dagre.graphlib.Graph();
-    g.setGraph({ rankdir: "TB", nodesep: 150, ranksep: 250 });
+    g.setGraph({ rankdir: "TB", nodesep: 200, ranksep: 300 });
     g.setDefaultEdgeLabel(() => ({}));
 
     familyMembers.forEach((member) => {
