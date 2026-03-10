@@ -84,6 +84,7 @@ export function FamilyTree() {
         }}
         fitView
         fitViewOptions={{ padding: 0.2 }}
+        nodesDraggable={false}
         minZoom={0.3}
         maxZoom={2}
         proOptions={{ hideAttribution: true }}
