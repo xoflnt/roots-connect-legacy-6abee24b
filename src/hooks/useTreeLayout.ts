@@ -8,13 +8,21 @@ const NODE_HEIGHT = 90;
 const SPOUSE_WIDTH = 160;
 const SPOUSE_HEIGHT = 50;
 
+export const BRANCH_COLORS = [
+  { stroke: "hsl(340, 60%, 55%)", bg: "hsl(340, 50%, 94%)", bgDark: "hsl(340, 40%, 25%)" },
+  { stroke: "hsl(35, 70%, 50%)",  bg: "hsl(35, 60%, 93%)",  bgDark: "hsl(35, 50%, 25%)" },
+  { stroke: "hsl(175, 50%, 40%)", bg: "hsl(175, 40%, 92%)", bgDark: "hsl(175, 35%, 22%)" },
+  { stroke: "hsl(270, 45%, 55%)", bg: "hsl(270, 35%, 93%)", bgDark: "hsl(270, 30%, 25%)" },
+  { stroke: "hsl(150, 50%, 40%)", bg: "hsl(150, 40%, 92%)", bgDark: "hsl(150, 35%, 22%)" },
+];
+
 export function useTreeLayout() {
   return useMemo(() => {
     const g = new dagre.graphlib.Graph();
-    g.setGraph({ rankdir: "TB", nodesep: 80, ranksep: 160 });
+    g.setGraph({ rankdir: "TB", nodesep: 100, ranksep: 180 });
     g.setDefaultEdgeLabel(() => ({}));
 
-    // Build a map of father -> children grouped by mother
+    // Build map: father -> mother -> children
     const childrenByFatherAndMother = new Map<string, Map<string, string[]>>();
     familyMembers.forEach((member) => {
       if (!member.father_id) return;
@@ -29,42 +37,60 @@ export function useTreeLayout() {
       motherMap.get(motherName)!.push(member.id);
     });
 
-    // Determine which fathers need spouse nodes (multiple mothers with children)
-    const fathersWithMultipleWives = new Set<string>();
-    childrenByFatherAndMother.forEach((motherMap, fatherId) => {
-      const mothersWithChildren = [...motherMap.keys()].filter(k => k !== "__unknown__");
-      if (mothersWithChildren.length > 1) {
-        fathersWithMultipleWives.add(fatherId);
-      }
-    });
-
-    // Add all family member nodes to dagre
+    // Add all family member nodes
     familyMembers.forEach((member) => {
       g.setNode(member.id, { width: NODE_WIDTH, height: NODE_HEIGHT });
     });
 
-    // Create spouse nodes and edges
-    const spouseNodes: { id: string; name: string }[] = [];
+    // Track spouse nodes, color assignments, and child->color mapping
+    const spouseNodes: { id: string; name: string; colorIndex: number }[] = [];
+    const childColorMap = new Map<string, number>(); // memberId -> colorIndex
+    const edgeColorMap = new Map<string, number>(); // edgeKey -> colorIndex
+    let colorCounter = 0;
 
-    familyMembers.forEach((member) => {
-      if (!member.father_id) return;
-
-      if (fathersWithMultipleWives.has(member.father_id) && member.mother && member.mother !== "__unknown__") {
-        const spouseId = `spouse-${member.father_id}-${member.mother}`;
-        
-        // Add spouse node if not already added
-        if (!g.hasNode(spouseId)) {
-          g.setNode(spouseId, { width: SPOUSE_WIDTH, height: SPOUSE_HEIGHT });
-          g.setEdge(member.father_id, spouseId);
-          spouseNodes.push({ id: spouseId, name: member.mother });
+    // Create spouse nodes for ALL mothers with known names (even single wife)
+    childrenByFatherAndMother.forEach((motherMap, fatherId) => {
+      motherMap.forEach((childIds, motherName) => {
+        if (motherName === "__unknown__") {
+          // No mother known — connect directly
+          childIds.forEach((childId) => {
+            g.setEdge(fatherId, childId);
+          });
+          return;
         }
-        
-        // Connect child to spouse node
-        g.setEdge(spouseId, member.id);
-      } else {
-        // Single wife or unknown mother - connect directly to father
-        g.setEdge(member.father_id, member.id);
-      }
+
+        const spouseId = `spouse-${fatherId}-${motherName}`;
+        const ci = colorCounter % BRANCH_COLORS.length;
+        colorCounter++;
+
+        g.setNode(spouseId, { width: SPOUSE_WIDTH, height: SPOUSE_HEIGHT });
+        g.setEdge(fatherId, spouseId);
+        edgeColorMap.set(`e-${fatherId}-${spouseId}`, ci);
+
+        spouseNodes.push({ id: spouseId, name: motherName, colorIndex: ci });
+
+        childIds.forEach((childId) => {
+          g.setEdge(spouseId, childId);
+          childColorMap.set(childId, ci);
+          edgeColorMap.set(`e-${spouseId}-${childId}`, ci);
+        });
+      });
+    });
+
+    // Add spouse nodes for members with spouses but no registered children
+    familyMembers.forEach((member) => {
+      if (!member.spouses || member.gender !== "M") return;
+      const spouseNames = member.spouses.split("،").map((s) => s.trim()).filter(Boolean);
+      spouseNames.forEach((spouseName) => {
+        const spouseId = `spouse-${member.id}-${spouseName}`;
+        if (g.hasNode(spouseId)) return; // already added via children
+        const ci = colorCounter % BRANCH_COLORS.length;
+        colorCounter++;
+        g.setNode(spouseId, { width: SPOUSE_WIDTH, height: SPOUSE_HEIGHT });
+        g.setEdge(member.id, spouseId);
+        edgeColorMap.set(`e-${member.id}-${spouseId}`, ci);
+        spouseNodes.push({ id: spouseId, name: spouseName, colorIndex: ci });
+      });
     });
 
     dagre.layout(g);
@@ -76,7 +102,7 @@ export function useTreeLayout() {
           id: member.id,
           type: "familyCard",
           position: { x: pos.x - NODE_WIDTH / 2, y: pos.y - NODE_HEIGHT / 2 },
-          data: member,
+          data: { ...member, branchColorIndex: childColorMap.get(member.id) ?? -1 },
         };
       }),
       ...spouseNodes.map((spouse) => {
@@ -85,23 +111,24 @@ export function useTreeLayout() {
           id: spouse.id,
           type: "spouseCard",
           position: { x: pos.x - SPOUSE_WIDTH / 2, y: pos.y - SPOUSE_HEIGHT / 2 },
-          data: { name: spouse.name },
+          data: { name: spouse.name, colorIndex: spouse.colorIndex },
         };
       }),
     ];
 
-    // Build edges from dagre
     const edges: Edge[] = g.edges().map((e) => {
-      const isSpouseEdge = e.v.startsWith("spouse-") || e.w.startsWith("spouse-");
+      const edgeKey = `e-${e.v}-${e.w}`;
+      const ci = edgeColorMap.get(edgeKey);
       const isToSpouse = e.w.startsWith("spouse-");
-      
+      const color = ci !== undefined ? BRANCH_COLORS[ci].stroke : "hsl(200, 40%, 50%)";
+
       return {
-        id: `e-${e.v}-${e.w}`,
+        id: edgeKey,
         source: e.v,
         target: e.w,
         type: "smoothstep",
         style: {
-          stroke: isToSpouse ? "hsl(145, 30%, 50%)" : "hsl(200, 40%, 50%)",
+          stroke: color,
           strokeWidth: 2,
           strokeDasharray: isToSpouse ? "6 3" : undefined,
         },
