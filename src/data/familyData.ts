@@ -47,4 +47,12 @@ export const familyMembers: FamilyMember[] = [
   { id: "310", name: "سعود بن ناصر", gender: "M", father_id: "300", mother: "حصة البدر", birth_year: "١٣٧٢", death_year: "", spouses: "نورة محمد زيد", notes: "" },
   { id: "311", name: "نورة بنت ناصر", gender: "F", father_id: "300", mother: "حصة البدر", birth_year: "", death_year: "", spouses: "فهد محمد زيد", notes: "" },
   { id: "312", name: "إبراهيم بن ناصر", gender: "M", father_id: "300", mother: "حصة البدر", birth_year: "", death_year: "", spouses: "", notes: "توفي طفلاً" },
+  // عبدالعزيز بن زيد
+  { id: "400", name: "عبدالعزيز بن زيد", gender: "M", father_id: "101", mother: "نورة عبدالله النافع", birth_year: "١٣٠٨", death_year: "١٤٠٢/١٠/٨", spouses: "شريفة سليمان العليوي، نورة عبدالرحمن عبدالله الحمد", notes: "شريفة توفيت وهي على ذمته، تزوج عدة زوجات ولم ينجب إلا من نورة الحمد" },
+  // أبناء عبدالعزيز بن زيد (من نورة عبدالرحمن عبدالله الحمد)
+  { id: "401", name: "منيرة بنت عبدالعزيز", gender: "F", father_id: "400", mother: "نورة عبدالرحمن عبدالله الحمد", birth_year: "١٣٤٦", death_year: "١٤٢٣/١/٣٠", spouses: "زيد ناصر زيد", notes: "زوجة زيد بن ناصر بن زيد" },
+  { id: "402", name: "عبدالله بن عبدالعزيز", gender: "M", father_id: "400", mother: "نورة عبدالرحمن عبدالله الحمد", birth_year: "١٣٥٥", death_year: "", spouses: "", notes: "" },
+  { id: "403", name: "سليمان بن عبدالعزيز", gender: "M", father_id: "400", mother: "نورة عبدالرحمن عبدالله الحمد", birth_year: "١٣٦٤", death_year: "١٤٣٤/٣/١٠", spouses: "", notes: "" },
+  { id: "404", name: "عبدالرحمن بن عبدالعزيز", gender: "M", father_id: "400", mother: "نورة عبدالرحمن عبدالله الحمد", birth_year: "", death_year: "", spouses: "", notes: "توفي وعمره ١٢ سنة تقريباً" },
+  { id: "405", name: "مجهول الاسم", gender: "M", father_id: "400", mother: "نورة عبدالرحمن عبدالله الحمد", birth_year: "", death_year: "", spouses: "", notes: "توفي وهو طفل" },
 ];
