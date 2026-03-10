@@ -33,7 +33,7 @@ export const familyMembers: FamilyMember[] = [
   { id: "208", name: "راشد بن محمد", gender: "M", father_id: "200", mother: "مزنة البداح", birth_year: "١٣٨٥", death_year: "", spouses: "", notes: "" },
   { id: "209", name: "علي بن محمد", gender: "M", father_id: "200", mother: "مزنة البداح", birth_year: "١٣٨٩", death_year: "", spouses: "", notes: "" },
   // أبناء ناصر بن زيد (من نورة العامر)
-  { id: "301", name: "زيد بن ناصر", gender: "M", father_id: "300", mother: "نورة العامر", birth_year: "١٣٣٩", death_year: "١٤٢١", spouses: "منيرة عبدالعزيز زيد", notes: "" },
+  { id: "301", name: "زيد بن ناصر", gender: "M", father_id: "300", mother: "نورة العامر", birth_year: "١٣٣٩", death_year: "١٤٢١", spouses: "منيرة بنت عبدالعزيز زيد", notes: "" },
   { id: "302", name: "حصة بنت ناصر", gender: "F", father_id: "300", mother: "نورة العامر", birth_year: "١٣٤٢", death_year: "١٣٧٢", spouses: "", notes: "" },
   { id: "303", name: "علي بن ناصر", gender: "M", father_id: "300", mother: "نورة العامر", birth_year: "١٣٤٦", death_year: "١٤٢٥", spouses: "", notes: "" },
   // أبناء ناصر بن زيد (من منيرة العصيمي)
