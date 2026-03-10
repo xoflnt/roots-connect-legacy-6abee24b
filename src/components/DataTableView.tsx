@@ -82,6 +82,18 @@ export function DataTableView() {
                 <TableCell className="text-sm">
                   {m.spouses || <span className="text-muted-foreground text-xs">—</span>}
                 </TableCell>
+                <TableCell className="text-sm">
+                  {childrenMap.has(m.id) ? (
+                    <div className="flex flex-wrap items-center gap-1">
+                      <Badge variant="outline" className="text-xs shrink-0">
+                        {childrenMap.get(m.id)!.length}
+                      </Badge>
+                      <span>{childrenMap.get(m.id)!.join("، ")}</span>
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground text-xs">—</span>
+                  )}
+                </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
                   {m.notes || "—"}
                 </TableCell>
