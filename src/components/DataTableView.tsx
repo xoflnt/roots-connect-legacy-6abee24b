@@ -11,10 +11,19 @@ import {
 
 const memberMap = new Map(familyMembers.map((m) => [m.id, m.name]));
 
+const childrenMap = new Map<string, string[]>();
+familyMembers.forEach((m) => {
+  if (m.father_id) {
+    const list = childrenMap.get(m.father_id) || [];
+    list.push(m.name);
+    childrenMap.set(m.father_id, list);
+  }
+});
+
 export function DataTableView() {
   return (
     <div className="h-full w-full overflow-auto" dir="rtl">
-      <div className="min-w-[1000px]">
+      <div className="min-w-[1200px]">
         <Table>
           <TableHeader className="sticky top-0 z-10">
             <TableRow className="bg-muted shadow-sm">
@@ -26,6 +35,7 @@ export function DataTableView() {
               <TableHead className="text-right w-[80px]">الميلاد</TableHead>
               <TableHead className="text-right w-[80px]">الوفاة</TableHead>
               <TableHead className="text-right">الزوجات</TableHead>
+              <TableHead className="text-right">الأبناء</TableHead>
               <TableHead className="text-right">ملاحظات</TableHead>
             </TableRow>
           </TableHeader>
@@ -71,6 +81,18 @@ export function DataTableView() {
                 <TableCell className="text-sm">{m.death_year || "—"}</TableCell>
                 <TableCell className="text-sm">
                   {m.spouses || <span className="text-muted-foreground text-xs">—</span>}
+                </TableCell>
+                <TableCell className="text-sm">
+                  {childrenMap.has(m.id) ? (
+                    <div className="flex flex-wrap items-center gap-1">
+                      <Badge variant="outline" className="text-xs shrink-0">
+                        {childrenMap.get(m.id)!.length}
+                      </Badge>
+                      <span>{childrenMap.get(m.id)!.join("، ")}</span>
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground text-xs">—</span>
+                  )}
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
                   {m.notes || "—"}
