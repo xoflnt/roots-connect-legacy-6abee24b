@@ -15,6 +15,9 @@ export const familyMembers: FamilyMember[] = [
   { id: "100", name: "ناصر سعدون الخنيني", gender: "M", father_id: null, mother: "", birth_year: "", death_year: "", spouses: "", notes: "أول من حمل لقب الخنيني" },
   { id: "101", name: "زيد بن ناصر", gender: "M", father_id: "100", mother: "", birth_year: "", death_year: "١٣٤٠", spouses: "نورة عبدالله النافع", notes: "" },
   { id: "102", name: "لطيفة بنت ناصر", gender: "F", father_id: "100", mother: "", birth_year: "", death_year: "", spouses: "", notes: "" },
+  // أبناء ناصر الإضافيين (عبر زيد)
+  { id: "103", name: "منيرة بنت زيد", gender: "F", father_id: "101", mother: "نورة عبدالله النافع", birth_year: "١٢٩٧", death_year: "١٣٩١", spouses: "عبدالعزيز علي العبدالكريم القطنان، حمود أحمد المرزوق العامر", notes: "أبناؤها من خارج العائلة: محمد (توفي طفلاً) من زوجها الأول، بُشرى ومقبل (توفوا أطفالاً) من زوجها الثاني. لولوه (١٣٢٥-١٤٠٧) من القطنان. مزنة (١٣٣٧-١٤٣٦/٢/١٦)، سبيكة (١٣٤٠-١٤٣١)، أحمد (١٣٤٣-١٣٥٣) من العامر" },
+  { id: "104", name: "عايد بن زيد", gender: "M", father_id: "101", mother: "نورة عبدالله النافع", birth_year: "١٣٢٧", death_year: "١٣٦٠", spouses: "نورة المهنا، من عائلة النصار", notes: "" },
   // أبناء زيد بن ناصر
   { id: "200", name: "محمد بن زيد", gender: "M", father_id: "101", mother: "نورة عبدالله النافع", birth_year: "١٣١٣", death_year: "١٣٨٩", spouses: "لولوة العصيمي، مزنة البداح", notes: "" },
   { id: "300", name: "ناصر بن زيد", gender: "M", father_id: "101", mother: "نورة عبدالله النافع", birth_year: "١٣٠٠", death_year: "١٤٠١", spouses: "سلطانة البداح، نورة العامر، منيرة العصيمي، رقية العبيد، سبيكة الجوير، حصة البدر", notes: "" },
