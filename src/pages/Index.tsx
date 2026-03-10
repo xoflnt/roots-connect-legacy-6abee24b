@@ -1,12 +1,13 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { AppHeader } from "@/components/AppHeader";
+import { FamilyTree } from "@/components/FamilyTree";
 
 const Index = () => {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="flex flex-col h-screen bg-background">
+      <AppHeader />
+      <main className="flex-1 overflow-hidden">
+        <FamilyTree />
+      </main>
     </div>
   );
 };
