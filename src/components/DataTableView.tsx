@@ -1,0 +1,87 @@
+import { familyMembers } from "@/data/familyData";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+const memberMap = new Map(familyMembers.map((m) => [m.id, m.name]));
+
+export function DataTableView() {
+  return (
+    <ScrollArea className="h-full w-full" dir="rtl">
+      <div className="min-w-[1000px]">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted/60">
+              <TableHead className="text-right w-[70px]">المعرف</TableHead>
+              <TableHead className="text-right">الاسم</TableHead>
+              <TableHead className="text-right w-[60px]">الجنس</TableHead>
+              <TableHead className="text-right">الأب</TableHead>
+              <TableHead className="text-right">الأم</TableHead>
+              <TableHead className="text-right w-[80px]">الميلاد</TableHead>
+              <TableHead className="text-right w-[80px]">الوفاة</TableHead>
+              <TableHead className="text-right">الزوجات</TableHead>
+              <TableHead className="text-right">ملاحظات</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {familyMembers.map((m, i) => (
+              <TableRow
+                key={m.id}
+                className={
+                  i % 2 === 0
+                    ? "bg-background"
+                    : "bg-muted/30"
+                }
+              >
+                <TableCell className="font-mono text-muted-foreground text-xs">
+                  {m.id}
+                </TableCell>
+                <TableCell className="font-semibold text-foreground">
+                  {m.name}
+                </TableCell>
+                <TableCell>
+                  <Badge
+                    variant={m.gender === "M" ? "default" : "secondary"}
+                    className="text-xs"
+                  >
+                    {m.gender === "M" ? "ذكر" : "أنثى"}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  {m.father_id ? (
+                    <Badge variant="outline" className="text-xs font-normal gap-1">
+                      <span className="text-muted-foreground">{m.father_id}</span>
+                      <span>—</span>
+                      <span>{memberMap.get(m.father_id) ?? "غير موجود"}</span>
+                    </Badge>
+                  ) : (
+                    <span className="text-muted-foreground text-xs">—</span>
+                  )}
+                </TableCell>
+                <TableCell className="text-sm">
+                  {m.mother || <span className="text-muted-foreground text-xs">—</span>}
+                </TableCell>
+                <TableCell className="text-sm">{m.birth_year || "—"}</TableCell>
+                <TableCell className="text-sm">{m.death_year || "—"}</TableCell>
+                <TableCell className="text-sm">
+                  {m.spouses || <span className="text-muted-foreground text-xs">—</span>}
+                </TableCell>
+                <TableCell className="text-sm text-muted-foreground">
+                  {m.notes || "—"}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+      <ScrollBar orientation="horizontal" />
+    </ScrollArea>
+  );
+}
