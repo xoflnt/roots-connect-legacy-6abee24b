@@ -49,7 +49,7 @@ export const familyMembers: FamilyMember[] = [
   { id: "405", name: "ابن (غير معروف)", gender: "M", father_id: "400", mother: "نورة الحمد", birth_year: "", death_year: "", spouses: "", notes: "توفي طفلاً" },
 
   // --- فرع منيرة بنت زيد ---
-  { id: "500", name: "منيرة بنت زيد", gender: "F", father_id: "101", mother: "نورة عبدالله النافع", birth_year: "١٢٩٧", death_year: "١٣٩١", spouses: "محمد (الزوج الأول)، عبدالعزيز القطنان، حمود العامر", notes: "" },
+  { id: "500", name: "منيرة بنت زيد", gender: "F", father_id: "101", mother: "نورة عبدالله النافع", birth_year: "١٢٩٧", death_year: "١٣٩١", spouses: "عبدالعزيز القطنان، حمود العامر", notes: "" },
   { id: "501", name: "محمد بن عبدالعزيز", gender: "M", father_id: "500", mother: "عبدالعزيز القطنان", birth_year: "", death_year: "", spouses: "", notes: "توفي طفلاً - والده: عبدالعزيز العبدالكريم القطنان" },
   { id: "502", name: "بشرى", gender: "F", father_id: "500", mother: "حمود العامر", birth_year: "", death_year: "", spouses: "", notes: "توفيت طفلة - والدها: حمود المرزوق العامر" },
   { id: "503", name: "مقبل", gender: "M", father_id: "500", mother: "حمود العامر", birth_year: "", death_year: "", spouses: "", notes: "توفي طفلاً - والده: حمود المرزوق العامر" },
