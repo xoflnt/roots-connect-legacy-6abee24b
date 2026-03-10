@@ -39,6 +39,8 @@
     --female: 145 30% 32%;
     --female-light: 145 25% 90%;
 
+    --canvas-bg: 40 33% 97%;
+
     --sidebar-background: 36 25% 96%;
     --sidebar-foreground: 210 50% 10%;
     --sidebar-primary: 200 60% 24%;
@@ -83,6 +85,8 @@
     --female: 145 30% 50%;
     --female-light: 145 20% 16%;
 
+    --canvas-bg: 215 50% 6%;
+
     --sidebar-background: 210 45% 9%;
     --sidebar-foreground: 36 25% 92%;
     --sidebar-primary: 36 40% 80%;
@@ -101,6 +105,8 @@
 
   html {
     font-size: 18px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   body {

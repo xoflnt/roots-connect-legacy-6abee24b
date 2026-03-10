@@ -1,24 +1,26 @@
 import {
   ReactFlow,
-  Background,
-  Controls,
   useNodesState,
   useEdgesState,
   type ReactFlowInstance,
   type Node,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { Plus, Minus, Maximize2 } from "lucide-react";
 import { useTreeLayout } from "@/hooks/useTreeLayout";
 import { FamilyCard } from "./FamilyCard";
-import { SearchBar } from "./SearchBar";
-import { ResetViewButton } from "./ResetViewButton";
 import { PersonDetails } from "./PersonDetails";
 import type { FamilyMember } from "@/data/familyData";
 
 const nodeTypes = { familyCard: FamilyCard };
 
-export function FamilyTree() {
+export interface FamilyTreeRef {
+  search: (memberId: string) => void;
+  reset: () => void;
+}
+
+export const FamilyTree = forwardRef<FamilyTreeRef>(function FamilyTree(_, ref) {
   const { nodes: initialNodes, edges: initialEdges } = useTreeLayout();
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, , onEdgesChange] = useEdgesState(initialEdges);
@@ -59,18 +61,17 @@ export function FamilyTree() {
     setSelectedMember(null);
   }, []);
 
+  useImperativeHandle(ref, () => ({
+    search: handleSearch,
+    reset: handleReset,
+  }), [handleSearch, handleReset]);
+
   useEffect(() => {
-    // Auto fit on mount
     setTimeout(() => rfInstance.current?.fitView({ padding: 0.2 }), 100);
   }, []);
 
   return (
     <div className="relative w-full h-full">
-      <div className="absolute top-4 right-4 left-4 z-10 flex items-center gap-3">
-        <SearchBar onSelect={handleSearch} />
-        <ResetViewButton onReset={handleReset} />
-      </div>
-
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -88,15 +89,30 @@ export function FamilyTree() {
         minZoom={0.3}
         maxZoom={2}
         proOptions={{ hideAttribution: true }}
-        className="bg-background"
-      >
-        <Background color="hsl(var(--border))" gap={24} size={1} />
-        <Controls
-          position="bottom-left"
-          showInteractive={false}
-          className="!bg-card !border-border !shadow-md [&>button]:!bg-card [&>button]:!border-border [&>button]:!text-foreground [&>button:hover]:!bg-muted"
-        />
-      </ReactFlow>
+        style={{ background: 'transparent' }}
+      />
+
+      {/* Custom zoom controls */}
+      <div className="absolute bottom-5 left-5 flex flex-col gap-2 z-10">
+        <button
+          onClick={() => rfInstance.current?.zoomIn({ duration: 200 })}
+          className="w-10 h-10 rounded-full bg-card border border-border shadow-lg flex items-center justify-center text-foreground hover:bg-muted transition-colors"
+        >
+          <Plus className="h-4 w-4" />
+        </button>
+        <button
+          onClick={() => rfInstance.current?.zoomOut({ duration: 200 })}
+          className="w-10 h-10 rounded-full bg-card border border-border shadow-lg flex items-center justify-center text-foreground hover:bg-muted transition-colors"
+        >
+          <Minus className="h-4 w-4" />
+        </button>
+        <button
+          onClick={() => rfInstance.current?.fitView({ duration: 400, padding: 0.2 })}
+          className="w-10 h-10 rounded-full bg-card border border-border shadow-lg flex items-center justify-center text-foreground hover:bg-muted transition-colors"
+        >
+          <Maximize2 className="h-4 w-4" />
+        </button>
+      </div>
 
       <PersonDetails
         member={selectedMember}
@@ -104,4 +120,4 @@ export function FamilyTree() {
       />
     </div>
   );
-}
+});
