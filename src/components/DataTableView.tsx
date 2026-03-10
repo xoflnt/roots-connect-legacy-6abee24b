@@ -1,5 +1,4 @@
 import { familyMembers } from "@/data/familyData";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -14,7 +13,7 @@ const memberMap = new Map(familyMembers.map((m) => [m.id, m.name]));
 
 export function DataTableView() {
   return (
-    <ScrollArea className="h-full w-full" dir="rtl">
+    <div className="h-full w-full overflow-auto" dir="rtl">
       <div className="min-w-[1000px]">
         <Table>
           <TableHeader className="sticky top-0 z-10">
@@ -81,7 +80,6 @@ export function DataTableView() {
           </TableBody>
         </Table>
       </div>
-      <ScrollBar orientation="horizontal" />
-    </ScrollArea>
+    </div>
   );
 }
