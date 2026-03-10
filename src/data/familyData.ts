@@ -59,5 +59,5 @@ export const familyMembers: FamilyMember[] = [
   { id: "507", name: "أحمد بن حمود", gender: "M", father_id: "500", mother: "حمود العامر", birth_year: "١٣٤٣", death_year: "١٣٥٣", spouses: "", notes: "توفي عمره ١٠ سنوات - والده: حمود المرزوق العامر" },
 
   // --- فرع عايد بن زيد ---
-  { id: "600", name: "عايد بن زيد", gender: "M", father_id: "101", mother: "نورة عبدالله النافع", birth_year: "١٣٢٧", death_year: "١٣٦٠", spouses: "نورة المهنا، عائلة النصار", notes: "" },
+  { id: "600", name: "عايد بن زيد", gender: "M", father_id: "101", mother: "نورة عبدالله النافع", birth_year: "١٣٢٧", death_year: "١٣٦٠", spouses: "نورة المهنا، بنت الناصر (الاسم غير معروف)", notes: "" },
 ];
