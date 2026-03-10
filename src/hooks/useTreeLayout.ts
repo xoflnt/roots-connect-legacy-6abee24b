@@ -3,13 +3,13 @@ import dagre from "dagre";
 import type { Node, Edge } from "@xyflow/react";
 import { familyMembers } from "@/data/familyData";
 
-const NODE_WIDTH = 280;
-const NODE_HEIGHT = 160;
+const NODE_WIDTH = 350;
+const NODE_HEIGHT = 250;
 
 export function useTreeLayout() {
   return useMemo(() => {
     const g = new dagre.graphlib.Graph();
-    g.setGraph({ rankdir: "TB", nodesep: 150, ranksep: 250 });
+    g.setGraph({ rankdir: "TB", nodesep: 200, ranksep: 300 });
     g.setDefaultEdgeLabel(() => ({}));
 
     familyMembers.forEach((member) => {
