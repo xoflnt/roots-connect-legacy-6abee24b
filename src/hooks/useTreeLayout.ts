@@ -24,7 +24,7 @@ export function useTreeLayout() {
 
     dagre.layout(g);
 
-    const nodes: Node<FamilyMember>[] = familyMembers.map((member) => {
+    const nodes: Node[] = familyMembers.map((member) => {
       const pos = g.node(member.id);
       return {
         id: member.id,
