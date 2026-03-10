@@ -57,6 +57,14 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        male: {
+          DEFAULT: "hsl(var(--male))",
+          light: "hsl(var(--male-light))",
+        },
+        female: {
+          DEFAULT: "hsl(var(--female))",
+          light: "hsl(var(--female-light))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
