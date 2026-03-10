@@ -43,7 +43,7 @@ export const familyMembers: FamilyMember[] = [
   // --- فرع عبدالعزيز بن زيد ---
   { id: "400", name: "عبدالعزيز بن زيد", gender: "M", father_id: "101", mother: "نورة عبدالله النافع", birth_year: "١٣٠٨", death_year: "١٤٠٢", spouses: "نورة الحمد، شريفة العليوي", notes: "" },
   { id: "401", name: "منيرة بنت عبدالعزيز", gender: "F", father_id: "400", mother: "نورة الحمد", birth_year: "١٣٤٦", death_year: "١٤٢٣", spouses: "زيد ناصر زيد", notes: "" },
-  { id: "402", name: "عبدالله بن عبدالعزيز", gender: "M", father_id: "400", mother: "نورة الحمد", birth_year: "", death_year: "", spouses: "", notes: "" },
+  { id: "402", name: "عبدالله بن عبدالعزيز", gender: "M", father_id: "400", mother: "نورة الحمد", birth_year: "١٣٥٥", death_year: "", spouses: "", notes: "" },
   { id: "403", name: "سليمان بن عبدالعزيز", gender: "M", father_id: "400", mother: "نورة الحمد", birth_year: "١٣٦٤", death_year: "١٤٣٤", spouses: "", notes: "" },
   { id: "404", name: "عبدالرحمن بن عبدالعزيز", gender: "M", father_id: "400", mother: "نورة الحمد", birth_year: "", death_year: "", spouses: "", notes: "توفي عمره ١٢ سنة" },
   { id: "405", name: "ابن (غير معروف)", gender: "M", father_id: "400", mother: "نورة الحمد", birth_year: "", death_year: "", spouses: "", notes: "توفي طفلاً" },
