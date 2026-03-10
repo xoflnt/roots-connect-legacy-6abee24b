@@ -79,7 +79,7 @@ export function useTreeLayout() {
 
     // Add spouse nodes for members with spouses but no registered children
     familyMembers.forEach((member) => {
-      if (!member.spouses || member.gender !== "M") return;
+      if (!member.spouses) return;
       const spouseNames = member.spouses.split("،").map((s) => s.trim()).filter(Boolean);
       spouseNames.forEach((spouseName) => {
         const spouseId = `spouse-${member.id}-${spouseName}`;
