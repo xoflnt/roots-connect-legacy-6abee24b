@@ -1,4 +1,5 @@
 export interface FamilyMember {
+  [key: string]: unknown;
   id: string;
   name: string;
   gender: "M" | "F";
