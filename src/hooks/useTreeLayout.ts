@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import dagre from "dagre";
 import type { Node, Edge } from "@xyflow/react";
-import { familyMembers, type FamilyMember } from "@/data/familyData";
+import { familyMembers } from "@/data/familyData";
 
 const NODE_WIDTH = 240;
 const NODE_HEIGHT = 150;
