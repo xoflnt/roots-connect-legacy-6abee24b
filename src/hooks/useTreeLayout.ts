@@ -92,8 +92,8 @@ export function useTreeLayout() {
 
     // Build edges from dagre
     const edges: Edge[] = g.edges().map((e) => {
-      const isSpouseEdge = e.source.startsWith("spouse-") || e.target.startsWith("spouse-");
-      const isToSpouse = e.target.startsWith("spouse-");
+      const isSpouseEdge = e.v.startsWith("spouse-") || e.w.startsWith("spouse-");
+      const isToSpouse = e.w.startsWith("spouse-");
       
       return {
         id: `e-${e.v}-${e.w}`,

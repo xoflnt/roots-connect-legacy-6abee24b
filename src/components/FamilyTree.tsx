@@ -10,10 +10,11 @@ import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useSta
 import { Plus, Minus, Maximize2 } from "lucide-react";
 import { useTreeLayout } from "@/hooks/useTreeLayout";
 import { FamilyCard } from "./FamilyCard";
+import { SpouseCard } from "./SpouseCard";
 import { PersonDetails } from "./PersonDetails";
 import type { FamilyMember } from "@/data/familyData";
 
-const nodeTypes = { familyCard: FamilyCard };
+const nodeTypes = { familyCard: FamilyCard, spouseCard: SpouseCard };
 
 export interface FamilyTreeRef {
   search: (memberId: string) => void;
