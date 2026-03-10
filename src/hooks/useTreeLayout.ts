@@ -3,8 +3,8 @@ import dagre from "dagre";
 import type { Node, Edge } from "@xyflow/react";
 import { familyMembers } from "@/data/familyData";
 
-const NODE_WIDTH = 350;
-const NODE_HEIGHT = 250;
+const NODE_WIDTH = 220;
+const NODE_HEIGHT = 90;
 
 export function useTreeLayout() {
   return useMemo(() => {
