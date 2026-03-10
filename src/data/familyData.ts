@@ -43,18 +43,21 @@ export const familyMembers: FamilyMember[] = [
   // --- فرع عبدالعزيز بن زيد ---
   { id: "400", name: "عبدالعزيز بن زيد", gender: "M", father_id: "101", mother: "نورة عبدالله النافع", birth_year: "١٣٠٨", death_year: "١٤٠٢", spouses: "نورة الحمد، شريفة العليوي", notes: "" },
   { id: "401", name: "منيرة بنت عبدالعزيز", gender: "F", father_id: "400", mother: "نورة الحمد", birth_year: "١٣٤٦", death_year: "١٤٢٣", spouses: "زيد ناصر زيد", notes: "" },
-  { id: "402", name: "عبدالله بن عبدالعزيز", gender: "M", father_id: "400", mother: "نورة الحمد", birth_year: "", death_year: "", spouses: "", notes: "" },
+  { id: "402", name: "عبدالله بن عبدالعزيز", gender: "M", father_id: "400", mother: "نورة الحمد", birth_year: "١٣٥٥", death_year: "", spouses: "", notes: "" },
   { id: "403", name: "سليمان بن عبدالعزيز", gender: "M", father_id: "400", mother: "نورة الحمد", birth_year: "١٣٦٤", death_year: "١٤٣٤", spouses: "", notes: "" },
   { id: "404", name: "عبدالرحمن بن عبدالعزيز", gender: "M", father_id: "400", mother: "نورة الحمد", birth_year: "", death_year: "", spouses: "", notes: "توفي عمره ١٢ سنة" },
   { id: "405", name: "ابن (غير معروف)", gender: "M", father_id: "400", mother: "نورة الحمد", birth_year: "", death_year: "", spouses: "", notes: "توفي طفلاً" },
 
   // --- فرع منيرة بنت زيد ---
-  { id: "500", name: "منيرة بنت زيد", gender: "F", father_id: "101", mother: "نورة عبدالله النافع", birth_year: "١٢٩٧", death_year: "١٣٩١", spouses: "محمد، عبدالعزيز القطنان، حمود العامر", notes: "" },
-  { id: "501", name: "لولوه بنت عبدالعزيز", gender: "F", father_id: "500", mother: "عبدالعزيز القطنان", birth_year: "١٣٢٥", death_year: "١٤٠٧", spouses: "", notes: "والدها: عبدالعزيز العبدالكريم القطنان" },
-  { id: "502", name: "مزنة بنت حمود", gender: "F", father_id: "500", mother: "حمود العامر", birth_year: "١٣٣٧", death_year: "١٤٣٦", spouses: "", notes: "والدها: حمود المرزوق العامر" },
-  { id: "503", name: "سبيكة بنت حمود", gender: "F", father_id: "500", mother: "حمود العامر", birth_year: "١٣٤٠", death_year: "١٤٣١", spouses: "", notes: "والدها: حمود المرزوق العامر" },
-  { id: "504", name: "أحمد بن حمود", gender: "M", father_id: "500", mother: "حمود العامر", birth_year: "١٣٤٣", death_year: "١٣٥٣", spouses: "", notes: "توفي عمره ١٠ سنوات - والده: حمود المرزوق العامر" },
+  { id: "500", name: "منيرة بنت زيد", gender: "F", father_id: "101", mother: "نورة عبدالله النافع", birth_year: "١٢٩٧", death_year: "١٣٩١", spouses: "محمد (الزوج الأول)، زوج ثانٍ (غير معروف)، عبدالعزيز القطنان، حمود العامر", notes: "" },
+  { id: "501", name: "محمد بن محمد", gender: "M", father_id: "500", mother: "محمد (الزوج الأول)", birth_year: "", death_year: "", spouses: "", notes: "توفي طفلاً - والده: الزوج الأول محمد" },
+  { id: "502", name: "بشرى", gender: "F", father_id: "500", mother: "زوج ثانٍ (غير معروف)", birth_year: "", death_year: "", spouses: "", notes: "توفيت طفلة - والدها: الزوج الثاني" },
+  { id: "503", name: "مقبل", gender: "M", father_id: "500", mother: "زوج ثانٍ (غير معروف)", birth_year: "", death_year: "", spouses: "", notes: "توفي طفلاً - والده: الزوج الثاني" },
+  { id: "504", name: "لولوه بنت عبدالعزيز", gender: "F", father_id: "500", mother: "عبدالعزيز القطنان", birth_year: "١٣٢٥", death_year: "١٤٠٧", spouses: "", notes: "والدها: عبدالعزيز العبدالكريم القطنان" },
+  { id: "505", name: "مزنة بنت حمود", gender: "F", father_id: "500", mother: "حمود العامر", birth_year: "١٣٣٧", death_year: "١٤٣٦", spouses: "", notes: "والدها: حمود المرزوق العامر" },
+  { id: "506", name: "سبيكة بنت حمود", gender: "F", father_id: "500", mother: "حمود العامر", birth_year: "١٣٤٠", death_year: "١٤٣١", spouses: "", notes: "والدها: حمود المرزوق العامر" },
+  { id: "507", name: "أحمد بن حمود", gender: "M", father_id: "500", mother: "حمود العامر", birth_year: "١٣٤٣", death_year: "١٣٥٣", spouses: "", notes: "توفي عمره ١٠ سنوات - والده: حمود المرزوق العامر" },
 
   // --- فرع عايد بن زيد ---
-  { id: "600", name: "عايد بن زيد", gender: "M", father_id: "101", mother: "نورة عبدالله النافع", birth_year: "١٣٢٧", death_year: "١٣٦٠", spouses: "نورة المهنا، عائلة النصار", notes: "" },
+  { id: "600", name: "عايد بن زيد", gender: "M", father_id: "101", mother: "نورة عبدالله النافع", birth_year: "١٣٢٧", death_year: "١٣٦٠", spouses: "نورة المهنا، بنت الناصر (الاسم غير معروف)", notes: "" },
 ];
