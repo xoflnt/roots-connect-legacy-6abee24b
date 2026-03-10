@@ -11,10 +11,19 @@ import {
 
 const memberMap = new Map(familyMembers.map((m) => [m.id, m.name]));
 
+const childrenMap = new Map<string, string[]>();
+familyMembers.forEach((m) => {
+  if (m.father_id) {
+    const list = childrenMap.get(m.father_id) || [];
+    list.push(m.name);
+    childrenMap.set(m.father_id, list);
+  }
+});
+
 export function DataTableView() {
   return (
     <div className="h-full w-full overflow-auto" dir="rtl">
-      <div className="min-w-[1000px]">
+      <div className="min-w-[1200px]">
         <Table>
           <TableHeader className="sticky top-0 z-10">
             <TableRow className="bg-muted shadow-sm">
