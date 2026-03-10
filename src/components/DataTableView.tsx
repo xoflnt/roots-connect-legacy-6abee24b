@@ -17,8 +17,8 @@ export function DataTableView() {
     <ScrollArea className="h-full w-full" dir="rtl">
       <div className="min-w-[1000px]">
         <Table>
-          <TableHeader>
-            <TableRow className="bg-muted/60">
+          <TableHeader className="sticky top-0 z-10">
+            <TableRow className="bg-muted shadow-sm">
               <TableHead className="text-right w-[70px]">المعرف</TableHead>
               <TableHead className="text-right">الاسم</TableHead>
               <TableHead className="text-right w-[60px]">الجنس</TableHead>
