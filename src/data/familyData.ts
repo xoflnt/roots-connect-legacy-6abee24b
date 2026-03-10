@@ -15,6 +15,9 @@ export const familyMembers: FamilyMember[] = [
   { id: "100", name: "ناصر سعدون الخنيني", gender: "M", father_id: null, mother: "", birth_year: "", death_year: "", spouses: "", notes: "أول من حمل لقب الخنيني" },
   { id: "101", name: "زيد بن ناصر", gender: "M", father_id: "100", mother: "", birth_year: "", death_year: "١٣٤٠", spouses: "نورة عبدالله النافع", notes: "" },
   { id: "102", name: "لطيفة بنت ناصر", gender: "F", father_id: "100", mother: "", birth_year: "", death_year: "", spouses: "", notes: "" },
+  // أبناء ناصر الإضافيين (عبر زيد)
+  { id: "103", name: "منيرة بنت زيد", gender: "F", father_id: "101", mother: "نورة عبدالله النافع", birth_year: "١٢٩٧", death_year: "١٣٩١", spouses: "عبدالعزيز علي العبدالكريم القطنان، حمود أحمد المرزوق العامر", notes: "أبناؤها من خارج العائلة: محمد (توفي طفلاً) من زوجها الأول، بُشرى ومقبل (توفوا أطفالاً) من زوجها الثاني. لولوه (١٣٢٥-١٤٠٧) من القطنان. مزنة (١٣٣٧-١٤٣٦/٢/١٦)، سبيكة (١٣٤٠-١٤٣١)، أحمد (١٣٤٣-١٣٥٣) من العامر" },
+  { id: "104", name: "عايد بن زيد", gender: "M", father_id: "101", mother: "نورة عبدالله النافع", birth_year: "١٣٢٧", death_year: "١٣٦٠", spouses: "نورة المهنا، من عائلة النصار", notes: "" },
   // أبناء زيد بن ناصر
   { id: "200", name: "محمد بن زيد", gender: "M", father_id: "101", mother: "نورة عبدالله النافع", birth_year: "١٣١٣", death_year: "١٣٨٩", spouses: "لولوة العصيمي، مزنة البداح", notes: "" },
   { id: "300", name: "ناصر بن زيد", gender: "M", father_id: "101", mother: "نورة عبدالله النافع", birth_year: "١٣٠٠", death_year: "١٤٠١", spouses: "سلطانة البداح، نورة العامر، منيرة العصيمي، رقية العبيد، سبيكة الجوير، حصة البدر", notes: "" },
@@ -30,7 +33,7 @@ export const familyMembers: FamilyMember[] = [
   { id: "208", name: "راشد بن محمد", gender: "M", father_id: "200", mother: "مزنة البداح", birth_year: "١٣٨٥", death_year: "", spouses: "", notes: "" },
   { id: "209", name: "علي بن محمد", gender: "M", father_id: "200", mother: "مزنة البداح", birth_year: "١٣٨٩", death_year: "", spouses: "", notes: "" },
   // أبناء ناصر بن زيد (من نورة العامر)
-  { id: "301", name: "زيد بن ناصر", gender: "M", father_id: "300", mother: "نورة العامر", birth_year: "١٣٣٩", death_year: "١٤٢١", spouses: "منيرة عبدالعزيز زيد", notes: "" },
+  { id: "301", name: "زيد بن ناصر", gender: "M", father_id: "300", mother: "نورة العامر", birth_year: "١٣٣٩", death_year: "١٤٢١", spouses: "منيرة بنت عبدالعزيز زيد", notes: "" },
   { id: "302", name: "حصة بنت ناصر", gender: "F", father_id: "300", mother: "نورة العامر", birth_year: "١٣٤٢", death_year: "١٣٧٢", spouses: "", notes: "" },
   { id: "303", name: "علي بن ناصر", gender: "M", father_id: "300", mother: "نورة العامر", birth_year: "١٣٤٦", death_year: "١٤٢٥", spouses: "", notes: "" },
   // أبناء ناصر بن زيد (من منيرة العصيمي)
@@ -44,4 +47,12 @@ export const familyMembers: FamilyMember[] = [
   { id: "310", name: "سعود بن ناصر", gender: "M", father_id: "300", mother: "حصة البدر", birth_year: "١٣٧٢", death_year: "", spouses: "نورة محمد زيد", notes: "" },
   { id: "311", name: "نورة بنت ناصر", gender: "F", father_id: "300", mother: "حصة البدر", birth_year: "", death_year: "", spouses: "فهد محمد زيد", notes: "" },
   { id: "312", name: "إبراهيم بن ناصر", gender: "M", father_id: "300", mother: "حصة البدر", birth_year: "", death_year: "", spouses: "", notes: "توفي طفلاً" },
+  // عبدالعزيز بن زيد
+  { id: "400", name: "عبدالعزيز بن زيد", gender: "M", father_id: "101", mother: "نورة عبدالله النافع", birth_year: "١٣٠٨", death_year: "١٤٠٢/١٠/٨", spouses: "شريفة سليمان العليوي، نورة عبدالرحمن عبدالله الحمد", notes: "شريفة توفيت وهي على ذمته، تزوج عدة زوجات ولم ينجب إلا من نورة الحمد" },
+  // أبناء عبدالعزيز بن زيد (من نورة عبدالرحمن عبدالله الحمد)
+  { id: "401", name: "منيرة بنت عبدالعزيز", gender: "F", father_id: "400", mother: "نورة عبدالرحمن عبدالله الحمد", birth_year: "١٣٤٦", death_year: "١٤٢٣/١/٣٠", spouses: "زيد ناصر زيد", notes: "زوجة زيد بن ناصر بن زيد" },
+  { id: "402", name: "عبدالله بن عبدالعزيز", gender: "M", father_id: "400", mother: "نورة عبدالرحمن عبدالله الحمد", birth_year: "١٣٥٥", death_year: "", spouses: "", notes: "" },
+  { id: "403", name: "سليمان بن عبدالعزيز", gender: "M", father_id: "400", mother: "نورة عبدالرحمن عبدالله الحمد", birth_year: "١٣٦٤", death_year: "١٤٣٤/٣/١٠", spouses: "", notes: "" },
+  { id: "404", name: "عبدالرحمن بن عبدالعزيز", gender: "M", father_id: "400", mother: "نورة عبدالرحمن عبدالله الحمد", birth_year: "", death_year: "", spouses: "", notes: "توفي وعمره ١٢ سنة تقريباً" },
+  { id: "405", name: "مجهول الاسم", gender: "M", father_id: "400", mother: "نورة عبدالرحمن عبدالله الحمد", birth_year: "", death_year: "", spouses: "", notes: "توفي وهو طفل" },
 ];
