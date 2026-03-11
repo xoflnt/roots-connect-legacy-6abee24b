@@ -1,4 +1,5 @@
 import { familyMembers, type FamilyMember } from "@/data/familyData";
+import { parseArabicYear } from "@/utils/ageCalculator";
 
 // Mutable merged data — call refreshMembers() after any localStorage update
 let mergedMembers: FamilyMember[] = [];

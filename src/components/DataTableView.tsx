@@ -183,7 +183,7 @@ export function DataTableView() {
             </TableHeader>
             <TableBody>
               {filtered.map((m, i) => {
-                const motherName = extractMotherName(m);
+                const motherName = inferMotherName(m);
                 const age = calculateAge(m.birth_year, m.death_year);
                 const phone = m.phone as string | undefined;
 

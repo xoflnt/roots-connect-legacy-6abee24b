@@ -153,7 +153,7 @@ export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number) {
         data: {
           ...member,
           branchColorIndex: childColorMap.get(member.id) ?? -1,
-          motherName: childMotherMap.get(member.id) ?? null,
+          motherName: childMotherMap.get(member.id) ?? inferMotherName(member),
           spouseNames: fatherSpouseNames.get(member.id) ?? [],
           hasChildren: hasChildrenInData(member.id),
           isExpanded: expandedIds.has(member.id),

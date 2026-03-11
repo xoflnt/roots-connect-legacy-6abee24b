@@ -155,7 +155,7 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect 
     const motherGroups = new Map<string, number>();
     let ci = 0;
     siblings.forEach((s) => {
-      const mn = extractMotherName(s) || "__unknown__";
+      const mn = inferMotherName(s) || "__unknown__";
       if (mn !== "__unknown__" && !motherGroups.has(mn)) {
         motherGroups.set(mn, ci++);
       }
