@@ -62,15 +62,19 @@ function PersonPicker({
             />
             {open && filtered.length > 0 && (
               <div className="absolute top-full mt-1 w-full bg-card border border-border rounded-xl shadow-xl z-50 max-h-48 overflow-y-auto">
-                {filtered.map((m) => (
+                {filtered.map((m) => {
+                  const subtitle = getMemberSubtitle(m);
+                  return (
                   <button
                     key={m.id}
                     className="w-full text-right px-4 py-2.5 text-sm text-foreground hover:bg-primary/10 transition-colors border-b border-border/20 last:border-b-0 min-h-[44px]"
                     onMouseDown={() => { onSelect(m); setQuery(m.name); setOpen(false); }}
                   >
-                    {m.name}
+                    <span className="block font-medium">{getLineageLabel(m)}</span>
+                    {subtitle && <span className="text-xs text-muted-foreground">{subtitle}</span>}
                   </button>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

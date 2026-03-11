@@ -129,21 +129,22 @@ export function SearchBar({ onSelect }: SearchBarProps) {
 
       {open && filtered.length > 0 && (
         <div className="absolute top-full mt-1 w-full bg-card border border-border rounded-lg shadow-lg z-50 overflow-hidden">
-          {filtered.map((m) => (
+          {filtered.map((m) => {
+            const subtitle = getMemberSubtitle(m);
+            return (
             <button
               key={m.id}
-              className="w-full text-right px-4 py-3 text-foreground hover:bg-muted transition-colors"
+              className="w-full text-right px-4 py-2.5 text-foreground hover:bg-muted transition-colors border-b border-border/20 last:border-b-0"
               style={{ minHeight: 44 }}
               onMouseDown={() => handleSelect(m.id, m.name)}
             >
-              <span className="font-medium">{m.name}</span>
-              {m.death_year && (
-                <span className="text-sm text-muted-foreground mr-2">
-                  (ت {m.death_year} هـ)
-                </span>
+              <span className="font-medium block text-sm">{getLineageLabel(m)}</span>
+              {subtitle && (
+                <span className="text-xs text-muted-foreground">{subtitle}</span>
               )}
             </button>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
