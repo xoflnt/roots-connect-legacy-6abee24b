@@ -31,7 +31,7 @@ export function DataTableView() {
               <TableHead className="text-right">الاسم</TableHead>
               <TableHead className="text-right w-[60px]">الجنس</TableHead>
               <TableHead className="text-right">الأب</TableHead>
-              <TableHead className="text-right">الأم</TableHead>
+              
               <TableHead className="text-right w-[80px]">الميلاد</TableHead>
               <TableHead className="text-right w-[80px]">الوفاة</TableHead>
               <TableHead className="text-right">الزوجات</TableHead>
@@ -73,9 +73,6 @@ export function DataTableView() {
                   ) : (
                     <span className="text-muted-foreground text-xs">—</span>
                   )}
-                </TableCell>
-                <TableCell className="text-sm">
-                  {m.mother || <span className="text-muted-foreground text-xs">—</span>}
                 </TableCell>
                 <TableCell className="text-sm">{m.birth_year || "—"}</TableCell>
                 <TableCell className="text-sm">{m.death_year || "—"}</TableCell>
