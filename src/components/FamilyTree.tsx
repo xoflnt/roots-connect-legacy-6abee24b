@@ -12,7 +12,7 @@ import { useTreeLayout, getDefaultExpandedIds } from "@/hooks/useTreeLayout";
 import { FamilyCard } from "./FamilyCard";
 import { SpouseCard } from "./SpouseCard";
 import { PersonDetails } from "./PersonDetails";
-import type { FamilyMember } from "@/data/familyData";
+import { familyMembers, type FamilyMember } from "@/data/familyData";
 
 const nodeTypes = { familyCard: FamilyCard, spouseCard: SpouseCard };
 
