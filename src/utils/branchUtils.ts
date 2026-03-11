@@ -6,7 +6,7 @@ export const PILLARS = [
   { id: "200", label: "فرع محمد", name: "محمد بن زيد" },
 ] as const;
 
-const PILLAR_IDS = new Set(PILLARS.map((p) => p.id));
+const PILLAR_IDS = new Set<string>(PILLARS.map((p) => p.id));
 
 export function getBranch(personId: string): { pillarId: string; label: string } | null {
   let currentId: string | null = personId;
