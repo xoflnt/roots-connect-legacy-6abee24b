@@ -10,6 +10,7 @@ import { HeritageBadge } from "./HeritageBadge";
 import { isFounder, isBranchHead, isDeceased } from "@/services/familyService";
 import { downloadLineageCard } from "./LineageShareCard";
 import { formatAge } from "@/utils/ageCalculator";
+import { getBranch, getBranchStyle } from "@/utils/branchUtils";
 
 interface LineageViewProps {
   memberId: string;
