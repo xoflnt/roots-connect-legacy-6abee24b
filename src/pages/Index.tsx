@@ -6,6 +6,7 @@ import { DataTableView } from "@/components/DataTableView";
 import { LandingPage } from "@/components/LandingPage";
 import { ListView } from "@/components/ListView";
 import { KinshipCalculator } from "@/components/KinshipCalculator";
+import { OnboardingModal } from "@/components/OnboardingModal";
 
 export type AppView = "landing" | ViewMode;
 
