@@ -39,7 +39,7 @@ export async function generateLineageImage(
   ctx.textAlign = "center";
   ctx.fillStyle = "rgba(196, 164, 95, 0.5)";
   ctx.font = "bold 28px 'Tajawal', 'Arial', sans-serif";
-  ctx.fillText("بوابة آل الخنيني", W / 2, 110);
+  ctx.fillText("بوابة الخنيني", W / 2, 110);
 
   // Separator
   ctx.strokeStyle = "rgba(196, 164, 95, 0.3)";
@@ -52,8 +52,8 @@ export async function generateLineageImage(
   // Build vertical lines: full name first, then "ابن FirstName" for each ancestor, last line "الخنيني"
   const lines: { text: string; isFirst: boolean; isLast: boolean }[] = [];
   
-  // First line: full name
-  lines.push({ text: chain[0].name, isFirst: true, isLast: false });
+  // First line: first name only (to avoid duplication with next "ابن" line)
+  lines.push({ text: chain[0].name.split(" ")[0], isFirst: true, isLast: false });
   
   // Middle lines: "ابن [first name]"
   for (let i = 1; i < chain.length; i++) {
@@ -125,7 +125,7 @@ export async function generateLineageImage(
   // Branding
   ctx.fillStyle = "rgba(196, 164, 95, 0.5)";
   ctx.font = "bold 22px 'Tajawal', 'Arial', sans-serif";
-  ctx.fillText("شجرة عائلة الخنيني — حفظ الإرث للأجيال", W / 2, H - 60);
+  ctx.fillText("شجرة الخنيني — حفظ الإرث للأجيال", W / 2, H - 60);
 
   return new Promise((resolve) => {
     canvas.toBlob((blob) => resolve(blob!), "image/png");
