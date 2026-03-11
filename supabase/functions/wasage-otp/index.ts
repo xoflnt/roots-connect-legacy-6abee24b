@@ -74,17 +74,25 @@ serve(async (req) => {
 
       const otpMessage = message || `مرحباً بك في بوابة الخنيني، رمز التحقق الخاص بك هو`;
 
-      // Build Wasage API URL
-      const wasageUrl = `https://wasage.com/api/otp/?Username=${encodeURIComponent(WASAGE_USERNAME)}&Password=${encodeURIComponent(WASAGE_PASSWORD)}&Reference=${encodeURIComponent(reference)}&Message=${encodeURIComponent(otpMessage)}`;
+      // Call Wasage API via POST with form-urlencoded (ASP.NET compatible)
+      const formBody = new URLSearchParams({
+        Username: WASAGE_USERNAME,
+        Password: WASAGE_PASSWORD,
+        Reference: reference,
+        Message: otpMessage,
+      });
 
-      console.log("[wasage-otp] PAYLOAD SENT:", {
-        url: wasageUrl.replace(WASAGE_PASSWORD, "***"),
+      console.log("[wasage-otp] v2 PAYLOAD SENT:", {
         phone,
         reference,
         message: otpMessage,
       });
 
-      const response = await fetch(wasageUrl, { method: "GET" });
+      const response = await fetch("https://wasage.com/api/otp/", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: formBody.toString(),
+      });
       const responseText = await response.text();
       console.log("[wasage-otp] API RAW RESPONSE:", response.status, responseText);
 
