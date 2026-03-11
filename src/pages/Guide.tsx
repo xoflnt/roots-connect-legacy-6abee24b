@@ -149,7 +149,7 @@ export default function Guide() {
             تعرّف على المنصة
           </div>
           <h2 className="text-2xl md:text-3xl font-extrabold text-foreground">
-            كيف تستخدم بوابة تراث آل الخنيني
+            كيف تستخدم بوابة تراث الخنيني
           </h2>
           <p className="text-muted-foreground text-sm max-w-xl mx-auto">
             دليل شامل لجميع خصائص المنصة مع شروحات مبسطة

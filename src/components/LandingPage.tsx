@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo, useEffect, useCallback } from "react";
-import { Search, TreePine, ChevronDown, Users, Layers, Crown, User, UserRound, Heart, Quote, Send, BookOpen, UserCheck, Calculator } from "lucide-react";
+import { Search, TreePine, ChevronDown, Users, Layers, Crown, User, UserRound, Heart, Quote, Send, BookOpen, UserCheck, Calculator, Shield } from "lucide-react";
 import { getLineageLabel, getMemberSubtitle } from "@/utils/memberLabel";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FontSizeToggle } from "@/components/FontSizeToggle";
@@ -9,10 +9,13 @@ import { familyMembers } from "@/data/familyData";
 import { OnboardingModal } from "@/components/OnboardingModal";
 import { SubmitRequestForm } from "@/components/SubmitRequestForm";
 import { trackVisit } from "@/services/dataService";
+import { PILLARS, getBranch } from "@/utils/branchUtils";
+import { getDescendantCount } from "@/services/familyService";
 
 interface LandingPageProps {
   onSearchSelect: (memberId: string) => void;
   onBrowseTree: () => void;
+  onBrowseBranch?: (pillarId: string) => void;
 }
 
 function useCountUp(target: number, duration = 1500) {
@@ -112,12 +115,25 @@ function StatCard({ icon: Icon, label, value, suffix, highlight }: { icon: React
   );
 }
 
-export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) {
+const PILLAR_COLORS = [
+  { bg: "bg-[hsl(155,40%,90%)]", border: "border-[hsl(155,45%,70%)]", icon: "text-[hsl(155,45%,30%)]" },
+  { bg: "bg-[hsl(25,50%,90%)]", border: "border-[hsl(25,55%,70%)]", icon: "text-[hsl(25,55%,35%)]" },
+  { bg: "bg-[hsl(45,70%,92%)]", border: "border-[hsl(45,60%,70%)]", icon: "text-[hsl(45,60%,35%)]" },
+];
+
+export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: LandingPageProps) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [requestOpen, setRequestOpen] = useState(false);
   const aboutRef = useRef<HTMLDivElement>(null);
   const stats = useMemo(computeStats, []);
+
+  const pillarStats = useMemo(() => {
+    return PILLARS.map((p) => ({
+      ...p,
+      descendants: getDescendantCount(p.id),
+    }));
+  }, []);
 
   // Track visit on mount
   useEffect(() => { trackVisit(); }, []);
@@ -153,7 +169,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
             className="text-3xl md:text-6xl font-extrabold text-primary leading-tight opacity-0 animate-fade-in"
             style={{ animationDelay: "0.2s" }}
           >
-            شجرة عائلة الخنيني
+            بوابة تراث الخنيني - فرع الزلفي
           </h1>
 
           <p
@@ -244,6 +260,56 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
         </button>
       </section>
 
+      {/* Family Pillars Section */}
+      <section className="py-12 md:py-20 px-4 border-t border-border/30">
+        <div className="max-w-4xl mx-auto text-center space-y-6 md:space-y-8">
+          <div className="inline-block px-5 py-2 rounded-full bg-accent/15 text-accent font-bold text-sm">
+            ركائز العائلة
+          </div>
+          <h2 className="text-2xl md:text-4xl font-extrabold text-foreground">
+            أبناء زيد الثلاثة — أعمدة الفرع
+          </h2>
+          <p className="text-muted-foreground text-sm md:text-base max-w-xl mx-auto">
+            يقوم فرع الزلفي على ثلاثة أعمام هم أبناء زيد، ومنهم تفرّعت جميع عائلات الخنيني في الزلفي
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-4">
+            {pillarStats.map((pillar, i) => {
+              const colors = PILLAR_COLORS[i];
+              return (
+                <div
+                  key={pillar.id}
+                  className={`relative rounded-2xl border-2 ${colors.border} ${colors.bg} p-6 md:p-8 flex flex-col items-center gap-4 transition-all hover:shadow-lg hover:-translate-y-1 cursor-pointer group`}
+                  onClick={() => onBrowseBranch?.(pillar.id)}
+                >
+                  <div className={`w-14 h-14 rounded-2xl bg-background/60 flex items-center justify-center ${colors.icon}`}>
+                    <Shield className="h-7 w-7" />
+                  </div>
+                  <h3 className="text-xl md:text-2xl font-extrabold text-foreground">
+                    {pillar.name}
+                  </h3>
+                  <div className="flex items-center gap-1.5 text-muted-foreground text-sm font-bold">
+                    <Users className="h-4 w-4" />
+                    <span>{pillar.descendants} فرد</span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    className="mt-2 rounded-xl font-bold group-hover:bg-background/80 transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onBrowseBranch?.(pillar.id);
+                    }}
+                  >
+                    <TreePine className="h-4 w-4 ml-1.5" />
+                    تصفح الفرع
+                  </Button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       {/* Fun Stats Section */}
       <section className="py-12 md:py-20 px-4 border-t border-border/30">
         <div className="max-w-3xl mx-auto text-center space-y-6 md:space-y-8">
@@ -312,7 +378,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
           <div className="space-y-6 text-base md:text-lg text-muted-foreground leading-loose text-right">
             <p>
               تنحدر عائلة <strong className="text-foreground">الخنيني</strong> من{" "}
-              <strong className="text-foreground">آل حميد</strong> من الحماضا من آل حماد من{" "}
+              <strong className="text-foreground">حميد</strong> من الحماضا من حماد من{" "}
               <strong className="text-foreground">بني العنبر بن عمرو بن تميم</strong>، إحدى أعرق القبائل العربية.
               ويُعدّ <strong className="text-foreground">محمد بن سلامة</strong> أول من حمل لقب
               الخنيني، ليُصبح هذا الاسم رمزًا للعائلة عبر الأجيال.

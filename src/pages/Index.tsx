@@ -18,6 +18,7 @@ const Index = () => {
   const [activeView, setActiveView] = useState<AppView>(
     initialView && VALID_VIEWS.includes(initialView as ViewMode) ? (initialView as AppView) : "landing"
   );
+  const [focusBranch, setFocusBranch] = useState<string | undefined>();
   const navigate = useNavigate();
 
   const handleSearchSelect = (memberId: string) => {
@@ -26,13 +27,20 @@ const Index = () => {
 
   const handleGoHome = () => {
     setActiveView("landing");
+    setFocusBranch(undefined);
+  };
+
+  const handleBrowseBranch = (pillarId: string) => {
+    setFocusBranch(pillarId);
+    setActiveView("tree");
   };
 
   if (activeView === "landing") {
     return (
       <LandingPage
         onSearchSelect={handleSearchSelect}
-        onBrowseTree={() => setActiveView("tree")}
+        onBrowseTree={() => { setFocusBranch(undefined); setActiveView("tree"); }}
+        onBrowseBranch={handleBrowseBranch}
       />
     );
   }
@@ -52,13 +60,13 @@ const Index = () => {
             handleSearchSelect(id);
           }
         }}
-        onReset={() => treeRef.current?.reset()}
+        onReset={() => { setFocusBranch(undefined); treeRef.current?.reset(); }}
         onGoHome={handleGoHome}
       />
       <main className="flex-1 overflow-hidden p-2 md:p-5 pb-16 md:pb-5" key={activeView}>
         {activeView === "tree" && (
           <div className="w-full h-full rounded-2xl md:rounded-3xl shadow-xl overflow-hidden border border-border/50 bg-[hsl(var(--canvas-bg))] animate-fade-in relative">
-            <FamilyTree ref={treeRef} />
+            <FamilyTree ref={treeRef} focusBranch={focusBranch} />
           </div>
         )}
         {activeView === "kinship" && (

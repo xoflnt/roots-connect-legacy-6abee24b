@@ -253,7 +253,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                 <TreePine className="h-8 w-8 text-primary" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-foreground mb-2">مرحباً بك في بوابة تراث آل الخنيني</h2>
+                <h2 className="text-xl font-bold text-foreground mb-2">مرحباً بك في بوابة تراث الخنيني</h2>
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   منصة تفاعلية لتوثيق شجرة العائلة والحفاظ على تراثها. سجّل اسمك لتكون جزءاً من هذا التوثيق.
                 </p>
