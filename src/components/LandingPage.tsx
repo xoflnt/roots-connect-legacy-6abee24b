@@ -130,8 +130,11 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
       {/* Hero Section */}
       <section className="relative flex flex-col items-center justify-center min-h-screen px-4 text-center">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-accent to-transparent" />
+        <div className="absolute top-4 left-4 z-30">
+          <ThemeToggle />
+        </div>
 
-        <div className="max-w-3xl mx-auto space-y-6 md:space-y-8 w-full">
+        <div className="max-w-3xl mx-auto space-y-6 md:space-y-8 w-full pb-24">
           <div
             className="mx-auto w-16 h-16 md:w-20 md:h-20 rounded-full bg-primary/10 flex items-center justify-center opacity-0 animate-fade-in"
             style={{ animationDelay: "0.1s" }}
