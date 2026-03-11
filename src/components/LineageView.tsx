@@ -1,6 +1,7 @@
 import { useMemo, useCallback } from "react";
-import { User, Calendar, Heart, ArrowUp, Users, Share2, Check, Download } from "lucide-react";
+import { User, Calendar, Heart, ArrowUp, Users, Share2, Check, Download, UserPlus } from "lucide-react";
 import { WhatsAppIcon } from "./WhatsAppIcon";
+import { downloadVCard } from "@/utils/vcard";
 import { useState } from "react";
 import { type FamilyMember } from "@/data/familyData";
 import { getAllMembers, extractMotherName } from "@/services/familyService";
