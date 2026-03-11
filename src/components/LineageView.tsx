@@ -225,7 +225,7 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                               className="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
                               style={{ color: motherColor.stroke, backgroundColor: `${motherColor.stroke}15` }}
                             >
-                              أم: {motherName}
+                              والدته: {motherName}
                             </span>
                           )}
                         </div>

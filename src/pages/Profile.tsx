@@ -270,7 +270,7 @@ const Profile = () => {
               {editSpouses.length > 0 && (
                 <Select value={newChildMother} onValueChange={setNewChildMother}>
                   <SelectTrigger className="rounded-xl">
-                    <SelectValue placeholder="اختر الأم..." />
+                    <SelectValue placeholder="اختر الوالدة..." />
                   </SelectTrigger>
                   <SelectContent>
                     {editSpouses.map((s, i) => (

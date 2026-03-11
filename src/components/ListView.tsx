@@ -235,7 +235,7 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect 
                   className="text-[10px] mt-0.5 px-1.5 py-0.5 rounded-full font-medium"
                   style={{ color: motherColor.stroke, backgroundColor: `${motherColor.stroke}15` }}
                 >
-                  أم: {motherName}
+                  والدته: {motherName}
                 </span>
               )}
               {(member.birth_year || member.death_year) && (

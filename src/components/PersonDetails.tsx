@@ -96,7 +96,7 @@ function DetailContent({ member }: { member: FamilyMember }) {
               <Users2 className="h-4 w-4 text-accent" />
             </div>
             <div>
-              <p className="text-[11px] text-muted-foreground font-medium">الأم</p>
+              <p className="text-[11px] text-muted-foreground font-medium">الوالدة</p>
               <p className="text-sm font-bold text-foreground">{motherName}</p>
             </div>
           </div>

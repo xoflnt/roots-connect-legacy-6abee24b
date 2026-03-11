@@ -92,7 +92,7 @@ export function FamilyCard({ data, selected }: NodeProps) {
           style={{ color: branchColor.stroke, backgroundColor: `${branchColor.stroke}15` }}
           dir="rtl"
         >
-          أم: {member.motherName}
+          والدته: {member.motherName}
         </p>
       )}
 
