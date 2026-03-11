@@ -1,6 +1,7 @@
 import { useMemo, useState, useCallback } from "react";
 import { User, ChevronDown, ChevronLeft, Users } from "lucide-react";
 import { familyMembers, type FamilyMember } from "@/data/familyData";
+import { formatAge } from "@/utils/ageCalculator";
 
 interface ListViewProps {
   onSelectMember?: (memberId: string) => void;
@@ -49,7 +50,6 @@ export function ListView({ onSelectMember }: ListViewProps) {
   return (
     <div className="py-6 md:py-8 px-3 md:px-4 overflow-x-hidden" dir="rtl">
       <div className="max-w-2xl mx-auto">
-        {/* Header */}
         <div className="text-center mb-6 md:mb-8 space-y-3">
           <div className="inline-block px-5 py-2 rounded-full bg-accent/15 text-accent font-bold text-sm">
             عرض القوائم
@@ -62,7 +62,6 @@ export function ListView({ onSelectMember }: ListViewProps) {
           </p>
         </div>
 
-        {/* Tree as nested cards */}
         <div className="space-y-2">
           {roots.map((root) => (
             <ListNode
@@ -96,10 +95,10 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect 
   const isExpanded = expandedIds.has(member.id);
   const isMale = member.gender === "M";
   const accentColor = DEPTH_ACCENTS[depth % DEPTH_ACCENTS.length];
+  const ageText = formatAge(member.birth_year, member.death_year);
 
   return (
     <div>
-      {/* Card-style item */}
       <div
         className={`
           relative rounded-xl border transition-all duration-200 overflow-hidden
@@ -109,7 +108,6 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect 
           }
         `}
       >
-        {/* Depth color bar */}
         <div
           className="absolute right-0 top-0 bottom-0 w-1 rounded-r-xl"
           style={{ backgroundColor: accentColor }}
@@ -120,7 +118,6 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect 
           className="w-full flex items-center gap-3 px-4 pr-5 py-3.5 md:py-4 text-right transition-colors active:bg-muted/40"
           style={{ minHeight: 60 }}
         >
-          {/* Expand icon */}
           <div className="min-w-[40px] min-h-[40px] flex items-center justify-center shrink-0 -mr-1">
             {hasChildren ? (
               <div
@@ -141,7 +138,6 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect 
             )}
           </div>
 
-          {/* Avatar */}
           <div
             className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
               isMale
@@ -156,21 +152,24 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect 
             />
           </div>
 
-          {/* Info */}
           <div className="flex-1 min-w-0">
             <span className="font-bold text-foreground text-sm md:text-base block leading-snug">
               {member.name}
             </span>
-            {(member.birth_year || member.death_year) && (
-              <span className="text-xs text-muted-foreground mt-0.5 block">
-                {member.birth_year && `${member.birth_year} هـ`}
-                {member.birth_year && member.death_year && " — "}
-                {member.death_year && `${member.death_year} هـ`}
-              </span>
-            )}
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+              {(member.birth_year || member.death_year) && (
+                <span className="text-xs text-muted-foreground mt-0.5 block">
+                  {member.birth_year && `${member.birth_year} هـ`}
+                  {member.birth_year && member.death_year && " — "}
+                  {member.death_year && `${member.death_year} هـ`}
+                </span>
+              )}
+              {ageText && (
+                <span className="text-xs text-accent font-semibold mt-0.5">{ageText}</span>
+              )}
+            </div>
           </div>
 
-          {/* Children count badge */}
           {hasChildren && (
             <div
               className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold shrink-0"
@@ -184,7 +183,6 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect 
             </div>
           )}
 
-          {/* Navigate to details for leaf nodes */}
           {!hasChildren && onSelect && (
             <div
               className="min-w-[40px] min-h-[40px] flex items-center justify-center shrink-0"
@@ -198,7 +196,6 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect 
           )}
         </button>
 
-        {/* Inline lineage link for nodes with children */}
         {hasChildren && onSelect && (
           <div className="border-t border-border/30 px-5 pr-6">
             <button
@@ -212,7 +209,6 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect 
         )}
       </div>
 
-      {/* Children */}
       {isExpanded && hasChildren && (
         <div
           className="space-y-1.5 pt-1.5 pb-1 animate-accordion-down"

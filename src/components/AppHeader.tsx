@@ -1,4 +1,4 @@
-import { TreePine, TableProperties, Home, List, GitBranch, Users, UserCircle } from "lucide-react";
+import { TreePine, TableProperties, Home, List, GitBranch, Users, UserCircle, BookOpen } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ThemeToggle } from "./ThemeToggle";
 import { FontSizeToggle } from "./FontSizeToggle";
@@ -90,6 +90,26 @@ export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHom
               <span className="font-medium">مرحباً، {currentUser.memberName}</span>
             </button>
           )}
+          {isLoggedIn && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/profile")}
+              className="sm:hidden h-11 w-11 min-w-[44px] min-h-[44px] rounded-xl"
+              title="الملف الشخصي"
+            >
+              <UserCircle className="h-5 w-5 text-primary" />
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate("/guide")}
+            className="h-11 w-11 min-w-[44px] min-h-[44px] rounded-xl text-muted-foreground hover:text-foreground"
+            title="دليل الاستخدام"
+          >
+            <BookOpen className="h-5 w-5" />
+          </Button>
           {onSearch && <SearchBar onSelect={onSearch} />}
           {!isMobile && activeView === "tree" && onReset && <ResetViewButton onReset={onReset} />}
           <FontSizeToggle />

@@ -2,19 +2,27 @@ import { familyMembers, type FamilyMember } from "@/data/familyData";
 
 const memberMap = new Map(familyMembers.map((m) => [m.id, m]));
 
+/** Extract first name only (before بن or بنت) */
+function firstName(name: string): string {
+  const parts = name.split(/\s+/);
+  if (parts.length <= 1) return name;
+  // If second word is بن or بنت, return only first word
+  if (parts[1] === "بن" || parts[1] === "بنت") return parts[0];
+  return name;
+}
+
 /**
- * Build a lineage breadcrumb for disambiguation: "الشخص ← أبوه ← جده"
- * Shows up to `depth` ancestors after the person's own name.
+ * Build a lineage breadcrumb: "الاسم_الأول ← أبوه ← جده"
+ * Uses first name only to avoid duplication like "عبدالله بن محمد ← محمد"
  */
 export function getLineageLabel(member: FamilyMember, depth = 2): string {
-  const parts: string[] = [member.name];
+  const parts: string[] = [firstName(member.name)];
   let current = member;
   for (let i = 0; i < depth; i++) {
     if (!current.father_id) break;
     const father = memberMap.get(current.father_id);
     if (!father) break;
-    // Use first name only for ancestors to keep it short
-    parts.push(father.name.split(" ")[0]);
+    parts.push(firstName(father.name));
     current = father;
   }
   if (parts.length === 1) return member.name;

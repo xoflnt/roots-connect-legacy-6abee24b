@@ -13,8 +13,15 @@ import { lazy, Suspense } from "react";
 
 const Admin = lazy(() => import("./pages/Admin.tsx"));
 const Profile = lazy(() => import("./pages/Profile.tsx"));
+const Guide = lazy(() => import("./pages/Guide.tsx"));
 
 const queryClient = new QueryClient();
+
+const LoadingSpinner = () => (
+  <div className="min-h-screen bg-background flex items-center justify-center">
+    <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+  </div>
+);
 
 const App = () => (
   <ThemeProvider>
@@ -28,22 +35,9 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/person/:id" element={<PersonPage />} />
-                <Route
-                  path="/profile"
-                  element={
-                    <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>}>
-                      <Profile />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="/admin"
-                  element={
-                    <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>}>
-                      <Admin />
-                    </Suspense>
-                  }
-                />
+                <Route path="/profile" element={<Suspense fallback={<LoadingSpinner />}><Profile /></Suspense>} />
+                <Route path="/guide" element={<Suspense fallback={<LoadingSpinner />}><Guide /></Suspense>} />
+                <Route path="/admin" element={<Suspense fallback={<LoadingSpinner />}><Admin /></Suspense>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>

@@ -73,6 +73,17 @@ export function isDeceased(member: FamilyMember): boolean {
   return !!member.death_year;
 }
 
+/**
+ * Extract mother name from member's notes field.
+ * Looks for patterns like "والدته: X" or "والدتها: X"
+ */
+export function extractMotherName(member: FamilyMember): string | null {
+  if (!member.notes) return null;
+  const match = member.notes.match(/والدت[هها]+:\s*([^-–—,،]+)/);
+  if (match) return match[1].trim();
+  return null;
+}
+
 /** Find Lowest Common Ancestor and return distances */
 export function findKinship(id1: string, id2: string): { 
   lca: FamilyMember | null; 
@@ -103,8 +114,6 @@ export function findKinship(id1: string, id2: string): {
 
 /** Translate kinship distances to Arabic */
 export function kinshipToArabic(dist1: number, dist2: number): string {
-  // dist1 = distance from person1 to LCA
-  // dist2 = distance from person2 to LCA
   if (dist1 === 0 && dist2 === 0) return "نفس الشخص";
   if (dist1 === 0 && dist2 === 1) return "أبوه";
   if (dist1 === 1 && dist2 === 0) return "ابنه";
@@ -122,7 +131,6 @@ export function kinshipToArabic(dist1: number, dist2: number): string {
   if (dist1 === 3 && dist2 === 2) return "ابن ابن عمه";
   if (dist1 === 3 && dist2 === 3) return "ابن عم أبيه (الدرجة الثانية)";
   
-  // General case
   if (dist1 === 1 && dist2 > 1) return `عمه من الدرجة ${toArabicNum(dist2 - 1)}`;
   if (dist1 > 1 && dist2 === 1) return `ابن أخيه من الدرجة ${toArabicNum(dist1 - 1)}`;
   return `قريبه (${toArabicNum(dist1)} أجيال / ${toArabicNum(dist2)} أجيال من الجد المشترك)`;

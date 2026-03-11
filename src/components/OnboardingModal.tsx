@@ -4,15 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Progress } from "@/components/ui/progress";
-import { TreePine, Search, UserCheck, Phone, CalendarDays, ChevronLeft, Loader2, QrCode, ExternalLink } from "lucide-react";
+import { TreePine, Search, UserCheck, Phone, CalendarDays, ChevronLeft, Loader2, QrCode, ExternalLink, UserCircle } from "lucide-react";
 import { familyMembers, type FamilyMember } from "@/data/familyData";
 import { sendOTP, checkOTPStatus, verifyOTP, type SendOTPResult } from "@/services/wasageSms";
 import { useAuth } from "@/contexts/AuthContext";
 import { HijriDatePicker } from "@/components/HijriDatePicker";
 import { registerVerifiedUser } from "@/services/dataService";
 import { getLineageLabel } from "@/utils/memberLabel";
+import { useNavigate } from "react-router-dom";
 
-const ONBOARDING_KEY = "hasSeenOnboarding";
 const TOTAL_STEPS = 5;
 
 const memberMap = new Map(familyMembers.map((m) => [m.id, m]));
@@ -32,9 +32,10 @@ interface OnboardingModalProps {
 }
 
 export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
-  const { isLoggedIn, login } = useAuth();
+  const { isLoggedIn, currentUser, login } = useAuth();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(1);
+  const navigate = useNavigate();
 
   // Phase A
   const [searchQuery, setSearchQuery] = useState("");
@@ -57,15 +58,14 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
+  // Show every visit — logged-in users see welcome, others see registration
   useEffect(() => {
     if (forceOpen) {
       setOpen(true);
       return;
     }
-    if (!isLoggedIn && localStorage.getItem(ONBOARDING_KEY) !== "true") {
-      setOpen(true);
-    }
-  }, [isLoggedIn, forceOpen]);
+    setOpen(true);
+  }, [forceOpen]);
 
   const filtered = useMemo(() => {
     if (!searchQuery.trim()) return [];
@@ -74,7 +74,6 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
   }, [searchQuery]);
 
   const handleSkip = () => {
-    localStorage.setItem(ONBOARDING_KEY, "true");
     setOpen(false);
   };
 
@@ -96,7 +95,6 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
         setStep(5);
       }
     }, 3000);
-    // Stop polling after 5 minutes
     setTimeout(() => {
       if (pollingRef.current) clearInterval(pollingRef.current);
       setPolling(false);
@@ -133,12 +131,10 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
   const handleComplete = async () => {
     if (!selectedMember) return;
 
-    // Build hijri date string
     const dateStr = hijriDate.year
       ? `${hijriDate.year}/${hijriDate.month || "1"}/${hijriDate.day || "1"}`
       : undefined;
 
-    // Register verified user + auto-update birth date + phone
     const { updateMember } = await import("@/services/dataService");
     await updateMember(selectedMember.id, { phone: `+966${phone}` });
     await registerVerifiedUser({
@@ -159,6 +155,49 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
 
   const progressValue = (step / TOTAL_STEPS) * 100;
 
+  // ─── Logged-in user: Welcome back view ───
+  if (isLoggedIn && currentUser) {
+    return (
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent
+          className="max-w-md w-[95vw] p-0 gap-0 rounded-2xl overflow-hidden border-border/50 bg-card"
+        >
+          <div className="px-5 py-8 flex flex-col items-center text-center gap-5" dir="rtl">
+            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+              <TreePine className="h-8 w-8 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-foreground mb-2">
+                أهلاً بعودتك، {currentUser.memberName}
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                سعداء برجوعك لبوابة تراث آل الخنيني
+              </p>
+            </div>
+            <div className="flex flex-col w-full gap-2">
+              <Button
+                onClick={() => { setOpen(false); }}
+                className="min-h-[52px] w-full text-base font-semibold rounded-xl"
+              >
+                <TreePine className="h-5 w-5 ml-2" />
+                تصفح الشجرة
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => { setOpen(false); navigate("/profile"); }}
+                className="min-h-[52px] w-full text-base rounded-xl"
+              >
+                <UserCircle className="h-5 w-5 ml-2" />
+                الملف الشخصي
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  // ─── Non-logged-in: Full registration flow ───
   return (
     <Dialog open={open} onOpenChange={() => {}}>
       <DialogContent
@@ -357,7 +396,6 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                 </>
               ) : !otpVerified ? (
                 <>
-                  {/* WhatsApp QR/Link flow */}
                   {otpResult?.clickable ? (
                     <div className="flex flex-col items-center gap-4">
                       <p className="text-sm text-muted-foreground text-center">
@@ -389,7 +427,6 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                       )}
                     </div>
                   ) : (
-                    /* Fallback: manual OTP code entry (mock mode) */
                     <>
                       <p className="text-sm text-muted-foreground text-center">
                         أدخل رمز التحقق (في وضع التجربة استخدم 1234)
