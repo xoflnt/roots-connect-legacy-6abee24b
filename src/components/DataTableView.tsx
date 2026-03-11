@@ -7,7 +7,6 @@ import { Search, X, UserPlus } from "lucide-react";
 import { WhatsAppIcon } from "./WhatsAppIcon";
 import { downloadVCard } from "@/utils/vcard";
 import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
-import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
 import { calculateAge } from "@/utils/ageCalculator";
 import { toArabicNum } from "@/utils/ageCalculator";
 import { getBranch, getBranchStyle } from "@/utils/branchUtils";
