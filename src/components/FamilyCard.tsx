@@ -29,6 +29,8 @@ export function FamilyCard({ data, selected }: NodeProps) {
   const ageText = formatAge(member.birth_year, member.death_year);
   const childrenCount = getChildrenOf(member.id).length;
   const phone = member.phone as string | undefined;
+  const branch = getBranch(member.id);
+  const branchStyle = branch ? getBranchStyle(branch.pillarId) : null;
 
   const handleWhatsApp = (e: React.MouseEvent) => {
     e.stopPropagation();
