@@ -99,6 +99,7 @@ const Profile = () => {
         login({ ...currentUser, hijriBirthDate: dateStr });
       }
 
+      refreshMembers();
       toast.success("تم حفظ التعديلات بنجاح");
     } catch {
       toast.error("حدث خطأ أثناء الحفظ");
