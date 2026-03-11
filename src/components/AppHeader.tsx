@@ -93,18 +93,18 @@ export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHom
               <button
                 key={item.value}
                 onClick={() => onViewChange(item.value)}
-                className={`flex flex-col items-center justify-center gap-0.5 flex-1 min-h-[56px] py-1.5 transition-colors ${
+                className={`relative flex flex-col items-center justify-center gap-0.5 flex-1 min-h-[56px] py-1.5 transition-all ${
                   isActive
                     ? "text-primary"
                     : "text-muted-foreground"
                 }`}
               >
-                <item.icon className={`h-5 w-5 ${isActive ? "text-primary" : ""}`} />
+                <item.icon className={`h-5 w-5 transition-transform ${isActive ? "text-primary scale-110" : ""}`} />
                 <span className={`text-[10px] font-medium ${isActive ? "font-bold" : ""}`}>
                   {item.label}
                 </span>
                 {isActive && (
-                  <div className="absolute top-0 h-0.5 w-10 bg-primary rounded-b-full" />
+                  <div className="absolute top-0 h-0.5 w-8 bg-accent rounded-b-full" />
                 )}
               </button>
             );
