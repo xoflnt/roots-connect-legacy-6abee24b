@@ -8,11 +8,11 @@ import {
 import "@xyflow/react/dist/style.css";
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { Plus, Minus, Maximize2 } from "lucide-react";
-import { useTreeLayout } from "@/hooks/useTreeLayout";
+import { useTreeLayout, getDefaultExpandedIds } from "@/hooks/useTreeLayout";
 import { FamilyCard } from "./FamilyCard";
 import { SpouseCard } from "./SpouseCard";
 import { PersonDetails } from "./PersonDetails";
-import type { FamilyMember } from "@/data/familyData";
+import { familyMembers, type FamilyMember } from "@/data/familyData";
 
 const nodeTypes = { familyCard: FamilyCard, spouseCard: SpouseCard };
 
@@ -22,14 +22,38 @@ export interface FamilyTreeRef {
 }
 
 export const FamilyTree = forwardRef<FamilyTreeRef>(function FamilyTree(_, ref) {
-  const { nodes: initialNodes, edges: initialEdges } = useTreeLayout();
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, , onEdgesChange] = useEdgesState(initialEdges);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(getDefaultExpandedIds);
+  const { nodes: layoutNodes, edges: layoutEdges } = useTreeLayout(expandedIds);
+  const [nodes, setNodes, onNodesChange] = useNodesState(layoutNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(layoutEdges);
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
   const rfInstance = useRef<ReactFlowInstance | null>(null);
 
+  // Sync layout changes
+  useEffect(() => {
+    setNodes(layoutNodes);
+    setEdges(layoutEdges);
+    // Fit view after layout change
+    setTimeout(() => rfInstance.current?.fitView({ duration: 400, padding: 0.2 }), 50);
+  }, [layoutNodes, layoutEdges, setNodes, setEdges]);
+
+  const handleToggleExpand = useCallback((memberId: string) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(memberId)) {
+        next.delete(memberId);
+      } else {
+        next.add(memberId);
+      }
+      return next;
+    });
+  }, []);
+
   const onNodeClick = useCallback((_: React.MouseEvent, node: Node) => {
-    setSelectedMember(node.data as unknown as FamilyMember);
+    const data = node.data as any;
+    if (data.gender) {
+      setSelectedMember(data as unknown as FamilyMember);
+    }
   }, []);
 
   const onPaneClick = useCallback(() => {
@@ -39,27 +63,43 @@ export const FamilyTree = forwardRef<FamilyTreeRef>(function FamilyTree(_, ref) 
   const handleSearch = useCallback(
     (memberId: string) => {
       if (!rfInstance.current) return;
-      const node = nodes.find((n) => n.id === memberId);
-      if (!node) return;
-
-      rfInstance.current.fitView({
-        nodes: [{ id: memberId }],
-        duration: 600,
-        padding: 0.5,
+      
+      // Expand all ancestors to make the node visible
+      const memberMap = new Map<string, FamilyMember>(familyMembers.map((m) => [m.id, m]));
+      const ancestorIds = new Set<string>();
+      let current = memberMap.get(memberId);
+      while (current?.father_id) {
+        ancestorIds.add(current.father_id);
+        current = memberMap.get(current.father_id);
+      }
+      
+      setExpandedIds((prev) => {
+        const next = new Set(prev);
+        ancestorIds.forEach((id) => next.add(id));
+        return next;
       });
 
-      setNodes((nds) =>
-        nds.map((n) => ({ ...n, selected: n.id === memberId }))
-      );
-      const member = node.data as unknown as FamilyMember;
-      setSelectedMember(member);
+      // After layout updates, focus on the node
+      setTimeout(() => {
+        rfInstance.current?.fitView({
+          nodes: [{ id: memberId }],
+          duration: 600,
+          padding: 0.5,
+        });
+        setNodes((nds) =>
+          nds.map((n) => ({ ...n, selected: n.id === memberId }))
+        );
+        const member = memberMap.get(memberId);
+        if (member) setSelectedMember(member);
+      }, 300);
     },
-    [nodes, setNodes]
+    [setNodes]
   );
 
   const handleReset = useCallback(() => {
-    rfInstance.current?.fitView({ duration: 500, padding: 0.2 });
+    setExpandedIds(getDefaultExpandedIds());
     setSelectedMember(null);
+    setTimeout(() => rfInstance.current?.fitView({ duration: 500, padding: 0.2 }), 100);
   }, []);
 
   useImperativeHandle(ref, () => ({
@@ -67,9 +107,11 @@ export const FamilyTree = forwardRef<FamilyTreeRef>(function FamilyTree(_, ref) 
     reset: handleReset,
   }), [handleSearch, handleReset]);
 
+  // Pass toggle handler via window for FamilyCard access
   useEffect(() => {
-    setTimeout(() => rfInstance.current?.fitView({ padding: 0.2 }), 100);
-  }, []);
+    (window as any).__toggleExpandNode = handleToggleExpand;
+    return () => { delete (window as any).__toggleExpandNode; };
+  }, [handleToggleExpand]);
 
   return (
     <div className="relative w-full h-full">
@@ -87,7 +129,7 @@ export const FamilyTree = forwardRef<FamilyTreeRef>(function FamilyTree(_, ref) 
         fitView
         fitViewOptions={{ padding: 0.2 }}
         nodesDraggable={false}
-        minZoom={0.3}
+        minZoom={0.15}
         maxZoom={2}
         proOptions={{ hideAttribution: true }}
         style={{ background: 'transparent' }}

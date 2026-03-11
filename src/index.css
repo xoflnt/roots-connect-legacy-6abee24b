@@ -4,97 +4,103 @@
 
 @layer base {
   :root {
-    --background: 36 33% 94%;
-    --foreground: 210 50% 10%;
+    --background: 40 33% 97%;
+    --foreground: 152 42% 13%;
 
-    --card: 36 30% 97%;
-    --card-foreground: 210 50% 10%;
+    --card: 40 30% 98%;
+    --card-foreground: 152 42% 13%;
 
-    --popover: 36 30% 97%;
-    --popover-foreground: 210 50% 10%;
+    --popover: 40 30% 98%;
+    --popover-foreground: 152 42% 13%;
 
-    --primary: 200 60% 24%;
-    --primary-foreground: 36 30% 97%;
+    --primary: 152 42% 18%;
+    --primary-foreground: 40 30% 97%;
 
-    --secondary: 145 25% 36%;
-    --secondary-foreground: 36 30% 97%;
+    --secondary: 40 20% 90%;
+    --secondary-foreground: 152 42% 18%;
 
-    --muted: 36 20% 88%;
-    --muted-foreground: 210 15% 40%;
+    --muted: 40 20% 92%;
+    --muted-foreground: 152 15% 40%;
 
-    --accent: 145 25% 36%;
-    --accent-foreground: 36 30% 97%;
+    --accent: 45 67% 53%;
+    --accent-foreground: 152 42% 13%;
+
+    --gold: 45 67% 53%;
+    --gold-light: 45 60% 90%;
 
     --destructive: 0 72% 51%;
-    --destructive-foreground: 36 30% 97%;
+    --destructive-foreground: 40 30% 97%;
 
-    --border: 36 20% 82%;
-    --input: 36 20% 82%;
-    --ring: 200 60% 24%;
+    --border: 40 20% 86%;
+    --input: 40 20% 86%;
+    --ring: 152 42% 18%;
 
     --radius: 0.75rem;
 
     --male: 200 60% 24%;
-    --male-light: 200 50% 92%;
-    --female: 145 30% 32%;
-    --female-light: 145 25% 90%;
+    --male-light: 200 50% 94%;
+    --female: 152 30% 32%;
+    --female-light: 152 25% 92%;
 
     --canvas-bg: 40 33% 97%;
 
-    --sidebar-background: 36 25% 96%;
-    --sidebar-foreground: 210 50% 10%;
-    --sidebar-primary: 200 60% 24%;
-    --sidebar-primary-foreground: 36 30% 97%;
-    --sidebar-accent: 145 25% 36%;
-    --sidebar-accent-foreground: 36 30% 97%;
-    --sidebar-border: 36 20% 82%;
-    --sidebar-ring: 200 60% 24%;
+    --sidebar-background: 40 25% 96%;
+    --sidebar-foreground: 152 42% 13%;
+    --sidebar-primary: 152 42% 18%;
+    --sidebar-primary-foreground: 40 30% 97%;
+    --sidebar-accent: 45 67% 53%;
+    --sidebar-accent-foreground: 152 42% 13%;
+    --sidebar-border: 40 20% 86%;
+    --sidebar-ring: 152 42% 18%;
   }
 
   .dark {
-    --background: 210 50% 7%;
-    --foreground: 36 25% 92%;
+    --background: 220 30% 8%;
+    --foreground: 40 25% 92%;
 
-    --card: 210 45% 11%;
-    --card-foreground: 36 25% 92%;
+    --card: 220 28% 12%;
+    --card-foreground: 40 25% 92%;
 
-    --popover: 210 45% 11%;
-    --popover-foreground: 36 25% 92%;
+    --popover: 220 28% 12%;
+    --popover-foreground: 40 25% 92%;
 
-    --primary: 36 40% 80%;
-    --primary-foreground: 210 50% 7%;
+    --primary: 45 60% 70%;
+    --primary-foreground: 220 30% 8%;
 
-    --secondary: 145 20% 28%;
-    --secondary-foreground: 36 25% 92%;
+    --secondary: 152 20% 18%;
+    --secondary-foreground: 40 25% 92%;
 
-    --muted: 210 30% 16%;
-    --muted-foreground: 210 15% 60%;
+    --muted: 220 20% 16%;
+    --muted-foreground: 220 15% 60%;
 
-    --accent: 145 20% 28%;
-    --accent-foreground: 36 25% 92%;
+    --accent: 45 50% 45%;
+    --accent-foreground: 40 25% 92%;
+
+    --gold: 45 50% 45%;
+    --gold-light: 45 30% 18%;
 
     --destructive: 0 62% 40%;
-    --destructive-foreground: 36 25% 92%;
+    --destructive-foreground: 40 25% 92%;
 
-    --border: 210 30% 18%;
-    --input: 210 30% 18%;
-    --ring: 36 40% 80%;
+    --border: 220 20% 20%;
+    --input: 220 20% 20%;
+    --ring: 45 60% 70%;
 
     --male: 200 50% 60%;
     --male-light: 200 40% 16%;
-    --female: 145 30% 50%;
-    --female-light: 145 20% 16%;
+    --female: 152 30% 50%;
+    --female-light: 152 20% 16%;
 
-    --canvas-bg: 215 50% 6%;
+    --canvas-bg: 220 30% 7%;
 
-    --sidebar-background: 210 45% 9%;
-    --sidebar-foreground: 36 25% 92%;
-    --sidebar-primary: 36 40% 80%;
-    --sidebar-primary-foreground: 210 50% 7%;
-    --sidebar-accent: 145 20% 28%;
-    --sidebar-accent-foreground: 36 25% 92%;
-    --sidebar-border: 210 30% 18%;
-    --sidebar-ring: 36 40% 80%;
+    --sidebar-background: 220 28% 10%;
+    --sidebar-foreground: 40 25% 92%;
+    --sidebar-primary: 45 60% 70%;
+    --sidebar-primary-foreground: 220 30% 8%;
+    --sidebar-accent: 45 50% 45%;
+    --sidebar-accent-foreground: 40 25% 92%;
+    --sidebar-border: 220 20% 20%;
+    --sidebar-ring: 45 60% 70%;
   }
 }
 
@@ -112,5 +118,11 @@
   body {
     @apply bg-background text-foreground;
     font-family: 'Tajawal', sans-serif;
+  }
+}
+
+@layer utilities {
+  .hover-scale {
+    @apply transition-transform duration-200 hover:scale-105;
   }
 }
