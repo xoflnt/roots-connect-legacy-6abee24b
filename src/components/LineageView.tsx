@@ -1,10 +1,23 @@
 import { useMemo } from "react";
-import { User, Calendar, Heart, ChevronUp } from "lucide-react";
+import { User, Calendar, Heart, ArrowUp } from "lucide-react";
 import { familyMembers, type FamilyMember } from "@/data/familyData";
 
 interface LineageViewProps {
   memberId: string;
   onSelectMember?: (memberId: string) => void;
+}
+
+const DEPTH_COLORS = [
+  "hsl(var(--accent))",
+  "hsl(var(--primary))",
+  "hsl(340, 60%, 55%)",
+  "hsl(35, 70%, 50%)",
+  "hsl(175, 50%, 40%)",
+  "hsl(270, 45%, 55%)",
+];
+
+function toArabicNum(n: number): string {
+  return n.toLocaleString("ar-SA");
 }
 
 export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
@@ -28,18 +41,18 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
   }
 
   return (
-    <div className="py-6 md:py-10 px-3 md:px-4" dir="rtl">
+    <div className="py-6 md:py-10 px-4 md:px-6" dir="rtl">
       <div className="max-w-lg mx-auto">
         {/* Header */}
-        <div className="text-center mb-6 md:mb-10 space-y-2">
-          <div className="inline-block px-4 py-1.5 rounded-full bg-accent/15 text-accent font-bold text-sm">
+        <div className="text-center mb-8 md:mb-10 space-y-3">
+          <div className="inline-block px-5 py-2 rounded-full bg-accent/15 text-accent font-bold text-sm">
             سلسلة النسب
           </div>
-          <h2 className="text-xl md:text-2xl font-extrabold text-foreground">
+          <h2 className="text-2xl md:text-3xl font-extrabold text-foreground">
             نسب {chain[0].name}
           </h2>
           <p className="text-muted-foreground text-sm">
-            من {chain[0].name} إلى الجد الأعلى — {chain.length} أجيال
+            من {chain[0].name} إلى الجد الأعلى — {toArabicNum(chain.length)} أجيال
           </p>
         </div>
 
@@ -49,89 +62,128 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
             const isFirst = index === 0;
             const isLast = index === chain.length - 1;
             const isMale = member.gender === "M";
+            const genNum = index + 1;
+            const dotColor = DEPTH_COLORS[index % DEPTH_COLORS.length];
 
             return (
-              <div key={member.id} className="relative flex gap-3 md:gap-4 items-start">
-                {/* Vertical line + dot */}
-                <div className="flex flex-col items-center shrink-0 w-6 md:w-8">
+              <div key={member.id} className="relative flex gap-4 md:gap-5 items-stretch">
+                {/* Timeline rail */}
+                <div className="flex flex-col items-center shrink-0 w-8 md:w-10">
+                  {/* Dot */}
                   <div
-                    className={`w-3.5 h-3.5 md:w-4 md:h-4 rounded-full border-2 z-10 ${
-                      isFirst
-                        ? "bg-accent border-accent shadow-lg shadow-accent/30"
-                        : "bg-card border-primary/40"
-                    }`}
-                  />
+                    className="w-5 h-5 md:w-6 md:h-6 rounded-full z-10 flex items-center justify-center shadow-lg ring-4 ring-background"
+                    style={{ backgroundColor: dotColor }}
+                  >
+                    {isFirst && (
+                      <div className="w-2 h-2 rounded-full bg-background" />
+                    )}
+                  </div>
+                  {/* Connecting line */}
                   {!isLast && (
-                    <div className="w-0.5 flex-1 min-h-[2rem] bg-border" />
+                    <div
+                      className="w-0.5 flex-1 min-h-[1.5rem]"
+                      style={{
+                        background: `linear-gradient(to bottom, ${dotColor}, ${DEPTH_COLORS[(index + 1) % DEPTH_COLORS.length]})`,
+                      }}
+                    />
                   )}
                 </div>
 
                 {/* Card */}
                 <div
-                  className={`flex-1 mb-4 md:mb-6 p-4 md:p-5 rounded-2xl border transition-all duration-300 cursor-pointer hover:shadow-md min-h-[44px] ${
-                    isFirst
-                      ? "bg-accent/10 border-accent/30 shadow-md"
-                      : "bg-card border-border/50 hover:border-primary/30"
-                  }`}
+                  className={`
+                    flex-1 mb-5 md:mb-6 rounded-2xl border transition-all duration-300 cursor-pointer
+                    backdrop-blur-sm active:scale-[0.98]
+                    ${isFirst
+                      ? "bg-accent/10 border-accent/30 shadow-lg"
+                      : "bg-card/80 border-border/50 hover:border-primary/30 hover:shadow-md shadow-sm"
+                    }
+                  `}
                   onClick={() => onSelectMember?.(member.id)}
                   style={{
                     opacity: 0,
-                    animation: `fade-in 0.5s ease-out ${index * 0.1}s forwards`,
+                    animation: `fade-in 0.5s ease-out ${index * 0.08}s forwards`,
+                    borderRightWidth: isFirst ? "3px" : undefined,
+                    borderRightColor: isFirst ? dotColor : undefined,
                   }}
                 >
-                  <div className="flex items-center gap-3 mb-2">
-                    <div
-                      className={`w-9 h-9 md:w-10 md:h-10 rounded-full flex items-center justify-center ${
-                        isMale
-                          ? "bg-[hsl(var(--male-light))]"
-                          : "bg-[hsl(var(--female-light))]"
-                      }`}
-                    >
-                      <User
-                        className={`h-4.5 w-4.5 md:h-5 md:w-5 ${
+                  {/* Generation badge */}
+                  <div className="flex items-center justify-between px-4 pt-3 md:px-5 md:pt-4">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-10 h-10 md:w-11 md:h-11 rounded-xl flex items-center justify-center ${
                           isMale
-                            ? "text-[hsl(var(--male))]"
-                            : "text-[hsl(var(--female))]"
+                            ? "bg-[hsl(var(--male-light))]"
+                            : "bg-[hsl(var(--female-light))]"
                         }`}
-                      />
+                      >
+                        <User
+                          className={`h-5 w-5 ${
+                            isMale
+                              ? "text-[hsl(var(--male))]"
+                              : "text-[hsl(var(--female))]"
+                          }`}
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-base md:text-lg font-bold text-foreground leading-snug">
+                          {member.name}
+                        </h3>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {isMale ? "ذكر" : "أنثى"}
+                          {isFirst && " — الشخص المطلوب"}
+                          {isLast && " — الجد الأعلى"}
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-base md:text-lg font-bold text-foreground truncate">
-                        {member.name}
-                      </h3>
-                      <p className="text-xs text-muted-foreground">
-                        {isMale ? "ذكر" : "أنثى"}
-                        {isFirst && " — الشخص المطلوب"}
-                        {isLast && " — الجد الأعلى"}
-                      </p>
+                    <div
+                      className="shrink-0 px-2.5 py-1 rounded-lg text-xs font-bold"
+                      style={{
+                        backgroundColor: `${dotColor}20`,
+                        color: dotColor,
+                      }}
+                    >
+                      الجيل {toArabicNum(genNum)}
                     </div>
                   </div>
 
-                  {(member.birth_year || member.death_year) && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
-                      <Calendar className="h-3.5 w-3.5 shrink-0" />
-                      <span>
-                        {member.birth_year && `${member.birth_year} هـ`}
-                        {member.birth_year && member.death_year && " — "}
-                        {member.death_year && `${member.death_year} هـ`}
-                      </span>
-                    </div>
-                  )}
+                  {/* Details */}
+                  <div className="px-4 pb-3 pt-2 md:px-5 md:pb-4 space-y-1.5">
+                    {(member.birth_year || member.death_year) && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Calendar className="h-3.5 w-3.5 shrink-0" />
+                        <span>
+                          {member.birth_year && `${member.birth_year} هـ`}
+                          {member.birth_year && member.death_year && " — "}
+                          {member.death_year && `${member.death_year} هـ`}
+                        </span>
+                      </div>
+                    )}
 
-                  {member.spouses && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1.5">
-                      <Heart className="h-3.5 w-3.5 shrink-0" />
-                      <span className="truncate">{member.spouses}</span>
+                    {member.spouses && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Heart className="h-3.5 w-3.5 shrink-0" />
+                        <span className="truncate">{member.spouses}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Quick lineage switch for ancestors */}
+                  {!isFirst && onSelectMember && (
+                    <div className="border-t border-border/30 px-4 py-2 md:px-5">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSelectMember(member.id);
+                        }}
+                        className="flex items-center gap-1.5 text-xs text-primary font-medium hover:text-primary/80 transition-colors min-h-[36px]"
+                      >
+                        <ArrowUp className="h-3 w-3" />
+                        عرض نسب هذا الشخص
+                      </button>
                     </div>
                   )}
                 </div>
-
-                {/* Arrow up indicator between cards */}
-                {!isLast && (
-                  <div className="absolute right-3 md:right-4 -bottom-1 z-10">
-                    <ChevronUp className="h-4 w-4 text-muted-foreground/40" />
-                  </div>
-                )}
               </div>
             );
           })}

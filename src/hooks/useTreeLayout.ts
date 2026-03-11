@@ -4,7 +4,7 @@ import type { Node, Edge } from "@xyflow/react";
 import { familyMembers } from "@/data/familyData";
 
 const NODE_WIDTH = 220;
-const NODE_HEIGHT = 90;
+const NODE_HEIGHT = 100;
 const SPOUSE_WIDTH = 160;
 const SPOUSE_HEIGHT = 50;
 
