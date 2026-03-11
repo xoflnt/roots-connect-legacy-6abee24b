@@ -9,18 +9,17 @@ export function ThemeToggle() {
     <Button
       variant="outline"
       onClick={toggleTheme}
-      className="bg-card border-border text-foreground hover:bg-muted gap-2"
-      style={{ minHeight: 44 }}
+      className="bg-card border-border text-foreground hover:bg-muted gap-2 min-h-[44px] min-w-[44px] px-2.5 md:px-4"
     >
       {theme === "light" ? (
         <>
           <Moon className="h-5 w-5" />
-          <span>الوضع الداكن</span>
+          <span className="hidden md:inline">الوضع الداكن</span>
         </>
       ) : (
         <>
           <Sun className="h-5 w-5" />
-          <span>الوضع الفاتح</span>
+          <span className="hidden md:inline">الوضع الفاتح</span>
         </>
       )}
     </Button>

@@ -8,7 +8,6 @@ interface ListViewProps {
 
 export function ListView({ onSelectMember }: ListViewProps) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => {
-    // Start with root expanded
     const roots = familyMembers.filter((m) => !m.father_id);
     return new Set(roots.map((r) => r.id));
   });
@@ -42,14 +41,14 @@ export function ListView({ onSelectMember }: ListViewProps) {
   }, []);
 
   return (
-    <div className="py-8 px-4" dir="rtl">
+    <div className="py-6 md:py-8 px-3 md:px-4" dir="rtl">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8 space-y-2">
+        <div className="text-center mb-6 md:mb-8 space-y-2">
           <div className="inline-block px-4 py-1.5 rounded-full bg-accent/15 text-accent font-bold text-sm">
             عرض القوائم
           </div>
-          <h2 className="text-2xl font-extrabold text-foreground">
+          <h2 className="text-xl md:text-2xl font-extrabold text-foreground">
             تصفح العائلة
           </h2>
           <p className="text-muted-foreground text-sm">
@@ -96,14 +95,14 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect 
       <button
         onClick={() => hasChildren ? onToggle(member.id) : onSelect?.(member.id)}
         className={`
-          w-full flex items-center gap-3 px-4 py-3 rounded-xl text-right transition-all duration-200
+          w-full flex items-center gap-3 px-3 md:px-4 py-3 rounded-xl text-right transition-all duration-200
           hover:bg-muted/60 active:scale-[0.99]
           ${isExpanded && hasChildren ? "bg-muted/40" : ""}
         `}
-        style={{ paddingRight: `${depth * 1.5 + 1}rem`, minHeight: 52 }}
+        style={{ paddingRight: `${depth * 1.25 + 0.75}rem`, minHeight: 52 }}
       >
-        {/* Expand icon */}
-        <div className="w-5 h-5 flex items-center justify-center shrink-0">
+        {/* Expand icon — 44px touch target */}
+        <div className="min-w-[44px] min-h-[44px] flex items-center justify-center shrink-0 -m-2">
           {hasChildren ? (
             <ChevronDown
               className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${
@@ -154,21 +153,23 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect 
 
         {/* Navigate to lineage */}
         {!hasChildren && onSelect && (
-          <ChevronLeft
-            className="h-4 w-4 text-muted-foreground/40 shrink-0"
+          <div
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center shrink-0 -m-2"
             onClick={(e) => {
               e.stopPropagation();
               onSelect(member.id);
             }}
-          />
+          >
+            <ChevronLeft className="h-4 w-4 text-muted-foreground/40" />
+          </div>
         )}
       </button>
 
       {/* Children */}
       {isExpanded && hasChildren && (
         <div
-          className="border-r-2 border-border/40 mr-6 animate-accordion-down"
-          style={{ marginRight: `${depth * 1.5 + 2.25}rem` }}
+          className="border-r-2 border-border/40 animate-accordion-down"
+          style={{ marginRight: `${depth * 1.25 + 2}rem` }}
         >
           {children.map((child) => (
             <ListNode

@@ -4,6 +4,7 @@ import { SearchBar } from "./SearchBar";
 import { ResetViewButton } from "./ResetViewButton";
 import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
 import { Button } from "./ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export type ViewMode = "tree" | "lineage" | "list" | "table";
 
@@ -15,60 +16,98 @@ interface AppHeaderProps {
   onGoHome?: () => void;
 }
 
+const navItems: { value: ViewMode; label: string; icon: typeof TreePine }[] = [
+  { value: "tree", label: "الشجرة", icon: TreePine },
+  { value: "lineage", label: "النسب", icon: GitBranch },
+  { value: "list", label: "القوائم", icon: List },
+  { value: "table", label: "البيانات", icon: TableProperties },
+];
+
 export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHome }: AppHeaderProps) {
+  const isMobile = useIsMobile();
+
   return (
-    <header className="sticky top-0 z-50 flex items-center justify-between gap-3 px-3 md:px-6 py-2.5 border-b border-border/40 bg-card/60 backdrop-blur-xl shadow-sm">
-      <div className="flex items-center gap-2 shrink-0">
-        {onGoHome && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onGoHome}
-            className="h-9 w-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted"
-            title="الرئيسية"
-          >
-            <Home className="h-4.5 w-4.5" />
-          </Button>
-        )}
-        <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-primary/10">
-          <TreePine className="h-4.5 w-4.5 text-primary" />
+    <>
+      {/* Top bar */}
+      <header className="sticky top-0 z-50 flex items-center justify-between gap-2 px-3 md:px-6 py-2 md:py-2.5 border-b border-border/40 bg-card/60 backdrop-blur-xl shadow-sm">
+        <div className="flex items-center gap-2 shrink-0">
+          {onGoHome && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onGoHome}
+              className="h-11 w-11 min-w-[44px] min-h-[44px] rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted"
+              title="الرئيسية"
+            >
+              <Home className="h-5 w-5" />
+            </Button>
+          )}
+          <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-primary/10">
+            <TreePine className="h-4.5 w-4.5 text-primary" />
+          </div>
+          <h1 className="text-base md:text-lg font-extrabold text-foreground tracking-tight hidden sm:block">
+            آل الخنيني
+          </h1>
         </div>
-        <h1 className="text-base md:text-lg font-extrabold text-foreground tracking-tight hidden sm:block">
-          آل الخنيني
-        </h1>
-      </div>
 
-      <div className="flex items-center gap-2 flex-1 justify-center">
-        <ToggleGroup
-          type="single"
-          value={activeView}
-          onValueChange={(v) => v && onViewChange(v as ViewMode)}
-          className="border border-border rounded-xl p-0.5 bg-muted/40"
-        >
-          <ToggleGroupItem value="tree" aria-label="الشجرة التفاعلية" className="text-xs px-2.5 md:px-3 py-1.5 rounded-lg data-[state=on]:bg-background data-[state=on]:shadow-sm gap-1">
-            <TreePine className="h-3.5 w-3.5" />
-            <span className="hidden md:inline">الشجرة</span>
-          </ToggleGroupItem>
-          <ToggleGroupItem value="lineage" aria-label="سلسلة النسب" className="text-xs px-2.5 md:px-3 py-1.5 rounded-lg data-[state=on]:bg-background data-[state=on]:shadow-sm gap-1">
-            <GitBranch className="h-3.5 w-3.5" />
-            <span className="hidden md:inline">النسب</span>
-          </ToggleGroupItem>
-          <ToggleGroupItem value="list" aria-label="عرض القوائم" className="text-xs px-2.5 md:px-3 py-1.5 rounded-lg data-[state=on]:bg-background data-[state=on]:shadow-sm gap-1">
-            <List className="h-3.5 w-3.5" />
-            <span className="hidden md:inline">القوائم</span>
-          </ToggleGroupItem>
-          <ToggleGroupItem value="table" aria-label="جدول البيانات" className="text-xs px-2.5 md:px-3 py-1.5 rounded-lg data-[state=on]:bg-background data-[state=on]:shadow-sm gap-1">
-            <TableProperties className="h-3.5 w-3.5" />
-            <span className="hidden md:inline">البيانات</span>
-          </ToggleGroupItem>
-        </ToggleGroup>
-      </div>
+        {/* Desktop segmented control */}
+        {!isMobile && (
+          <div className="flex items-center gap-2 flex-1 justify-center">
+            <ToggleGroup
+              type="single"
+              value={activeView}
+              onValueChange={(v) => v && onViewChange(v as ViewMode)}
+              className="border border-border rounded-xl p-0.5 bg-muted/40"
+            >
+              {navItems.map((item) => (
+                <ToggleGroupItem
+                  key={item.value}
+                  value={item.value}
+                  aria-label={item.label}
+                  className="text-xs px-3 py-1.5 rounded-lg data-[state=on]:bg-background data-[state=on]:shadow-sm gap-1"
+                >
+                  <item.icon className="h-3.5 w-3.5" />
+                  <span>{item.label}</span>
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+          </div>
+        )}
 
-      <div className="flex items-center gap-1.5 shrink-0">
-        {onSearch && <SearchBar onSelect={onSearch} />}
-        {activeView === "tree" && onReset && <ResetViewButton onReset={onReset} />}
-        <ThemeToggle />
-      </div>
-    </header>
+        <div className="flex items-center gap-1.5 shrink-0">
+          {onSearch && <SearchBar onSelect={onSearch} />}
+          {!isMobile && activeView === "tree" && onReset && <ResetViewButton onReset={onReset} />}
+          <ThemeToggle />
+        </div>
+      </header>
+
+      {/* Mobile bottom navigation bar */}
+      {isMobile && (
+        <nav className="fixed bottom-0 left-0 right-0 z-50 flex items-stretch justify-around border-t border-border/40 bg-card/80 backdrop-blur-xl shadow-[0_-2px_10px_rgba(0,0,0,0.08)]">
+          {navItems.map((item) => {
+            const isActive = activeView === item.value;
+            return (
+              <button
+                key={item.value}
+                onClick={() => onViewChange(item.value)}
+                className={`flex flex-col items-center justify-center gap-0.5 flex-1 min-h-[56px] py-1.5 transition-colors ${
+                  isActive
+                    ? "text-primary"
+                    : "text-muted-foreground"
+                }`}
+              >
+                <item.icon className={`h-5 w-5 ${isActive ? "text-primary" : ""}`} />
+                <span className={`text-[10px] font-medium ${isActive ? "font-bold" : ""}`}>
+                  {item.label}
+                </span>
+                {isActive && (
+                  <div className="absolute top-0 h-0.5 w-10 bg-primary rounded-b-full" />
+                )}
+              </button>
+            );
+          })}
+        </nav>
+      )}
+    </>
   );
 }

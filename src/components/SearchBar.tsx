@@ -1,7 +1,15 @@
 import { useState, useRef } from "react";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { familyMembers } from "@/data/familyData";
+import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 interface SearchBarProps {
   onSelect: (memberId: string) => void;
@@ -10,12 +18,89 @@ interface SearchBarProps {
 export function SearchBar({ onSelect }: SearchBarProps) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
 
   const filtered = query.trim()
-    ? familyMembers.filter((m) => m.name.includes(query.trim()))
+    ? familyMembers.filter((m) => m.name.includes(query.trim())).slice(0, 10)
     : [];
 
+  const handleSelect = (id: string, name: string) => {
+    onSelect(id);
+    setQuery(name);
+    setOpen(false);
+    setDialogOpen(false);
+  };
+
+  // Mobile: icon button + full-screen dialog
+  if (isMobile) {
+    return (
+      <>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setDialogOpen(true)}
+          className="h-11 w-11 min-w-[44px] min-h-[44px] rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted"
+          title="بحث"
+        >
+          <Search className="h-5 w-5" />
+        </Button>
+
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogContent className="top-0 translate-y-0 max-w-full w-full h-full sm:rounded-none p-0 gap-0 border-0" dir="rtl">
+            <DialogTitle className="sr-only">بحث</DialogTitle>
+            <DialogDescription className="sr-only">ابحث عن فرد من العائلة</DialogDescription>
+            <div className="flex items-center gap-2 p-3 border-b border-border">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setDialogOpen(false)}
+                className="h-11 w-11 min-w-[44px] min-h-[44px] shrink-0"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+              <div className="relative flex-1">
+                <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
+                <Input
+                  placeholder="ابحث عن اسمك..."
+                  autoFocus
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  className="pr-10 h-12 text-base bg-muted/40 border-border rounded-xl placeholder:text-muted-foreground"
+                />
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              {filtered.length > 0 ? (
+                filtered.map((m) => (
+                  <button
+                    key={m.id}
+                    className="w-full text-right px-5 py-4 text-foreground hover:bg-muted transition-colors border-b border-border/30 last:border-b-0 flex items-center gap-3"
+                    style={{ minHeight: 52 }}
+                    onClick={() => handleSelect(m.id, m.name)}
+                  >
+                    <span className="font-bold flex-1">{m.name}</span>
+                    {m.death_year && (
+                      <span className="text-sm text-muted-foreground shrink-0">
+                        (ت {m.death_year} هـ)
+                      </span>
+                    )}
+                  </button>
+                ))
+              ) : query.trim() ? (
+                <div className="p-8 text-center text-muted-foreground">لا توجد نتائج</div>
+              ) : (
+                <div className="p-8 text-center text-muted-foreground">اكتب اسمًا للبحث</div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      </>
+    );
+  }
+
+  // Desktop: inline input
   return (
     <div ref={ref} className="relative flex-1 max-w-sm">
       <div className="relative">
@@ -41,11 +126,7 @@ export function SearchBar({ onSelect }: SearchBarProps) {
               key={m.id}
               className="w-full text-right px-4 py-3 text-foreground hover:bg-muted transition-colors"
               style={{ minHeight: 44 }}
-              onMouseDown={() => {
-                onSelect(m.id);
-                setQuery(m.name);
-                setOpen(false);
-              }}
+              onMouseDown={() => handleSelect(m.id, m.name)}
             >
               <span className="font-medium">{m.name}</span>
               {m.death_year && (

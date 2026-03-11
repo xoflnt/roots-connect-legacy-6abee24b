@@ -25,18 +25,18 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
         {/* Decorative top border */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-accent to-transparent" />
 
-        <div className="max-w-3xl mx-auto space-y-8">
+        <div className="max-w-3xl mx-auto space-y-6 md:space-y-8 w-full">
           {/* Ornamental icon */}
           <div
-            className="mx-auto w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center opacity-0 animate-fade-in"
+            className="mx-auto w-16 h-16 md:w-20 md:h-20 rounded-full bg-primary/10 flex items-center justify-center opacity-0 animate-fade-in"
             style={{ animationDelay: "0.1s" }}
           >
-            <TreePine className="h-10 w-10 text-primary" />
+            <TreePine className="h-8 w-8 md:h-10 md:w-10 text-primary" />
           </div>
 
           {/* Title */}
           <h1
-            className="text-4xl md:text-6xl font-extrabold text-primary leading-tight opacity-0 animate-fade-in"
+            className="text-3xl md:text-6xl font-extrabold text-primary leading-tight opacity-0 animate-fade-in"
             style={{ animationDelay: "0.2s" }}
           >
             شجرة عائلة الخنيني
@@ -44,7 +44,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
 
           {/* Subtitle */}
           <p
-            className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed opacity-0 animate-fade-in"
+            className="text-base md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed opacity-0 animate-fade-in px-2"
             style={{ animationDelay: "0.4s" }}
           >
             توثيق للأصالة، وامتداد للجذور... منصة رقمية تجمع أجيال العائلة وتحفظ إرثها.
@@ -52,7 +52,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
 
           {/* Search Bar */}
           <div
-            className="relative max-w-lg mx-auto opacity-0 animate-fade-in"
+            className="relative max-w-lg mx-auto opacity-0 animate-fade-in w-full px-2"
             style={{ animationDelay: "0.6s" }}
           >
             <div className="relative">
@@ -66,7 +66,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
                 }}
                 onFocus={() => query.trim() && setOpen(true)}
                 onBlur={() => setTimeout(() => setOpen(false), 200)}
-                className="pr-12 pl-4 h-14 text-lg rounded-2xl bg-card border-border shadow-lg focus:ring-2 focus:ring-accent placeholder:text-muted-foreground"
+                className="pr-12 pl-4 h-14 text-base md:text-lg rounded-2xl bg-card border-border shadow-lg focus:ring-2 focus:ring-accent placeholder:text-muted-foreground"
               />
             </div>
 
@@ -97,13 +97,13 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
 
           {/* CTA Button */}
           <div
-            className="opacity-0 animate-fade-in"
+            className="opacity-0 animate-fade-in px-2"
             style={{ animationDelay: "0.8s" }}
           >
             <Button
               onClick={onBrowseTree}
               size="lg"
-              className="h-14 px-10 text-lg rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover-scale font-bold"
+              className="h-14 px-10 text-base md:text-lg rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover-scale font-bold w-full md:w-auto"
             >
               <TreePine className="h-5 w-5 ml-2" />
               تصفح الشجرة الكاملة
@@ -114,7 +114,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
         {/* Scroll indicator */}
         <button
           onClick={() => aboutRef.current?.scrollIntoView({ behavior: "smooth" })}
-          className="absolute bottom-10 left-1/2 -translate-x-1/2 text-muted-foreground animate-bounce"
+          className="absolute bottom-10 left-1/2 -translate-x-1/2 text-muted-foreground animate-bounce min-w-[44px] min-h-[44px] flex items-center justify-center"
         >
           <ChevronDown className="h-6 w-6" />
         </button>
@@ -123,18 +123,18 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
       {/* About Section */}
       <section
         ref={aboutRef}
-        className="py-20 px-4 bg-card/50 border-t border-border/30"
+        className="py-12 md:py-20 px-4 bg-card/50 border-t border-border/30"
       >
-        <div className="max-w-3xl mx-auto text-center space-y-8">
+        <div className="max-w-3xl mx-auto text-center space-y-6 md:space-y-8">
           <div className="inline-block px-4 py-1.5 rounded-full bg-accent/15 text-accent font-bold text-sm">
             عن العائلة
           </div>
 
-          <h2 className="text-3xl md:text-4xl font-extrabold text-foreground">
+          <h2 className="text-2xl md:text-4xl font-extrabold text-foreground">
             جذور ممتدة عبر الأجيال
           </h2>
 
-          <div className="space-y-6 text-lg text-muted-foreground leading-loose text-right">
+          <div className="space-y-6 text-base md:text-lg text-muted-foreground leading-loose text-right">
             <p>
               تنحدر عائلة <strong className="text-foreground">الخنيني</strong> من{" "}
               <strong className="text-foreground">آل حميد</strong> من الحماضا من آل حماد من{" "}

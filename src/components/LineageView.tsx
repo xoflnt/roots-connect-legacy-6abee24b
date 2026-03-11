@@ -28,14 +28,14 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
   }
 
   return (
-    <div className="py-10 px-4" dir="rtl">
+    <div className="py-6 md:py-10 px-3 md:px-4" dir="rtl">
       <div className="max-w-lg mx-auto">
         {/* Header */}
-        <div className="text-center mb-10 space-y-2">
+        <div className="text-center mb-6 md:mb-10 space-y-2">
           <div className="inline-block px-4 py-1.5 rounded-full bg-accent/15 text-accent font-bold text-sm">
             سلسلة النسب
           </div>
-          <h2 className="text-2xl font-extrabold text-foreground">
+          <h2 className="text-xl md:text-2xl font-extrabold text-foreground">
             نسب {chain[0].name}
           </h2>
           <p className="text-muted-foreground text-sm">
@@ -51,11 +51,11 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
             const isMale = member.gender === "M";
 
             return (
-              <div key={member.id} className="relative flex gap-4 items-start">
+              <div key={member.id} className="relative flex gap-3 md:gap-4 items-start">
                 {/* Vertical line + dot */}
-                <div className="flex flex-col items-center shrink-0 w-8">
+                <div className="flex flex-col items-center shrink-0 w-6 md:w-8">
                   <div
-                    className={`w-4 h-4 rounded-full border-2 z-10 ${
+                    className={`w-3.5 h-3.5 md:w-4 md:h-4 rounded-full border-2 z-10 ${
                       isFirst
                         ? "bg-accent border-accent shadow-lg shadow-accent/30"
                         : "bg-card border-primary/40"
@@ -68,7 +68,7 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
 
                 {/* Card */}
                 <div
-                  className={`flex-1 mb-6 p-5 rounded-2xl border transition-all duration-300 cursor-pointer hover:shadow-md ${
+                  className={`flex-1 mb-4 md:mb-6 p-4 md:p-5 rounded-2xl border transition-all duration-300 cursor-pointer hover:shadow-md min-h-[44px] ${
                     isFirst
                       ? "bg-accent/10 border-accent/30 shadow-md"
                       : "bg-card border-border/50 hover:border-primary/30"
@@ -81,14 +81,14 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                 >
                   <div className="flex items-center gap-3 mb-2">
                     <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                      className={`w-9 h-9 md:w-10 md:h-10 rounded-full flex items-center justify-center ${
                         isMale
                           ? "bg-[hsl(var(--male-light))]"
                           : "bg-[hsl(var(--female-light))]"
                       }`}
                     >
                       <User
-                        className={`h-5 w-5 ${
+                        className={`h-4.5 w-4.5 md:h-5 md:w-5 ${
                           isMale
                             ? "text-[hsl(var(--male))]"
                             : "text-[hsl(var(--female))]"
@@ -96,7 +96,7 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-lg font-bold text-foreground truncate">
+                      <h3 className="text-base md:text-lg font-bold text-foreground truncate">
                         {member.name}
                       </h3>
                       <p className="text-xs text-muted-foreground">
@@ -128,7 +128,7 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
 
                 {/* Arrow up indicator between cards */}
                 {!isLast && (
-                  <div className="absolute right-4 -bottom-1 z-10">
+                  <div className="absolute right-3 md:right-4 -bottom-1 z-10">
                     <ChevronUp className="h-4 w-4 text-muted-foreground/40" />
                   </div>
                 )}
