@@ -136,9 +136,10 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
 
           <div className="space-y-6 text-lg text-muted-foreground leading-loose text-right">
             <p>
-              تنحدر عائلة <strong className="text-foreground">الخنيني</strong> من قبيلة{" "}
-              <strong className="text-foreground">بني تميم</strong>، إحدى أعرق القبائل العربية.
-              ويُعدّ <strong className="text-foreground">محمد بن سالمة</strong> أول من حمل لقب
+              تنحدر عائلة <strong className="text-foreground">الخنيني</strong> من{" "}
+              <strong className="text-foreground">آل حميد</strong> من الحماضا من آل حماد من{" "}
+              <strong className="text-foreground">بني العنبر بن عمرو بن تميم</strong>، إحدى أعرق القبائل العربية.
+              ويُعدّ <strong className="text-foreground">محمد بن سلامة</strong> أول من حمل لقب
               الخنيني، ليُصبح هذا الاسم رمزًا للعائلة عبر الأجيال.
             </p>
             <p>
