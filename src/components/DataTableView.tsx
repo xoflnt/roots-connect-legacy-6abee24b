@@ -97,7 +97,7 @@ export function DataTableView() {
         </div>
 
         <Select value={gender} onValueChange={setGender}>
-          <SelectTrigger className="w-[120px] bg-background">
+          <SelectTrigger className="w-full md:w-[120px] bg-background flex-1 md:flex-none">
             <SelectValue placeholder="الجنس" />
           </SelectTrigger>
           <SelectContent>
