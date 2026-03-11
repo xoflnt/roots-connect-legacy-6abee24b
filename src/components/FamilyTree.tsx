@@ -8,6 +8,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { refreshMembers } from "@/services/familyService";
 import { Plus, Minus, Maximize2, RotateCcw } from "lucide-react";
 import { useTreeLayout, getDefaultExpandedIds } from "@/hooks/useTreeLayout";
 import { FamilyCard } from "./FamilyCard";
@@ -24,7 +25,18 @@ export interface FamilyTreeRef {
 
 export const FamilyTree = forwardRef<FamilyTreeRef>(function FamilyTree(_, ref) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(getDefaultExpandedIds);
-  const { nodes: layoutNodes, edges: layoutEdges } = useTreeLayout(expandedIds);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const { nodes: layoutNodes, edges: layoutEdges } = useTreeLayout(expandedIds, refreshKey);
+
+  // Listen for data updates from Profile or other sources
+  useEffect(() => {
+    const handler = () => {
+      refreshMembers();
+      setRefreshKey((k) => k + 1);
+    };
+    window.addEventListener("family-data-updated", handler);
+    return () => window.removeEventListener("family-data-updated", handler);
+  }, []);
   const [nodes, setNodes, onNodesChange] = useNodesState(layoutNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(layoutEdges);
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);

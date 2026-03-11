@@ -100,6 +100,7 @@ const Profile = () => {
       }
 
       refreshMembers();
+      window.dispatchEvent(new Event("family-data-updated"));
       toast.success("تم حفظ التعديلات بنجاح");
     } catch {
       toast.error("حدث خطأ أثناء الحفظ");
@@ -121,6 +122,7 @@ const Profile = () => {
         notes,
       });
       refreshMembers();
+      window.dispatchEvent(new Event("family-data-updated"));
       toast.success("تمت إضافة الابن/البنت بنجاح");
       setNewChildName("");
       setNewChildGender("M");

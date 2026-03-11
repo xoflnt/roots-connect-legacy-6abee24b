@@ -1,10 +1,11 @@
 import { useState, useMemo } from "react";
-import { familyMembers } from "@/data/familyData";
+import { getAllMembers } from "@/services/familyService";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, X } from "lucide-react";
+import { Search, X, Phone } from "lucide-react";
 import { extractMotherName } from "@/services/familyService";
+import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
 import { calculateAge } from "@/utils/ageCalculator";
 import { toArabicNum } from "@/utils/ageCalculator";
 import {
@@ -23,43 +24,64 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-const memberMap = new Map(familyMembers.map((m) => [m.id, m.name]));
-
-const childrenMap = new Map<string, string[]>();
-familyMembers.forEach((m) => {
-  if (m.father_id) {
-    const list = childrenMap.get(m.father_id) || [];
-    list.push(m.name);
-    childrenMap.set(m.father_id, list);
-  }
-});
-
-const ancestors = familyMembers.filter((m) => childrenMap.has(m.id));
-
-function getDescendantIds(id: string): Set<string> {
-  const result = new Set<string>();
-  const queue = [id];
-  while (queue.length > 0) {
-    const current = queue.pop()!;
-    familyMembers.forEach((m) => {
-      if (m.father_id === current && !result.has(m.id)) {
-        result.add(m.id);
-        queue.push(m.id);
-      }
-    });
-  }
-  return result;
-}
-
 export function DataTableView() {
   const [search, setSearch] = useState("");
   const [gender, setGender] = useState("all");
   const [ancestorId, setAncestorId] = useState("all");
 
+  const members = useMemo(() => getAllMembers(), []);
+
+  const memberMap = useMemo(() => new Map(members.map((m) => [m.id, m.name])), [members]);
+
+  const childrenMap = useMemo(() => {
+    const map = new Map<string, string[]>();
+    members.forEach((m) => {
+      if (m.father_id) {
+        const list = map.get(m.father_id) || [];
+        list.push(m.name);
+        map.set(m.father_id, list);
+      }
+    });
+    return map;
+  }, [members]);
+
+  const ancestors = useMemo(() => members.filter((m) => childrenMap.has(m.id)), [members, childrenMap]);
+
+  // Build mother color map: for each father, map mother name -> color index
+  const motherColorMap = useMemo(() => {
+    const map = new Map<string, Map<string, number>>();
+    members.forEach((m) => {
+      if (!m.father_id) return;
+      const mn = extractMotherName(m);
+      if (!mn) return;
+      if (!map.has(m.father_id)) map.set(m.father_id, new Map());
+      const fatherMap = map.get(m.father_id)!;
+      if (!fatherMap.has(mn)) {
+        fatherMap.set(mn, fatherMap.size);
+      }
+    });
+    return map;
+  }, [members]);
+
+  function getDescendantIds(id: string): Set<string> {
+    const result = new Set<string>();
+    const queue = [id];
+    while (queue.length > 0) {
+      const current = queue.pop()!;
+      members.forEach((m) => {
+        if (m.father_id === current && !result.has(m.id)) {
+          result.add(m.id);
+          queue.push(m.id);
+        }
+      });
+    }
+    return result;
+  }
+
   const hasFilters = search.trim() !== "" || gender !== "all" || ancestorId !== "all";
 
   const filtered = useMemo(() => {
-    let list = familyMembers;
+    let list = members;
 
     if (ancestorId !== "all") {
       const descIds = getDescendantIds(ancestorId);
@@ -76,7 +98,7 @@ export function DataTableView() {
     }
 
     return list;
-  }, [search, gender, ancestorId]);
+  }, [search, gender, ancestorId, members]);
 
   const clearFilters = () => {
     setSearch("");
@@ -159,6 +181,18 @@ export function DataTableView() {
               {filtered.map((m, i) => {
                 const motherName = extractMotherName(m);
                 const age = calculateAge(m.birth_year, m.death_year);
+                const phone = m.phone as string | undefined;
+
+                // Get mother color
+                let motherColor: typeof BRANCH_COLORS[0] | null = null;
+                if (motherName && m.father_id) {
+                  const fatherMothers = motherColorMap.get(m.father_id);
+                  if (fatherMothers) {
+                    const idx = fatherMothers.get(motherName);
+                    if (idx !== undefined) motherColor = BRANCH_COLORS[idx % BRANCH_COLORS.length];
+                  }
+                }
+
                 return (
                   <TableRow
                     key={m.id}
@@ -183,7 +217,19 @@ export function DataTableView() {
                       )}
                     </TableCell>
                     <TableCell className="text-sm">
-                      {motherName || <span className="text-muted-foreground text-xs">—</span>}
+                      {motherName ? (
+                        <span
+                          className="px-2 py-0.5 rounded-full text-xs font-medium"
+                          style={motherColor ? {
+                            color: motherColor.stroke,
+                            backgroundColor: `${motherColor.stroke}15`,
+                          } : undefined}
+                        >
+                          {motherName}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground text-xs">—</span>
+                      )}
                     </TableCell>
                     <TableCell className="text-sm">{m.birth_year || "—"}</TableCell>
                     <TableCell className="text-sm">{m.death_year || "—"}</TableCell>
@@ -197,8 +243,20 @@ export function DataTableView() {
                     <TableCell className="text-sm">
                       {m.spouses || <span className="text-muted-foreground text-xs">—</span>}
                     </TableCell>
-                    <TableCell className="text-sm font-mono" dir="ltr">
-                      {m.phone || <span className="text-muted-foreground text-xs">—</span>}
+                    <TableCell className="text-sm" dir="ltr">
+                      {phone ? (
+                        <a
+                          href={`https://wa.me/${phone.replace(/[^0-9]/g, "")}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-[#25D366] hover:underline"
+                        >
+                          <Phone className="h-3 w-3" />
+                          {phone}
+                        </a>
+                      ) : (
+                        <span className="text-muted-foreground text-xs">—</span>
+                      )}
                     </TableCell>
                     <TableCell className="text-sm">
                       {childrenMap.has(m.id) ? (

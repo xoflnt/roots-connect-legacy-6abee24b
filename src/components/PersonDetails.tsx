@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { User, Calendar, Heart, FileText, X, ExternalLink, Clock, Send, Phone, Users2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
@@ -7,7 +7,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import type { FamilyMember } from "@/data/familyData";
 import { useNavigate } from "react-router-dom";
 import { formatAge } from "@/utils/ageCalculator";
-import { extractMotherName } from "@/services/familyService";
+import { extractMotherName, getChildrenOf } from "@/services/familyService";
+import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
 import { SubmitRequestForm } from "@/components/SubmitRequestForm";
 
 interface PersonDetailsProps {
@@ -22,6 +23,29 @@ function DetailContent({ member }: { member: FamilyMember }) {
 
   const ageText = formatAge(member.birth_year, member.death_year);
   const motherName = extractMotherName(member);
+  const phone = member.phone as string | undefined;
+  const children = getChildrenOf(member.id);
+
+  // Group children by mother with colors
+  const groupedChildren = useMemo(() => {
+    if (children.length === 0) return [];
+    const groups = new Map<string, { children: FamilyMember[]; colorIndex: number }>();
+    let ci = 0;
+    children.forEach((child) => {
+      const mn = extractMotherName(child) || "__unknown__";
+      if (!groups.has(mn)) {
+        groups.set(mn, { children: [], colorIndex: mn !== "__unknown__" ? ci++ : -1 });
+      }
+      groups.get(mn)!.children.push(child);
+    });
+    return Array.from(groups.entries());
+  }, [children]);
+
+  // Parse spouses with colors
+  const spouseList = useMemo(() => {
+    if (!member.spouses) return [];
+    return member.spouses.split("،").map((s) => s.trim()).filter(Boolean);
+  }, [member.spouses]);
 
   return (
     <div className="space-y-5 p-1" dir="rtl">
@@ -100,27 +124,79 @@ function DetailContent({ member }: { member: FamilyMember }) {
           </div>
         )}
 
-        {member.phone && (
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-muted/50 border border-border/30">
-            <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-              <Phone className="h-4 w-4 text-primary" />
+        {/* Phone + WhatsApp */}
+        {phone && (
+          <a
+            href={`https://wa.me/${phone.replace(/[^0-9]/g, "")}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#25D366]/10 border border-[#25D366]/20 hover:bg-[#25D366]/15 transition-colors"
+          >
+            <div className="w-9 h-9 rounded-lg bg-[#25D366]/15 flex items-center justify-center shrink-0">
+              <Phone className="h-4 w-4 text-[#25D366]" />
             </div>
             <div>
-              <p className="text-[11px] text-muted-foreground font-medium">الجوال</p>
-              <p className="text-sm font-bold text-foreground" dir="ltr">{member.phone}</p>
+              <p className="text-[11px] text-muted-foreground font-medium">تواصل عبر واتساب</p>
+              <p className="text-sm font-bold text-foreground" dir="ltr">{phone}</p>
+            </div>
+          </a>
+        )}
+
+        {/* Spouses with colors */}
+        {spouseList.length > 0 && (
+          <div className="px-4 py-3 rounded-xl bg-muted/50 border border-border/30 space-y-2">
+            <div className="flex items-center gap-2">
+              <Heart className="h-4 w-4 text-accent shrink-0" />
+              <p className="text-[11px] text-muted-foreground font-medium">الزوجات</p>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {spouseList.map((spouse, i) => {
+                const color = BRANCH_COLORS[i % BRANCH_COLORS.length];
+                return (
+                  <span
+                    key={i}
+                    className="text-xs font-semibold px-2.5 py-1 rounded-full"
+                    style={{ color: color.stroke, backgroundColor: `${color.stroke}15` }}
+                  >
+                    {spouse}
+                  </span>
+                );
+              })}
             </div>
           </div>
         )}
 
-        {member.spouses && (
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-muted/50 border border-border/30">
-            <div className="w-9 h-9 rounded-lg bg-accent/15 flex items-center justify-center shrink-0">
-              <Heart className="h-4 w-4 text-accent" />
-            </div>
-            <div>
-              <p className="text-[11px] text-muted-foreground font-medium">الزوجات</p>
-              <p className="text-sm font-bold text-foreground">{member.spouses}</p>
-            </div>
+        {/* Children grouped by mother */}
+        {groupedChildren.length > 0 && (
+          <div className="px-4 py-3 rounded-xl bg-muted/50 border border-border/30 space-y-2">
+            <p className="text-[11px] text-muted-foreground font-medium">الأبناء ({children.length})</p>
+            {groupedChildren.map(([motherKey, group]) => {
+              const color = group.colorIndex >= 0 ? BRANCH_COLORS[group.colorIndex % BRANCH_COLORS.length] : null;
+              return (
+                <div key={motherKey}>
+                  {motherKey !== "__unknown__" && color && (
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color.stroke }} />
+                      <span className="text-[10px] font-semibold" style={{ color: color.stroke }}>
+                        أبناء {motherKey}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex flex-wrap gap-1.5">
+                    {group.children.map((child) => (
+                      <button
+                        key={child.id}
+                        onClick={() => navigate(`/person/${child.id}`)}
+                        className="text-xs font-medium px-2.5 py-1 rounded-full transition-colors min-h-[28px] bg-muted text-foreground hover:bg-muted/80"
+                        style={color ? { borderLeft: `3px solid ${color.stroke}` } : undefined}
+                      >
+                        {child.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
 

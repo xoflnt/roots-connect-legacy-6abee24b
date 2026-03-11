@@ -1,10 +1,13 @@
 import { useMemo, useCallback } from "react";
-import { User, Calendar, Heart, ArrowUp, Users, Share2, Check, Download } from "lucide-react";
+import { User, Calendar, Heart, ArrowUp, Users, Share2, Check, Download, Phone } from "lucide-react";
 import { useState } from "react";
-import { familyMembers, type FamilyMember } from "@/data/familyData";
+import { type FamilyMember } from "@/data/familyData";
+import { getAllMembers, extractMotherName } from "@/services/familyService";
+import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
 import { HeritageBadge } from "./HeritageBadge";
-import { isFounder, isBranchHead, isDeceased, getDepth } from "@/services/familyService";
+import { isFounder, isBranchHead, isDeceased } from "@/services/familyService";
 import { downloadLineageCard } from "./LineageShareCard";
+import { formatAge } from "@/utils/ageCalculator";
 
 interface LineageViewProps {
   memberId: string;
@@ -29,7 +32,8 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
   const [downloading, setDownloading] = useState(false);
 
   const { chain, childrenMap } = useMemo(() => {
-    const memberMap = new Map(familyMembers.map((m) => [m.id, m]));
+    const members = getAllMembers();
+    const memberMap = new Map(members.map((m) => [m.id, m]));
     const result: FamilyMember[] = [];
     let current = memberMap.get(memberId);
     while (current) {
@@ -38,7 +42,7 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
     }
 
     const cMap = new Map<string, FamilyMember[]>();
-    for (const m of familyMembers) {
+    for (const m of members) {
       if (m.father_id) {
         const arr = cMap.get(m.father_id) || [];
         arr.push(m);
@@ -130,6 +134,25 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
             const isMale = member.gender === "M";
             const genNum = index + 1;
             const dotColor = DEPTH_COLORS[index % DEPTH_COLORS.length];
+            const motherName = extractMotherName(member);
+            const ageText = formatAge(member.birth_year, member.death_year);
+            const phone = member.phone as string | undefined;
+
+            // Determine mother color
+            let motherColor: typeof BRANCH_COLORS[0] | null = null;
+            if (motherName && member.father_id) {
+              const siblings = childrenMap.get(member.father_id) || [];
+              const motherGroups = new Map<string, number>();
+              let ci = 0;
+              siblings.forEach((s) => {
+                const mn = extractMotherName(s) || "__unknown__";
+                if (mn !== "__unknown__" && !motherGroups.has(mn)) {
+                  motherGroups.set(mn, ci++);
+                }
+              });
+              const idx = motherGroups.get(motherName);
+              if (idx !== undefined) motherColor = BRANCH_COLORS[idx % BRANCH_COLORS.length];
+            }
 
             return (
               <div key={member.id} className="relative flex gap-4 md:gap-5 items-stretch">
@@ -188,13 +211,21 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                         <h3 className="text-sm md:text-lg font-bold text-foreground leading-snug break-words">
                           {member.name}
                         </h3>
-                        <div className="flex items-center gap-1.5 mt-0.5">
+                        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                           <span className={`inline-block w-2 h-2 rounded-full shrink-0 ${isMale ? "bg-male" : "bg-female"}`} />
                           <p className="text-xs text-muted-foreground">
                             {isMale ? "ذكر" : "أنثى"}
                             {isFirst && " — الشخص المطلوب"}
                             {isLast && " — الجد الأعلى"}
                           </p>
+                          {motherName && motherColor && (
+                            <span
+                              className="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
+                              style={{ color: motherColor.stroke, backgroundColor: `${motherColor.stroke}15` }}
+                            >
+                              أم: {motherName}
+                            </span>
+                          )}
                         </div>
                         {/* Heritage badges */}
                         <div className="flex flex-wrap gap-1 mt-1.5">
@@ -204,15 +235,34 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                           <HeritageBadge type="generation" generationNum={genNum} />
                         </div>
                       </div>
+
+                      {/* WhatsApp button */}
+                      {phone && (
+                        <a
+                          href={`https://wa.me/${phone.replace(/[^0-9]/g, "")}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="w-9 h-9 rounded-lg bg-[#25D366]/10 flex items-center justify-center text-[#25D366] hover:bg-[#25D366]/20 transition-colors shrink-0"
+                          title="تواصل عبر واتساب"
+                        >
+                          <Phone className="h-4 w-4" />
+                        </a>
+                      )}
                     </div>
-                    <div
-                      className="mt-2 inline-block px-2.5 py-1 rounded-lg text-xs font-bold"
-                      style={{
-                        backgroundColor: `${dotColor}20`,
-                        color: dotColor,
-                      }}
-                    >
-                      الجيل {toArabicNum(genNum)}
+                    <div className="flex items-center gap-2 mt-2 flex-wrap">
+                      <div
+                        className="inline-block px-2.5 py-1 rounded-lg text-xs font-bold"
+                        style={{
+                          backgroundColor: `${dotColor}20`,
+                          color: dotColor,
+                        }}
+                      >
+                        الجيل {toArabicNum(genNum)}
+                      </div>
+                      {ageText && (
+                        <span className="text-xs text-accent font-semibold">{ageText}</span>
+                      )}
                     </div>
                   </div>
 

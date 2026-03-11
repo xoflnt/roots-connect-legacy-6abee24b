@@ -52,7 +52,7 @@ export function getDefaultExpandedIds(): Set<string> {
   return expanded;
 }
 
-export function useTreeLayout(expandedIds: Set<string>) {
+export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number) {
   return useMemo(() => {
     const currentMembers = getAllMembers();
     const memberById = new Map(currentMembers.map((m) => [m.id, m]));
@@ -193,5 +193,5 @@ export function useTreeLayout(expandedIds: Set<string>) {
     });
 
     return { nodes, edges };
-  }, [expandedIds]);
+  }, [expandedIds, _refreshKey]);
 }
