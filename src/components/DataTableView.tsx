@@ -10,6 +10,7 @@ import { extractMotherName } from "@/services/familyService";
 import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
 import { calculateAge } from "@/utils/ageCalculator";
 import { toArabicNum } from "@/utils/ageCalculator";
+import { getBranch, getBranchStyle } from "@/utils/branchUtils";
 import {
   Select,
   SelectContent,
