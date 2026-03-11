@@ -12,6 +12,7 @@ import NotFound from "./pages/NotFound.tsx";
 import { lazy, Suspense } from "react";
 
 const Admin = lazy(() => import("./pages/Admin.tsx"));
+const Profile = lazy(() => import("./pages/Profile.tsx"));
 
 const queryClient = new QueryClient();
 
