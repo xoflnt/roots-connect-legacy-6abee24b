@@ -12,6 +12,7 @@ import { formatAge } from "@/utils/ageCalculator";
 import { extractMotherName, getChildrenOf } from "@/services/familyService";
 import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
 import { SubmitRequestForm } from "@/components/SubmitRequestForm";
+import { getBranch, getBranchStyle } from "@/utils/branchUtils";
 
 interface PersonDetailsProps {
   member: FamilyMember | null;
