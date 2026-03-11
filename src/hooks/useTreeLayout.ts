@@ -90,7 +90,7 @@ export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number) {
       if (!childrenByFatherAndMother.has(member.father_id))
         childrenByFatherAndMother.set(member.father_id, new Map());
       const motherMap = childrenByFatherAndMother.get(member.father_id)!;
-      const motherName = extractMotherName(member) || "__unknown__";
+      const motherName = inferMotherName(member) || "__unknown__";
       if (!motherMap.has(motherName)) motherMap.set(motherName, []);
       motherMap.get(motherName)!.push(member.id);
     });
