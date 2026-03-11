@@ -162,6 +162,8 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
         <DialogContent
           className="max-w-md w-[95vw] p-0 gap-0 rounded-2xl overflow-hidden border-border/50 bg-card"
         >
+          <DialogTitle className="sr-only">مرحباً بعودتك</DialogTitle>
+          <DialogDescription className="sr-only">نافذة الترحيب بالمستخدم المسجل</DialogDescription>
           <div className="px-5 py-8 flex flex-col items-center text-center gap-5 max-h-[85vh] overflow-y-auto" dir="rtl">
             <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
               <TreePine className="h-8 w-8 text-primary" />
