@@ -9,7 +9,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import type { FamilyMember } from "@/data/familyData";
 import { useNavigate } from "react-router-dom";
 import { formatAge } from "@/utils/ageCalculator";
-import { extractMotherName, getChildrenOf } from "@/services/familyService";
+import { inferMotherName, getChildrenOf, sortByBirth } from "@/services/familyService";
 import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
 import { SubmitRequestForm } from "@/components/SubmitRequestForm";
 import { getBranch, getBranchStyle } from "@/utils/branchUtils";
