@@ -100,7 +100,7 @@ export function DataTableView() {
       list = list.filter((m) => m.name.includes(search.trim()));
     }
 
-    return list;
+    return sortByBirth(list);
   }, [search, gender, ancestorId, members]);
 
   const clearFilters = () => {
