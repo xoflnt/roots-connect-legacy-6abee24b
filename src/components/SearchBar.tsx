@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { getAllMembers } from "@/services/familyService";
+import { getAllMembers, normalizeForSearch } from "@/services/familyService";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getLineageLabel, getMemberSubtitle } from "@/utils/memberLabel";
 import {
