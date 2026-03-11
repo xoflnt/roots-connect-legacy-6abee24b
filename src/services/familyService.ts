@@ -71,10 +71,23 @@ export function getAncestorChain(id: string): FamilyMember[] {
   return chain;
 }
 
+/** Normalize Arabic text for fuzzy search: remove hamzas, taa marbuta, "بن"/"بنت" */
+export function normalizeForSearch(text: string): string {
+  return text
+    .replace(/[أإآ]/g, "ا")
+    .replace(/ؤ/g, "و")
+    .replace(/ئ/g, "ي")
+    .replace(/ة/g, "ه")
+    .replace(/ى/g, "ي")
+    .replace(/\b(بن|بنت|ابن)\b/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export function searchMembers(query: string, limit = 10): FamilyMember[] {
   if (!query.trim()) return [];
-  const q = query.trim();
-  return mergedMembers.filter((m) => m.name.includes(q)).slice(0, limit);
+  const q = normalizeForSearch(query);
+  return mergedMembers.filter((m) => normalizeForSearch(m.name).includes(q)).slice(0, limit);
 }
 
 export function getDescendantCount(id: string): number {
