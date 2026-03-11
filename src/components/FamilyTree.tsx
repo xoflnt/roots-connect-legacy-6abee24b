@@ -8,6 +8,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { refreshMembers } from "@/services/familyService";
 import { Plus, Minus, Maximize2, RotateCcw } from "lucide-react";
 import { useTreeLayout, getDefaultExpandedIds } from "@/hooks/useTreeLayout";
 import { FamilyCard } from "./FamilyCard";
