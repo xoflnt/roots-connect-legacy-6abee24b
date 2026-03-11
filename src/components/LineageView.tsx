@@ -22,6 +22,20 @@ function toArabicNum(n: number): string {
 }
 
 export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
+  const [copied, setCopied] = useState(false);
+
+  const handleShare = useCallback(() => {
+    const url = `${window.location.origin}/person/${memberId}`;
+    if (navigator.share) {
+      navigator.share({ title: `نسب ${chain[0]?.name}`, url }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(url).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      });
+    }
+  }, [memberId]);
+
   const { chain, childrenMap } = useMemo(() => {
     const memberMap = new Map(familyMembers.map((m) => [m.id, m]));
     const result: FamilyMember[] = [];
