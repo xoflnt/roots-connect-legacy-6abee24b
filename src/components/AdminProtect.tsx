@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Shield, Lock } from "lucide-react";
 
 const ADMIN_KEY = "khunaini-admin-auth";
-const ADMIN_PASS = "admin2024"; // Temporary — will be replaced with proper auth
+const ADMIN_PASSWORDS = ["0503424434", "0544033920"];
 
 interface AdminProtectProps {
   children: React.ReactNode;
@@ -33,7 +33,7 @@ export function AdminProtect({ children }: AdminProtectProps) {
             onChange={(e) => { setPass(e.target.value); setError(""); }}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
-                if (pass === ADMIN_PASS) {
+                if (ADMIN_PASSWORDS.includes(pass)) {
                   localStorage.setItem(ADMIN_KEY, "true");
                   setAuthed(true);
                 } else {
@@ -48,7 +48,7 @@ export function AdminProtect({ children }: AdminProtectProps) {
         {error && <p className="text-destructive text-sm font-medium">{error}</p>}
         <Button
           onClick={() => {
-            if (pass === ADMIN_PASS) {
+            if (ADMIN_PASSWORDS.includes(pass)) {
               localStorage.setItem(ADMIN_KEY, "true");
               setAuthed(true);
             } else {

@@ -7,6 +7,7 @@ export interface FamilyMember {
   birth_year?: string;
   death_year?: string;
   spouses?: string;
+  phone?: string;
   notes?: string;
 }
 

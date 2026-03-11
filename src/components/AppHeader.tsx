@@ -1,4 +1,5 @@
 import { TreePine, TableProperties, Home, List, GitBranch, Users, UserCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { ThemeToggle } from "./ThemeToggle";
 import { FontSizeToggle } from "./FontSizeToggle";
 import { SearchBar } from "./SearchBar";
@@ -29,6 +30,7 @@ const navItems: { value: ViewMode; label: string; icon: typeof TreePine }[] = [
 export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHome }: AppHeaderProps) {
   const isMobile = useIsMobile();
   const { currentUser, isLoggedIn } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <>
@@ -80,10 +82,13 @@ export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHom
 
         <div className="flex items-center gap-1.5 shrink-0">
           {isLoggedIn && currentUser && (
-            <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-lg bg-muted/50 text-sm text-foreground">
+            <button
+              onClick={() => navigate("/profile")}
+              className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-lg bg-muted/50 text-sm text-foreground hover:bg-muted transition-colors"
+            >
               <UserCircle className="h-4 w-4 text-primary" />
               <span className="font-medium">مرحباً، {currentUser.memberName}</span>
-            </div>
+            </button>
           )}
           {onSearch && <SearchBar onSelect={onSearch} />}
           {!isMobile && activeView === "tree" && onReset && <ResetViewButton onReset={onReset} />}

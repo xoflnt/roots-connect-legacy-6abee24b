@@ -137,7 +137,9 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
       ? `${hijriDate.year}/${hijriDate.month || "1"}/${hijriDate.day || "1"}`
       : undefined;
 
-    // Register verified user + auto-update birth date
+    // Register verified user + auto-update birth date + phone
+    const { updateMember } = await import("@/services/dataService");
+    await updateMember(selectedMember.id, { phone: `+966${phone}` });
     await registerVerifiedUser({
       memberId: selectedMember.id,
       memberName: selectedMember.name,

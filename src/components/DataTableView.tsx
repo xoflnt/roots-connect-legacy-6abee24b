@@ -146,6 +146,7 @@ export function DataTableView() {
                 <TableHead className="text-right w-[80px]">الميلاد</TableHead>
                 <TableHead className="text-right w-[80px]">الوفاة</TableHead>
                 <TableHead className="text-right">الزوجات</TableHead>
+                <TableHead className="text-right w-[120px]">الجوال</TableHead>
                 <TableHead className="text-right">الأبناء</TableHead>
                 <TableHead className="text-right">ملاحظات</TableHead>
               </TableRow>
@@ -178,6 +179,9 @@ export function DataTableView() {
                   <TableCell className="text-sm">{m.death_year || "—"}</TableCell>
                   <TableCell className="text-sm">
                     {m.spouses || <span className="text-muted-foreground text-xs">—</span>}
+                  </TableCell>
+                  <TableCell className="text-sm font-mono" dir="ltr">
+                    {m.phone || <span className="text-muted-foreground text-xs">—</span>}
                   </TableCell>
                   <TableCell className="text-sm">
                     {childrenMap.has(m.id) ? (
