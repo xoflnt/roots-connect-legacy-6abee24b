@@ -1,5 +1,6 @@
 import { Handle, Position, type NodeProps } from "@xyflow/react";
-import { Plus, Minus, Phone } from "lucide-react";
+import { Plus, Minus } from "lucide-react";
+import { WhatsAppIcon } from "./WhatsAppIcon";
 import type { FamilyMember } from "@/data/familyData";
 import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
 import { HeritageBadge } from "./HeritageBadge";
