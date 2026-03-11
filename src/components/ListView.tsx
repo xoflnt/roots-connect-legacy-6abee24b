@@ -1,5 +1,6 @@
 import { useMemo, useState, useCallback } from "react";
-import { User, ChevronDown, ChevronLeft, Users, Phone } from "lucide-react";
+import { User, ChevronDown, ChevronLeft, Users } from "lucide-react";
+import { WhatsAppIcon } from "./WhatsAppIcon";
 import { type FamilyMember } from "@/data/familyData";
 import { getAllMembers, extractMotherName } from "@/services/familyService";
 import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
@@ -226,7 +227,7 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect 
                 className="w-8 h-8 rounded-lg bg-[#25D366]/10 flex items-center justify-center text-[#25D366] hover:bg-[#25D366]/20 transition-colors"
                 title="تواصل عبر واتساب"
               >
-                <Phone className="h-3.5 w-3.5" />
+                <WhatsAppIcon className="h-3.5 w-3.5" />
               </a>
             )}
             {hasChildren && (

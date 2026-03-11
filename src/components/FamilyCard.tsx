@@ -1,5 +1,6 @@
 import { Handle, Position, type NodeProps } from "@xyflow/react";
-import { Plus, Minus, Phone } from "lucide-react";
+import { Plus, Minus } from "lucide-react";
+import { WhatsAppIcon } from "./WhatsAppIcon";
 import type { FamilyMember } from "@/data/familyData";
 import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
 import { HeritageBadge } from "./HeritageBadge";
@@ -116,7 +117,7 @@ export function FamilyCard({ data, selected }: NodeProps) {
             className="flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 transition-colors"
             title="تواصل عبر واتساب"
           >
-            <Phone className="h-2.5 w-2.5" />
+            <WhatsAppIcon className="h-2.5 w-2.5" />
             واتساب
           </button>
         )}
@@ -125,7 +126,7 @@ export function FamilyCard({ data, selected }: NodeProps) {
       {/* Heritage badges */}
       <div className="flex flex-wrap gap-0.5 justify-center mt-1 px-2">
         {founder && <HeritageBadge type="founder" />}
-        {deceased && <HeritageBadge type="deceased" />}
+        {deceased && <HeritageBadge type="deceased" gender={member.gender as "M" | "F"} />}
       </div>
 
       <Handle type="source" position={Position.Bottom} className="!bg-muted-foreground/40 !w-2.5 !h-2.5 !border-2 !border-card" />

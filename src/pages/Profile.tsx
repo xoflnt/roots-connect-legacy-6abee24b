@@ -17,11 +17,13 @@ const Profile = () => {
   const { currentUser, logout, isLoggedIn, login } = useAuth();
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const member = useMemo(() => {
     if (!currentUser) return null;
     return getMemberById(currentUser.memberId) ?? null;
-  }, [currentUser]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser, refreshKey]);
 
   const chain = useMemo(() => {
     if (!member) return [];
@@ -100,6 +102,7 @@ const Profile = () => {
       }
 
       refreshMembers();
+      setRefreshKey((k) => k + 1);
       window.dispatchEvent(new Event("family-data-updated"));
       toast.success("تم حفظ التعديلات بنجاح");
     } catch {

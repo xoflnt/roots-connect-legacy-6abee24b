@@ -4,6 +4,7 @@ import { Badge } from "./ui/badge";
 interface HeritageBadgeProps {
   type: "founder" | "branchHead" | "deceased" | "generation";
   generationNum?: number;
+  gender?: "M" | "F";
 }
 
 const CONFIG = {
@@ -33,12 +34,15 @@ function toArabicNum(n: number): string {
   return n.toLocaleString("ar-SA");
 }
 
-export function HeritageBadge({ type, generationNum }: HeritageBadgeProps) {
+export function HeritageBadge({ type, generationNum, gender }: HeritageBadgeProps) {
   const config = CONFIG[type];
   const Icon = config.icon;
-  const label = type === "generation" && generationNum
-    ? `الجيل ${toArabicNum(generationNum)}`
-    : config.label;
+  let label = config.label;
+  if (type === "generation" && generationNum) {
+    label = `الجيل ${toArabicNum(generationNum)}`;
+  } else if (type === "deceased" && gender === "F") {
+    label = "رحمها الله";
+  }
 
   return (
     <Badge

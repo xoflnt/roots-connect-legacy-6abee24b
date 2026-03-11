@@ -3,7 +3,8 @@ import { getAllMembers } from "@/services/familyService";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, X, Phone } from "lucide-react";
+import { Search, X } from "lucide-react";
+import { WhatsAppIcon } from "./WhatsAppIcon";
 import { extractMotherName } from "@/services/familyService";
 import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
 import { calculateAge } from "@/utils/ageCalculator";
@@ -251,7 +252,7 @@ export function DataTableView() {
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1 text-[#25D366] hover:underline"
                         >
-                          <Phone className="h-3 w-3" />
+                          <WhatsAppIcon className="h-3 w-3" />
                           {phone}
                         </a>
                       ) : (

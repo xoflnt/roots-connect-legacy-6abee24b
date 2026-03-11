@@ -4,8 +4,10 @@ const WESTERN_DIGITS = "0123456789";
 /** Convert Arabic/Eastern numeral string to number. "١٣٨٩" → 1389 */
 export function parseArabicYear(str: string | undefined): number | null {
   if (!str) return null;
+  // Take only the year part if format is "year/month/day"
+  const yearPart = str.split("/")[0].trim();
   let cleaned = "";
-  for (const ch of str) {
+  for (const ch of yearPart) {
     const idx = ARABIC_DIGITS.indexOf(ch);
     if (idx !== -1) cleaned += WESTERN_DIGITS[idx];
     else if (/\d/.test(ch)) cleaned += ch;
