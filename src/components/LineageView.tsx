@@ -180,6 +180,42 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                         <span className="break-words line-clamp-2">الزوجة: {member.spouses}</span>
                       </div>
                     )}
+
+                    {/* Children / Siblings */}
+                    {(() => {
+                      const children = childrenMap.get(member.id);
+                      if (!children || children.length === 0) return null;
+                      // The child in the chain (next in lineage)
+                      const chainChildId = index > 0 ? chain[index - 1].id : null;
+                      return (
+                        <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                          <Users className="h-3.5 w-3.5 shrink-0 mt-1" />
+                          <div className="flex flex-wrap gap-1.5">
+                            {children.map((child) => {
+                              const isInChain = child.id === chainChildId;
+                              return (
+                                <button
+                                  key={child.id}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onSelectMember?.(child.id);
+                                  }}
+                                  className={`
+                                    rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors
+                                    ${isInChain
+                                      ? "bg-primary/20 text-primary font-bold ring-1 ring-primary/30"
+                                      : "bg-muted text-muted-foreground hover:bg-muted/80"
+                                    }
+                                  `}
+                                >
+                                  {child.name}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   {/* Quick lineage switch for ancestors */}
