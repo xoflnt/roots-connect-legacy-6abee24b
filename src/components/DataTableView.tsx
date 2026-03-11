@@ -205,6 +205,17 @@ export function DataTableView() {
                     <TableCell className="font-mono text-muted-foreground text-xs">{m.id}</TableCell>
                     <TableCell className="font-semibold text-foreground">{m.name}</TableCell>
                     <TableCell>
+                      {(() => {
+                        const br = getBranch(m.id);
+                        const bs = br ? getBranchStyle(br.pillarId) : null;
+                        return br && bs ? (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap" style={{ backgroundColor: bs.bg, color: bs.text }}>
+                            {br.label}
+                          </span>
+                        ) : <span className="text-muted-foreground text-xs">—</span>;
+                      })()}
+                    </TableCell>
+                    <TableCell>
                       <Badge variant={m.gender === "M" ? "default" : "secondary"} className="text-xs">
                         {m.gender === "M" ? "ذكر" : "أنثى"}
                       </Badge>

@@ -74,6 +74,15 @@ function DetailContent({ member }: { member: FamilyMember }) {
           >
             {isMale ? "ذكر" : "أنثى"}
           </span>
+          {(() => {
+            const br = getBranch(member.id);
+            const bs = br ? getBranchStyle(br.pillarId) : null;
+            return br && bs ? (
+              <span className="inline-block mt-1.5 text-xs font-bold px-3 py-1 rounded-full" style={{ backgroundColor: bs.bg, color: bs.text }}>
+                {br.label}
+              </span>
+            ) : null;
+          })()}
         </div>
       </div>
 
