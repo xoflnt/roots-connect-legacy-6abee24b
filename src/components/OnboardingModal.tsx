@@ -443,8 +443,8 @@ export function OnboardingModal() {
           {/* ===== DONE ===== */}
           {step === "done" && (
             <div className="text-center space-y-4 animate-in fade-in duration-300 py-6">
-              <div className="w-16 h-16 mx-auto rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                <Check className="h-8 w-8 text-green-600 dark:text-green-400" />
+              <div className="w-16 h-16 mx-auto rounded-full bg-primary/15 flex items-center justify-center">
+                <Check className="h-8 w-8 text-primary" />
               </div>
               <h2 className="text-xl font-bold text-foreground">تم التسجيل بنجاح!</h2>
               <p className="text-sm text-muted-foreground">مرحباً بك، {selectedMember?.name}</p>
