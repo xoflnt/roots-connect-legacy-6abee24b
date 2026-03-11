@@ -1,12 +1,13 @@
-import { TreePine, TableProperties, Home, List, GitBranch } from "lucide-react";
+import { TreePine, TableProperties, Home, List, GitBranch, Users } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
+import { FontSizeToggle } from "./FontSizeToggle";
 import { SearchBar } from "./SearchBar";
 import { ResetViewButton } from "./ResetViewButton";
 import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
 import { Button } from "./ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-export type ViewMode = "tree" | "lineage" | "list" | "table";
+export type ViewMode = "tree" | "lineage" | "list" | "table" | "kinship";
 
 interface AppHeaderProps {
   onSearch?: (memberId: string) => void;
@@ -19,6 +20,7 @@ interface AppHeaderProps {
 const navItems: { value: ViewMode; label: string; icon: typeof TreePine }[] = [
   { value: "tree", label: "الشجرة", icon: TreePine },
   { value: "lineage", label: "النسب", icon: GitBranch },
+  { value: "kinship", label: "القرابة", icon: Users },
   { value: "list", label: "القوائم", icon: List },
   { value: "table", label: "البيانات", icon: TableProperties },
 ];
@@ -77,6 +79,7 @@ export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHom
         <div className="flex items-center gap-1.5 shrink-0">
           {onSearch && <SearchBar onSelect={onSearch} />}
           {!isMobile && activeView === "tree" && onReset && <ResetViewButton onReset={onReset} />}
+          <FontSizeToggle />
           <ThemeToggle />
         </div>
       </header>
