@@ -34,8 +34,8 @@ export function FamilyCard({ data, selected }: NodeProps) {
           : "shadow-md"
         }
         ${isMale
-          ? "border-[hsl(var(--male)/0.25)] bg-gradient-to-b from-[hsl(var(--card)/0.95)] via-[hsl(var(--card)/0.9)] to-[hsl(var(--male-light)/0.8)]"
-          : "border-[hsl(var(--female)/0.25)] bg-gradient-to-b from-[hsl(var(--card)/0.95)] via-[hsl(var(--card)/0.9)] to-[hsl(var(--female-light)/0.8)]"
+           ? "border-[hsl(var(--male)/0.25)] bg-card/95"
+           : "border-[hsl(var(--female)/0.25)] bg-card/95"
         }
       `}
       style={{ fontFamily: "'Tajawal', sans-serif" }}
