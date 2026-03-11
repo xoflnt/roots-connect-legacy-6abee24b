@@ -2,6 +2,8 @@ import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { Plus, Minus } from "lucide-react";
 import type { FamilyMember } from "@/data/familyData";
 import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
+import { HeritageBadge } from "./HeritageBadge";
+import { isFounder, isBranchHead, isDeceased } from "@/services/familyService";
 
 export function FamilyCard({ data, selected }: NodeProps) {
   const member = data as unknown as FamilyMember & {
@@ -30,7 +32,6 @@ export function FamilyCard({ data, selected }: NodeProps) {
       `}
       style={{ fontFamily: "'Tajawal', sans-serif" }}
     >
-      {/* Branch color indicator */}
       {branchColor && (
         <div
           className="absolute right-0 top-2 bottom-2 w-1 rounded-full"
@@ -60,9 +61,15 @@ export function FamilyCard({ data, selected }: NodeProps) {
         </p>
       )}
 
+      {/* Heritage badges */}
+      <div className="flex flex-wrap gap-0.5 justify-center mt-1 px-2">
+        {isFounder(member) && <HeritageBadge type="founder" />}
+        {isBranchHead(member.id) && <HeritageBadge type="branchHead" />}
+        {isDeceased(member) && <HeritageBadge type="deceased" />}
+      </div>
+
       <Handle type="source" position={Position.Bottom} className="!bg-muted-foreground/50 !w-2 !h-2 !border-none" />
 
-      {/* Expand/Collapse toggle — 44px touch target */}
       {member.hasChildren && (
         <button
           onClick={handleToggle}
