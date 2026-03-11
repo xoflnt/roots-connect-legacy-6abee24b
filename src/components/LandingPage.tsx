@@ -319,8 +319,8 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
     </div>
   );
 }
-export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) {
-  const [query, setQuery] = useState("");
+
+
   const [open, setOpen] = useState(false);
   const aboutRef = useRef<HTMLDivElement>(null);
   const stats = useMemo(computeStats, []);
