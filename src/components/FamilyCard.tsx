@@ -36,6 +36,12 @@ export function FamilyCard({ data, selected }: NodeProps) {
     window.open(`https://wa.me/${cleaned}`, "_blank");
   };
 
+  const handleSaveContact = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!phone) return;
+    downloadVCard(member.name, phone);
+  };
+
   return (
     <div
       className={`
