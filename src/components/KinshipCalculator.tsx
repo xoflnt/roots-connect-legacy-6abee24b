@@ -197,10 +197,10 @@ export function KinshipCalculator({ initialMemberId }: KinshipCalculatorProps) {
         {/* Result */}
         {showResult && result && relationText && (
           <div
-            className="rounded-2xl border border-primary/20 bg-card shadow-lg overflow-hidden"
-            style={{ animation: "fade-in 0.4s ease-out" }}
+            className="rounded-2xl border border-primary/20 bg-card shadow-lg overflow-hidden animate-fade-in"
           >
-            {/* Relation badge */}
+            {/* Gold top accent + Relation badge */}
+            <div className="h-1 bg-gradient-to-r from-transparent via-accent/50 to-transparent" />
             <div className="bg-primary/10 p-5 text-center border-b border-primary/10">
               <p className="text-xs text-muted-foreground mb-2">صلة القرابة</p>
               <p className="text-2xl md:text-3xl font-extrabold text-primary leading-tight">

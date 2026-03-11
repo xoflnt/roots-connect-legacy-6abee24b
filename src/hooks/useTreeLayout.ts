@@ -8,12 +8,13 @@ const NODE_HEIGHT = 100;
 const SPOUSE_WIDTH = 160;
 const SPOUSE_HEIGHT = 50;
 
+// Warm heritage-aligned branch colors
 export const BRANCH_COLORS = [
-  { stroke: "hsl(340, 60%, 55%)", bg: "hsl(340, 50%, 94%)", bgDark: "hsl(340, 40%, 25%)" },
-  { stroke: "hsl(35, 70%, 50%)",  bg: "hsl(35, 60%, 93%)",  bgDark: "hsl(35, 50%, 25%)" },
-  { stroke: "hsl(175, 50%, 40%)", bg: "hsl(175, 40%, 92%)", bgDark: "hsl(175, 35%, 22%)" },
-  { stroke: "hsl(270, 45%, 55%)", bg: "hsl(270, 35%, 93%)", bgDark: "hsl(270, 30%, 25%)" },
-  { stroke: "hsl(150, 50%, 40%)", bg: "hsl(150, 40%, 92%)", bgDark: "hsl(150, 35%, 22%)" },
+  { stroke: "hsl(25, 55%, 45%)",   bg: "hsl(25, 40%, 93%)",   bgDark: "hsl(25, 35%, 20%)" },   // warm brown
+  { stroke: "hsl(155, 40%, 35%)",  bg: "hsl(155, 30%, 92%)",  bgDark: "hsl(155, 28%, 18%)" },  // olive green
+  { stroke: "hsl(350, 40%, 48%)",  bg: "hsl(350, 30%, 94%)",  bgDark: "hsl(350, 25%, 20%)" },  // muted rose
+  { stroke: "hsl(42, 55%, 42%)",   bg: "hsl(42, 40%, 92%)",   bgDark: "hsl(42, 35%, 20%)" },   // warm gold
+  { stroke: "hsl(200, 35%, 42%)",  bg: "hsl(200, 25%, 92%)",  bgDark: "hsl(200, 25%, 18%)" },  // steel blue
 ];
 
 // Build children map once
@@ -34,31 +35,21 @@ export function hasChildrenInData(id: string): boolean {
 }
 
 export function getDefaultExpandedIds(): Set<string> {
-  // Show root + generation 2 (children of root members)
   const expanded = new Set<string>();
   const roots = familyMembers.filter((m) => !m.father_id);
   roots.forEach((r) => expanded.add(r.id));
-  // Also expand gen1 members that have father_id pointing to roots
-  // Actually: roots are gen1, their children are gen2 — we want gen2 visible but not expanded
-  // So we expand roots only, which shows their children (gen2)
   return expanded;
 }
 
 export function useTreeLayout(expandedIds: Set<string>) {
   return useMemo(() => {
     const memberMap = new Map(familyMembers.map((m) => [m.id, m]));
-
-    // Determine visible members: a member is visible if all ancestors up to root are expanded
     const visibleIds = new Set<string>();
-    
-    // Root members are always visible
+
     familyMembers.forEach((m) => {
       if (!m.father_id) visibleIds.add(m.id);
     });
 
-    // A member is visible if their father is visible AND expanded
-    // We need to process in order (parents before children)
-    // Simple approach: iterate until stable
     let changed = true;
     while (changed) {
       changed = false;
@@ -77,23 +68,18 @@ export function useTreeLayout(expandedIds: Set<string>) {
     g.setGraph({ rankdir: "TB", nodesep: 100, ranksep: 180 });
     g.setDefaultEdgeLabel(() => ({}));
 
-    // Build map: father -> mother -> children (only for visible members)
     const childrenByFatherAndMother = new Map<string, Map<string, string[]>>();
     visibleMembers.forEach((member) => {
       if (!member.father_id) return;
       if (!visibleIds.has(member.father_id)) return;
-      if (!childrenByFatherAndMother.has(member.father_id)) {
+      if (!childrenByFatherAndMother.has(member.father_id))
         childrenByFatherAndMother.set(member.father_id, new Map());
-      }
       const motherMap = childrenByFatherAndMother.get(member.father_id)!;
       const motherName = "__unknown__";
-      if (!motherMap.has(motherName)) {
-        motherMap.set(motherName, []);
-      }
+      if (!motherMap.has(motherName)) motherMap.set(motherName, []);
       motherMap.get(motherName)!.push(member.id);
     });
 
-    // Add visible family member nodes
     visibleMembers.forEach((member) => {
       g.setNode(member.id, { width: NODE_WIDTH, height: NODE_HEIGHT });
     });
@@ -106,22 +92,16 @@ export function useTreeLayout(expandedIds: Set<string>) {
     childrenByFatherAndMother.forEach((motherMap, fatherId) => {
       motherMap.forEach((childIds, motherName) => {
         if (motherName === "__unknown__") {
-          childIds.forEach((childId) => {
-            g.setEdge(fatherId, childId);
-          });
+          childIds.forEach((childId) => g.setEdge(fatherId, childId));
           return;
         }
-
         const spouseId = `spouse-${fatherId}-${motherName}`;
         const ci = colorCounter % BRANCH_COLORS.length;
         colorCounter++;
-
         g.setNode(spouseId, { width: SPOUSE_WIDTH, height: SPOUSE_HEIGHT });
         g.setEdge(fatherId, spouseId);
         edgeColorMap.set(`e-${fatherId}-${spouseId}`, ci);
-
         spouseNodes.push({ id: spouseId, name: motherName, colorIndex: ci });
-
         childIds.forEach((childId) => {
           g.setEdge(spouseId, childId);
           childColorMap.set(childId, ci);
@@ -130,7 +110,6 @@ export function useTreeLayout(expandedIds: Set<string>) {
       });
     });
 
-    // Add spouse nodes for visible members with spouses but no registered children
     visibleMembers.forEach((member) => {
       if (!member.spouses) return;
       const spouseNames = member.spouses.split("،").map((s) => s.trim()).filter(Boolean);
@@ -148,7 +127,6 @@ export function useTreeLayout(expandedIds: Set<string>) {
 
     dagre.layout(g);
 
-    // hasChildren map for visible members
     const hasChildrenMap = new Map<string, boolean>();
     visibleMembers.forEach((m) => {
       hasChildrenMap.set(m.id, hasChildrenInData(m.id));
@@ -184,7 +162,7 @@ export function useTreeLayout(expandedIds: Set<string>) {
       const edgeKey = `e-${e.v}-${e.w}`;
       const ci = edgeColorMap.get(edgeKey);
       const isToSpouse = e.w.startsWith("spouse-");
-      const color = ci !== undefined ? BRANCH_COLORS[ci].stroke : "hsl(200, 40%, 50%)";
+      const color = ci !== undefined ? BRANCH_COLORS[ci].stroke : "hsl(var(--muted-foreground) / 0.4)";
 
       return {
         id: edgeKey,
@@ -193,7 +171,7 @@ export function useTreeLayout(expandedIds: Set<string>) {
         type: "smoothstep",
         style: {
           stroke: color,
-          strokeWidth: 2,
+          strokeWidth: 2.5,
           strokeDasharray: isToSpouse ? "6 3" : undefined,
         },
         animated: false,

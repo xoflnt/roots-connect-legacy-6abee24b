@@ -1,23 +1,10 @@
-import { X, User, Calendar, Heart, StickyNote } from "lucide-react";
+import { User, Calendar, Heart, FileText, X, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerDescription,
-  DrawerClose,
-} from "@/components/ui/drawer";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetClose,
-} from "@/components/ui/sheet";
 import type { FamilyMember } from "@/data/familyData";
+import { useNavigate } from "react-router-dom";
 
 interface PersonDetailsProps {
   member: FamilyMember | null;
@@ -25,63 +12,102 @@ interface PersonDetailsProps {
 }
 
 function DetailContent({ member }: { member: FamilyMember }) {
+  const navigate = useNavigate();
   const isMale = member.gender === "M";
 
   return (
-    <div className="space-y-5 p-1">
-      <div className="flex items-center gap-3">
+    <div className="space-y-5 p-1" dir="rtl">
+      {/* Gold accent line */}
+      <div className="h-1 w-16 mx-auto rounded-full bg-accent/50" />
+
+      {/* Avatar and name */}
+      <div className="text-center space-y-3">
         <div
-          className={`w-12 h-12 rounded-full flex items-center justify-center ${
-            isMale ? "bg-[hsl(var(--male-light))]" : "bg-[hsl(var(--female-light))]"
+          className={`w-16 h-16 rounded-2xl mx-auto flex items-center justify-center shadow-md ${
+            isMale
+              ? "bg-[hsl(var(--male-light))]"
+              : "bg-[hsl(var(--female-light))]"
           }`}
         >
           <User
-            className={`h-6 w-6 ${
+            className={`h-7 w-7 ${
               isMale ? "text-[hsl(var(--male))]" : "text-[hsl(var(--female))]"
             }`}
           />
         </div>
         <div>
-          <h3 className="text-xl font-bold text-foreground">{member.name}</h3>
-          <p className="text-sm text-muted-foreground">
+          <h3 className="text-xl font-extrabold text-foreground">{member.name}</h3>
+          <span
+            className={`inline-block mt-1.5 text-xs font-bold px-3 py-1 rounded-full ${
+              isMale
+                ? "bg-[hsl(var(--male-light))] text-[hsl(var(--male))]"
+                : "bg-[hsl(var(--female-light))] text-[hsl(var(--female))]"
+            }`}
+          >
             {isMale ? "ذكر" : "أنثى"}
-          </p>
+          </span>
         </div>
       </div>
 
-      {(member.birth_year || member.death_year) && (
-        <div className="flex items-start gap-3">
-          <Calendar className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">الفترة الزمنية</p>
-            <p className="text-foreground">
-              {member.birth_year && `الميلاد: ${member.birth_year} هـ`}
-              {member.birth_year && member.death_year && <br />}
-              {member.death_year && `الوفاة: ${member.death_year} هـ`}
-            </p>
+      {/* Info cards */}
+      <div className="space-y-2.5">
+        {member.birth_year && (
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-muted/50 border border-border/30">
+            <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              <Calendar className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <p className="text-[11px] text-muted-foreground font-medium">سنة الميلاد</p>
+              <p className="text-sm font-bold text-foreground">{member.birth_year} هـ</p>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {member.spouses && (
-        <div className="flex items-start gap-3">
-          <Heart className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">الزوجات</p>
-            <p className="text-foreground">{member.spouses}</p>
+        {member.death_year && (
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-muted/50 border border-border/30">
+            <div className="w-9 h-9 rounded-lg bg-muted-foreground/10 flex items-center justify-center shrink-0">
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <div>
+              <p className="text-[11px] text-muted-foreground font-medium">سنة الوفاة</p>
+              <p className="text-sm font-bold text-foreground">{member.death_year} هـ</p>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {member.notes && (
-        <div className="flex items-start gap-3">
-          <StickyNote className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">ملاحظات</p>
-            <p className="text-foreground">{member.notes}</p>
+        {member.spouses && (
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-muted/50 border border-border/30">
+            <div className="w-9 h-9 rounded-lg bg-accent/15 flex items-center justify-center shrink-0">
+              <Heart className="h-4 w-4 text-accent" />
+            </div>
+            <div>
+              <p className="text-[11px] text-muted-foreground font-medium">الزوجات</p>
+              <p className="text-sm font-bold text-foreground">{member.spouses}</p>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {member.notes && (
+          <div className="flex items-start gap-3 px-4 py-3 rounded-xl bg-muted/50 border border-border/30">
+            <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+              <FileText className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <p className="text-[11px] text-muted-foreground font-medium">ملاحظات</p>
+              <p className="text-sm text-foreground leading-relaxed">{member.notes}</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* View lineage button */}
+      <Button
+        onClick={() => navigate(`/person/${member.id}`)}
+        className="w-full bg-primary text-primary-foreground hover:bg-primary/90 gap-2 font-bold"
+      >
+        <ExternalLink className="h-4 w-4" />
+        عرض صفحة النسب
+      </Button>
     </div>
   );
 }
@@ -94,19 +120,11 @@ export function PersonDetails({ member, onClose }: PersonDetailsProps) {
   if (isMobile) {
     return (
       <Drawer open={!!member} onOpenChange={(open) => !open && onClose()}>
-        <DrawerContent>
-          <DrawerHeader>
-            <DrawerTitle className="text-right">{member.name}</DrawerTitle>
-            <DrawerDescription className="text-right">تفاصيل الشخصية</DrawerDescription>
+        <DrawerContent className="px-5 pb-8 pt-2 max-h-[85vh]">
+          <DrawerHeader className="p-0 mb-2">
+            <DrawerTitle className="sr-only">{member.name}</DrawerTitle>
           </DrawerHeader>
-          <div className="px-4 pb-6">
-            <DetailContent member={member} />
-          </div>
-          <DrawerClose asChild>
-            <Button variant="outline" className="mx-4 mb-4">
-              إغلاق
-            </Button>
-          </DrawerClose>
+          <DetailContent member={member} />
         </DrawerContent>
       </Drawer>
     );
@@ -114,12 +132,19 @@ export function PersonDetails({ member, onClose }: PersonDetailsProps) {
 
   return (
     <Sheet open={!!member} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent side="left" className="w-[380px] overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle className="text-right">{member.name}</SheetTitle>
-          <SheetDescription className="text-right">تفاصيل الشخصية</SheetDescription>
+      <SheetContent side="left" className="w-[360px] sm:w-[400px] overflow-y-auto border-r-0 shadow-2xl">
+        <SheetHeader className="pb-0">
+          <SheetTitle className="sr-only">{member.name}</SheetTitle>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            className="absolute top-4 left-4 rounded-full hover:bg-muted"
+          >
+            <X className="h-4 w-4" />
+          </Button>
         </SheetHeader>
-        <div className="mt-6">
+        <div className="mt-4">
           <DetailContent member={member} />
         </div>
       </SheetContent>

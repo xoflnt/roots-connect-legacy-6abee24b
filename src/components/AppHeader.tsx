@@ -59,14 +59,14 @@ export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHom
               type="single"
               value={activeView}
               onValueChange={(v) => v && onViewChange(v as ViewMode)}
-              className="border border-border rounded-xl p-0.5 bg-muted/40"
+              className="border border-accent/20 rounded-xl p-0.5 bg-muted/40"
             >
               {navItems.map((item) => (
                 <ToggleGroupItem
                   key={item.value}
                   value={item.value}
                   aria-label={item.label}
-                  className="text-xs px-3 py-1.5 rounded-lg data-[state=on]:bg-background data-[state=on]:shadow-sm gap-1"
+                  className="text-xs px-3 py-1.5 rounded-lg data-[state=on]:bg-background data-[state=on]:shadow-md data-[state=on]:border data-[state=on]:border-accent/20 gap-1"
                 >
                   <item.icon className="h-3.5 w-3.5" />
                   <span>{item.label}</span>
@@ -93,18 +93,18 @@ export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHom
               <button
                 key={item.value}
                 onClick={() => onViewChange(item.value)}
-                className={`flex flex-col items-center justify-center gap-0.5 flex-1 min-h-[56px] py-1.5 transition-colors ${
+                className={`relative flex flex-col items-center justify-center gap-0.5 flex-1 min-h-[56px] py-1.5 transition-all ${
                   isActive
                     ? "text-primary"
                     : "text-muted-foreground"
                 }`}
               >
-                <item.icon className={`h-5 w-5 ${isActive ? "text-primary" : ""}`} />
+                <item.icon className={`h-5 w-5 transition-transform ${isActive ? "text-primary scale-110" : ""}`} />
                 <span className={`text-[10px] font-medium ${isActive ? "font-bold" : ""}`}>
                   {item.label}
                 </span>
                 {isActive && (
-                  <div className="absolute top-0 h-0.5 w-10 bg-primary rounded-b-full" />
+                  <div className="absolute top-0 h-0.5 w-8 bg-accent rounded-b-full" />
                 )}
               </button>
             );
