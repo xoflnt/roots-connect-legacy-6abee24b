@@ -1,10 +1,13 @@
-import { User, Calendar, Heart, FileText, X, ExternalLink } from "lucide-react";
+import { useState } from "react";
+import { User, Calendar, Heart, FileText, X, ExternalLink, Clock, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { FamilyMember } from "@/data/familyData";
 import { useNavigate } from "react-router-dom";
+import { formatAge } from "@/utils/ageCalculator";
+import { SubmitRequestForm } from "@/components/SubmitRequestForm";
 
 interface PersonDetailsProps {
   member: FamilyMember | null;
@@ -14,26 +17,22 @@ interface PersonDetailsProps {
 function DetailContent({ member }: { member: FamilyMember }) {
   const navigate = useNavigate();
   const isMale = member.gender === "M";
+  const [requestOpen, setRequestOpen] = useState(false);
+
+  const ageText = formatAge(member.birth_year, member.death_year);
 
   return (
     <div className="space-y-5 p-1" dir="rtl">
-      {/* Gold accent line */}
       <div className="h-1 w-16 mx-auto rounded-full bg-accent/50" />
 
       {/* Avatar and name */}
       <div className="text-center space-y-3">
         <div
           className={`w-16 h-16 rounded-2xl mx-auto flex items-center justify-center shadow-md ${
-            isMale
-              ? "bg-[hsl(var(--male-light))]"
-              : "bg-[hsl(var(--female-light))]"
+            isMale ? "bg-[hsl(var(--male-light))]" : "bg-[hsl(var(--female-light))]"
           }`}
         >
-          <User
-            className={`h-7 w-7 ${
-              isMale ? "text-[hsl(var(--male))]" : "text-[hsl(var(--female))]"
-            }`}
-          />
+          <User className={`h-7 w-7 ${isMale ? "text-[hsl(var(--male))]" : "text-[hsl(var(--female))]"}`} />
         </div>
         <div>
           <h3 className="text-xl font-extrabold text-foreground">{member.name}</h3>
@@ -51,6 +50,18 @@ function DetailContent({ member }: { member: FamilyMember }) {
 
       {/* Info cards */}
       <div className="space-y-2.5">
+        {ageText && (
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-accent/10 border border-accent/20">
+            <div className="w-9 h-9 rounded-lg bg-accent/15 flex items-center justify-center shrink-0">
+              <Clock className="h-4 w-4 text-accent" />
+            </div>
+            <div>
+              <p className="text-[11px] text-muted-foreground font-medium">العمر</p>
+              <p className="text-sm font-bold text-foreground">{ageText}</p>
+            </div>
+          </div>
+        )}
+
         {member.birth_year && (
           <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-muted/50 border border-border/30">
             <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
@@ -100,14 +111,26 @@ function DetailContent({ member }: { member: FamilyMember }) {
         )}
       </div>
 
-      {/* View lineage button */}
-      <Button
-        onClick={() => navigate(`/person/${member.id}`)}
-        className="w-full bg-primary text-primary-foreground hover:bg-primary/90 gap-2 font-bold"
-      >
-        <ExternalLink className="h-4 w-4" />
-        عرض صفحة النسب
-      </Button>
+      {/* Actions */}
+      <div className="space-y-2">
+        <Button
+          onClick={() => navigate(`/person/${member.id}`)}
+          className="w-full bg-primary text-primary-foreground hover:bg-primary/90 gap-2 font-bold"
+        >
+          <ExternalLink className="h-4 w-4" />
+          عرض صفحة النسب
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => setRequestOpen(true)}
+          className="w-full gap-2 font-bold border-accent/30 text-accent hover:bg-accent/10"
+        >
+          <Send className="h-4 w-4" />
+          طلب تعديل
+        </Button>
+      </div>
+
+      <SubmitRequestForm open={requestOpen} onOpenChange={setRequestOpen} targetMember={member} />
     </div>
   );
 }

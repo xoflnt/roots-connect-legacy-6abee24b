@@ -1,10 +1,13 @@
 import { useState, useRef, useMemo, useEffect, useCallback } from "react";
-import { Search, TreePine, ChevronDown, Users, Layers, Crown, User, UserRound, Heart, Quote } from "lucide-react";
+import { Search, TreePine, ChevronDown, Users, Layers, Crown, User, UserRound, Heart, Quote, Send } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FontSizeToggle } from "@/components/FontSizeToggle";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { familyMembers } from "@/data/familyData";
+import { OnboardingModal } from "@/components/OnboardingModal";
+import { SubmitRequestForm } from "@/components/SubmitRequestForm";
+import { trackVisit } from "@/services/dataService";
 
 interface LandingPageProps {
   onSearchSelect: (memberId: string) => void;
@@ -38,7 +41,6 @@ function computeStats() {
   const total = familyMembers.length;
   const roots = familyMembers.filter((m) => !m.father_id);
 
-  // Max depth
   const childrenMap = new Map<string | null, string[]>();
   for (const m of familyMembers) {
     const list = childrenMap.get(m.father_id) || [];
@@ -55,11 +57,9 @@ function computeStats() {
     }
   }
 
-  // Gender counts
   const males = familyMembers.filter((m) => m.gender === "M").length;
   const females = familyMembers.filter((m) => m.gender === "F").length;
 
-  // Most common male first name
   const maleNameCounts = new Map<string, number>();
   const femaleNameCounts = new Map<string, number>();
   for (const m of familyMembers) {
@@ -86,9 +86,6 @@ function computeStats() {
     topFemaleName, topFemaleCount,
   };
 }
-
-
-
 
 function StatCard({ icon: Icon, label, value, suffix, highlight }: { icon: React.ElementType; label: string; value: number; suffix?: string; highlight?: string }) {
   const counter = useCountUp(value);
@@ -117,8 +114,12 @@ function StatCard({ icon: Icon, label, value, suffix, highlight }: { icon: React
 export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
+  const [requestOpen, setRequestOpen] = useState(false);
   const aboutRef = useRef<HTMLDivElement>(null);
   const stats = useMemo(computeStats, []);
+
+  // Track visit on mount
+  useEffect(() => { trackVisit(); }, []);
 
   const filtered = query.trim()
     ? familyMembers.filter((m) => m.name.includes(query.trim())).slice(0, 10)
@@ -128,6 +129,9 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden" dir="rtl">
+      {/* Onboarding shown directly on landing page */}
+      <OnboardingModal />
+
       {/* Hero Section */}
       <section className="relative flex flex-col items-center justify-center min-h-screen px-4 text-center">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-accent to-transparent" />
@@ -203,10 +207,10 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
             )}
           </div>
 
-          {/* CTA Button */}
+          {/* CTA Buttons */}
           {!showingResults && (
             <div
-              className="opacity-0 animate-fade-in px-2"
+              className="opacity-0 animate-fade-in px-2 space-y-3"
               style={{ animationDelay: "0.8s" }}
             >
               <Button
@@ -216,6 +220,15 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
               >
                 <TreePine className="h-5 w-5 ml-2" />
                 تصفح الشجرة الكاملة
+              </Button>
+              <Button
+                onClick={() => setRequestOpen(true)}
+                variant="outline"
+                size="lg"
+                className="h-12 px-8 text-base rounded-2xl border-accent/30 text-accent hover:bg-accent/10 font-bold w-full md:w-auto"
+              >
+                <Send className="h-4 w-4 ml-2" />
+                أرسل طلب تعديل
               </Button>
             </div>
           )}
@@ -307,6 +320,9 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
       <footer className="py-8 text-center text-sm text-muted-foreground border-t border-border/30">
         <p>شجرة عائلة الخنيني — حفظ الإرث للأجيال القادمة</p>
       </footer>
+
+      {/* Submit Request Form */}
+      <SubmitRequestForm open={requestOpen} onOpenChange={setRequestOpen} />
     </div>
   );
 }
