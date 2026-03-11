@@ -139,7 +139,7 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
             const isMale = member.gender === "M";
             const genNum = index + 1;
             const dotColor = DEPTH_COLORS[index % DEPTH_COLORS.length];
-            const motherName = extractMotherName(member);
+            const motherName = inferMotherName(member);
             const ageText = formatAge(member.birth_year, member.death_year);
             const phone = member.phone as string | undefined;
 
