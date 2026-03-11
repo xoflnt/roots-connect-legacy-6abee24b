@@ -93,7 +93,7 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                 <div
                   className={`
                     flex-1 mb-5 md:mb-6 rounded-2xl border transition-all duration-300 cursor-pointer
-                    backdrop-blur-sm active:scale-[0.98]
+                    backdrop-blur-sm active:scale-[0.98] overflow-hidden min-w-0
                     ${isFirst
                       ? "bg-accent/10 border-accent/30 shadow-lg"
                       : "bg-card/80 border-border/50 hover:border-primary/30 hover:shadow-md shadow-sm"
