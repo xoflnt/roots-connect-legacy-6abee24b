@@ -10,6 +10,7 @@ import { HeritageBadge } from "./HeritageBadge";
 import { isFounder, isBranchHead, isDeceased } from "@/services/familyService";
 import { downloadLineageCard } from "./LineageShareCard";
 import { formatAge } from "@/utils/ageCalculator";
+import { getBranch, getBranchStyle } from "@/utils/branchUtils";
 
 interface LineageViewProps {
   memberId: string;
@@ -231,6 +232,15 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                         </div>
                         {/* Heritage badges */}
                         <div className="flex flex-wrap gap-1 mt-1.5">
+                          {(() => {
+                            const br = getBranch(member.id);
+                            const bs = br ? getBranchStyle(br.pillarId) : null;
+                            return br && bs ? (
+                              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: bs.bg, color: bs.text }}>
+                                {br.label}
+                              </span>
+                            ) : null;
+                          })()}
                           {isFounder(member) && <HeritageBadge type="founder" />}
                           {isBranchHead(member.id) && <HeritageBadge type="branchHead" />}
                           {isDeceased(member) && <HeritageBadge type="deceased" gender={member.gender as "M" | "F"} />}
