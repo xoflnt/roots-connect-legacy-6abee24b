@@ -197,8 +197,7 @@ export function KinshipCalculator({ initialMemberId }: KinshipCalculatorProps) {
         {/* Result */}
         {showResult && result && relationText && (
           <div
-            className="rounded-2xl border border-primary/20 bg-card shadow-lg overflow-hidden"
-            style={{ animation: "fade-in 0.4s ease-out" }}
+            className="rounded-2xl border border-primary/20 bg-card shadow-lg overflow-hidden animate-fade-in"
           >
             {/* Relation badge */}
             <div className="bg-primary/10 p-5 text-center border-b border-primary/10">
