@@ -57,26 +57,32 @@ export function FamilyCard({ data, selected }: NodeProps) {
 
       <Handle type="source" position={Position.Bottom} className="!bg-muted-foreground/50 !w-2 !h-2 !border-none" />
 
-      {/* Expand/Collapse toggle */}
+      {/* Expand/Collapse toggle — 44px touch target */}
       {member.hasChildren && (
         <button
           onClick={handleToggle}
           className={`
-            absolute -bottom-4 left-1/2 -translate-x-1/2 z-20
-            w-7 h-7 rounded-full border-2 flex items-center justify-center
-            transition-all duration-200 hover:scale-110 shadow-md
-            ${member.isExpanded
-              ? "bg-primary border-primary text-primary-foreground"
-              : "bg-card border-accent text-accent hover:bg-accent/10"
-            }
+            absolute -bottom-5 left-1/2 -translate-x-1/2 z-20
+            min-w-[44px] min-h-[44px] flex items-center justify-center
           `}
           title={member.isExpanded ? "طي الفرع" : "توسيع الفرع"}
         >
-          {member.isExpanded ? (
-            <Minus className="h-3.5 w-3.5" />
-          ) : (
-            <Plus className="h-3.5 w-3.5" />
-          )}
+          <span
+            className={`
+              w-7 h-7 rounded-full border-2 flex items-center justify-center
+              transition-all duration-200 hover:scale-110 shadow-md
+              ${member.isExpanded
+                ? "bg-primary border-primary text-primary-foreground"
+                : "bg-card border-accent text-accent hover:bg-accent/10"
+              }
+            `}
+          >
+            {member.isExpanded ? (
+              <Minus className="h-3.5 w-3.5" />
+            ) : (
+              <Plus className="h-3.5 w-3.5" />
+            )}
+          </span>
         </button>
       )}
     </div>
