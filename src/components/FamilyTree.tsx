@@ -12,13 +12,12 @@ import { refreshMembers } from "@/services/familyService";
 import { Plus, Minus, Maximize2, RotateCcw } from "lucide-react";
 import { useTreeLayout, getDefaultExpandedIds } from "@/hooks/useTreeLayout";
 import { FamilyCard } from "./FamilyCard";
-import { SpouseCard } from "./SpouseCard";
 import { PersonDetails } from "./PersonDetails";
 import { familyMembers, type FamilyMember } from "@/data/familyData";
 import { getBranch } from "@/utils/branchUtils";
 import { getChildrenOf } from "@/services/familyService";
 
-const nodeTypes = { familyCard: FamilyCard, spouseCard: SpouseCard };
+const nodeTypes = { familyCard: FamilyCard };
 
 export interface FamilyTreeRef {
   search: (memberId: string) => void;

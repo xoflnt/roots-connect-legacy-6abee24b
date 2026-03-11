@@ -1,5 +1,5 @@
 import { Handle, Position, type NodeProps } from "@xyflow/react";
-import { Plus, Minus, UserPlus } from "lucide-react";
+import { Plus, Minus, UserPlus, Heart } from "lucide-react";
 import { WhatsAppIcon } from "./WhatsAppIcon";
 import { downloadVCard } from "@/utils/vcard";
 import type { FamilyMember } from "@/data/familyData";
@@ -13,6 +13,7 @@ export function FamilyCard({ data, selected }: NodeProps) {
   const member = data as unknown as FamilyMember & {
     branchColorIndex: number;
     motherName: string | null;
+    spouseNames: string[];
     hasChildren: boolean;
     isExpanded: boolean;
   };
@@ -31,6 +32,7 @@ export function FamilyCard({ data, selected }: NodeProps) {
   const phone = member.phone as string | undefined;
   const branch = getBranch(member.id);
   const branchStyle = branch ? getBranchStyle(branch.pillarId) : null;
+  const spouseNames = member.spouseNames || [];
 
   const handleWhatsApp = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -85,14 +87,34 @@ export function FamilyCard({ data, selected }: NodeProps) {
         {member.name}
       </h3>
 
-      {/* Mother name with color */}
-      {member.motherName && branchColor && (
+      {/* Spouse names inside card */}
+      {spouseNames.length > 0 && (
+        <div className="flex flex-wrap gap-1 justify-center mt-0.5 px-2" dir="rtl">
+          {spouseNames.map((name, i) => (
+            <span
+              key={i}
+              className="flex items-center gap-0.5 text-[10px] text-muted-foreground"
+            >
+              <Heart className="h-2 w-2 shrink-0 fill-accent/50 text-accent/50" />
+              {name}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Mother name — always show if available */}
+      {member.motherName && (
         <p
           className="text-[10px] mt-0.5 px-2 py-0.5 rounded-full font-medium"
-          style={{ color: branchColor.stroke, backgroundColor: `${branchColor.stroke}15` }}
+          style={branchColor
+            ? { color: branchColor.stroke, backgroundColor: `${branchColor.stroke}15` }
+            : undefined
+          }
           dir="rtl"
         >
-          والدته: {member.motherName}
+          <span className={!branchColor ? "text-muted-foreground" : undefined}>
+            والدته: {member.motherName}
+          </span>
         </p>
       )}
 

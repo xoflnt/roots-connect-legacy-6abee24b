@@ -99,83 +99,69 @@ export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number) {
       g.setNode(member.id, { width: NODE_WIDTH, height: NODE_HEIGHT });
     });
 
-    const spouseNodes: { id: string; name: string; colorIndex: number }[] = [];
     const childColorMap = new Map<string, number>();
     const childMotherMap = new Map<string, string>();
     const edgeColorMap = new Map<string, number>();
     let colorCounter = 0;
 
+    // Collect spouse names per father
+    const fatherSpouseNames = new Map<string, string[]>();
+
     childrenByFatherAndMother.forEach((motherMap, fatherId) => {
+      const names: string[] = [];
       motherMap.forEach((childIds, motherName) => {
-        if (motherName === "__unknown__") {
-          childIds.forEach((childId) => g.setEdge(fatherId, childId));
-          return;
-        }
-        const spouseId = `spouse-${fatherId}-${motherName}`;
         const ci = colorCounter % BRANCH_COLORS.length;
         colorCounter++;
-        g.setNode(spouseId, { width: SPOUSE_WIDTH, height: SPOUSE_HEIGHT });
-        g.setEdge(fatherId, spouseId);
-        edgeColorMap.set(`e-${fatherId}-${spouseId}`, ci);
-        spouseNodes.push({ id: spouseId, name: motherName, colorIndex: ci });
+        if (motherName !== "__unknown__") {
+          names.push(motherName);
+        }
         childIds.forEach((childId) => {
-          g.setEdge(spouseId, childId);
-          childColorMap.set(childId, ci);
-          childMotherMap.set(childId, motherName);
-          edgeColorMap.set(`e-${spouseId}-${childId}`, ci);
+          g.setEdge(fatherId, childId);
+          if (motherName !== "__unknown__") {
+            childColorMap.set(childId, ci);
+            childMotherMap.set(childId, motherName);
+          }
+          edgeColorMap.set(`e-${fatherId}-${childId}`, ci);
         });
       });
+      if (names.length > 0) {
+        fatherSpouseNames.set(fatherId, names);
+      }
     });
 
-    // Add spouse nodes from spouses field that weren't already added via mother grouping
+    // Add spouses from spouses field that weren't captured via mother grouping
     visibleMembers.forEach((member) => {
       if (!member.spouses) return;
       const spouseNames = member.spouses.split("،").map((s) => s.trim()).filter(Boolean);
-      spouseNames.forEach((spouseName) => {
-        const spouseId = `spouse-${member.id}-${spouseName}`;
-        if (g.hasNode(spouseId)) return;
-        const ci = colorCounter % BRANCH_COLORS.length;
-        colorCounter++;
-        g.setNode(spouseId, { width: SPOUSE_WIDTH, height: SPOUSE_HEIGHT });
-        g.setEdge(member.id, spouseId);
-        edgeColorMap.set(`e-${member.id}-${spouseId}`, ci);
-        spouseNodes.push({ id: spouseId, name: spouseName, colorIndex: ci });
-      });
+      const existing = fatherSpouseNames.get(member.id) || [];
+      const merged = [...new Set([...existing, ...spouseNames])];
+      if (merged.length > 0) {
+        fatherSpouseNames.set(member.id, merged);
+      }
     });
 
     dagre.layout(g);
 
-    const nodes: Node[] = [
-      ...visibleMembers.map((member) => {
-        const pos = g.node(member.id);
-        return {
-          id: member.id,
-          type: "familyCard",
-          position: { x: pos.x - NODE_WIDTH / 2, y: pos.y - NODE_HEIGHT / 2 },
-          data: {
-            ...member,
-            branchColorIndex: childColorMap.get(member.id) ?? -1,
-            motherName: childMotherMap.get(member.id) ?? null,
-            hasChildren: hasChildrenInData(member.id),
-            isExpanded: expandedIds.has(member.id),
-          },
-        };
-      }),
-      ...spouseNodes.map((spouse) => {
-        const pos = g.node(spouse.id);
-        return {
-          id: spouse.id,
-          type: "spouseCard",
-          position: { x: pos.x - SPOUSE_WIDTH / 2, y: pos.y - SPOUSE_HEIGHT / 2 },
-          data: { name: spouse.name, colorIndex: spouse.colorIndex },
-        };
-      }),
-    ];
+    const nodes: Node[] = visibleMembers.map((member) => {
+      const pos = g.node(member.id);
+      return {
+        id: member.id,
+        type: "familyCard",
+        position: { x: pos.x - NODE_WIDTH / 2, y: pos.y - NODE_HEIGHT / 2 },
+        data: {
+          ...member,
+          branchColorIndex: childColorMap.get(member.id) ?? -1,
+          motherName: childMotherMap.get(member.id) ?? null,
+          spouseNames: fatherSpouseNames.get(member.id) ?? [],
+          hasChildren: hasChildrenInData(member.id),
+          isExpanded: expandedIds.has(member.id),
+        },
+      };
+    });
 
     const edges: Edge[] = g.edges().map((e) => {
       const edgeKey = `e-${e.v}-${e.w}`;
       const ci = edgeColorMap.get(edgeKey);
-      const isToSpouse = e.w.startsWith("spouse-");
       const color = ci !== undefined ? BRANCH_COLORS[ci].stroke : "hsl(var(--muted-foreground) / 0.4)";
 
       return {
@@ -186,7 +172,6 @@ export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number) {
         style: {
           stroke: color,
           strokeWidth: 2.5,
-          strokeDasharray: isToSpouse ? "6 3" : undefined,
         },
         animated: false,
       };
