@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
-import { User, Calendar, Heart, FileText, X, ExternalLink, Clock, Send, Phone, Users2 } from "lucide-react";
+import { User, Calendar, Heart, FileText, X, ExternalLink, Clock, Send, Users2 } from "lucide-react";
+import { WhatsAppIcon } from "./WhatsAppIcon";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
