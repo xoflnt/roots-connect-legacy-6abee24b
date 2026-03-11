@@ -74,8 +74,13 @@ serve(async (req) => {
 
       const otpMessage = message || `مرحباً بك في بوابة الخنيني، رمز التحقق الخاص بك هو`;
 
-      // Build Wasage API URL
-      const wasageUrl = `https://wasage.com/api/otp/?Username=${encodeURIComponent(WASAGE_USERNAME)}&Password=${encodeURIComponent(WASAGE_PASSWORD)}&Reference=${encodeURIComponent(reference)}&Message=${encodeURIComponent(otpMessage)}`;
+      // Call Wasage API via POST with JSON body
+      const wasagePayload = {
+        Username: WASAGE_USERNAME,
+        Password: WASAGE_PASSWORD,
+        Reference: reference,
+        Message: otpMessage,
+      };
 
       console.log("[wasage-otp] PAYLOAD SENT:", {
         phone,
@@ -83,7 +88,20 @@ serve(async (req) => {
         message: otpMessage,
       });
 
-      const response = await fetch(wasageUrl);
+      // Try POST with JSON body first
+      let response: Response;
+      try {
+        response = await fetch("https://wasage.com/api/otp/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(wasagePayload),
+        });
+      } catch (postErr) {
+        console.warn("[wasage-otp] POST failed, trying GET:", postErr);
+        // Fallback to GET with query params
+        const wasageUrl = `https://wasage.com/api/otp/?Username=${encodeURIComponent(WASAGE_USERNAME)}&Password=${encodeURIComponent(WASAGE_PASSWORD)}&Reference=${encodeURIComponent(reference)}&Message=${encodeURIComponent(otpMessage)}`;
+        response = await fetch(wasageUrl);
+      }
       const responseText = await response.text();
       console.log("[wasage-otp] API RAW RESPONSE:", response.status, responseText);
 
