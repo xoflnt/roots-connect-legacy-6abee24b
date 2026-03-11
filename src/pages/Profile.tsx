@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TreePine, Phone, CalendarDays, Users, LogOut, GitBranch, Home, Plus, Trash2, Save, Loader2 } from "lucide-react";
-import { getAncestorChain, getDescendantCount, getMemberById, getChildrenOf } from "@/services/familyService";
+import { getAncestorChain, getDescendantCount, getMemberById, getChildrenOf, refreshMembers } from "@/services/familyService";
 import { updateMember, addMember } from "@/services/dataService";
 import { useMemo, useState } from "react";
 import { HijriDatePicker } from "@/components/HijriDatePicker";
@@ -99,6 +99,7 @@ const Profile = () => {
         login({ ...currentUser, hijriBirthDate: dateStr });
       }
 
+      refreshMembers();
       toast.success("تم حفظ التعديلات بنجاح");
     } catch {
       toast.error("حدث خطأ أثناء الحفظ");
@@ -119,6 +120,7 @@ const Profile = () => {
         father_id: member.id,
         notes,
       });
+      refreshMembers();
       toast.success("تمت إضافة الابن/البنت بنجاح");
       setNewChildName("");
       setNewChildGender("M");

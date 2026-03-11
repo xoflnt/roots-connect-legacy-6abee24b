@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo, useEffect, useCallback } from "react";
-import { Search, TreePine, ChevronDown, Users, Layers, Crown, User, UserRound, Heart, Quote, Send } from "lucide-react";
+import { Search, TreePine, ChevronDown, Users, Layers, Crown, User, UserRound, Heart, Quote, Send, BookOpen, UserCheck, Calculator } from "lucide-react";
 import { getLineageLabel, getMemberSubtitle } from "@/utils/memberLabel";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FontSizeToggle } from "@/components/FontSizeToggle";
@@ -259,6 +259,39 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
             <StatCard icon={Crown} label={`أكثر اسم للذكور: ${stats.topMaleName}`} value={stats.topMaleCount} suffix=" مرة" />
             <StatCard icon={Heart} label={`أكثر اسم للإناث: ${stats.topFemaleName}`} value={stats.topFemaleCount} suffix=" مرة" />
           </div>
+        </div>
+      </section>
+
+      {/* How to Use Section */}
+      <section className="py-12 md:py-20 px-4 border-t border-border/30">
+        <div className="max-w-3xl mx-auto text-center space-y-6 md:space-y-8">
+          <div className="inline-block px-4 py-1.5 rounded-full bg-accent/15 text-accent font-bold text-sm">
+            كيف تستخدم المنصة
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+            {[
+              { icon: TreePine, title: "تصفح الشجرة", desc: "استكشف الفروع بالنقر والتوسّع" },
+              { icon: Search, title: "البحث السريع", desc: "ابحث عن أي فرد بالاسم" },
+              { icon: UserCheck, title: "سجّل بياناتك", desc: "طالب بملفك وحدّث معلوماتك" },
+              { icon: Calculator, title: "حاسبة القرابة", desc: "اكتشف صلتك بأي فرد" },
+            ].map(({ icon: Icon, title, desc }) => (
+              <div key={title} className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-card border border-border/50 shadow-sm">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Icon className="h-6 w-6 text-primary" />
+                </div>
+                <p className="font-bold text-sm text-foreground">{title}</p>
+                <p className="text-xs text-muted-foreground leading-snug text-center">{desc}</p>
+              </div>
+            ))}
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => window.location.href = "/guide"}
+            className="rounded-2xl h-12 px-8 text-base font-bold border-primary/30 text-primary hover:bg-primary/10"
+          >
+            <BookOpen className="h-4 w-4 ml-2" />
+            دليل الاستخدام الكامل
+          </Button>
         </div>
       </section>
 

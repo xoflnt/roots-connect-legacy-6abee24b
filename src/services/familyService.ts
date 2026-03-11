@@ -1,18 +1,55 @@
 import { familyMembers, type FamilyMember } from "@/data/familyData";
 
-const memberMap = new Map(familyMembers.map((m) => [m.id, m]));
+// Mutable merged data — call refreshMembers() after any localStorage update
+let mergedMembers: FamilyMember[] = [];
+let memberMap = new Map<string, FamilyMember>();
+let childrenMap = new Map<string, FamilyMember[]>();
 
-const childrenMap = new Map<string, FamilyMember[]>();
-for (const m of familyMembers) {
-  if (m.father_id) {
-    const arr = childrenMap.get(m.father_id) || [];
-    arr.push(m);
-    childrenMap.set(m.father_id, arr);
+function loadOverrides(): { overrides: Record<string, Partial<FamilyMember>>; additions: FamilyMember[] } {
+  try {
+    const o = localStorage.getItem("khunaini-member-overrides");
+    const a = localStorage.getItem("khunaini-member-additions");
+    return {
+      overrides: o ? JSON.parse(o) : {},
+      additions: a ? JSON.parse(a) : [],
+    };
+  } catch {
+    return { overrides: {}, additions: [] };
   }
 }
 
+function buildMaps() {
+  const { overrides, additions } = loadOverrides();
+  mergedMembers = familyMembers.map((m) => {
+    const ov = overrides[m.id];
+    return ov ? { ...m, ...ov } : m;
+  });
+  for (const a of additions) {
+    if (!mergedMembers.find((m) => m.id === a.id)) {
+      mergedMembers.push(a);
+    }
+  }
+  memberMap = new Map(mergedMembers.map((m) => [m.id, m]));
+  childrenMap = new Map();
+  for (const m of mergedMembers) {
+    if (m.father_id) {
+      const arr = childrenMap.get(m.father_id) || [];
+      arr.push(m);
+      childrenMap.set(m.father_id, arr);
+    }
+  }
+}
+
+// Initial build
+buildMaps();
+
+/** Call after updateMember / addMember to refresh all maps */
+export function refreshMembers() {
+  buildMaps();
+}
+
 export function getAllMembers(): FamilyMember[] {
-  return familyMembers;
+  return mergedMembers;
 }
 
 export function getMemberById(id: string): FamilyMember | undefined {
@@ -36,7 +73,7 @@ export function getAncestorChain(id: string): FamilyMember[] {
 export function searchMembers(query: string, limit = 10): FamilyMember[] {
   if (!query.trim()) return [];
   const q = query.trim();
-  return familyMembers.filter((m) => m.name.includes(q)).slice(0, limit);
+  return mergedMembers.filter((m) => m.name.includes(q)).slice(0, limit);
 }
 
 export function getDescendantCount(id: string): number {

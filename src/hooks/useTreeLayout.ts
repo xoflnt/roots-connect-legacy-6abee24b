@@ -1,8 +1,7 @@
 import { useMemo } from "react";
 import dagre from "dagre";
 import type { Node, Edge } from "@xyflow/react";
-import { familyMembers } from "@/data/familyData";
-import { extractMotherName } from "@/services/familyService";
+import { getAllMembers, extractMotherName } from "@/services/familyService";
 
 const NODE_WIDTH = 220;
 const NODE_HEIGHT = 100;
@@ -18,54 +17,57 @@ export const BRANCH_COLORS = [
   { stroke: "hsl(200, 35%, 42%)",  bg: "hsl(200, 25%, 92%)",  bgDark: "hsl(200, 25%, 18%)" },
 ];
 
-// Build children map once
-const childrenOfMap = new Map<string, string[]>();
-familyMembers.forEach((m) => {
-  if (m.father_id) {
-    if (!childrenOfMap.has(m.father_id)) childrenOfMap.set(m.father_id, []);
-    childrenOfMap.get(m.father_id)!.push(m.id);
-  }
-});
-
-// Build mother map once
-const motherOfMap = new Map<string, string>();
-const memberById = new Map(familyMembers.map((m) => [m.id, m]));
-familyMembers.forEach((m) => {
-  const mother = extractMotherName(m);
-  if (mother) motherOfMap.set(m.id, mother);
-});
+function buildChildrenOfMap(members: ReturnType<typeof getAllMembers>) {
+  const map = new Map<string, string[]>();
+  members.forEach((m) => {
+    if (m.father_id) {
+      if (!map.has(m.father_id)) map.set(m.father_id, []);
+      map.get(m.father_id)!.push(m.id);
+    }
+  });
+  return map;
+}
 
 export function getChildrenOf(id: string): string[] {
-  return childrenOfMap.get(id) || [];
+  const members = getAllMembers();
+  return members.filter((m) => m.father_id === id).map((m) => m.id);
 }
 
 export function hasChildrenInData(id: string): boolean {
-  return (childrenOfMap.get(id)?.length ?? 0) > 0;
+  const members = getAllMembers();
+  return members.some((m) => m.father_id === id);
 }
 
 export function getMotherOf(id: string): string | null {
-  return motherOfMap.get(id) || null;
+  const members = getAllMembers();
+  const member = members.find((m) => m.id === id);
+  if (!member) return null;
+  return extractMotherName(member);
 }
 
 export function getDefaultExpandedIds(): Set<string> {
   const expanded = new Set<string>();
-  const roots = familyMembers.filter((m) => !m.father_id);
-  roots.forEach((r) => expanded.add(r.id));
+  const members = getAllMembers();
+  members.filter((m) => !m.father_id).forEach((r) => expanded.add(r.id));
   return expanded;
 }
 
 export function useTreeLayout(expandedIds: Set<string>) {
   return useMemo(() => {
+    const currentMembers = getAllMembers();
+    const memberById = new Map(currentMembers.map((m) => [m.id, m]));
+    const childrenOfMap = buildChildrenOfMap(currentMembers);
+
     const visibleIds = new Set<string>();
 
-    familyMembers.forEach((m) => {
+    currentMembers.forEach((m) => {
       if (!m.father_id) visibleIds.add(m.id);
     });
 
     let changed = true;
     while (changed) {
       changed = false;
-      familyMembers.forEach((m) => {
+      currentMembers.forEach((m) => {
         if (visibleIds.has(m.id)) return;
         if (m.father_id && visibleIds.has(m.father_id) && expandedIds.has(m.father_id)) {
           visibleIds.add(m.id);
@@ -74,7 +76,7 @@ export function useTreeLayout(expandedIds: Set<string>) {
       });
     }
 
-    const visibleMembers = familyMembers.filter((m) => visibleIds.has(m.id));
+    const visibleMembers = currentMembers.filter((m) => visibleIds.has(m.id));
 
     const g = new dagre.graphlib.Graph();
     g.setGraph({ rankdir: "TB", nodesep: 100, ranksep: 180 });
@@ -143,11 +145,6 @@ export function useTreeLayout(expandedIds: Set<string>) {
 
     dagre.layout(g);
 
-    const hasChildrenMap = new Map<string, boolean>();
-    visibleMembers.forEach((m) => {
-      hasChildrenMap.set(m.id, hasChildrenInData(m.id));
-    });
-
     const nodes: Node[] = [
       ...visibleMembers.map((member) => {
         const pos = g.node(member.id);
@@ -159,7 +156,7 @@ export function useTreeLayout(expandedIds: Set<string>) {
             ...member,
             branchColorIndex: childColorMap.get(member.id) ?? -1,
             motherName: childMotherMap.get(member.id) ?? null,
-            hasChildren: hasChildrenMap.get(member.id) ?? false,
+            hasChildren: hasChildrenInData(member.id),
             isExpanded: expandedIds.has(member.id),
           },
         };
