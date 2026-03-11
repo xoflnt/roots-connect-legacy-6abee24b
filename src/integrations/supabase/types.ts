@@ -14,7 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      otp_verifications: {
+        Row: {
+          clickable_url: string | null
+          client_id: string | null
+          client_name: string | null
+          created_at: string
+          id: string
+          mobile: string | null
+          otp_code: string | null
+          phone: string
+          qr_url: string | null
+          reference: string
+          status: string
+          verified_at: string | null
+        }
+        Insert: {
+          clickable_url?: string | null
+          client_id?: string | null
+          client_name?: string | null
+          created_at?: string
+          id?: string
+          mobile?: string | null
+          otp_code?: string | null
+          phone: string
+          qr_url?: string | null
+          reference: string
+          status?: string
+          verified_at?: string | null
+        }
+        Update: {
+          clickable_url?: string | null
+          client_id?: string | null
+          client_name?: string | null
+          created_at?: string
+          id?: string
+          mobile?: string | null
+          otp_code?: string | null
+          phone?: string
+          qr_url?: string | null
+          reference?: string
+          status?: string
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
