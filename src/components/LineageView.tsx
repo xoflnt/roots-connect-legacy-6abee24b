@@ -151,7 +151,7 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                   </div>
 
                   {/* Details */}
-                  <div className="px-4 pb-3 pt-2 md:px-5 md:pb-4 space-y-1.5">
+                  <div className="px-3 pb-3 pt-2 md:px-5 md:pb-4 space-y-1.5">
                     {(member.birth_year || member.death_year) && (
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Calendar className="h-3.5 w-3.5 shrink-0" />
@@ -164,9 +164,9 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                     )}
 
                     {member.spouses && (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Heart className="h-3.5 w-3.5 shrink-0" />
-                        <span className="truncate">{member.spouses}</span>
+                      <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                        <Heart className="h-3.5 w-3.5 shrink-0 mt-0.5 text-female fill-female/30" />
+                        <span className="break-words line-clamp-2">الزوجة: {member.spouses}</span>
                       </div>
                     )}
                   </div>
