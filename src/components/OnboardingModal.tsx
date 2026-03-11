@@ -10,6 +10,7 @@ import { sendOTP, checkOTPStatus, verifyOTP, type SendOTPResult } from "@/servic
 import { useAuth } from "@/contexts/AuthContext";
 import { HijriDatePicker } from "@/components/HijriDatePicker";
 import { registerVerifiedUser } from "@/services/dataService";
+import { getLineageLabel } from "@/utils/memberLabel";
 
 const ONBOARDING_KEY = "hasSeenOnboarding";
 const TOTAL_STEPS = 5;
