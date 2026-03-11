@@ -173,7 +173,7 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
 
                   {/* Quick lineage switch for ancestors */}
                   {!isFirst && onSelectMember && (
-                    <div className="border-t border-border/30 px-4 py-2 md:px-5">
+                    <div className="border-t border-border/30 px-3 py-2 md:px-5">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
