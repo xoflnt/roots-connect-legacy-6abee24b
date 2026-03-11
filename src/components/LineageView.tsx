@@ -108,36 +108,39 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                   }}
                 >
                   {/* Generation badge */}
-                  <div className="flex items-center justify-between px-4 pt-3 md:px-5 md:pt-4">
-                    <div className="flex items-center gap-3">
+                  <div className="px-3 pt-3 md:px-5 md:pt-4">
+                    <div className="flex items-start gap-2.5 md:gap-3">
                       <div
-                        className={`w-10 h-10 md:w-11 md:h-11 rounded-xl flex items-center justify-center ${
+                        className={`w-9 h-9 md:w-11 md:h-11 rounded-xl flex items-center justify-center shrink-0 ${
                           isMale
-                            ? "bg-[hsl(var(--male-light))]"
-                            : "bg-[hsl(var(--female-light))]"
+                            ? "bg-male-light"
+                            : "bg-female-light"
                         }`}
                       >
                         <User
-                          className={`h-5 w-5 ${
+                          className={`h-4 w-4 md:h-5 md:w-5 ${
                             isMale
-                              ? "text-[hsl(var(--male))]"
-                              : "text-[hsl(var(--female))]"
+                              ? "text-male"
+                              : "text-female"
                           }`}
                         />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <h3 className="text-base md:text-lg font-bold text-foreground leading-snug">
+                        <h3 className="text-sm md:text-lg font-bold text-foreground leading-snug break-words">
                           {member.name}
                         </h3>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {isMale ? "ذكر" : "أنثى"}
-                          {isFirst && " — الشخص المطلوب"}
-                          {isLast && " — الجد الأعلى"}
-                        </p>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className={`inline-block w-2 h-2 rounded-full shrink-0 ${isMale ? "bg-male" : "bg-female"}`} />
+                          <p className="text-xs text-muted-foreground">
+                            {isMale ? "ذكر" : "أنثى"}
+                            {isFirst && " — الشخص المطلوب"}
+                            {isLast && " — الجد الأعلى"}
+                          </p>
+                        </div>
                       </div>
                     </div>
                     <div
-                      className="shrink-0 px-2.5 py-1 rounded-lg text-xs font-bold"
+                      className="mt-2 inline-block px-2.5 py-1 rounded-lg text-xs font-bold"
                       style={{
                         backgroundColor: `${dotColor}20`,
                         color: dotColor,
