@@ -12,11 +12,10 @@ export type AppView = "landing" | ViewMode;
 const Index = () => {
   const treeRef = useRef<FamilyTreeRef>(null);
   const [activeView, setActiveView] = useState<AppView>("landing");
-  const [lineageTargetId, setLineageTargetId] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const handleSearchSelect = (memberId: string) => {
-    setLineageTargetId(memberId);
-    setActiveView("lineage");
+    navigate(`/person/${memberId}`);
   };
 
   const handleGoHome = () => {
