@@ -155,14 +155,14 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
 
   const progressValue = (step / TOTAL_STEPS) * 100;
 
-  // ─── Logged-in user: Welcome back view ───
+  // ─── Logged-in user: Welcome back view with quick guide ───
   if (isLoggedIn && currentUser) {
     return (
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
           className="max-w-md w-[95vw] p-0 gap-0 rounded-2xl overflow-hidden border-border/50 bg-card"
         >
-          <div className="px-5 py-8 flex flex-col items-center text-center gap-5" dir="rtl">
+          <div className="px-5 py-8 flex flex-col items-center text-center gap-5 max-h-[85vh] overflow-y-auto" dir="rtl">
             <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
               <TreePine className="h-8 w-8 text-primary" />
             </div>
@@ -174,6 +174,35 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                 سعداء برجوعك لبوابة تراث آل الخنيني
               </p>
             </div>
+
+            {/* Quick Guide */}
+            <div className="w-full space-y-2">
+              <p className="text-xs font-bold text-muted-foreground">دليل سريع</p>
+              {[
+                { icon: TreePine, title: "تصفح الشجرة", desc: "استكشف فروع العائلة وتوسّع بالنقر على البطاقات" },
+                { icon: Search, title: "البحث السريع", desc: "ابحث عن أي فرد بالاسم واعرض نسبه الكامل" },
+                { icon: UserCircle, title: "ملفك الشخصي", desc: "عدّل بياناتك وأضف الزوجات والأبناء مباشرة" },
+              ].map(({ icon: Icon, title, desc }) => (
+                <div key={title} className="flex items-start gap-3 p-3 rounded-xl bg-muted/50 border border-border/30 text-right">
+                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <Icon className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm text-foreground">{title}</p>
+                    <p className="text-xs text-muted-foreground">{desc}</p>
+                  </div>
+                </div>
+              ))}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => { setOpen(false); navigate("/guide"); }}
+                className="w-full text-xs text-primary"
+              >
+                دليل الاستخدام الكامل ←
+              </Button>
+            </div>
+
             <div className="flex flex-col w-full gap-2">
               <Button
                 onClick={() => { setOpen(false); }}
