@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo, useEffect, useCallback } from "react";
-import { Search, TreePine, ChevronDown, Users, Layers, Crown, User, UserRound } from "lucide-react";
+import { Search, TreePine, ChevronDown, Users, Layers, Crown, User, UserRound, Baby, Heart } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { familyMembers } from "@/data/familyData";
@@ -21,7 +21,7 @@ function useCountUp(target: number, duration = 1500) {
     const startTime = performance.now();
     const step = (now: number) => {
       const progress = Math.min((now - startTime) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
       setValue(Math.round(eased * target));
       if (progress < 1) raf = requestAnimationFrame(step);
     };
@@ -57,25 +57,50 @@ function computeStats() {
   const males = familyMembers.filter((m) => m.gender === "M").length;
   const females = familyMembers.filter((m) => m.gender === "F").length;
 
-  // Most common first name
-  const nameCounts = new Map<string, number>();
+  // Most common male first name
+  const maleNameCounts = new Map<string, number>();
+  const femaleNameCounts = new Map<string, number>();
   for (const m of familyMembers) {
     const firstName = m.name.split(" ")[0];
-    nameCounts.set(firstName, (nameCounts.get(firstName) || 0) + 1);
-  }
-  let topName = "";
-  let topNameCount = 0;
-  for (const [name, count] of nameCounts) {
-    if (count > topNameCount) {
-      topName = name;
-      topNameCount = count;
+    if (m.gender === "M") {
+      maleNameCounts.set(firstName, (maleNameCounts.get(firstName) || 0) + 1);
+    } else {
+      femaleNameCounts.set(firstName, (femaleNameCounts.get(firstName) || 0) + 1);
     }
   }
 
-  return { total, generations: maxDepth, males, females, topName, topNameCount };
+  let topMaleName = "", topMaleCount = 0;
+  for (const [name, count] of maleNameCounts) {
+    if (count > topMaleCount) { topMaleName = name; topMaleCount = count; }
+  }
+  let topFemaleName = "", topFemaleCount = 0;
+  for (const [name, count] of femaleNameCounts) {
+    if (count > topFemaleCount) { topFemaleName = name; topFemaleCount = count; }
+  }
+
+  // Father with most children
+  let topFatherId = "", topFatherChildCount = 0;
+  for (const [parentId, children] of childrenMap) {
+    if (parentId && children.length > topFatherChildCount) {
+      topFatherId = parentId;
+      topFatherChildCount = children.length;
+    }
+  }
+  const topFather = familyMembers.find((m) => m.id === topFatherId);
+  const topFatherName = topFather ? topFather.name.split(" ")[0] : "";
+
+  return {
+    total, generations: maxDepth, males, females,
+    topMaleName, topMaleCount,
+    topFemaleName, topFemaleCount,
+    topFatherName, topFatherChildCount,
+  };
 }
 
-function StatCard({ icon: Icon, label, value, suffix }: { icon: React.ElementType; label: string; value: number; suffix?: string }) {
+
+
+
+function StatCard({ icon: Icon, label, value, suffix, highlight }: { icon: React.ElementType; label: string; value: number; suffix?: string; highlight?: string }) {
   const counter = useCountUp(value);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -91,32 +116,10 @@ function StatCard({ icon: Icon, label, value, suffix }: { icon: React.ElementTyp
     <div ref={ref} className="flex flex-col items-center gap-1.5 p-4 rounded-2xl bg-card border border-border/50 shadow-sm">
       <Icon className="h-5 w-5 text-accent" />
       <span className="text-2xl md:text-3xl font-extrabold text-foreground">
+        {highlight && <span className="text-primary">{highlight} </span>}
         {counter.value}{suffix}
       </span>
       <span className="text-xs md:text-sm text-muted-foreground font-bold">{label}</span>
-    </div>
-  );
-}
-
-function TopNameCard({ name, count }: { name: string; count: number }) {
-  const counter = useCountUp(count);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { counter.start(); obs.disconnect(); } }, { threshold: 0.3 });
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
-
-  return (
-    <div ref={ref} className="col-span-2 md:col-span-1 flex flex-col items-center gap-1.5 p-4 rounded-2xl bg-card border border-border/50 shadow-sm">
-      <Crown className="h-5 w-5 text-accent" />
-      <span className="text-2xl md:text-3xl font-extrabold text-foreground">
-        {name} × {counter.value}
-      </span>
-      <span className="text-xs md:text-sm text-muted-foreground font-bold">أكثر اسم تكراراً</span>
     </div>
   );
 }
@@ -222,18 +225,6 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
               </Button>
             </div>
           )}
-
-          {/* Stats Section */}
-          <div
-            className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 max-w-xl mx-auto opacity-0 animate-fade-in px-2"
-            style={{ animationDelay: "1s" }}
-          >
-            <StatCard icon={Users} label="عدد الأفراد" value={stats.total} />
-            <StatCard icon={Layers} label="عدد الأجيال" value={stats.generations} />
-            <TopNameCard name={stats.topName} count={stats.topNameCount} />
-            <StatCard icon={User} label="عدد الذكور" value={stats.males} />
-            <StatCard icon={UserRound} label="عدد الإناث" value={stats.females} />
-          </div>
         </div>
 
         <button
@@ -242,6 +233,27 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
         >
           <ChevronDown className="h-6 w-6" />
         </button>
+      </section>
+
+      {/* Fun Stats Section */}
+      <section className="py-12 md:py-20 px-4 border-t border-border/30">
+        <div className="max-w-3xl mx-auto text-center space-y-6 md:space-y-8">
+          <div className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary font-bold text-sm">
+            العائلة بالأرقام
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+            <StatCard icon={Users} label="إجمالي الأفراد" value={stats.total} />
+            <StatCard icon={Layers} label="عدد الأجيال" value={stats.generations} />
+            <StatCard icon={User} label="عدد الأبناء (ذكور)" value={stats.males} />
+            <StatCard icon={UserRound} label="عدد البنات (إناث)" value={stats.females} />
+            <StatCard icon={Crown} label={`أكثر اسم للذكور: ${stats.topMaleName}`} value={stats.topMaleCount} suffix=" مرة" />
+            <StatCard icon={Heart} label={`أكثر اسم للإناث: ${stats.topFemaleName}`} value={stats.topFemaleCount} suffix=" مرة" />
+            <div className="col-span-2 md:col-span-3">
+              <StatCard icon={Baby} label={`أكثر أب إنجاباً: ${stats.topFatherName}`} value={stats.topFatherChildCount} suffix=" أبناء" />
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* About Section */}
@@ -286,3 +298,4 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
     </div>
   );
 }
+
