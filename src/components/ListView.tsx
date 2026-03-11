@@ -139,7 +139,7 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect 
     const groups = new Map<string, { children: FamilyMember[]; colorIndex: number }>();
     let ci = 0;
     children.forEach((child) => {
-      const mn = extractMotherName(child) || "__unknown__";
+      const mn = inferMotherName(child) || "__unknown__";
       if (!groups.has(mn)) {
         groups.set(mn, { children: [], colorIndex: mn !== "__unknown__" ? ci++ : -1 });
       }
