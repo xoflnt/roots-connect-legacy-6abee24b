@@ -17,6 +17,7 @@ const Profile = () => {
   const { currentUser, logout, isLoggedIn, login } = useAuth();
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const member = useMemo(() => {
     if (!currentUser) return null;
