@@ -15,6 +15,8 @@ import { FamilyCard } from "./FamilyCard";
 import { SpouseCard } from "./SpouseCard";
 import { PersonDetails } from "./PersonDetails";
 import { familyMembers, type FamilyMember } from "@/data/familyData";
+import { getBranch } from "@/utils/branchUtils";
+import { getChildrenOf } from "@/services/familyService";
 
 const nodeTypes = { familyCard: FamilyCard, spouseCard: SpouseCard };
 
@@ -23,8 +25,17 @@ export interface FamilyTreeRef {
   reset: () => void;
 }
 
-export const FamilyTree = forwardRef<FamilyTreeRef>(function FamilyTree(_, ref) {
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(getDefaultExpandedIds);
+interface FamilyTreeProps {
+  focusBranch?: string;
+}
+
+export const FamilyTree = forwardRef<FamilyTreeRef, FamilyTreeProps>(function FamilyTree({ focusBranch }, ref) {
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => {
+    if (focusBranch) {
+      return getBranchExpandedIds(focusBranch);
+    }
+    return getDefaultExpandedIds();
+  });
   const [refreshKey, setRefreshKey] = useState(0);
   const { nodes: layoutNodes, edges: layoutEdges } = useTreeLayout(expandedIds, refreshKey);
 
@@ -37,6 +48,17 @@ export const FamilyTree = forwardRef<FamilyTreeRef>(function FamilyTree(_, ref) 
     window.addEventListener("family-data-updated", handler);
     return () => window.removeEventListener("family-data-updated", handler);
   }, []);
+
+  // React to focusBranch changes
+  useEffect(() => {
+    if (focusBranch) {
+      setExpandedIds(getBranchExpandedIds(focusBranch));
+      setTimeout(() => {
+        rfInstance.current?.fitView({ nodes: [{ id: focusBranch }], duration: 600, padding: 0.3 });
+      }, 300);
+    }
+  }, [focusBranch]);
+
   const [nodes, setNodes, onNodesChange] = useNodesState(layoutNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(layoutEdges);
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
@@ -182,3 +204,23 @@ export const FamilyTree = forwardRef<FamilyTreeRef>(function FamilyTree(_, ref) 
     </div>
   );
 });
+
+function getBranchExpandedIds(pillarId: string): Set<string> {
+  // Expand root → Zaid → pillar and first level children
+  const ids = new Set<string>();
+  const memberMap = new Map(familyMembers.map((m) => [m.id, m]));
+  // Find ancestors of pillar
+  let current = memberMap.get(pillarId);
+  while (current) {
+    ids.add(current.id);
+    if (current.father_id) {
+      current = memberMap.get(current.father_id);
+    } else {
+      break;
+    }
+  }
+  // Expand first-level children of the pillar
+  const children = getChildrenOf(pillarId);
+  children.forEach((c) => ids.add(c.id));
+  return ids;
+}

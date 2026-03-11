@@ -6,6 +6,8 @@ import { type FamilyMember } from "@/data/familyData";
 import { getAllMembers, extractMotherName } from "@/services/familyService";
 import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
 import { formatAge } from "@/utils/ageCalculator";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PILLARS, getBranch, getBranchStyle } from "@/utils/branchUtils";
 
 interface ListViewProps {
   onSelectMember?: (memberId: string) => void;
@@ -22,6 +24,7 @@ const DEPTH_ACCENTS = [
 
 export function ListView({ onSelectMember }: ListViewProps) {
   const members = useMemo(() => getAllMembers(), []);
+  const [activeBranch, setActiveBranch] = useState("all");
 
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => {
     const roots = members.filter((m) => !m.father_id);
@@ -43,6 +46,13 @@ export function ListView({ onSelectMember }: ListViewProps) {
     () => members.filter((m) => !m.father_id),
     [members]
   );
+
+  const filteredRoots = useMemo(() => {
+    if (activeBranch === "all") return roots;
+    // Show only the selected pillar as root
+    const pillar = members.find((m) => m.id === activeBranch);
+    return pillar ? [pillar] : roots;
+  }, [roots, members, activeBranch]);
 
   const toggleExpand = useCallback((id: string) => {
     setExpandedIds((prev) => {
@@ -68,8 +78,22 @@ export function ListView({ onSelectMember }: ListViewProps) {
           </p>
         </div>
 
+        {/* Branch Tabs */}
+        <Tabs value={activeBranch} onValueChange={setActiveBranch} className="mb-4">
+          <TabsList className="w-full flex justify-center bg-muted/50 rounded-xl p-1 h-auto flex-wrap gap-1">
+            <TabsTrigger value="all" className="rounded-lg text-xs px-3 py-2 font-bold">
+              الكل
+            </TabsTrigger>
+            {PILLARS.map((p) => (
+              <TabsTrigger key={p.id} value={p.id} className="rounded-lg text-xs px-3 py-2 font-bold">
+                {p.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+
         <div className="space-y-2">
-          {roots.map((root) => (
+          {filteredRoots.map((root) => (
             <ListNode
               key={root.id}
               member={root}
@@ -104,6 +128,8 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect 
   const ageText = formatAge(member.birth_year, member.death_year);
   const motherName = extractMotherName(member);
   const phone = member.phone as string | undefined;
+  const branch = getBranch(member.id);
+  const branchStyle = branch ? getBranchStyle(branch.pillarId) : null;
 
   // Group children by mother for coloring
   const groupedChildren = useMemo(() => {
@@ -123,7 +149,6 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect 
   // Get this member's mother color
   const motherColor = useMemo(() => {
     if (!motherName || !member.father_id) return null;
-    // Find siblings to determine color index
     const siblings = childrenMap.get(member.father_id) || [];
     const motherGroups = new Map<string, number>();
     let ci = 0;
@@ -197,6 +222,14 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect 
               {member.name}
             </span>
             <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+              {branch && branchStyle && (
+                <span
+                  className="text-[9px] mt-0.5 px-1.5 py-0.5 rounded-full font-bold"
+                  style={{ color: branchStyle.text, backgroundColor: branchStyle.bg }}
+                >
+                  {branch.label}
+                </span>
+              )}
               {motherName && motherColor && (
                 <span
                   className="text-[10px] mt-0.5 px-1.5 py-0.5 rounded-full font-medium"

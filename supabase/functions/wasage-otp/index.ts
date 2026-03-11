@@ -44,7 +44,7 @@ serve(async (req) => {
         );
       }
 
-      const otpMessage = message || `مرحباً بك في بوابة آل الخنيني، رمز التحقق الخاص بك هو`;
+      const otpMessage = message || `مرحباً بك في بوابة الخنيني، رمز التحقق الخاص بك هو`;
 
       // Call wasage API
       const wasageUrl = `https://wasage.com/api/otp/?Username=${encodeURIComponent(WASAGE_USERNAME)}&Password=${encodeURIComponent(WASAGE_PASSWORD)}&Reference=${encodeURIComponent(reference)}&Message=${encodeURIComponent(otpMessage)}`;

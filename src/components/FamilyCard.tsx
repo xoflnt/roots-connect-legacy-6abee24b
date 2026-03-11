@@ -7,6 +7,7 @@ import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
 import { HeritageBadge } from "./HeritageBadge";
 import { isFounder, isDeceased, getChildrenOf } from "@/services/familyService";
 import { formatAge } from "@/utils/ageCalculator";
+import { getBranch, getBranchStyle } from "@/utils/branchUtils";
 
 export function FamilyCard({ data, selected }: NodeProps) {
   const member = data as unknown as FamilyMember & {
@@ -28,6 +29,8 @@ export function FamilyCard({ data, selected }: NodeProps) {
   const ageText = formatAge(member.birth_year, member.death_year);
   const childrenCount = getChildrenOf(member.id).length;
   const phone = member.phone as string | undefined;
+  const branch = getBranch(member.id);
+  const branchStyle = branch ? getBranchStyle(branch.pillarId) : null;
 
   const handleWhatsApp = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -141,6 +144,14 @@ export function FamilyCard({ data, selected }: NodeProps) {
 
       {/* Heritage badges */}
       <div className="flex flex-wrap gap-0.5 justify-center mt-1 px-2">
+        {branch && branchStyle && (
+          <span
+            className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+            style={{ backgroundColor: branchStyle.bg, color: branchStyle.text }}
+          >
+            {branch.label}
+          </span>
+        )}
         {founder && <HeritageBadge type="founder" />}
         {deceased && <HeritageBadge type="deceased" gender={member.gender as "M" | "F"} />}
       </div>
