@@ -52,6 +52,8 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
         cMap.set(m.father_id, arr);
       }
     }
+    // Sort children in each group by birth
+    cMap.forEach((children, key) => cMap.set(key, sortByBirth(children)));
 
     return { chain: result, childrenMap: cMap };
   }, [memberId]);
