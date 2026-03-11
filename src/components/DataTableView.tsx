@@ -55,7 +55,7 @@ export function DataTableView() {
     const map = new Map<string, Map<string, number>>();
     members.forEach((m) => {
       if (!m.father_id) return;
-      const mn = extractMotherName(m);
+      const mn = inferMotherName(m);
       if (!mn) return;
       if (!map.has(m.father_id)) map.set(m.father_id, new Map());
       const fatherMap = map.get(m.father_id)!;
