@@ -19,6 +19,7 @@ function firstName(name: string): string {
  * Uses first name only to avoid duplication like "عبدالله بن محمد ← محمد"
  */
 export function getLineageLabel(member: FamilyMember, depth = 2): string {
+  const memberMap = getMemberMap();
   const parts: string[] = [firstName(member.name)];
   let current = member;
   for (let i = 0; i < depth; i++) {

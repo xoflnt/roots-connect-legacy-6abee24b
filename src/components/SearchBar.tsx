@@ -23,8 +23,9 @@ export function SearchBar({ onSelect }: SearchBarProps) {
   const ref = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 
+  const members = getAllMembers();
   const filtered = query.trim()
-    ? familyMembers.filter((m) => m.name.includes(query.trim())).slice(0, 10)
+    ? members.filter((m) => m.name.includes(query.trim())).slice(0, 10)
     : [];
 
   const handleSelect = (id: string, name: string) => {

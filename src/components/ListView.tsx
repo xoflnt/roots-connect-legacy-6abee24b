@@ -220,16 +220,25 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect 
 
           <div className="flex items-center gap-1.5 shrink-0">
             {phone && (
-              <a
-                href={`https://wa.me/${phone.replace(/[^0-9]/g, "")}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                className="w-8 h-8 rounded-lg bg-[#25D366]/10 flex items-center justify-center text-[#25D366] hover:bg-[#25D366]/20 transition-colors"
-                title="تواصل عبر واتساب"
-              >
-                <WhatsAppIcon className="h-3.5 w-3.5" />
-              </a>
+              <>
+                <a
+                  href={`https://wa.me/${phone.replace(/[^0-9]/g, "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-8 h-8 rounded-lg bg-[#25D366]/10 flex items-center justify-center text-[#25D366] hover:bg-[#25D366]/20 transition-colors"
+                  title="تواصل عبر واتساب"
+                >
+                  <WhatsAppIcon className="h-3.5 w-3.5" />
+                </a>
+                <button
+                  onClick={(e) => { e.stopPropagation(); downloadVCard(member.name, phone); }}
+                  className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary hover:bg-primary/20 transition-colors"
+                  title="حفظ جهة اتصال"
+                >
+                  <UserPlus className="h-3.5 w-3.5" />
+                </button>
+              </>
             )}
             {hasChildren && (
               <div
