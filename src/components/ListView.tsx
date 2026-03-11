@@ -1,6 +1,7 @@
 import { useMemo, useState, useCallback } from "react";
-import { User, ChevronDown, ChevronLeft, Users } from "lucide-react";
+import { User, ChevronDown, ChevronLeft, Users, UserPlus } from "lucide-react";
 import { WhatsAppIcon } from "./WhatsAppIcon";
+import { downloadVCard } from "@/utils/vcard";
 import { type FamilyMember } from "@/data/familyData";
 import { getAllMembers, extractMotherName } from "@/services/familyService";
 import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
