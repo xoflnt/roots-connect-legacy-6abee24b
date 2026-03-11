@@ -66,7 +66,7 @@ export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHom
                   key={item.value}
                   value={item.value}
                   aria-label={item.label}
-                  className="text-xs px-3 py-1.5 rounded-lg data-[state=on]:bg-background data-[state=on]:shadow-sm gap-1"
+                  className="text-xs px-3 py-1.5 rounded-lg data-[state=on]:bg-background data-[state=on]:shadow-md data-[state=on]:border data-[state=on]:border-accent/20 gap-1"
                 >
                   <item.icon className="h-3.5 w-3.5" />
                   <span>{item.label}</span>
