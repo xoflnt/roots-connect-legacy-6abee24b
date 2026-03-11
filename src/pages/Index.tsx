@@ -57,7 +57,7 @@ const Index = () => {
       />
       <main className="flex-1 overflow-hidden p-2 md:p-5 pb-16 md:pb-5" key={activeView}>
         {activeView === "tree" && (
-          <div className="w-full h-full rounded-2xl md:rounded-3xl shadow-xl overflow-hidden border border-border/50 bg-[hsl(var(--canvas-bg))] animate-fade-in">
+          <div className="w-full h-full rounded-2xl md:rounded-3xl shadow-xl overflow-hidden border border-border/50 bg-[hsl(var(--canvas-bg))] animate-fade-in relative">
             <FamilyTree ref={treeRef} />
           </div>
         )}
