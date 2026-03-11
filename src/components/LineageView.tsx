@@ -291,29 +291,59 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                       const children = childrenMap.get(member.id);
                       if (!children || children.length === 0) return null;
                       const chainChildId = index > 0 ? chain[index - 1].id : null;
+
+                      // Group children by mother
+                      const groups = new Map<string, { children: FamilyMember[]; colorIndex: number }>();
+                      let ci = 0;
+                      children.forEach((child) => {
+                        const mn = extractMotherName(child) || "__unknown__";
+                        if (!groups.has(mn)) {
+                          groups.set(mn, { children: [], colorIndex: mn !== "__unknown__" ? ci++ : -1 });
+                        }
+                        groups.get(mn)!.children.push(child);
+                      });
+
                       return (
                         <div className="flex items-start gap-2 text-sm text-muted-foreground">
                           <Users className="h-3.5 w-3.5 shrink-0 mt-1" />
-                          <div className="flex flex-wrap gap-1.5">
-                            {children.map((child) => {
-                              const isInChain = child.id === chainChildId;
+                          <div className="space-y-1.5 flex-1">
+                            {Array.from(groups.entries()).map(([motherKey, group]) => {
+                              const color = group.colorIndex >= 0 ? BRANCH_COLORS[group.colorIndex % BRANCH_COLORS.length] : null;
                               return (
-                                <button
-                                  key={child.id}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    onSelectMember?.(child.id);
-                                  }}
-                                  className={`
-                                    rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors min-h-[28px]
-                                    ${isInChain
-                                      ? "bg-primary/20 text-primary font-bold ring-1 ring-primary/30"
-                                      : "bg-muted text-muted-foreground hover:bg-muted/80"
-                                    }
-                                  `}
-                                >
-                                  {child.name}
-                                </button>
+                                <div key={motherKey}>
+                                  {motherKey !== "__unknown__" && color && (
+                                    <div className="flex items-center gap-1.5 mb-0.5">
+                                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color.stroke }} />
+                                      <span className="text-[10px] font-semibold" style={{ color: color.stroke }}>
+                                        أبناء {motherKey}
+                                      </span>
+                                    </div>
+                                  )}
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {group.children.map((child) => {
+                                      const isInChain = child.id === chainChildId;
+                                      return (
+                                        <button
+                                          key={child.id}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            onSelectMember?.(child.id);
+                                          }}
+                                          className={`
+                                            rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors min-h-[28px]
+                                            ${isInChain
+                                              ? "bg-primary/20 text-primary font-bold ring-1 ring-primary/30"
+                                              : "bg-muted text-muted-foreground hover:bg-muted/80"
+                                            }
+                                          `}
+                                          style={color && !isInChain ? { borderLeft: `3px solid ${color.stroke}` } : undefined}
+                                        >
+                                          {child.name}
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
                               );
                             })}
                           </div>

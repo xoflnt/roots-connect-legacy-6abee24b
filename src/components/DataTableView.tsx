@@ -252,7 +252,7 @@ export function DataTableView() {
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1 text-[#25D366] hover:underline"
                         >
-                          <Phone className="h-3 w-3" />
+                          <WhatsAppIcon className="h-3 w-3" />
                           {phone}
                         </a>
                       ) : (

@@ -126,7 +126,7 @@ export function FamilyCard({ data, selected }: NodeProps) {
       {/* Heritage badges */}
       <div className="flex flex-wrap gap-0.5 justify-center mt-1 px-2">
         {founder && <HeritageBadge type="founder" />}
-        {deceased && <HeritageBadge type="deceased" />}
+        {deceased && <HeritageBadge type="deceased" gender={member.gender as "M" | "F"} />}
       </div>
 
       <Handle type="source" position={Position.Bottom} className="!bg-muted-foreground/40 !w-2.5 !h-2.5 !border-2 !border-card" />

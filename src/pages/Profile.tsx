@@ -102,6 +102,7 @@ const Profile = () => {
       }
 
       refreshMembers();
+      setRefreshKey((k) => k + 1);
       window.dispatchEvent(new Event("family-data-updated"));
       toast.success("تم حفظ التعديلات بنجاح");
     } catch {

@@ -134,7 +134,7 @@ function DetailContent({ member }: { member: FamilyMember }) {
             className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#25D366]/10 border border-[#25D366]/20 hover:bg-[#25D366]/15 transition-colors"
           >
             <div className="w-9 h-9 rounded-lg bg-[#25D366]/15 flex items-center justify-center shrink-0">
-              <Phone className="h-4 w-4 text-[#25D366]" />
+              <WhatsAppIcon className="h-4 w-4 text-[#25D366]" />
             </div>
             <div>
               <p className="text-[11px] text-muted-foreground font-medium">تواصل عبر واتساب</p>
