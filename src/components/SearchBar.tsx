@@ -80,21 +80,22 @@ export function SearchBar({ onSelect }: SearchBarProps) {
             </div>
             <div className="flex-1 overflow-y-auto">
               {filtered.length > 0 ? (
-                filtered.map((m) => (
-                  <button
-                    key={m.id}
-                    className="w-full text-right px-5 py-4 text-foreground hover:bg-muted transition-colors border-b border-border/30 last:border-b-0 flex items-center gap-3"
-                    style={{ minHeight: 52 }}
-                    onClick={() => handleSelect(m.id, m.name)}
-                  >
-                    <span className="font-bold flex-1">{m.name}</span>
-                    {m.death_year && (
-                      <span className="text-sm text-muted-foreground shrink-0">
-                        (ت {m.death_year} هـ)
-                      </span>
-                    )}
-                  </button>
-                ))
+                 filtered.map((m) => {
+                   const subtitle = getMemberSubtitle(m);
+                   return (
+                   <button
+                     key={m.id}
+                     className="w-full text-right px-5 py-3 text-foreground hover:bg-muted transition-colors border-b border-border/30 last:border-b-0"
+                     style={{ minHeight: 52 }}
+                     onClick={() => handleSelect(m.id, m.name)}
+                   >
+                     <span className="font-bold block">{getLineageLabel(m)}</span>
+                     {subtitle && (
+                       <span className="text-xs text-muted-foreground">{subtitle}</span>
+                     )}
+                   </button>
+                   );
+                 })
               ) : query.trim() ? (
                 <div className="p-8 text-center text-muted-foreground">لا توجد نتائج</div>
               ) : (
