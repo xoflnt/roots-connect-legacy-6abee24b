@@ -193,5 +193,5 @@ export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number) {
     });
 
     return { nodes, edges };
-  }, [expandedIds]);
+  }, [expandedIds, _refreshKey]);
 }

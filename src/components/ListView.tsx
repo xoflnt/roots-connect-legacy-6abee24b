@@ -1,6 +1,8 @@
 import { useMemo, useState, useCallback } from "react";
-import { User, ChevronDown, ChevronLeft, Users } from "lucide-react";
-import { familyMembers, type FamilyMember } from "@/data/familyData";
+import { User, ChevronDown, ChevronLeft, Users, Phone } from "lucide-react";
+import { type FamilyMember } from "@/data/familyData";
+import { getAllMembers, extractMotherName } from "@/services/familyService";
+import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
 import { formatAge } from "@/utils/ageCalculator";
 
 interface ListViewProps {
@@ -17,25 +19,27 @@ const DEPTH_ACCENTS = [
 ];
 
 export function ListView({ onSelectMember }: ListViewProps) {
+  const members = useMemo(() => getAllMembers(), []);
+
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => {
-    const roots = familyMembers.filter((m) => !m.father_id);
+    const roots = members.filter((m) => !m.father_id);
     return new Set(roots.map((r) => r.id));
   });
 
   const childrenMap = useMemo(() => {
     const map = new Map<string, FamilyMember[]>();
-    familyMembers.forEach((m) => {
+    members.forEach((m) => {
       if (m.father_id) {
         if (!map.has(m.father_id)) map.set(m.father_id, []);
         map.get(m.father_id)!.push(m);
       }
     });
     return map;
-  }, []);
+  }, [members]);
 
   const roots = useMemo(
-    () => familyMembers.filter((m) => !m.father_id),
-    []
+    () => members.filter((m) => !m.father_id),
+    [members]
   );
 
   const toggleExpand = useCallback((id: string) => {
@@ -96,6 +100,40 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect 
   const isMale = member.gender === "M";
   const accentColor = DEPTH_ACCENTS[depth % DEPTH_ACCENTS.length];
   const ageText = formatAge(member.birth_year, member.death_year);
+  const motherName = extractMotherName(member);
+  const phone = member.phone as string | undefined;
+
+  // Group children by mother for coloring
+  const groupedChildren = useMemo(() => {
+    if (!hasChildren) return [];
+    const groups = new Map<string, { children: FamilyMember[]; colorIndex: number }>();
+    let ci = 0;
+    children.forEach((child) => {
+      const mn = extractMotherName(child) || "__unknown__";
+      if (!groups.has(mn)) {
+        groups.set(mn, { children: [], colorIndex: mn !== "__unknown__" ? ci++ : -1 });
+      }
+      groups.get(mn)!.children.push(child);
+    });
+    return Array.from(groups.entries());
+  }, [children, hasChildren]);
+
+  // Get this member's mother color
+  const motherColor = useMemo(() => {
+    if (!motherName || !member.father_id) return null;
+    // Find siblings to determine color index
+    const siblings = childrenMap.get(member.father_id) || [];
+    const motherGroups = new Map<string, number>();
+    let ci = 0;
+    siblings.forEach((s) => {
+      const mn = extractMotherName(s) || "__unknown__";
+      if (mn !== "__unknown__" && !motherGroups.has(mn)) {
+        motherGroups.set(mn, ci++);
+      }
+    });
+    const idx = motherGroups.get(motherName);
+    return idx !== undefined ? BRANCH_COLORS[idx % BRANCH_COLORS.length] : null;
+  }, [motherName, member.father_id, childrenMap]);
 
   return (
     <div>
@@ -110,7 +148,7 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect 
       >
         <div
           className="absolute right-0 top-0 bottom-0 w-1 rounded-r-xl"
-          style={{ backgroundColor: accentColor }}
+          style={{ backgroundColor: motherColor?.stroke || accentColor }}
         />
 
         <button
@@ -157,6 +195,14 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect 
               {member.name}
             </span>
             <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+              {motherName && motherColor && (
+                <span
+                  className="text-[10px] mt-0.5 px-1.5 py-0.5 rounded-full font-medium"
+                  style={{ color: motherColor.stroke, backgroundColor: `${motherColor.stroke}15` }}
+                >
+                  أم: {motherName}
+                </span>
+              )}
               {(member.birth_year || member.death_year) && (
                 <span className="text-xs text-muted-foreground mt-0.5 block">
                   {member.birth_year && `${member.birth_year} هـ`}
@@ -170,18 +216,32 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect 
             </div>
           </div>
 
-          {hasChildren && (
-            <div
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold shrink-0"
-              style={{
-                backgroundColor: `${accentColor}15`,
-                color: accentColor,
-              }}
-            >
-              <Users className="h-3 w-3" />
-              {children.length}
-            </div>
-          )}
+          <div className="flex items-center gap-1.5 shrink-0">
+            {phone && (
+              <a
+                href={`https://wa.me/${phone.replace(/[^0-9]/g, "")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="w-8 h-8 rounded-lg bg-[#25D366]/10 flex items-center justify-center text-[#25D366] hover:bg-[#25D366]/20 transition-colors"
+                title="تواصل عبر واتساب"
+              >
+                <Phone className="h-3.5 w-3.5" />
+              </a>
+            )}
+            {hasChildren && (
+              <div
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold"
+                style={{
+                  backgroundColor: `${accentColor}15`,
+                  color: accentColor,
+                }}
+              >
+                <Users className="h-3 w-3" />
+                {children.length}
+              </div>
+            )}
+          </div>
 
           {!hasChildren && onSelect && (
             <div
@@ -214,16 +274,36 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect 
           className="space-y-1.5 pt-1.5 pb-1 animate-accordion-down"
           style={{ paddingRight: `${Math.min(depth + 1, 3) * 0.75}rem` }}
         >
-          {children.map((child) => (
-            <ListNode
-              key={child.id}
-              member={child}
-              depth={depth + 1}
-              childrenMap={childrenMap}
-              expandedIds={expandedIds}
-              onToggle={onToggle}
-              onSelect={onSelect}
-            />
+          {groupedChildren.map(([motherKey, group]) => (
+            <div key={motherKey}>
+              {motherKey !== "__unknown__" && group.colorIndex >= 0 && (
+                <div
+                  className="flex items-center gap-1.5 px-3 py-1 mb-1"
+                >
+                  <div
+                    className="w-2 h-2 rounded-full"
+                    style={{ backgroundColor: BRANCH_COLORS[group.colorIndex % BRANCH_COLORS.length].stroke }}
+                  />
+                  <span
+                    className="text-[10px] font-semibold"
+                    style={{ color: BRANCH_COLORS[group.colorIndex % BRANCH_COLORS.length].stroke }}
+                  >
+                    أبناء {motherKey}
+                  </span>
+                </div>
+              )}
+              {group.children.map((child) => (
+                <ListNode
+                  key={child.id}
+                  member={child}
+                  depth={depth + 1}
+                  childrenMap={childrenMap}
+                  expandedIds={expandedIds}
+                  onToggle={onToggle}
+                  onSelect={onSelect}
+                />
+              ))}
+            </div>
           ))}
         </div>
       )}

@@ -122,6 +122,7 @@ const Profile = () => {
         notes,
       });
       refreshMembers();
+      window.dispatchEvent(new Event("family-data-updated"));
       toast.success("تمت إضافة الابن/البنت بنجاح");
       setNewChildName("");
       setNewChildGender("M");

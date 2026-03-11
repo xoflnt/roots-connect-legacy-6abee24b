@@ -1,9 +1,9 @@
 import { Handle, Position, type NodeProps } from "@xyflow/react";
-import { Plus, Minus } from "lucide-react";
+import { Plus, Minus, Phone } from "lucide-react";
 import type { FamilyMember } from "@/data/familyData";
 import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
 import { HeritageBadge } from "./HeritageBadge";
-import { isFounder, isDeceased } from "@/services/familyService";
+import { isFounder, isDeceased, getChildrenOf } from "@/services/familyService";
 import { formatAge } from "@/utils/ageCalculator";
 
 export function FamilyCard({ data, selected }: NodeProps) {
@@ -24,6 +24,15 @@ export function FamilyCard({ data, selected }: NodeProps) {
   const founder = isFounder(member);
   const deceased = isDeceased(member);
   const ageText = formatAge(member.birth_year, member.death_year);
+  const childrenCount = getChildrenOf(member.id).length;
+  const phone = member.phone as string | undefined;
+
+  const handleWhatsApp = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!phone) return;
+    const cleaned = phone.replace(/[^0-9]/g, "");
+    window.open(`https://wa.me/${cleaned}`, "_blank");
+  };
 
   return (
     <div
@@ -93,6 +102,25 @@ export function FamilyCard({ data, selected }: NodeProps) {
       {ageText && (
         <p className="text-[10px] text-accent font-semibold mt-0.5">{ageText}</p>
       )}
+
+      {/* Children count + WhatsApp row */}
+      <div className="flex items-center gap-1.5 mt-1 px-2">
+        {childrenCount > 0 && (
+          <span className="text-[10px] text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded-full">
+            {childrenCount} أبناء
+          </span>
+        )}
+        {phone && (
+          <button
+            onClick={handleWhatsApp}
+            className="flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 transition-colors"
+            title="تواصل عبر واتساب"
+          >
+            <Phone className="h-2.5 w-2.5" />
+            واتساب
+          </button>
+        )}
+      </div>
 
       {/* Heritage badges */}
       <div className="flex flex-wrap gap-0.5 justify-center mt-1 px-2">
