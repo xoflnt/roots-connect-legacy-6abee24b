@@ -128,7 +128,7 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect 
   const isMale = member.gender === "M";
   const accentColor = DEPTH_ACCENTS[depth % DEPTH_ACCENTS.length];
   const ageText = formatAge(member.birth_year, member.death_year);
-  const motherName = extractMotherName(member);
+  const motherName = inferMotherName(member);
   const phone = member.phone as string | undefined;
   const branch = getBranch(member.id);
   const branchStyle = branch ? getBranchStyle(branch.pillarId) : null;
