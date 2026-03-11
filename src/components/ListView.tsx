@@ -47,7 +47,7 @@ export function ListView({ onSelectMember }: ListViewProps) {
   }, []);
 
   return (
-    <div className="py-6 md:py-8 px-3 md:px-4" dir="rtl">
+    <div className="py-6 md:py-8 px-3 md:px-4 overflow-x-hidden" dir="rtl">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-6 md:mb-8 space-y-3">
@@ -216,7 +216,7 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect 
       {isExpanded && hasChildren && (
         <div
           className="space-y-1.5 pt-1.5 pb-1 animate-accordion-down"
-          style={{ paddingRight: `${Math.min(depth + 1, 4) * 1}rem` }}
+          style={{ paddingRight: `${Math.min(depth + 1, 3) * 0.75}rem` }}
         >
           {children.map((child) => (
             <ListNode

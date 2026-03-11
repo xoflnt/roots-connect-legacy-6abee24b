@@ -113,13 +113,13 @@ function StatCard({ icon: Icon, label, value, suffix, highlight }: { icon: React
   }, []);
 
   return (
-    <div ref={ref} className="flex flex-col items-center gap-1.5 p-4 rounded-2xl bg-card border border-border/50 shadow-sm">
-      <Icon className="h-5 w-5 text-accent" />
+    <div ref={ref} className="flex flex-col items-center gap-1.5 p-3 md:p-4 rounded-2xl bg-card border border-border/50 shadow-sm overflow-hidden">
+      <Icon className="h-5 w-5 text-accent shrink-0" />
       <span className="text-2xl md:text-3xl font-extrabold text-foreground">
         {highlight && <span className="text-primary">{highlight} </span>}
         {counter.value}{suffix}
       </span>
-      <span className="text-xs md:text-sm text-muted-foreground font-bold">{label}</span>
+      <span className="text-xs md:text-sm text-muted-foreground font-bold text-center break-words leading-snug">{label}</span>
     </div>
   );
 }
@@ -137,7 +137,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
   const showingResults = open && filtered.length > 0;
 
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
+    <div className="min-h-screen bg-background overflow-x-hidden" dir="rtl">
       {/* Hero Section */}
       <section className="relative flex flex-col items-center justify-center min-h-screen px-4 text-center">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-accent to-transparent" />
