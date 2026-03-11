@@ -40,6 +40,7 @@ const Index = () => {
 
   return (
     <div className="flex flex-col h-screen bg-background overflow-x-hidden">
+      <OnboardingModal />
       <AppHeader
         activeView={activeView as ViewMode}
         onViewChange={(v) => {
