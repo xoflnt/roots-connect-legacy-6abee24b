@@ -247,7 +247,7 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                           className="w-9 h-9 rounded-lg bg-[#25D366]/10 flex items-center justify-center text-[#25D366] hover:bg-[#25D366]/20 transition-colors shrink-0"
                           title="تواصل عبر واتساب"
                         >
-                          <Phone className="h-4 w-4" />
+                          <WhatsAppIcon className="h-4 w-4" />
                         </a>
                       )}
                     </div>
