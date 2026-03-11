@@ -65,8 +65,7 @@ export const FamilyTree = forwardRef<FamilyTreeRef>(function FamilyTree(_, ref) 
       if (!rfInstance.current) return;
       
       // Expand all ancestors to make the node visible
-      const { familyMembers } = require("@/data/familyData");
-      const memberMap = new Map(familyMembers.map((m: any) => [m.id, m]));
+      const memberMap = new Map(familyMembers.map((m) => [m.id, m]));
       const ancestorIds = new Set<string>();
       let current = memberMap.get(memberId);
       while (current?.father_id) {
