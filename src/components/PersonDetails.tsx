@@ -9,7 +9,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import type { FamilyMember } from "@/data/familyData";
 import { useNavigate } from "react-router-dom";
 import { formatAge } from "@/utils/ageCalculator";
-import { extractMotherName, getChildrenOf } from "@/services/familyService";
+import { inferMotherName, getChildrenOf, sortByBirth } from "@/services/familyService";
 import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
 import { SubmitRequestForm } from "@/components/SubmitRequestForm";
 import { getBranch, getBranchStyle } from "@/utils/branchUtils";
@@ -25,9 +25,9 @@ function DetailContent({ member }: { member: FamilyMember }) {
   const [requestOpen, setRequestOpen] = useState(false);
 
   const ageText = formatAge(member.birth_year, member.death_year);
-  const motherName = extractMotherName(member);
+  const motherName = inferMotherName(member);
   const phone = member.phone as string | undefined;
-  const children = getChildrenOf(member.id);
+  const children = sortByBirth(getChildrenOf(member.id));
 
   // Group children by mother with colors
   const groupedChildren = useMemo(() => {
@@ -35,7 +35,7 @@ function DetailContent({ member }: { member: FamilyMember }) {
     const groups = new Map<string, { children: FamilyMember[]; colorIndex: number }>();
     let ci = 0;
     children.forEach((child) => {
-      const mn = extractMotherName(child) || "__unknown__";
+      const mn = inferMotherName(child) || "__unknown__";
       if (!groups.has(mn)) {
         groups.set(mn, { children: [], colorIndex: mn !== "__unknown__" ? ci++ : -1 });
       }

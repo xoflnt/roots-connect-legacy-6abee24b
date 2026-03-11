@@ -4,7 +4,7 @@ import { WhatsAppIcon } from "./WhatsAppIcon";
 import { downloadVCard } from "@/utils/vcard";
 import { useState } from "react";
 import { type FamilyMember } from "@/data/familyData";
-import { getAllMembers, extractMotherName } from "@/services/familyService";
+import { getAllMembers, inferMotherName, sortByBirth } from "@/services/familyService";
 import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
 import { HeritageBadge } from "./HeritageBadge";
 import { isFounder, isBranchHead, isDeceased } from "@/services/familyService";
@@ -52,6 +52,8 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
         cMap.set(m.father_id, arr);
       }
     }
+    // Sort children in each group by birth
+    cMap.forEach((children, key) => cMap.set(key, sortByBirth(children)));
 
     return { chain: result, childrenMap: cMap };
   }, [memberId]);
@@ -137,7 +139,7 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
             const isMale = member.gender === "M";
             const genNum = index + 1;
             const dotColor = DEPTH_COLORS[index % DEPTH_COLORS.length];
-            const motherName = extractMotherName(member);
+            const motherName = inferMotherName(member);
             const ageText = formatAge(member.birth_year, member.death_year);
             const phone = member.phone as string | undefined;
 
@@ -148,7 +150,7 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
               const motherGroups = new Map<string, number>();
               let ci = 0;
               siblings.forEach((s) => {
-                const mn = extractMotherName(s) || "__unknown__";
+                const mn = inferMotherName(s) || "__unknown__";
                 if (mn !== "__unknown__" && !motherGroups.has(mn)) {
                   motherGroups.set(mn, ci++);
                 }
@@ -322,7 +324,7 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                       const groups = new Map<string, { children: FamilyMember[]; colorIndex: number }>();
                       let ci = 0;
                       children.forEach((child) => {
-                        const mn = extractMotherName(child) || "__unknown__";
+                        const mn = inferMotherName(child) || "__unknown__";
                         if (!groups.has(mn)) {
                           groups.set(mn, { children: [], colorIndex: mn !== "__unknown__" ? ci++ : -1 });
                         }

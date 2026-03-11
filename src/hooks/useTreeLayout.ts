@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import dagre from "dagre";
 import type { Node, Edge } from "@xyflow/react";
-import { getAllMembers, extractMotherName } from "@/services/familyService";
+import { getAllMembers, inferMotherName, sortByBirth } from "@/services/familyService";
 
 const NODE_WIDTH = 220;
 const NODE_HEIGHT = 100;
@@ -42,7 +42,7 @@ export function getMotherOf(id: string): string | null {
   const members = getAllMembers();
   const member = members.find((m) => m.id === id);
   if (!member) return null;
-  return extractMotherName(member);
+  return inferMotherName(member);
 }
 
 export function getDefaultExpandedIds(): Set<string> {
@@ -90,7 +90,7 @@ export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number) {
       if (!childrenByFatherAndMother.has(member.father_id))
         childrenByFatherAndMother.set(member.father_id, new Map());
       const motherMap = childrenByFatherAndMother.get(member.father_id)!;
-      const motherName = extractMotherName(member) || "__unknown__";
+      const motherName = inferMotherName(member) || "__unknown__";
       if (!motherMap.has(motherName)) motherMap.set(motherName, []);
       motherMap.get(motherName)!.push(member.id);
     });
@@ -110,12 +110,14 @@ export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number) {
     childrenByFatherAndMother.forEach((motherMap, fatherId) => {
       const names: string[] = [];
       motherMap.forEach((childIds, motherName) => {
+        // Sort children within each mother group by birth
+        const sortedChildIds = sortByBirth(childIds.map((id) => memberById.get(id)!)).map((m) => m.id);
         const ci = colorCounter % BRANCH_COLORS.length;
         colorCounter++;
         if (motherName !== "__unknown__") {
           names.push(motherName);
         }
-        childIds.forEach((childId) => {
+        sortedChildIds.forEach((childId) => {
           g.setEdge(fatherId, childId);
           if (motherName !== "__unknown__") {
             childColorMap.set(childId, ci);
@@ -151,7 +153,7 @@ export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number) {
         data: {
           ...member,
           branchColorIndex: childColorMap.get(member.id) ?? -1,
-          motherName: childMotherMap.get(member.id) ?? null,
+          motherName: childMotherMap.get(member.id) ?? inferMotherName(member),
           spouseNames: fatherSpouseNames.get(member.id) ?? [],
           hasChildren: hasChildrenInData(member.id),
           isExpanded: expandedIds.has(member.id),

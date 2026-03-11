@@ -1,12 +1,11 @@
 import { useState, useMemo } from "react";
-import { getAllMembers } from "@/services/familyService";
+import { getAllMembers, inferMotherName, sortByBirth } from "@/services/familyService";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, X, UserPlus } from "lucide-react";
 import { WhatsAppIcon } from "./WhatsAppIcon";
 import { downloadVCard } from "@/utils/vcard";
-import { extractMotherName } from "@/services/familyService";
 import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
 import { calculateAge } from "@/utils/ageCalculator";
 import { toArabicNum } from "@/utils/ageCalculator";
@@ -55,7 +54,7 @@ export function DataTableView() {
     const map = new Map<string, Map<string, number>>();
     members.forEach((m) => {
       if (!m.father_id) return;
-      const mn = extractMotherName(m);
+      const mn = inferMotherName(m);
       if (!mn) return;
       if (!map.has(m.father_id)) map.set(m.father_id, new Map());
       const fatherMap = map.get(m.father_id)!;
@@ -100,7 +99,7 @@ export function DataTableView() {
       list = list.filter((m) => m.name.includes(search.trim()));
     }
 
-    return list;
+    return sortByBirth(list);
   }, [search, gender, ancestorId, members]);
 
   const clearFilters = () => {
@@ -183,7 +182,7 @@ export function DataTableView() {
             </TableHeader>
             <TableBody>
               {filtered.map((m, i) => {
-                const motherName = extractMotherName(m);
+                const motherName = inferMotherName(m);
                 const age = calculateAge(m.birth_year, m.death_year);
                 const phone = m.phone as string | undefined;
 

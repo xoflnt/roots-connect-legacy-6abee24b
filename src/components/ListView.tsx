@@ -3,7 +3,7 @@ import { User, ChevronDown, ChevronLeft, Users, UserPlus } from "lucide-react";
 import { WhatsAppIcon } from "./WhatsAppIcon";
 import { downloadVCard } from "@/utils/vcard";
 import { type FamilyMember } from "@/data/familyData";
-import { getAllMembers, extractMotherName } from "@/services/familyService";
+import { getAllMembers, inferMotherName, sortByBirth } from "@/services/familyService";
 import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
 import { formatAge } from "@/utils/ageCalculator";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -39,6 +39,8 @@ export function ListView({ onSelectMember }: ListViewProps) {
         map.get(m.father_id)!.push(m);
       }
     });
+    // Sort children in each group by birth
+    map.forEach((children, key) => map.set(key, sortByBirth(children)));
     return map;
   }, [members]);
 
@@ -126,7 +128,7 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect 
   const isMale = member.gender === "M";
   const accentColor = DEPTH_ACCENTS[depth % DEPTH_ACCENTS.length];
   const ageText = formatAge(member.birth_year, member.death_year);
-  const motherName = extractMotherName(member);
+  const motherName = inferMotherName(member);
   const phone = member.phone as string | undefined;
   const branch = getBranch(member.id);
   const branchStyle = branch ? getBranchStyle(branch.pillarId) : null;
@@ -137,7 +139,7 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect 
     const groups = new Map<string, { children: FamilyMember[]; colorIndex: number }>();
     let ci = 0;
     children.forEach((child) => {
-      const mn = extractMotherName(child) || "__unknown__";
+      const mn = inferMotherName(child) || "__unknown__";
       if (!groups.has(mn)) {
         groups.set(mn, { children: [], colorIndex: mn !== "__unknown__" ? ci++ : -1 });
       }
@@ -153,7 +155,7 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect 
     const motherGroups = new Map<string, number>();
     let ci = 0;
     siblings.forEach((s) => {
-      const mn = extractMotherName(s) || "__unknown__";
+      const mn = inferMotherName(s) || "__unknown__";
       if (mn !== "__unknown__" && !motherGroups.has(mn)) {
         motherGroups.set(mn, ci++);
       }
