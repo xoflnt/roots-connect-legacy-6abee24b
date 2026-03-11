@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { User, Calendar, Heart, ArrowUp } from "lucide-react";
+import { User, Calendar, Heart, ArrowUp, Users } from "lucide-react";
 import { familyMembers, type FamilyMember } from "@/data/familyData";
 
 interface LineageViewProps {
@@ -21,7 +21,7 @@ function toArabicNum(n: number): string {
 }
 
 export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
-  const chain = useMemo(() => {
+  const { chain, childrenMap } = useMemo(() => {
     const memberMap = new Map(familyMembers.map((m) => [m.id, m]));
     const result: FamilyMember[] = [];
     let current = memberMap.get(memberId);
@@ -29,7 +29,18 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
       result.push(current);
       current = current.father_id ? memberMap.get(current.father_id) : undefined;
     }
-    return result;
+
+    // Build children map: father_id -> children[]
+    const cMap = new Map<string, FamilyMember[]>();
+    for (const m of familyMembers) {
+      if (m.father_id) {
+        const arr = cMap.get(m.father_id) || [];
+        arr.push(m);
+        cMap.set(m.father_id, arr);
+      }
+    }
+
+    return { chain: result, childrenMap: cMap };
   }, [memberId]);
 
   if (chain.length === 0) {
@@ -169,6 +180,42 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                         <span className="break-words line-clamp-2">الزوجة: {member.spouses}</span>
                       </div>
                     )}
+
+                    {/* Children / Siblings */}
+                    {(() => {
+                      const children = childrenMap.get(member.id);
+                      if (!children || children.length === 0) return null;
+                      // The child in the chain (next in lineage)
+                      const chainChildId = index > 0 ? chain[index - 1].id : null;
+                      return (
+                        <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                          <Users className="h-3.5 w-3.5 shrink-0 mt-1" />
+                          <div className="flex flex-wrap gap-1.5">
+                            {children.map((child) => {
+                              const isInChain = child.id === chainChildId;
+                              return (
+                                <button
+                                  key={child.id}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onSelectMember?.(child.id);
+                                  }}
+                                  className={`
+                                    rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors
+                                    ${isInChain
+                                      ? "bg-primary/20 text-primary font-bold ring-1 ring-primary/30"
+                                      : "bg-muted text-muted-foreground hover:bg-muted/80"
+                                    }
+                                  `}
+                                >
+                                  {child.name}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   {/* Quick lineage switch for ancestors */}
