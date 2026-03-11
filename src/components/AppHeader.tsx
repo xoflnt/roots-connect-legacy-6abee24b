@@ -1,4 +1,4 @@
-import { TreePine, TableProperties, Home, List, GitBranch, Users } from "lucide-react";
+import { TreePine, TableProperties, Home, List, GitBranch, Users, UserCircle } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { FontSizeToggle } from "./FontSizeToggle";
 import { SearchBar } from "./SearchBar";
@@ -6,6 +6,7 @@ import { ResetViewButton } from "./ResetViewButton";
 import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
 import { Button } from "./ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/contexts/AuthContext";
 
 export type ViewMode = "tree" | "lineage" | "list" | "table" | "kinship";
 
@@ -27,7 +28,7 @@ const navItems: { value: ViewMode; label: string; icon: typeof TreePine }[] = [
 
 export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHome }: AppHeaderProps) {
   const isMobile = useIsMobile();
-
+  const { currentUser } = useAuth();
   return (
     <>
       {/* Top bar */}
@@ -77,6 +78,12 @@ export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHom
         )}
 
         <div className="flex items-center gap-1.5 shrink-0">
+          {currentUser && (
+            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-semibold">
+              <UserCircle className="h-4 w-4" />
+              <span>مرحباً، {currentUser.memberName.split(" ")[0]}</span>
+            </div>
+          )}
           {onSearch && <SearchBar onSelect={onSearch} />}
           {!isMobile && activeView === "tree" && onReset && <ResetViewButton onReset={onReset} />}
           <FontSizeToggle />
