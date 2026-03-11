@@ -13,7 +13,7 @@ export function SpouseCard({ data }: NodeProps) {
       style={{
         fontFamily: "'Tajawal', sans-serif",
         borderColor: `${color.stroke}40`,
-        background: `linear-gradient(135deg, hsl(var(--card) / 0.9), ${color.bg})`,
+        background: `hsl(var(--card) / 0.92)`,
       }}
     >
       <Handle type="target" position={Position.Top} className="!bg-muted-foreground/30 !w-2 !h-2 !border-none" />
