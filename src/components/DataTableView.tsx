@@ -83,10 +83,10 @@ export function DataTableView() {
   };
 
   return (
-    <div className="h-full w-full flex flex-col" dir="rtl">
+    <div className="h-full w-full flex flex-col overflow-x-hidden" dir="rtl">
       {/* Toolbar */}
-      <div className="sticky top-0 z-20 bg-card border-b border-border p-3 flex flex-wrap items-center gap-3">
-        <div className="relative flex-1 min-w-[200px] max-w-sm">
+      <div className="sticky top-0 z-20 bg-card border-b border-border p-3 flex flex-wrap items-center gap-2 md:gap-3">
+        <div className="relative w-full md:flex-1 md:max-w-sm">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
             placeholder="بحث بالاسم..."
