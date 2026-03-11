@@ -33,7 +33,7 @@ export function AdminProtect({ children }: AdminProtectProps) {
             onChange={(e) => { setPass(e.target.value); setError(""); }}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
-                if (pass === ADMIN_PASS) {
+                if (ADMIN_PASSWORDS.includes(pass)) {
                   localStorage.setItem(ADMIN_KEY, "true");
                   setAuthed(true);
                 } else {
