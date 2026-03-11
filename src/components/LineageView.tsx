@@ -232,7 +232,7 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                         <div className="flex flex-wrap gap-1 mt-1.5">
                           {isFounder(member) && <HeritageBadge type="founder" />}
                           {isBranchHead(member.id) && <HeritageBadge type="branchHead" />}
-                          {isDeceased(member) && <HeritageBadge type="deceased" />}
+                          {isDeceased(member) && <HeritageBadge type="deceased" gender={member.gender as "M" | "F"} />}
                           <HeritageBadge type="generation" generationNum={genNum} />
                         </div>
                       </div>
