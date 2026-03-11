@@ -42,7 +42,7 @@ export function getMotherOf(id: string): string | null {
   const members = getAllMembers();
   const member = members.find((m) => m.id === id);
   if (!member) return null;
-  return extractMotherName(member);
+  return inferMotherName(member);
 }
 
 export function getDefaultExpandedIds(): Set<string> {
