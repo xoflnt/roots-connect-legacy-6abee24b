@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { User, Calendar, Heart, FileText, X, ExternalLink, Clock, Send } from "lucide-react";
+import { User, Calendar, Heart, FileText, X, ExternalLink, Clock, Send, Phone, Users2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -7,6 +7,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import type { FamilyMember } from "@/data/familyData";
 import { useNavigate } from "react-router-dom";
 import { formatAge } from "@/utils/ageCalculator";
+import { extractMotherName } from "@/services/familyService";
 import { SubmitRequestForm } from "@/components/SubmitRequestForm";
 
 interface PersonDetailsProps {
@@ -20,6 +21,7 @@ function DetailContent({ member }: { member: FamilyMember }) {
   const [requestOpen, setRequestOpen] = useState(false);
 
   const ageText = formatAge(member.birth_year, member.death_year);
+  const motherName = extractMotherName(member);
 
   return (
     <div className="space-y-5 p-1" dir="rtl">
@@ -62,6 +64,18 @@ function DetailContent({ member }: { member: FamilyMember }) {
           </div>
         )}
 
+        {motherName && (
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-muted/50 border border-border/30">
+            <div className="w-9 h-9 rounded-lg bg-accent/15 flex items-center justify-center shrink-0">
+              <Users2 className="h-4 w-4 text-accent" />
+            </div>
+            <div>
+              <p className="text-[11px] text-muted-foreground font-medium">الأم</p>
+              <p className="text-sm font-bold text-foreground">{motherName}</p>
+            </div>
+          </div>
+        )}
+
         {member.birth_year && (
           <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-muted/50 border border-border/30">
             <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
@@ -82,6 +96,18 @@ function DetailContent({ member }: { member: FamilyMember }) {
             <div>
               <p className="text-[11px] text-muted-foreground font-medium">سنة الوفاة</p>
               <p className="text-sm font-bold text-foreground">{member.death_year} هـ</p>
+            </div>
+          </div>
+        )}
+
+        {member.phone && (
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-muted/50 border border-border/30">
+            <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              <Phone className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <p className="text-[11px] text-muted-foreground font-medium">الجوال</p>
+              <p className="text-sm font-bold text-foreground" dir="ltr">{member.phone}</p>
             </div>
           </div>
         )}

@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import dagre from "dagre";
 import type { Node, Edge } from "@xyflow/react";
 import { familyMembers } from "@/data/familyData";
+import { extractMotherName } from "@/services/familyService";
 
 const NODE_WIDTH = 220;
 const NODE_HEIGHT = 100;
@@ -10,11 +11,11 @@ const SPOUSE_HEIGHT = 50;
 
 // Warm heritage-aligned branch colors
 export const BRANCH_COLORS = [
-  { stroke: "hsl(25, 55%, 45%)",   bg: "hsl(25, 40%, 93%)",   bgDark: "hsl(25, 35%, 20%)" },   // warm brown
-  { stroke: "hsl(155, 40%, 35%)",  bg: "hsl(155, 30%, 92%)",  bgDark: "hsl(155, 28%, 18%)" },  // olive green
-  { stroke: "hsl(350, 40%, 48%)",  bg: "hsl(350, 30%, 94%)",  bgDark: "hsl(350, 25%, 20%)" },  // muted rose
-  { stroke: "hsl(42, 55%, 42%)",   bg: "hsl(42, 40%, 92%)",   bgDark: "hsl(42, 35%, 20%)" },   // warm gold
-  { stroke: "hsl(200, 35%, 42%)",  bg: "hsl(200, 25%, 92%)",  bgDark: "hsl(200, 25%, 18%)" },  // steel blue
+  { stroke: "hsl(25, 55%, 45%)",   bg: "hsl(25, 40%, 93%)",   bgDark: "hsl(25, 35%, 20%)" },
+  { stroke: "hsl(155, 40%, 35%)",  bg: "hsl(155, 30%, 92%)",  bgDark: "hsl(155, 28%, 18%)" },
+  { stroke: "hsl(350, 40%, 48%)",  bg: "hsl(350, 30%, 94%)",  bgDark: "hsl(350, 25%, 20%)" },
+  { stroke: "hsl(42, 55%, 42%)",   bg: "hsl(42, 40%, 92%)",   bgDark: "hsl(42, 35%, 20%)" },
+  { stroke: "hsl(200, 35%, 42%)",  bg: "hsl(200, 25%, 92%)",  bgDark: "hsl(200, 25%, 18%)" },
 ];
 
 // Build children map once
@@ -26,12 +27,24 @@ familyMembers.forEach((m) => {
   }
 });
 
+// Build mother map once
+const motherOfMap = new Map<string, string>();
+const memberById = new Map(familyMembers.map((m) => [m.id, m]));
+familyMembers.forEach((m) => {
+  const mother = extractMotherName(m);
+  if (mother) motherOfMap.set(m.id, mother);
+});
+
 export function getChildrenOf(id: string): string[] {
   return childrenOfMap.get(id) || [];
 }
 
 export function hasChildrenInData(id: string): boolean {
   return (childrenOfMap.get(id)?.length ?? 0) > 0;
+}
+
+export function getMotherOf(id: string): string | null {
+  return motherOfMap.get(id) || null;
 }
 
 export function getDefaultExpandedIds(): Set<string> {
@@ -43,7 +56,6 @@ export function getDefaultExpandedIds(): Set<string> {
 
 export function useTreeLayout(expandedIds: Set<string>) {
   return useMemo(() => {
-    const memberMap = new Map(familyMembers.map((m) => [m.id, m]));
     const visibleIds = new Set<string>();
 
     familyMembers.forEach((m) => {
@@ -68,6 +80,7 @@ export function useTreeLayout(expandedIds: Set<string>) {
     g.setGraph({ rankdir: "TB", nodesep: 100, ranksep: 180 });
     g.setDefaultEdgeLabel(() => ({}));
 
+    // Group children by father AND mother
     const childrenByFatherAndMother = new Map<string, Map<string, string[]>>();
     visibleMembers.forEach((member) => {
       if (!member.father_id) return;
@@ -75,7 +88,7 @@ export function useTreeLayout(expandedIds: Set<string>) {
       if (!childrenByFatherAndMother.has(member.father_id))
         childrenByFatherAndMother.set(member.father_id, new Map());
       const motherMap = childrenByFatherAndMother.get(member.father_id)!;
-      const motherName = "__unknown__";
+      const motherName = extractMotherName(member) || "__unknown__";
       if (!motherMap.has(motherName)) motherMap.set(motherName, []);
       motherMap.get(motherName)!.push(member.id);
     });
@@ -86,6 +99,7 @@ export function useTreeLayout(expandedIds: Set<string>) {
 
     const spouseNodes: { id: string; name: string; colorIndex: number }[] = [];
     const childColorMap = new Map<string, number>();
+    const childMotherMap = new Map<string, string>();
     const edgeColorMap = new Map<string, number>();
     let colorCounter = 0;
 
@@ -105,11 +119,13 @@ export function useTreeLayout(expandedIds: Set<string>) {
         childIds.forEach((childId) => {
           g.setEdge(spouseId, childId);
           childColorMap.set(childId, ci);
+          childMotherMap.set(childId, motherName);
           edgeColorMap.set(`e-${spouseId}-${childId}`, ci);
         });
       });
     });
 
+    // Add spouse nodes from spouses field that weren't already added via mother grouping
     visibleMembers.forEach((member) => {
       if (!member.spouses) return;
       const spouseNames = member.spouses.split("،").map((s) => s.trim()).filter(Boolean);
@@ -142,6 +158,7 @@ export function useTreeLayout(expandedIds: Set<string>) {
           data: {
             ...member,
             branchColorIndex: childColorMap.get(member.id) ?? -1,
+            motherName: childMotherMap.get(member.id) ?? null,
             hasChildren: hasChildrenMap.get(member.id) ?? false,
             isExpanded: expandedIds.has(member.id),
           },

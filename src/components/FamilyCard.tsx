@@ -4,10 +4,12 @@ import type { FamilyMember } from "@/data/familyData";
 import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
 import { HeritageBadge } from "./HeritageBadge";
 import { isFounder, isDeceased } from "@/services/familyService";
+import { formatAge } from "@/utils/ageCalculator";
 
 export function FamilyCard({ data, selected }: NodeProps) {
   const member = data as unknown as FamilyMember & {
     branchColorIndex: number;
+    motherName: string | null;
     hasChildren: boolean;
     isExpanded: boolean;
   };
@@ -21,6 +23,7 @@ export function FamilyCard({ data, selected }: NodeProps) {
 
   const founder = isFounder(member);
   const deceased = isDeceased(member);
+  const ageText = formatAge(member.birth_year, member.death_year);
 
   return (
     <div
@@ -62,6 +65,17 @@ export function FamilyCard({ data, selected }: NodeProps) {
         {member.name}
       </h3>
 
+      {/* Mother name with color */}
+      {member.motherName && branchColor && (
+        <p
+          className="text-[10px] mt-0.5 px-2 py-0.5 rounded-full font-medium"
+          style={{ color: branchColor.stroke, backgroundColor: `${branchColor.stroke}15` }}
+          dir="rtl"
+        >
+          أم: {member.motherName}
+        </p>
+      )}
+
       {(member.birth_year || member.death_year) && (
         <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1 justify-center tabular-nums">
           {member.birth_year && `${member.birth_year} هـ`}
@@ -75,7 +89,12 @@ export function FamilyCard({ data, selected }: NodeProps) {
         </p>
       )}
 
-      {/* Heritage badges - only founder and deceased on card */}
+      {/* Age */}
+      {ageText && (
+        <p className="text-[10px] text-accent font-semibold mt-0.5">{ageText}</p>
+      )}
+
+      {/* Heritage badges */}
       <div className="flex flex-wrap gap-0.5 justify-center mt-1 px-2">
         {founder && <HeritageBadge type="founder" />}
         {deceased && <HeritageBadge type="deceased" />}

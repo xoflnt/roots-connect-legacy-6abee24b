@@ -4,6 +4,9 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, X } from "lucide-react";
+import { extractMotherName } from "@/services/familyService";
+import { calculateAge } from "@/utils/ageCalculator";
+import { toArabicNum } from "@/utils/ageCalculator";
 import {
   Select,
   SelectContent,
@@ -31,7 +34,6 @@ familyMembers.forEach((m) => {
   }
 });
 
-// Build ancestors list (people who have children)
 const ancestors = familyMembers.filter((m) => childrenMap.has(m.id));
 
 function getDescendantIds(id: string): Set<string> {
@@ -135,7 +137,7 @@ export function DataTableView() {
 
       {/* Table */}
       <div className="flex-1 overflow-auto">
-        <div className="min-w-[1200px]">
+        <div className="min-w-[1400px]">
           <Table>
             <TableHeader className="sticky top-0 z-10">
               <TableRow className="bg-muted shadow-sm">
@@ -143,8 +145,10 @@ export function DataTableView() {
                 <TableHead className="text-right">الاسم</TableHead>
                 <TableHead className="text-right w-[60px]">الجنس</TableHead>
                 <TableHead className="text-right">الأب</TableHead>
+                <TableHead className="text-right">الأم</TableHead>
                 <TableHead className="text-right w-[80px]">الميلاد</TableHead>
                 <TableHead className="text-right w-[80px]">الوفاة</TableHead>
+                <TableHead className="text-right w-[70px]">العمر</TableHead>
                 <TableHead className="text-right">الزوجات</TableHead>
                 <TableHead className="text-right w-[120px]">الجوال</TableHead>
                 <TableHead className="text-right">الأبناء</TableHead>
@@ -152,52 +156,66 @@ export function DataTableView() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map((m, i) => (
-                <TableRow
-                  key={m.id}
-                  className={i % 2 === 0 ? "bg-background" : "bg-muted/30"}
-                >
-                  <TableCell className="font-mono text-muted-foreground text-xs">{m.id}</TableCell>
-                  <TableCell className="font-semibold text-foreground">{m.name}</TableCell>
-                  <TableCell>
-                    <Badge variant={m.gender === "M" ? "default" : "secondary"} className="text-xs">
-                      {m.gender === "M" ? "ذكر" : "أنثى"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {m.father_id ? (
-                      <Badge variant="outline" className="text-xs font-normal gap-1">
-                        <span className="text-muted-foreground">{m.father_id}</span>
-                        <span>—</span>
-                        <span>{memberMap.get(m.father_id) ?? "غير موجود"}</span>
+              {filtered.map((m, i) => {
+                const motherName = extractMotherName(m);
+                const age = calculateAge(m.birth_year, m.death_year);
+                return (
+                  <TableRow
+                    key={m.id}
+                    className={i % 2 === 0 ? "bg-background" : "bg-muted/30"}
+                  >
+                    <TableCell className="font-mono text-muted-foreground text-xs">{m.id}</TableCell>
+                    <TableCell className="font-semibold text-foreground">{m.name}</TableCell>
+                    <TableCell>
+                      <Badge variant={m.gender === "M" ? "default" : "secondary"} className="text-xs">
+                        {m.gender === "M" ? "ذكر" : "أنثى"}
                       </Badge>
-                    ) : (
-                      <span className="text-muted-foreground text-xs">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-sm">{m.birth_year || "—"}</TableCell>
-                  <TableCell className="text-sm">{m.death_year || "—"}</TableCell>
-                  <TableCell className="text-sm">
-                    {m.spouses || <span className="text-muted-foreground text-xs">—</span>}
-                  </TableCell>
-                  <TableCell className="text-sm font-mono" dir="ltr">
-                    {m.phone || <span className="text-muted-foreground text-xs">—</span>}
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {childrenMap.has(m.id) ? (
-                      <div className="flex flex-wrap items-center gap-1">
-                        <Badge variant="outline" className="text-xs shrink-0">
-                          {childrenMap.get(m.id)!.length}
+                    </TableCell>
+                    <TableCell>
+                      {m.father_id ? (
+                        <Badge variant="outline" className="text-xs font-normal gap-1">
+                          <span className="text-muted-foreground">{m.father_id}</span>
+                          <span>—</span>
+                          <span>{memberMap.get(m.father_id) ?? "غير موجود"}</span>
                         </Badge>
-                        <span>{childrenMap.get(m.id)!.join("، ")}</span>
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground text-xs">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{m.notes || "—"}</TableCell>
-                </TableRow>
-              ))}
+                      ) : (
+                        <span className="text-muted-foreground text-xs">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {motherName || <span className="text-muted-foreground text-xs">—</span>}
+                    </TableCell>
+                    <TableCell className="text-sm">{m.birth_year || "—"}</TableCell>
+                    <TableCell className="text-sm">{m.death_year || "—"}</TableCell>
+                    <TableCell className="text-sm">
+                      {age ? (
+                        <span className="font-semibold text-accent">{toArabicNum(age)}</span>
+                      ) : (
+                        <span className="text-muted-foreground text-xs">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {m.spouses || <span className="text-muted-foreground text-xs">—</span>}
+                    </TableCell>
+                    <TableCell className="text-sm font-mono" dir="ltr">
+                      {m.phone || <span className="text-muted-foreground text-xs">—</span>}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {childrenMap.has(m.id) ? (
+                        <div className="flex flex-wrap items-center gap-1">
+                          <Badge variant="outline" className="text-xs shrink-0">
+                            {childrenMap.get(m.id)!.length}
+                          </Badge>
+                          <span>{childrenMap.get(m.id)!.join("، ")}</span>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground text-xs">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{m.notes || "—"}</TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </div>

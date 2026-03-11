@@ -7,12 +7,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search, Send, Loader2, UserCheck } from "lucide-react";
 import { familyMembers, type FamilyMember } from "@/data/familyData";
 import { submitRequest, type RequestType } from "@/services/dataService";
+import { getLineageLabel, getMemberSubtitle } from "@/utils/memberLabel";
 import { toast } from "sonner";
 
 interface SubmitRequestFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Pre-selected target member (when opened from PersonDetails) */
   targetMember?: FamilyMember | null;
 }
 
@@ -24,20 +24,12 @@ const REQUEST_TYPES: { value: RequestType; label: string }[] = [
   { value: "other", label: "أخرى" },
 ];
 
-const memberMap = new Map(familyMembers.map((m) => [m.id, m]));
-
-function getDisplayLabel(m: FamilyMember): string {
-  const father = m.father_id ? memberMap.get(m.father_id)?.name : null;
-  return father ? `${m.name} (ابن ${father})` : m.name;
-}
-
 export function SubmitRequestForm({ open, onOpenChange, targetMember }: SubmitRequestFormProps) {
   const [requestType, setRequestType] = useState<RequestType | "">("");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTarget, setSelectedTarget] = useState<FamilyMember | null>(targetMember || null);
   const [showSearch, setShowSearch] = useState(!targetMember);
 
-  // Dynamic fields
   const [childName, setChildName] = useState("");
   const [childGender, setChildGender] = useState<"M" | "F">("M");
   const [spouseName, setSpouseName] = useState("");
@@ -120,16 +112,22 @@ export function SubmitRequestForm({ open, onOpenChange, targetMember }: SubmitRe
                   {filtered.length === 0 ? (
                     <p className="p-3 text-center text-sm text-muted-foreground">لم يتم العثور على نتائج</p>
                   ) : (
-                    filtered.map((m) => (
-                      <button
-                        key={m.id}
-                        onClick={() => { setSelectedTarget(m); setSearchQuery(""); }}
-                        className="w-full text-right px-3 py-2.5 flex items-center gap-2 hover:bg-muted/60 transition-colors border-b border-border/20 last:border-0"
-                      >
-                        <UserCheck className="h-4 w-4 text-primary shrink-0" />
-                        <span className="text-sm font-medium">{getDisplayLabel(m)}</span>
-                      </button>
-                    ))
+                    filtered.map((m) => {
+                      const subtitle = getMemberSubtitle(m);
+                      return (
+                        <button
+                          key={m.id}
+                          onClick={() => { setSelectedTarget(m); setSearchQuery(""); }}
+                          className="w-full text-right px-3 py-2.5 flex items-center gap-2 hover:bg-muted/60 transition-colors border-b border-border/20 last:border-0"
+                        >
+                          <UserCheck className="h-4 w-4 text-primary shrink-0" />
+                          <div className="text-right">
+                            <span className="text-sm font-medium block">{getLineageLabel(m)}</span>
+                            {subtitle && <span className="text-xs text-muted-foreground">{subtitle}</span>}
+                          </div>
+                        </button>
+                      );
+                    })
                   )}
                 </div>
               )}
@@ -138,7 +136,7 @@ export function SubmitRequestForm({ open, onOpenChange, targetMember }: SubmitRe
             <div className="flex items-center justify-between p-3 rounded-xl bg-primary/5 border border-primary/20">
               <div className="flex items-center gap-2">
                 <UserCheck className="h-4 w-4 text-primary" />
-                <span className="text-sm font-bold text-foreground">{getDisplayLabel(selectedTarget)}</span>
+                <span className="text-sm font-bold text-foreground">{getLineageLabel(selectedTarget)}</span>
               </div>
               {!targetMember && (
                 <Button variant="ghost" size="sm" onClick={() => { setSelectedTarget(null); setShowSearch(true); }} className="text-xs h-7 px-2">
