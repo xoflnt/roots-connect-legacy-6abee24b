@@ -320,11 +320,3 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
   );
 }
 
-
-
-      <footer className="py-8 text-center text-sm text-muted-foreground border-t border-border/30">
-        <p>شجرة عائلة الخنيني — حفظ الإرث للأجيال القادمة</p>
-      </footer>
-    </div>
-  );
-}
