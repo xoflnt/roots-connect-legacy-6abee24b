@@ -238,18 +238,27 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                         </div>
                       </div>
 
-                      {/* WhatsApp button */}
+                      {/* WhatsApp + Save contact */}
                       {phone && (
-                        <a
-                          href={`https://wa.me/${phone.replace(/[^0-9]/g, "")}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="w-9 h-9 rounded-lg bg-[#25D366]/10 flex items-center justify-center text-[#25D366] hover:bg-[#25D366]/20 transition-colors shrink-0"
-                          title="تواصل عبر واتساب"
-                        >
-                          <WhatsAppIcon className="h-4 w-4" />
-                        </a>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <a
+                            href={`https://wa.me/${phone.replace(/[^0-9]/g, "")}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="w-9 h-9 rounded-lg bg-[#25D366]/10 flex items-center justify-center text-[#25D366] hover:bg-[#25D366]/20 transition-colors"
+                            title="تواصل عبر واتساب"
+                          >
+                            <WhatsAppIcon className="h-4 w-4" />
+                          </a>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); downloadVCard(member.name, phone); }}
+                            className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary hover:bg-primary/20 transition-colors"
+                            title="حفظ جهة اتصال"
+                          >
+                            <UserPlus className="h-4 w-4" />
+                          </button>
+                        </div>
                       )}
                     </div>
                     <div className="flex items-center gap-2 mt-2 flex-wrap">
