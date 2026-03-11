@@ -1,5 +1,5 @@
-import { useState, useRef } from "react";
-import { Search, TreePine, ChevronDown } from "lucide-react";
+import { useState, useRef, useMemo } from "react";
+import { Search, TreePine, ChevronDown, Users, GitBranch, Layers } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { familyMembers } from "@/data/familyData";
@@ -9,14 +9,42 @@ interface LandingPageProps {
   onBrowseTree: () => void;
 }
 
+function computeStats() {
+  const total = familyMembers.length;
+  const roots = familyMembers.filter((m) => !m.father_id);
+  const branches = familyMembers.filter((m) => roots.some((r) => r.id === m.father_id)).length || roots.length;
+
+  // Compute max depth
+  const childrenMap = new Map<string | null, string[]>();
+  for (const m of familyMembers) {
+    const list = childrenMap.get(m.father_id) || [];
+    list.push(m.id);
+    childrenMap.set(m.father_id, list);
+  }
+  let maxDepth = 0;
+  const stack: Array<{ id: string; depth: number }> = roots.map((r) => ({ id: r.id, depth: 1 }));
+  while (stack.length) {
+    const { id, depth } = stack.pop()!;
+    if (depth > maxDepth) maxDepth = depth;
+    for (const childId of childrenMap.get(id) || []) {
+      stack.push({ id: childId, depth: depth + 1 });
+    }
+  }
+
+  return { total, generations: maxDepth, branches };
+}
+
 export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const aboutRef = useRef<HTMLDivElement>(null);
+  const stats = useMemo(computeStats, []);
 
   const filtered = query.trim()
     ? familyMembers.filter((m) => m.name.includes(query.trim())).slice(0, 10)
     : [];
+
+  const showingResults = open && filtered.length > 0;
 
   return (
     <div className="min-h-screen bg-background" dir="rtl">
@@ -52,7 +80,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
 
           {/* Search Bar */}
           <div
-            className="relative max-w-lg mx-auto opacity-0 animate-fade-in w-full px-2"
+            className="relative max-w-lg mx-auto opacity-0 animate-fade-in w-full px-2 z-20"
             style={{ animationDelay: "0.6s" }}
           >
             <div className="relative">
@@ -70,7 +98,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
               />
             </div>
 
-            {open && filtered.length > 0 && (
+            {showingResults && (
               <div className="absolute top-full mt-2 w-full bg-card border border-border rounded-2xl shadow-xl z-50 overflow-hidden max-h-72 overflow-y-auto">
                 {filtered.map((m) => (
                   <button
@@ -95,19 +123,42 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
             )}
           </div>
 
-          {/* CTA Button */}
-          <div
-            className="opacity-0 animate-fade-in px-2"
-            style={{ animationDelay: "0.8s" }}
-          >
-            <Button
-              onClick={onBrowseTree}
-              size="lg"
-              className="h-14 px-10 text-base md:text-lg rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover-scale font-bold w-full md:w-auto"
+          {/* CTA Button - hidden when search results are showing */}
+          {!showingResults && (
+            <div
+              className="opacity-0 animate-fade-in px-2"
+              style={{ animationDelay: "0.8s" }}
             >
-              <TreePine className="h-5 w-5 ml-2" />
-              تصفح الشجرة الكاملة
-            </Button>
+              <Button
+                onClick={onBrowseTree}
+                size="lg"
+                className="h-14 px-10 text-base md:text-lg rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover-scale font-bold w-full md:w-auto"
+              >
+                <TreePine className="h-5 w-5 ml-2" />
+                تصفح الشجرة الكاملة
+              </Button>
+            </div>
+          )}
+
+          {/* Stats Section */}
+          <div
+            className="grid grid-cols-3 gap-3 md:gap-6 max-w-lg mx-auto opacity-0 animate-fade-in px-2"
+            style={{ animationDelay: "1s" }}
+          >
+            {[
+              { icon: Users, label: "عدد الأفراد", value: stats.total },
+              { icon: Layers, label: "عدد الأجيال", value: stats.generations },
+              { icon: GitBranch, label: "عدد الفروع", value: stats.branches },
+            ].map((stat) => (
+              <div
+                key={stat.label}
+                className="flex flex-col items-center gap-1.5 p-4 rounded-2xl bg-card border border-border/50 shadow-sm"
+              >
+                <stat.icon className="h-5 w-5 text-accent" />
+                <span className="text-2xl md:text-3xl font-extrabold text-foreground">{stat.value}</span>
+                <span className="text-xs md:text-sm text-muted-foreground font-bold">{stat.label}</span>
+              </div>
+            ))}
           </div>
         </div>
 
