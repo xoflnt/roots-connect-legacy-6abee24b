@@ -1,4 +1,4 @@
-import { TreePine, TableProperties, Home, List, GitBranch, Users } from "lucide-react";
+import { TreePine, TableProperties, Home, List, GitBranch, Users, UserCircle } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { FontSizeToggle } from "./FontSizeToggle";
 import { SearchBar } from "./SearchBar";
@@ -6,6 +6,7 @@ import { ResetViewButton } from "./ResetViewButton";
 import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
 import { Button } from "./ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/contexts/AuthContext";
 
 export type ViewMode = "tree" | "lineage" | "list" | "table" | "kinship";
 
