@@ -1,5 +1,6 @@
 import { useState, useRef, useMemo, useEffect, useCallback } from "react";
-import { Search, TreePine, ChevronDown, Users, Layers, Crown, User, UserRound, Baby, Heart } from "lucide-react";
+import { Search, TreePine, ChevronDown, Users, Layers, Crown, User, UserRound, Heart, Quote } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { familyMembers } from "@/data/familyData";
@@ -78,22 +79,10 @@ function computeStats() {
     if (count > topFemaleCount) { topFemaleName = name; topFemaleCount = count; }
   }
 
-  // Father with most children
-  let topFatherId = "", topFatherChildCount = 0;
-  for (const [parentId, children] of childrenMap) {
-    if (parentId && children.length > topFatherChildCount) {
-      topFatherId = parentId;
-      topFatherChildCount = children.length;
-    }
-  }
-  const topFather = familyMembers.find((m) => m.id === topFatherId);
-  const topFatherName = topFather ? topFather.name.split(" ")[0] : "";
-
   return {
     total, generations: maxDepth, males, females,
     topMaleName, topMaleCount,
     topFemaleName, topFemaleCount,
-    topFatherName, topFatherChildCount,
   };
 }
 
@@ -141,8 +130,11 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
       {/* Hero Section */}
       <section className="relative flex flex-col items-center justify-center min-h-screen px-4 text-center">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-accent to-transparent" />
+        <div className="absolute top-4 left-4 z-30">
+          <ThemeToggle />
+        </div>
 
-        <div className="max-w-3xl mx-auto space-y-6 md:space-y-8 w-full">
+        <div className="max-w-3xl mx-auto space-y-6 md:space-y-8 w-full pb-24">
           <div
             className="mx-auto w-16 h-16 md:w-20 md:h-20 rounded-full bg-primary/10 flex items-center justify-center opacity-0 animate-fade-in"
             style={{ animationDelay: "0.1s" }}
@@ -229,7 +221,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
 
         <button
           onClick={() => aboutRef.current?.scrollIntoView({ behavior: "smooth" })}
-          className="absolute bottom-10 left-1/2 -translate-x-1/2 text-muted-foreground animate-bounce min-w-[44px] min-h-[44px] flex items-center justify-center"
+          className="absolute bottom-6 left-1/2 -translate-x-1/2 text-muted-foreground animate-bounce min-w-[44px] min-h-[44px] flex items-center justify-center z-10"
         >
           <ChevronDown className="h-6 w-6" />
         </button>
@@ -249,9 +241,6 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
             <StatCard icon={UserRound} label="عدد البنات (إناث)" value={stats.females} />
             <StatCard icon={Crown} label={`أكثر اسم للذكور: ${stats.topMaleName}`} value={stats.topMaleCount} suffix=" مرة" />
             <StatCard icon={Heart} label={`أكثر اسم للإناث: ${stats.topFemaleName}`} value={stats.topFemaleCount} suffix=" مرة" />
-            <div className="col-span-2 md:col-span-3">
-              <StatCard icon={Baby} label={`أكثر أب إنجاباً: ${stats.topFatherName}`} value={stats.topFatherChildCount} suffix=" أبناء" />
-            </div>
           </div>
         </div>
       </section>
@@ -288,6 +277,28 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
             <div className="h-px w-16 bg-accent/30" />
             <div className="w-2 h-2 rounded-full bg-accent/50" />
             <div className="h-px w-16 bg-accent/30" />
+          </div>
+        </div>
+      </section>
+
+      {/* Dedication / Quote Section */}
+      <section className="py-12 md:py-20 px-4 border-t border-border/30">
+        <div className="max-w-3xl mx-auto text-center space-y-6 md:space-y-8">
+          <div className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary font-bold text-sm">
+            كلمة الموثّق
+          </div>
+
+          <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 md:p-10 text-right border-r-4 border-r-accent">
+            <Quote className="absolute top-4 right-4 h-8 w-8 text-accent/20" />
+            <blockquote className="text-base md:text-lg text-muted-foreground leading-loose italic pr-8">
+              "الهدف من هذه الشجرة التوثيق حيث أنه لا يوجد مرجع موثق لها وقد أجمع كبار السن على صحتها
+              وأسأل الله أن يوفقنا لخدمة ديننا ثم مليكنا ووطننا."
+            </blockquote>
+            <div className="mt-6 text-sm text-muted-foreground">
+              <span className="font-bold text-foreground">— جمع وتوثيق: علي المحمد الخنيني</span>
+              <br />
+              <span>٢ / ١٢ / ١٤٤١ هـ</span>
+            </div>
           </div>
         </div>
       </section>
