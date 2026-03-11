@@ -97,29 +97,8 @@ function computeStats() {
   };
 }
 
-function useIntersectionStart() {
-  const ref = useRef<HTMLDivElement>(null);
-  const counter = { started: false };
-  const callbacks: Array<() => void> = [];
 
-  const register = (start: () => void) => { callbacks.push(start); };
 
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting && !counter.started) {
-        counter.started = true;
-        callbacks.forEach((cb) => cb());
-        obs.disconnect();
-      }
-    }, { threshold: 0.2 });
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
-
-  return ref;
-}
 
 function StatCard({ icon: Icon, label, value, suffix, highlight }: { icon: React.ElementType; label: string; value: number; suffix?: string; highlight?: string }) {
   const counter = useCountUp(value);
