@@ -171,7 +171,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                 أهلاً بعودتك، {currentUser.memberName}
               </h2>
               <p className="text-sm text-muted-foreground">
-                سعداء برجوعك لبوابة تراث آل الخنيني
+                سعداء برجوعك لبوابة تراث الخنيني
               </p>
             </div>
 
