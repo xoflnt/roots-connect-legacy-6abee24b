@@ -270,9 +270,11 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
               <h2 className="text-lg font-bold text-foreground text-center mb-1">كيف تستخدم المنصة</h2>
               <div className="flex flex-col gap-3">
                 {[
-                  { icon: TreePine, title: "تصفح الشجرة", desc: "استكشف فروع العائلة بشكل تفاعلي" },
-                  { icon: Search, title: "ابحث عن اسمك", desc: "استخدم البحث للوصول السريع لأي فرد" },
+                  { icon: TreePine, title: "تصفح الشجرة", desc: "استكشف فروع العائلة بشكل تفاعلي وتوسّع في الفروع" },
+                  { icon: Search, title: "ابحث عن اسمك", desc: "استخدم البحث للوصول السريع لأي فرد في الشجرة" },
                   { icon: UserCheck, title: "سجّل بياناتك", desc: "طالب بملفك الشخصي وأثرِ بيانات العائلة" },
+                  { icon: UserCircle, title: "حاسبة القرابة", desc: "اكتشف صلة القرابة بين أي فردين في الشجرة" },
+                  { icon: CalendarDays, title: "جدول البيانات", desc: "عرض جميع الأفراد في جدول مع أعمارهم وتفاصيلهم" },
                 ].map(({ icon: Icon, title, desc }) => (
                   <div key={title} className="flex items-start gap-3 p-3 rounded-xl bg-muted/50 border border-border/30">
                     <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
