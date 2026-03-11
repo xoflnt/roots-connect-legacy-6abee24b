@@ -4,6 +4,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { familyMembers } from "@/data/familyData";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { getLineageLabel, getMemberSubtitle } from "@/utils/memberLabel";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import {
   Dialog,
   DialogContent,
