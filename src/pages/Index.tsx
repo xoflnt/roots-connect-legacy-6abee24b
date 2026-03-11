@@ -4,7 +4,6 @@ import { AppHeader, type ViewMode } from "@/components/AppHeader";
 import { FamilyTree, type FamilyTreeRef } from "@/components/FamilyTree";
 import { DataTableView } from "@/components/DataTableView";
 import { LandingPage } from "@/components/LandingPage";
-import { LineageView } from "@/components/LineageView";
 import { ListView } from "@/components/ListView";
 
 export type AppView = "landing" | ViewMode;
@@ -20,7 +19,6 @@ const Index = () => {
 
   const handleGoHome = () => {
     setActiveView("landing");
-    setLineageTargetId(null);
   };
 
   if (activeView === "landing") {
@@ -36,7 +34,10 @@ const Index = () => {
     <div className="flex flex-col h-screen bg-background overflow-x-hidden">
       <AppHeader
         activeView={activeView as ViewMode}
-        onViewChange={(v) => setActiveView(v)}
+        onViewChange={(v) => {
+          if (v === "lineage") return; // lineage is now via /person/:id
+          setActiveView(v);
+        }}
         onSearch={(id) => {
           if (activeView === "tree") {
             treeRef.current?.search(id);
@@ -51,11 +52,6 @@ const Index = () => {
         {activeView === "tree" && (
           <div className="w-full h-full rounded-2xl md:rounded-3xl shadow-xl overflow-hidden border border-border/50 bg-[hsl(var(--canvas-bg))] animate-fade-in">
             <FamilyTree ref={treeRef} />
-          </div>
-        )}
-        {activeView === "lineage" && lineageTargetId && (
-          <div className="w-full h-full rounded-2xl md:rounded-3xl shadow-xl overflow-auto border border-border/50 bg-card animate-fade-in">
-            <LineageView memberId={lineageTargetId} onSelectMember={handleSearchSelect} />
           </div>
         )}
         {activeView === "list" && (
