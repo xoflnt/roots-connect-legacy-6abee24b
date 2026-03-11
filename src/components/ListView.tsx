@@ -216,7 +216,7 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect 
       {isExpanded && hasChildren && (
         <div
           className="space-y-1.5 pt-1.5 pb-1 animate-accordion-down"
-          style={{ paddingRight: `${Math.min(depth + 1, 4) * 1}rem` }}
+          style={{ paddingRight: `${Math.min(depth + 1, 3) * 0.75}rem` }}
         >
           {children.map((child) => (
             <ListNode

@@ -108,7 +108,7 @@ export function DataTableView() {
         </Select>
 
         <Select value={ancestorId} onValueChange={setAncestorId}>
-          <SelectTrigger className="w-[200px] bg-background">
+          <SelectTrigger className="w-full md:w-[200px] bg-background flex-1 md:flex-none">
             <SelectValue placeholder="عرض ذرية..." />
           </SelectTrigger>
           <SelectContent>

@@ -113,13 +113,13 @@ function StatCard({ icon: Icon, label, value, suffix, highlight }: { icon: React
   }, []);
 
   return (
-    <div ref={ref} className="flex flex-col items-center gap-1.5 p-4 rounded-2xl bg-card border border-border/50 shadow-sm">
-      <Icon className="h-5 w-5 text-accent" />
+    <div ref={ref} className="flex flex-col items-center gap-1.5 p-3 md:p-4 rounded-2xl bg-card border border-border/50 shadow-sm overflow-hidden">
+      <Icon className="h-5 w-5 text-accent shrink-0" />
       <span className="text-2xl md:text-3xl font-extrabold text-foreground">
         {highlight && <span className="text-primary">{highlight} </span>}
         {counter.value}{suffix}
       </span>
-      <span className="text-xs md:text-sm text-muted-foreground font-bold">{label}</span>
+      <span className="text-xs md:text-sm text-muted-foreground font-bold text-center break-words leading-snug">{label}</span>
     </div>
   );
 }

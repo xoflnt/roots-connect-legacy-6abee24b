@@ -41,14 +41,14 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
   }
 
   return (
-    <div className="py-6 md:py-10 px-4 md:px-6" dir="rtl">
+    <div className="py-6 md:py-10 px-4 md:px-6 overflow-x-hidden" dir="rtl">
       <div className="max-w-lg mx-auto">
         {/* Header */}
         <div className="text-center mb-8 md:mb-10 space-y-3">
           <div className="inline-block px-5 py-2 rounded-full bg-accent/15 text-accent font-bold text-sm">
             سلسلة النسب
           </div>
-          <h2 className="text-2xl md:text-3xl font-extrabold text-foreground">
+          <h2 className="text-2xl md:text-3xl font-extrabold text-foreground break-words">
             نسب {chain[0].name}
           </h2>
           <p className="text-muted-foreground text-sm">
