@@ -4,10 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Progress } from "@/components/ui/progress";
-import { TreePine, Search, UserCheck, Phone, CalendarDays, ChevronLeft, Loader2, X } from "lucide-react";
+import { TreePine, Search, UserCheck, Phone, CalendarDays, ChevronLeft, Loader2 } from "lucide-react";
 import { familyMembers, type FamilyMember } from "@/data/familyData";
 import { sendOTP, verifyOTP } from "@/services/wasageSms";
 import { useAuth } from "@/contexts/AuthContext";
+import { HijriDatePicker } from "@/components/HijriDatePicker";
+import { registerVerifiedUser } from "@/services/dataService";
 
 const ONBOARDING_KEY = "hasSeenOnboarding";
 const TOTAL_STEPS = 5;
@@ -24,7 +26,11 @@ function getDisplayLabel(member: FamilyMember): string {
   return father ? `${member.name} (ابن ${father})` : member.name;
 }
 
-export function OnboardingModal() {
+interface OnboardingModalProps {
+  forceOpen?: boolean;
+}
+
+export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
   const { isLoggedIn, login } = useAuth();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(1);
@@ -42,16 +48,20 @@ export function OnboardingModal() {
   const [otpError, setOtpError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Phase D
-  const [hijriDate, setHijriDate] = useState("");
+  // Phase D — Hijri Date Picker
+  const [hijriDate, setHijriDate] = useState<{ day?: string; month?: string; year?: string }>({});
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    if (forceOpen) {
+      setOpen(true);
+      return;
+    }
     if (!isLoggedIn && localStorage.getItem(ONBOARDING_KEY) !== "true") {
       setOpen(true);
     }
-  }, [isLoggedIn]);
+  }, [isLoggedIn, forceOpen]);
 
   const filtered = useMemo(() => {
     if (!searchQuery.trim()) return [];
@@ -87,13 +97,27 @@ export function OnboardingModal() {
     setLoading(false);
   };
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
     if (!selectedMember) return;
+
+    // Build hijri date string
+    const dateStr = hijriDate.year
+      ? `${hijriDate.year}/${hijriDate.month || "1"}/${hijriDate.day || "1"}`
+      : undefined;
+
+    // Register verified user + auto-update birth date
+    await registerVerifiedUser({
+      memberId: selectedMember.id,
+      memberName: selectedMember.name,
+      phone: `+966${phone}`,
+      hijriBirthDate: dateStr,
+    });
+
     login({
       memberId: selectedMember.id,
       memberName: selectedMember.name,
       phone: `+966${phone}`,
-      hijriBirthDate: hijriDate || undefined,
+      hijriBirthDate: dateStr,
     });
     setOpen(false);
   };
@@ -215,7 +239,6 @@ export function OnboardingModal() {
                       )}
                     </>
                   ) : (
-                    /* Confirmation */
                     <div className="flex-1 flex flex-col items-center justify-center gap-5">
                       <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
                         <UserCheck className="h-7 w-7 text-primary" />
@@ -328,21 +351,15 @@ export function OnboardingModal() {
             </div>
           )}
 
-          {/* ─── Step 5: Hijri Birth Date ─── */}
+          {/* ─── Step 5: Hijri Birth Date (Dropdowns) ─── */}
           {step === 5 && (
             <div className="flex-1 flex flex-col items-center justify-center gap-5 animate-fade-in">
               <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
                 <CalendarDays className="h-7 w-7 text-primary" />
               </div>
               <h2 className="text-lg font-bold text-foreground">تاريخ الميلاد بالهجري</h2>
-              <p className="text-sm text-muted-foreground text-center">(اختياري) أدخل تاريخ ميلادك بالهجري لإثراء بيانات العائلة</p>
-              <Input
-                value={hijriDate}
-                onChange={(e) => setHijriDate(e.target.value)}
-                placeholder="مثال: ١٤٠٥/٣/١٥"
-                className="min-h-[52px] text-base rounded-xl text-center"
-                dir="rtl"
-              />
+              <p className="text-sm text-muted-foreground text-center">(اختياري) اختر تاريخ ميلادك بالهجري لإثراء بيانات العائلة</p>
+              <HijriDatePicker value={hijriDate} onChange={setHijriDate} />
               <Button onClick={handleComplete} className="min-h-[52px] w-full text-base font-semibold rounded-xl">
                 إكمال التسجيل
               </Button>

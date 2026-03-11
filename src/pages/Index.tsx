@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AppHeader, type ViewMode } from "@/components/AppHeader";
 import { FamilyTree, type FamilyTreeRef } from "@/components/FamilyTree";
@@ -6,7 +6,6 @@ import { DataTableView } from "@/components/DataTableView";
 import { LandingPage } from "@/components/LandingPage";
 import { ListView } from "@/components/ListView";
 import { KinshipCalculator } from "@/components/KinshipCalculator";
-import { OnboardingModal } from "@/components/OnboardingModal";
 
 export type AppView = "landing" | ViewMode;
 
@@ -40,7 +39,6 @@ const Index = () => {
 
   return (
     <div className="flex flex-col h-screen bg-background overflow-x-hidden">
-      <OnboardingModal />
       <AppHeader
         activeView={activeView as ViewMode}
         onViewChange={(v) => {
