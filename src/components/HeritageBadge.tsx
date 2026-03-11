@@ -1,0 +1,52 @@
+import { Crown, GitBranch, Star, Layers } from "lucide-react";
+import { Badge } from "./ui/badge";
+
+interface HeritageBadgeProps {
+  type: "founder" | "branchHead" | "deceased" | "generation";
+  generationNum?: number;
+}
+
+const CONFIG = {
+  founder: {
+    label: "المؤسس",
+    icon: Crown,
+    className: "bg-accent/20 text-accent border-accent/30",
+  },
+  branchHead: {
+    label: "أب فرع",
+    icon: GitBranch,
+    className: "bg-primary/15 text-primary border-primary/30",
+  },
+  deceased: {
+    label: "رحمه الله",
+    icon: Star,
+    className: "bg-muted text-muted-foreground border-border/50",
+  },
+  generation: {
+    label: "الجيل",
+    icon: Layers,
+    className: "bg-secondary text-secondary-foreground border-border/50",
+  },
+};
+
+function toArabicNum(n: number): string {
+  return n.toLocaleString("ar-SA");
+}
+
+export function HeritageBadge({ type, generationNum }: HeritageBadgeProps) {
+  const config = CONFIG[type];
+  const Icon = config.icon;
+  const label = type === "generation" && generationNum
+    ? `الجيل ${toArabicNum(generationNum)}`
+    : config.label;
+
+  return (
+    <Badge
+      variant="outline"
+      className={`gap-1 text-[10px] px-2 py-0.5 font-bold ${config.className}`}
+    >
+      <Icon className="h-3 w-3" />
+      {label}
+    </Badge>
+  );
+}
