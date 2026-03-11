@@ -1,5 +1,5 @@
-import { useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRef, useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { AppHeader, type ViewMode } from "@/components/AppHeader";
 import { FamilyTree, type FamilyTreeRef } from "@/components/FamilyTree";
 import { DataTableView } from "@/components/DataTableView";
@@ -9,9 +9,15 @@ import { KinshipCalculator } from "@/components/KinshipCalculator";
 
 export type AppView = "landing" | ViewMode;
 
+const VALID_VIEWS: ViewMode[] = ["tree", "list", "table", "kinship", "lineage"];
+
 const Index = () => {
   const treeRef = useRef<FamilyTreeRef>(null);
-  const [activeView, setActiveView] = useState<AppView>("landing");
+  const [searchParams] = useSearchParams();
+  const initialView = searchParams.get("view");
+  const [activeView, setActiveView] = useState<AppView>(
+    initialView && VALID_VIEWS.includes(initialView as ViewMode) ? (initialView as AppView) : "landing"
+  );
   const navigate = useNavigate();
 
   const handleSearchSelect = (memberId: string) => {
