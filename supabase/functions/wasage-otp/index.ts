@@ -78,13 +78,18 @@ serve(async (req) => {
       const wasageUrl = `https://wasage.com/api/otp/?Username=${encodeURIComponent(WASAGE_USERNAME)}&Password=${encodeURIComponent(WASAGE_PASSWORD)}&Reference=${encodeURIComponent(reference)}&Message=${encodeURIComponent(otpMessage)}`;
 
       console.log("[wasage-otp] PAYLOAD SENT:", {
-        url: wasageUrl.replace(WASAGE_PASSWORD, "***"),
         phone,
         reference,
         message: otpMessage,
       });
 
-      const response = await fetch(wasageUrl, { method: "GET" });
+      const response = await fetch(wasageUrl, {
+        method: "GET",
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+        },
+      });
       const responseText = await response.text();
       console.log("[wasage-otp] API RAW RESPONSE:", response.status, responseText);
 

@@ -236,6 +236,8 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
         onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
+        <DialogTitle className="sr-only">التسجيل في بوابة الخنيني</DialogTitle>
+        <DialogDescription className="sr-only">نموذج تسجيل الدخول عبر التحقق من رقم الجوال</DialogDescription>
         {/* Progress */}
         <div className="px-5 pt-4 pb-2">
           <Progress value={progressValue} className="h-1.5 rounded-full" />
