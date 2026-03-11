@@ -39,6 +39,8 @@ export function ListView({ onSelectMember }: ListViewProps) {
         map.get(m.father_id)!.push(m);
       }
     });
+    // Sort children in each group by birth
+    map.forEach((children, key) => map.set(key, sortByBirth(children)));
     return map;
   }, [members]);
 
