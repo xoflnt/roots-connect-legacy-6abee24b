@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AppHeader, type ViewMode } from "@/components/AppHeader";
 import { FamilyTree, type FamilyTreeRef } from "@/components/FamilyTree";
 import { DataTableView } from "@/components/DataTableView";
