@@ -74,9 +74,6 @@ export function DataTableView() {
                     <span className="text-muted-foreground text-xs">—</span>
                   )}
                 </TableCell>
-                <TableCell className="text-sm">
-                  {m.mother || <span className="text-muted-foreground text-xs">—</span>}
-                </TableCell>
                 <TableCell className="text-sm">{m.birth_year || "—"}</TableCell>
                 <TableCell className="text-sm">{m.death_year || "—"}</TableCell>
                 <TableCell className="text-sm">

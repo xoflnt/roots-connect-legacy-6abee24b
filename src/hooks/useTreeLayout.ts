@@ -30,7 +30,7 @@ export function useTreeLayout() {
         childrenByFatherAndMother.set(member.father_id, new Map());
       }
       const motherMap = childrenByFatherAndMother.get(member.father_id)!;
-      const motherName = member.mother || "__unknown__";
+      const motherName = "__unknown__";
       if (!motherMap.has(motherName)) {
         motherMap.set(motherName, []);
       }
