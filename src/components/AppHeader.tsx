@@ -78,6 +78,12 @@ export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHom
         )}
 
         <div className="flex items-center gap-1.5 shrink-0">
+          {currentUser && (
+            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-semibold">
+              <UserCircle className="h-4 w-4" />
+              <span>مرحباً، {currentUser.memberName.split(" ")[0]}</span>
+            </div>
+          )}
           {onSearch && <SearchBar onSelect={onSearch} />}
           {!isMobile && activeView === "tree" && onReset && <ResetViewButton onReset={onReset} />}
           <FontSizeToggle />
