@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
-import { User, Calendar, Heart, FileText, X, ExternalLink, Clock, Send, Users2 } from "lucide-react";
+import { User, Calendar, Heart, FileText, X, ExternalLink, Clock, Send, Users2, UserPlus } from "lucide-react";
+import { downloadVCard } from "@/utils/vcard";
 import { WhatsAppIcon } from "./WhatsAppIcon";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
@@ -143,12 +144,30 @@ function DetailContent({ member }: { member: FamilyMember }) {
           </a>
         )}
 
+        {/* Save contact button */}
+        {phone && (
+          <button
+            onClick={() => downloadVCard(member.name, phone)}
+            className="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/15 transition-colors w-full text-right"
+          >
+            <div className="w-9 h-9 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+              <UserPlus className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <p className="text-[11px] text-muted-foreground font-medium">حفظ في جهات الاتصال</p>
+              <p className="text-sm font-bold text-foreground">{member.name}</p>
+            </div>
+          </button>
+        )}
+
         {/* Spouses with colors */}
         {spouseList.length > 0 && (
           <div className="px-4 py-3 rounded-xl bg-muted/50 border border-border/30 space-y-2">
             <div className="flex items-center gap-2">
               <Heart className="h-4 w-4 text-accent shrink-0" />
-              <p className="text-[11px] text-muted-foreground font-medium">الزوجات</p>
+              <p className="text-[11px] text-muted-foreground font-medium">
+                {isMale ? (spouseList.length > 1 ? "الزوجات" : "الزوجة") : "الزوج"}
+              </p>
             </div>
             <div className="flex flex-wrap gap-1.5">
               {spouseList.map((spouse, i) => {

@@ -1,6 +1,7 @@
 import { Handle, Position, type NodeProps } from "@xyflow/react";
-import { Plus, Minus } from "lucide-react";
+import { Plus, Minus, UserPlus } from "lucide-react";
 import { WhatsAppIcon } from "./WhatsAppIcon";
+import { downloadVCard } from "@/utils/vcard";
 import type { FamilyMember } from "@/data/familyData";
 import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
 import { HeritageBadge } from "./HeritageBadge";
@@ -33,6 +34,12 @@ export function FamilyCard({ data, selected }: NodeProps) {
     if (!phone) return;
     const cleaned = phone.replace(/[^0-9]/g, "");
     window.open(`https://wa.me/${cleaned}`, "_blank");
+  };
+
+  const handleSaveContact = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!phone) return;
+    downloadVCard(member.name, phone);
   };
 
   return (
@@ -112,14 +119,23 @@ export function FamilyCard({ data, selected }: NodeProps) {
           </span>
         )}
         {phone && (
-          <button
-            onClick={handleWhatsApp}
-            className="flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 transition-colors"
-            title="تواصل عبر واتساب"
-          >
-            <WhatsAppIcon className="h-2.5 w-2.5" />
-            واتساب
-          </button>
+          <>
+            <button
+              onClick={handleWhatsApp}
+              className="flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 transition-colors"
+              title="تواصل عبر واتساب"
+            >
+              <WhatsAppIcon className="h-2.5 w-2.5" />
+              واتساب
+            </button>
+            <button
+              onClick={handleSaveContact}
+              className="flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+              title="حفظ جهة اتصال"
+            >
+              <UserPlus className="h-2.5 w-2.5" />
+            </button>
+          </>
         )}
       </div>
 

@@ -3,8 +3,9 @@ import { getAllMembers } from "@/services/familyService";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, X } from "lucide-react";
+import { Search, X, UserPlus } from "lucide-react";
 import { WhatsAppIcon } from "./WhatsAppIcon";
+import { downloadVCard } from "@/utils/vcard";
 import { extractMotherName } from "@/services/familyService";
 import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
 import { calculateAge } from "@/utils/ageCalculator";
@@ -246,15 +247,24 @@ export function DataTableView() {
                     </TableCell>
                     <TableCell className="text-sm" dir="ltr">
                       {phone ? (
-                        <a
-                          href={`https://wa.me/${phone.replace(/[^0-9]/g, "")}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-[#25D366] hover:underline"
-                        >
-                          <WhatsAppIcon className="h-3 w-3" />
-                          {phone}
-                        </a>
+                        <div className="flex items-center gap-1.5">
+                          <a
+                            href={`https://wa.me/${phone.replace(/[^0-9]/g, "")}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-[#25D366] hover:underline"
+                          >
+                            <WhatsAppIcon className="h-3 w-3" />
+                            {phone}
+                          </a>
+                          <button
+                            onClick={() => downloadVCard(m.name, phone)}
+                            className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-primary hover:bg-primary/20 transition-colors"
+                            title="حفظ جهة اتصال"
+                          >
+                            <UserPlus className="h-3 w-3" />
+                          </button>
+                        </div>
                       ) : (
                         <span className="text-muted-foreground text-xs">—</span>
                       )}

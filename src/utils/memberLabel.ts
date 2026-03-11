@@ -1,6 +1,9 @@
-import { familyMembers, type FamilyMember } from "@/data/familyData";
+import { type FamilyMember } from "@/data/familyData";
+import { getAllMembers } from "@/services/familyService";
 
-const memberMap = new Map(familyMembers.map((m) => [m.id, m]));
+function getMemberMap() {
+  return new Map(getAllMembers().map((m) => [m.id, m]));
+}
 
 /** Extract first name only (before بن or بنت) */
 function firstName(name: string): string {
@@ -16,6 +19,7 @@ function firstName(name: string): string {
  * Uses first name only to avoid duplication like "عبدالله بن محمد ← محمد"
  */
 export function getLineageLabel(member: FamilyMember, depth = 2): string {
+  const memberMap = getMemberMap();
   const parts: string[] = [firstName(member.name)];
   let current = member;
   for (let i = 0; i < depth; i++) {

@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { familyMembers } from "@/data/familyData";
+import { getAllMembers } from "@/services/familyService";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getLineageLabel, getMemberSubtitle } from "@/utils/memberLabel";
 import {
@@ -23,8 +23,9 @@ export function SearchBar({ onSelect }: SearchBarProps) {
   const ref = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 
+  const members = getAllMembers();
   const filtered = query.trim()
-    ? familyMembers.filter((m) => m.name.includes(query.trim())).slice(0, 10)
+    ? members.filter((m) => m.name.includes(query.trim())).slice(0, 10)
     : [];
 
   const handleSelect = (id: string, name: string) => {
