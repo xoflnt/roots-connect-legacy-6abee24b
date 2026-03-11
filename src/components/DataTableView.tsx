@@ -169,7 +169,7 @@ export function DataTableView() {
                 <TableHead className="text-right">الاسم</TableHead>
                 <TableHead className="text-right w-[60px]">الجنس</TableHead>
                 <TableHead className="text-right">الأب</TableHead>
-                <TableHead className="text-right">الأم</TableHead>
+                <TableHead className="text-right">الوالدة</TableHead>
                 <TableHead className="text-right w-[80px]">الميلاد</TableHead>
                 <TableHead className="text-right w-[80px]">الوفاة</TableHead>
                 <TableHead className="text-right w-[70px]">العمر</TableHead>
