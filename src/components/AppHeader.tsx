@@ -59,7 +59,7 @@ export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHom
               type="single"
               value={activeView}
               onValueChange={(v) => v && onViewChange(v as ViewMode)}
-              className="border border-border rounded-xl p-0.5 bg-muted/40"
+              className="border border-accent/20 rounded-xl p-0.5 bg-muted/40"
             >
               {navItems.map((item) => (
                 <ToggleGroupItem
