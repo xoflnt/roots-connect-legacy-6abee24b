@@ -1,4 +1,5 @@
 import { TreePine, TableProperties, Home, List, GitBranch, Users, UserCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { ThemeToggle } from "./ThemeToggle";
 import { FontSizeToggle } from "./FontSizeToggle";
 import { SearchBar } from "./SearchBar";
