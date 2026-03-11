@@ -221,7 +221,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
 
         <button
           onClick={() => aboutRef.current?.scrollIntoView({ behavior: "smooth" })}
-          className="absolute bottom-10 left-1/2 -translate-x-1/2 text-muted-foreground animate-bounce min-w-[44px] min-h-[44px] flex items-center justify-center"
+          className="absolute bottom-6 left-1/2 -translate-x-1/2 text-muted-foreground animate-bounce min-w-[44px] min-h-[44px] flex items-center justify-center z-10"
         >
           <ChevronDown className="h-6 w-6" />
         </button>
