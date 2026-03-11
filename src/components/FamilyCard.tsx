@@ -117,7 +117,7 @@ export function FamilyCard({ data, selected }: NodeProps) {
             className="flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 transition-colors"
             title="تواصل عبر واتساب"
           >
-            <Phone className="h-2.5 w-2.5" />
+            <WhatsAppIcon className="h-2.5 w-2.5" />
             واتساب
           </button>
         )}
