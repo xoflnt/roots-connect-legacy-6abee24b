@@ -21,7 +21,7 @@ function toArabicNum(n: number): string {
 }
 
 export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
-  const chain = useMemo(() => {
+  const { chain, childrenMap } = useMemo(() => {
     const memberMap = new Map(familyMembers.map((m) => [m.id, m]));
     const result: FamilyMember[] = [];
     let current = memberMap.get(memberId);
@@ -29,7 +29,18 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
       result.push(current);
       current = current.father_id ? memberMap.get(current.father_id) : undefined;
     }
-    return result;
+
+    // Build children map: father_id -> children[]
+    const cMap = new Map<string, FamilyMember[]>();
+    for (const m of familyMembers) {
+      if (m.father_id) {
+        const arr = cMap.get(m.father_id) || [];
+        arr.push(m);
+        cMap.set(m.father_id, arr);
+      }
+    }
+
+    return { chain: result, childrenMap: cMap };
   }, [memberId]);
 
   if (chain.length === 0) {
