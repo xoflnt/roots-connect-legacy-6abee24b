@@ -28,6 +28,7 @@ const navItems: { value: ViewMode; label: string; icon: typeof TreePine }[] = [
 
 export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHome }: AppHeaderProps) {
   const isMobile = useIsMobile();
+  const { currentUser, isLoggedIn } = useAuth();
 
   return (
     <>
