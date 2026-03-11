@@ -4,7 +4,7 @@ import { WhatsAppIcon } from "./WhatsAppIcon";
 import { downloadVCard } from "@/utils/vcard";
 import { useState } from "react";
 import { type FamilyMember } from "@/data/familyData";
-import { getAllMembers, extractMotherName } from "@/services/familyService";
+import { getAllMembers, inferMotherName, sortByBirth } from "@/services/familyService";
 import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
 import { HeritageBadge } from "./HeritageBadge";
 import { isFounder, isBranchHead, isDeceased } from "@/services/familyService";
