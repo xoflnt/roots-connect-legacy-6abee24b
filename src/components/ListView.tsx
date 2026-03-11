@@ -47,7 +47,7 @@ export function ListView({ onSelectMember }: ListViewProps) {
   }, []);
 
   return (
-    <div className="py-6 md:py-8 px-3 md:px-4" dir="rtl">
+    <div className="py-6 md:py-8 px-3 md:px-4 overflow-x-hidden" dir="rtl">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-6 md:mb-8 space-y-3">
