@@ -14,6 +14,29 @@ function getSupabaseAdmin() {
   );
 }
 
+/** Normalize phone: strip leading 0, ensure 966 prefix, digits only */
+function formatPhone(raw: string): string {
+  let digits = raw.replace(/[^0-9]/g, "");
+  // Remove leading + if passed as part of digits (shouldn't happen after replace, but safe)
+  if (digits.startsWith("00966")) {
+    digits = digits.slice(2); // remove leading 00
+  }
+  if (digits.startsWith("966")) {
+    // already correct
+  } else if (digits.startsWith("05") || digits.startsWith("5")) {
+    // Saudi mobile: 05xxxxxxxx or 5xxxxxxxx
+    if (digits.startsWith("0")) {
+      digits = digits.slice(1);
+    }
+    digits = "966" + digits;
+  } else if (digits.startsWith("0")) {
+    digits = "966" + digits.slice(1);
+  } else {
+    digits = "966" + digits;
+  }
+  return digits;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -28,6 +51,7 @@ serve(async (req) => {
       const WASAGE_USERNAME = Deno.env.get("WASAGE_USERNAME");
       const WASAGE_PASSWORD = Deno.env.get("WASAGE_PASSWORD");
       if (!WASAGE_USERNAME || !WASAGE_PASSWORD) {
+        console.error("[wasage-otp] MISSING CREDENTIALS: WASAGE_USERNAME or WASAGE_PASSWORD not set");
         return new Response(
           JSON.stringify({ error: "Wasage credentials not configured" }),
           { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -35,35 +59,65 @@ serve(async (req) => {
       }
 
       const body = await req.json();
-      const { phone, reference, message } = body;
+      const { phone: rawPhone, reference, message } = body;
 
-      if (!phone || !reference) {
+      if (!rawPhone || !reference) {
+        console.error("[wasage-otp] Missing phone or reference in request body:", body);
         return new Response(
           JSON.stringify({ error: "phone and reference are required" }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
+      const phone = formatPhone(rawPhone);
+      console.log("[wasage-otp] Formatted phone:", rawPhone, "→", phone);
+
       const otpMessage = message || `مرحباً بك في بوابة الخنيني، رمز التحقق الخاص بك هو`;
 
-      // Call wasage API
+      // Build Wasage API URL
       const wasageUrl = `https://wasage.com/api/otp/?Username=${encodeURIComponent(WASAGE_USERNAME)}&Password=${encodeURIComponent(WASAGE_PASSWORD)}&Reference=${encodeURIComponent(reference)}&Message=${encodeURIComponent(otpMessage)}`;
 
+      console.log("[wasage-otp] PAYLOAD SENT:", {
+        url: wasageUrl.replace(WASAGE_PASSWORD, "***"),
+        phone,
+        reference,
+        message: otpMessage,
+      });
+
       const response = await fetch(wasageUrl, { method: "GET" });
-      const data = await response.json();
+      const responseText = await response.text();
+      console.log("[wasage-otp] API RAW RESPONSE:", response.status, responseText);
+
+      let data: Record<string, unknown>;
+      try {
+        data = JSON.parse(responseText);
+      } catch {
+        console.error("[wasage-otp] Failed to parse Wasage response as JSON:", responseText);
+        return new Response(
+          JSON.stringify({ success: false, error: "Invalid response from Wasage API", raw: responseText }),
+          { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      console.log("[wasage-otp] API PARSED RESPONSE:", JSON.stringify(data));
 
       if (data.Code === "5500") {
         // Success - store in DB
         const supabase = getSupabaseAdmin();
-        await supabase.from("otp_verifications").upsert({
+        const { error: dbError } = await supabase.from("otp_verifications").upsert({
           reference,
           phone,
-          otp_code: data.OTP,
-          qr_url: data.QR,
-          clickable_url: data.Clickable,
+          otp_code: data.OTP as string,
+          qr_url: data.QR as string,
+          clickable_url: data.Clickable as string,
           status: "pending",
         }, { onConflict: "reference" });
 
+        if (dbError) {
+          console.error("[wasage-otp] DB upsert error:", dbError);
+        }
+
+        console.log("[wasage-otp] OTP sent successfully. Reference:", reference);
         return new Response(
           JSON.stringify({
             success: true,
@@ -73,8 +127,9 @@ serve(async (req) => {
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       } else {
+        console.error("[wasage-otp] Wasage API returned error code:", data.Code, "Full:", JSON.stringify(data));
         return new Response(
-          JSON.stringify({ success: false, error: "Wasage API error", code: data.Code }),
+          JSON.stringify({ success: false, error: "Wasage API error", code: data.Code, details: data }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -90,9 +145,12 @@ serve(async (req) => {
       const clientId = cbUrl.searchParams.get("ClientID");
       const clientName = cbUrl.searchParams.get("ClientName");
 
+      console.log("[wasage-otp] CALLBACK received:", { otp, mobile, reference, clientId, clientName });
+
       // Verify secret
       const WASAGE_SECRET = Deno.env.get("WASAGE_SECRET");
       if (secret !== WASAGE_SECRET) {
+        console.error("[wasage-otp] CALLBACK invalid secret");
         return new Response(
           JSON.stringify({ error: "Invalid secret" }),
           { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -108,7 +166,7 @@ serve(async (req) => {
 
       // Update verification status
       const supabase = getSupabaseAdmin();
-      await supabase
+      const { error: dbError } = await supabase
         .from("otp_verifications")
         .update({
           status: "verified",
@@ -119,6 +177,11 @@ serve(async (req) => {
         })
         .eq("reference", reference);
 
+      if (dbError) {
+        console.error("[wasage-otp] CALLBACK DB update error:", dbError);
+      }
+
+      console.log("[wasage-otp] CALLBACK verified for reference:", reference);
       return new Response(
         JSON.stringify({ success: true }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -162,6 +225,7 @@ serve(async (req) => {
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
+    console.error("[wasage-otp] UNHANDLED ERROR:", error);
     return new Response(
       JSON.stringify({ error: error.message || "Internal server error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
