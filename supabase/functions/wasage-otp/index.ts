@@ -83,13 +83,7 @@ serve(async (req) => {
         message: otpMessage,
       });
 
-      const response = await fetch(wasageUrl, {
-        method: "GET",
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(wasageUrl);
       const responseText = await response.text();
       console.log("[wasage-otp] API RAW RESPONSE:", response.status, responseText);
 
