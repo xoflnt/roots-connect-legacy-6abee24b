@@ -144,6 +144,14 @@ export function FamilyCard({ data, selected }: NodeProps) {
 
       {/* Heritage badges */}
       <div className="flex flex-wrap gap-0.5 justify-center mt-1 px-2">
+        {branch && branchStyle && (
+          <span
+            className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+            style={{ backgroundColor: branchStyle.bg, color: branchStyle.text }}
+          >
+            {branch.label}
+          </span>
+        )}
         {founder && <HeritageBadge type="founder" />}
         {deceased && <HeritageBadge type="deceased" gender={member.gender as "M" | "F"} />}
       </div>
