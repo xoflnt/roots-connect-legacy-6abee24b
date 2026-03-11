@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Shield, Lock } from "lucide-react";
 
 const ADMIN_KEY = "khunaini-admin-auth";
-const ADMIN_PASS = "admin2024"; // Temporary — will be replaced with proper auth
+const ADMIN_PASSWORDS = ["0503424434", "0544033920"];
 
 interface AdminProtectProps {
   children: React.ReactNode;
