@@ -4,6 +4,7 @@ import { Badge } from "./ui/badge";
 interface HeritageBadgeProps {
   type: "founder" | "branchHead" | "deceased" | "generation";
   generationNum?: number;
+  gender?: "M" | "F";
 }
 
 const CONFIG = {
