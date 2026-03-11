@@ -25,9 +25,9 @@ function DetailContent({ member }: { member: FamilyMember }) {
   const [requestOpen, setRequestOpen] = useState(false);
 
   const ageText = formatAge(member.birth_year, member.death_year);
-  const motherName = extractMotherName(member);
+  const motherName = inferMotherName(member);
   const phone = member.phone as string | undefined;
-  const children = getChildrenOf(member.id);
+  const children = sortByBirth(getChildrenOf(member.id));
 
   // Group children by mother with colors
   const groupedChildren = useMemo(() => {
