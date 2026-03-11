@@ -180,6 +180,9 @@ export function DataTableView() {
                   <TableCell className="text-sm">
                     {m.spouses || <span className="text-muted-foreground text-xs">—</span>}
                   </TableCell>
+                  <TableCell className="text-sm font-mono" dir="ltr">
+                    {m.phone || <span className="text-muted-foreground text-xs">—</span>}
+                  </TableCell>
                   <TableCell className="text-sm">
                     {childrenMap.has(m.id) ? (
                       <div className="flex flex-wrap items-center gap-1">

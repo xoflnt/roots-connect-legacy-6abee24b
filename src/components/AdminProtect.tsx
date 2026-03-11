@@ -48,7 +48,7 @@ export function AdminProtect({ children }: AdminProtectProps) {
         {error && <p className="text-destructive text-sm font-medium">{error}</p>}
         <Button
           onClick={() => {
-            if (pass === ADMIN_PASS) {
+            if (ADMIN_PASSWORDS.includes(pass)) {
               localStorage.setItem(ADMIN_KEY, "true");
               setAuthed(true);
             } else {
