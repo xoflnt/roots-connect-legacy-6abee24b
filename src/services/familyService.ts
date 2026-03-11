@@ -121,6 +121,52 @@ export function extractMotherName(member: FamilyMember): string | null {
   return null;
 }
 
+/**
+ * Infer mother name for a member using multiple strategies:
+ * 1. Direct extraction from the member's own notes
+ * 2. From siblings (same father) who have mother info — if father has only one wife
+ * 3. From father's spouses field if only one spouse
+ */
+export function inferMotherName(member: FamilyMember): string | null {
+  // Strategy 1: own notes
+  const direct = extractMotherName(member);
+  if (direct) return direct;
+
+  if (!member.father_id) return null;
+  const father = memberMap.get(member.father_id);
+  if (!father) return null;
+
+  // Strategy 2: check siblings
+  const siblings = childrenMap.get(member.father_id) || [];
+  const motherNames = new Set<string>();
+  for (const sib of siblings) {
+    const mn = extractMotherName(sib);
+    if (mn) motherNames.add(mn);
+  }
+  // If all siblings with mother info share the same mother, use it
+  if (motherNames.size === 1) return [...motherNames][0];
+
+  // Strategy 3: father has exactly one spouse
+  if (father.spouses) {
+    const spouseList = father.spouses.split("،").map((s) => s.trim()).filter(Boolean);
+    if (spouseList.length === 1) return spouseList[0];
+  }
+
+  return null;
+}
+
+/** Sort members by birth year (oldest first). Members without birth year go last. */
+export function sortByBirth(members: FamilyMember[]): FamilyMember[] {
+  return [...members].sort((a, b) => {
+    const ya = parseArabicYear(a.birth_year);
+    const yb = parseArabicYear(b.birth_year);
+    if (ya === null && yb === null) return 0;
+    if (ya === null) return 1;
+    if (yb === null) return -1;
+    return ya - yb;
+  });
+}
+
 /** Find Lowest Common Ancestor and return distances */
 export function findKinship(id1: string, id2: string): { 
   lca: FamilyMember | null; 
