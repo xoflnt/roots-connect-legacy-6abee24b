@@ -52,8 +52,8 @@ export async function generateLineageImage(
   // Build vertical lines: full name first, then "ابن FirstName" for each ancestor, last line "الخنيني"
   const lines: { text: string; isFirst: boolean; isLast: boolean }[] = [];
   
-  // First line: full name
-  lines.push({ text: chain[0].name, isFirst: true, isLast: false });
+  // First line: first name only (to avoid duplication with next "ابن" line)
+  lines.push({ text: chain[0].name.split(" ")[0], isFirst: true, isLast: false });
   
   // Middle lines: "ابن [first name]"
   for (let i = 1; i < chain.length; i++) {
