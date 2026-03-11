@@ -15,17 +15,142 @@ export const familyMembers: FamilyMember[] = [
   { id: "101", name: "زيد بن ناصر", gender: "M", father_id: "100", death_year: "١٣٤٠", spouses: "نورة عبدالله النافع" },
   { id: "102", name: "لطيفة بنت ناصر", gender: "F", father_id: "100" },
 
-  // --- فرع محمد بن زيد ---
-  { id: "200", name: "محمد بن زيد", gender: "M", father_id: "101", birth_year: "١٣١٣", death_year: "١٣٨٩", spouses: "لولوة العصيمي، مزنة البداح" },
-  { id: "201", name: "عبدالله بن محمد", gender: "M", father_id: "200", birth_year: "١٣٥٣", death_year: "١٤٣١", notes: "والدته: لولوة العصيمي" },
-  { id: "202", name: "عايد بن محمد", gender: "M", father_id: "200", birth_year: "١٣٦٠", death_year: "١٣٧٠", notes: "توفي طفلاً - والدته: لولوة العصيمي" },
-  { id: "203", name: "زيد بن محمد", gender: "M", father_id: "200", birth_year: "١٣٦٤", death_year: "١٤٣٦", notes: "والدته: لولوة العصيمي" },
-  { id: "204", name: "فهد بن محمد", gender: "M", father_id: "200", birth_year: "١٣٧٤", spouses: "نورة ناصر زيد", notes: "والدته: مزنة البداح" },
-  { id: "205", name: "نورة بنت محمد", gender: "F", father_id: "200", birth_year: "١٣٧٥", spouses: "سعود ناصر زيد", notes: "والدتها: مزنة البداح" },
-  { id: "206", name: "ناصر بن محمد", gender: "M", father_id: "200", birth_year: "١٣٧٧", notes: "والدته: مزنة البداح" },
-  { id: "207", name: "سليمان بن محمد", gender: "M", father_id: "200", birth_year: "١٣٨١", notes: "والدته: مزنة البداح" },
-  { id: "208", name: "راشد بن محمد", gender: "M", father_id: "200", birth_year: "١٣٨٥", notes: "والدته: مزنة البداح" },
-  { id: "209", name: "علي بن محمد", gender: "M", father_id: "200", birth_year: "١٣٨٩", notes: "والدته: مزنة البداح" },
+  // ==========================================
+  // --- فرع محمد بن زيد (البيانات النهائية الشاملة) ---
+  // ==========================================
+  { id: "200", name: "محمد بن زيد", gender: "M", father_id: "101", birth_year: "١٣١٣", death_year: "١٣٨٩/١٢/١٢", spouses: "لولوة خزعل العصيمي، مزنة عبدالعزيز أحمد البداح" },
+
+  // أبناء محمد من لولوة العصيمي
+  { id: "202", name: "عايد بن محمد", gender: "M", father_id: "200", birth_year: "١٣٦٠", notes: "توفي وعمره ١٠ سنين تقريباً - والدته: لولوة العصيمي" },
+  { id: "201", name: "عبدالله بن محمد", gender: "M", father_id: "200", birth_year: "١٣٥٣", death_year: "١٤٣١/٥/٢٢", notes: "والدته: لولوة العصيمي" },
+  { id: "203", name: "زيد بن محمد", gender: "M", father_id: "200", birth_year: "١٣٦٤", death_year: "١٤٣٦/٦/٢٠", spouses: "نورة عبدالرحمن الطوالة", notes: "والدته: لولوة العصيمي" },
+
+  // ذرية زيد بن محمد
+  { id: "M203_1", name: "منيرة بنت زيد", gender: "F", father_id: "203", notes: "توفيت طفلة" },
+  { id: "M203_2", name: "أمل بنت زيد", gender: "F", father_id: "203" },
+  { id: "M203_3", name: "منال بنت زيد", gender: "F", father_id: "203" },
+  { id: "M203_4", name: "انتصار بنت زيد", gender: "F", father_id: "203" },
+  { id: "M203_5", name: "حصة بنت زيد", gender: "F", father_id: "203" },
+  { id: "M203_6", name: "عروب بنت زيد", gender: "F", father_id: "203" },
+  { id: "M203_7", name: "رنيم بنت زيد", gender: "F", father_id: "203" },
+  { id: "M203_8", name: "هدى بنت زيد", gender: "F", father_id: "203" },
+
+  { id: "M203_9", name: "محمد بن زيد", gender: "M", father_id: "203", spouses: "غير معروف" },
+  { id: "M203_9_1", name: "نورة بنت محمد", gender: "F", father_id: "M203_9" },
+  { id: "M203_9_2", name: "نضيد بنت محمد", gender: "F", father_id: "M203_9" },
+  { id: "M203_9_3", name: "لين بنت محمد", gender: "F", father_id: "M203_9" },
+  { id: "M203_9_4", name: "هشام بن محمد", gender: "M", father_id: "M203_9" },
+  { id: "M203_9_5", name: "ثامر بن محمد", gender: "M", father_id: "M203_9" },
+  { id: "M203_9_6", name: "فراس بن محمد", gender: "M", father_id: "M203_9" },
+  { id: "M203_9_7", name: "سوار بنت محمد", gender: "F", father_id: "M203_9" },
+  { id: "M203_9_8", name: "ميساء بنت محمد", gender: "F", father_id: "M203_9" },
+  { id: "M203_9_9", name: "عاصم بن محمد", gender: "M", father_id: "M203_9", spouses: "غير معروف" },
+  { id: "M203_9_9_1", name: "لينا بنت عاصم", gender: "F", father_id: "M203_9_9" },
+  { id: "M203_10", name: "سعود بن زيد", gender: "M", father_id: "203", spouses: "غير معروف" },
+  { id: "M203_10_1", name: "سما بنت سعود", gender: "F", father_id: "M203_10" },
+  { id: "M203_10_2", name: "فهد بن سعود", gender: "M", father_id: "M203_10" },
+  { id: "M203_10_3", name: "سدن بنت سعود", gender: "F", father_id: "M203_10" },
+  { id: "M203_10_4", name: "عبدالله بن سعود", gender: "M", father_id: "M203_10" },
+  { id: "M203_10_5", name: "زيد بن سعود", gender: "M", father_id: "M203_10" },
+  { id: "M203_11", name: "عبدالعزيز بن زيد", gender: "M", father_id: "203", spouses: "غير معروف" },
+  { id: "M203_11_1", name: "جود بنت عبدالعزيز", gender: "F", father_id: "M203_11" },
+  { id: "M203_11_2", name: "تميم بن عبدالعزيز", gender: "M", father_id: "M203_11" },
+  { id: "M203_11_3", name: "صدف بنت عبدالعزيز", gender: "F", father_id: "M203_11" },
+  { id: "M203_11_4", name: "زيد بن عبدالعزيز", gender: "M", father_id: "M203_11" },
+  { id: "M203_11_5", name: "جواد بن عبدالعزيز", gender: "M", father_id: "M203_11" },
+  { id: "M203_12", name: "أسامة بن زيد", gender: "M", father_id: "203", spouses: "غير معروف" },
+  { id: "M203_12_1", name: "سهيل بن أسامة", gender: "M", father_id: "M203_12" },
+  { id: "M203_12_2", name: "أيوب بن أسامة", gender: "M", father_id: "M203_12" },
+  { id: "M203_13", name: "أحمد بن زيد", gender: "M", father_id: "203", spouses: "غير معروف" },
+  { id: "M203_13_1", name: "عبدالرحمن بن أحمد", gender: "M", father_id: "M203_13" },
+  { id: "M203_13_2", name: "رتيل بنت أحمد", gender: "F", father_id: "M203_13" },
+  { id: "M203_13_3", name: "يزن بن أحمد", gender: "M", father_id: "M203_13" },
+  { id: "M203_13_4", name: "مؤيد بن أحمد", gender: "M", father_id: "M203_13" },
+  { id: "M203_14", name: "باسم بن زيد", gender: "M", father_id: "203", spouses: "غير معروف", notes: "ليس له ذرية" },
+
+  // أبناء محمد من مزنة البداح
+  { id: "205", name: "نورة بنت محمد", gender: "F", father_id: "200", birth_year: "١٣٧٥", spouses: "سعود ناصر زيد الخنيني", notes: "والدتها: مزنة البداح" },
+
+  { id: "204", name: "فهد بن محمد", gender: "M", father_id: "200", birth_year: "١٣٧٤", spouses: "نورة ناصر زيد الخنيني، فوزية فهد سالم البداح، بشرى سعود الصالح", notes: "والدته: مزنة البداح" },
+
+  // أبناء فهد من نورة الخنيني
+  { id: "M204_1", name: "هدى بنت فهد", gender: "F", father_id: "204", notes: "والدتها: نورة الخنيني" },
+  { id: "M204_2", name: "أسماء بنت فهد", gender: "F", father_id: "204", notes: "والدتها: نورة الخنيني" },
+  { id: "M204_3", name: "غيداء بنت فهد", gender: "F", father_id: "204", notes: "والدتها: نورة الخنيني" },
+  { id: "M204_4", name: "سلطان بن فهد", gender: "M", father_id: "204", notes: "والدته: نورة الخنيني" },
+  { id: "M204_5", name: "محمد بن فهد", gender: "M", father_id: "204", notes: "والدته: نورة الخنيني" },
+  { id: "M204_5_1", name: "لجين بنت محمد", gender: "F", father_id: "M204_5" },
+  { id: "M204_5_2", name: "أنس بن محمد", gender: "M", father_id: "M204_5" },
+  { id: "M204_5_3", name: "جنى بنت محمد", gender: "F", father_id: "M204_5" },
+  { id: "M204_5_4", name: "أيوب بن محمد", gender: "M", father_id: "M204_5" },
+  { id: "M204_5_5", name: "عبدالله بن محمد", gender: "M", father_id: "M204_5" },
+  { id: "M204_6", name: "خالد بن فهد", gender: "M", father_id: "204", notes: "والدته: نورة الخنيني" },
+  { id: "M204_6_1", name: "فهد بن خالد", gender: "M", father_id: "M204_6" },
+  { id: "M204_6_2", name: "ريان بن خالد", gender: "M", father_id: "M204_6" },
+  { id: "M204_6_3", name: "فيصل بن خالد", gender: "M", father_id: "M204_6" },
+  { id: "M204_7", name: "طارق بن فهد", gender: "M", father_id: "204", notes: "والدته: نورة الخنيني" },
+  { id: "M204_7_1", name: "مها بنت طارق", gender: "F", father_id: "M204_7" },
+  { id: "M204_7_2", name: "فهد بن طارق", gender: "M", father_id: "M204_7" },
+  { id: "M204_7_3", name: "نوره بنت طارق", gender: "F", father_id: "M204_7" },
+  { id: "M204_8", name: "فارس بن فهد", gender: "M", father_id: "204", notes: "والدته: نورة الخنيني" },
+  { id: "M204_8_1", name: "بدر بن فارس", gender: "M", father_id: "M204_8" },
+  { id: "M204_8_2", name: "نايف بن فارس", gender: "M", father_id: "M204_8" },
+  { id: "M204_9", name: "ناصر بن فهد", gender: "M", father_id: "204", notes: "والدته: نورة الخنيني" },
+  { id: "M204_9_1", name: "فهد بن ناصر", gender: "M", father_id: "M204_9" },
+
+  // أبناء فهد من فوزية البداح
+  { id: "M204_10", name: "إيمان بنت فهد", gender: "F", father_id: "204", notes: "والدتها: فوزية البداح" },
+  { id: "M204_11", name: "ابتهال بنت فهد", gender: "F", father_id: "204", notes: "والدتها: فوزية البداح" },
+  { id: "M204_12", name: "مزنة بنت فهد", gender: "F", father_id: "204", notes: "والدتها: فوزية البداح" },
+  { id: "M204_13", name: "عبدالعزيز بن فهد", gender: "M", father_id: "204", notes: "والدته: فوزية البداح" },
+  { id: "M204_14", name: "علي بن فهد", gender: "M", father_id: "204", notes: "والدته: فوزية البداح" },
+  { id: "M204_15", name: "أسيل بنت فهد", gender: "F", father_id: "204", notes: "والدتها: فوزية البداح" },
+  { id: "M204_16", name: "أثير بنت فهد", gender: "F", father_id: "204", notes: "والدتها: فوزية البداح" },
+  { id: "M204_17", name: "منصور بن فهد", gender: "M", father_id: "204", notes: "والدته: فوزية البداح" },
+  { id: "M204_18", name: "أميرة بنت فهد", gender: "F", father_id: "204", notes: "والدتها: فوزية البداح" },
+  { id: "M204_19", name: "عزام بن فهد", gender: "M", father_id: "204", notes: "والدته: فوزية البداح" },
+  { id: "M204_20", name: "عبدالله بن فهد", gender: "M", father_id: "204", notes: "والدته: فوزية البداح" },
+  { id: "M204_20_1", name: "فهد بن عبدالله", gender: "M", father_id: "M204_20" },
+  { id: "M204_20_2", name: "رفا بنت عبدالله", gender: "F", father_id: "M204_20" },
+
+  // أبناء فهد من بشرى الصالح
+  { id: "M204_21", name: "سطام بن فهد", gender: "M", father_id: "204", notes: "والدته: بشرى الصالح" },
+
+  // ناصر بن محمد
+  { id: "206", name: "ناصر بن محمد", gender: "M", father_id: "200", birth_year: "١٣٧٧", spouses: "اللولو سالم الشمالي، الجوهرة سعود العبدالقادر", notes: "والدته: مزنة البداح" },
+  { id: "M206_1", name: "محمد بن ناصر", gender: "M", father_id: "206", notes: "والدته: اللولو الشمالي" },
+  { id: "M206_2", name: "خولة بنت ناصر", gender: "F", father_id: "206", notes: "والدتها: الجوهرة العبدالقادر" },
+  { id: "M206_3", name: "خالد بن ناصر", gender: "M", father_id: "206", notes: "والدته: الجوهرة العبدالقادر" },
+
+  // سليمان بن محمد
+  { id: "207", name: "سليمان بن محمد", gender: "M", father_id: "200", birth_year: "١٣٨١", spouses: "مريم عبدالله الرومي، فاطمة ناصر الطريقي", notes: "والدته: مزنة البداح" },
+  { id: "M207_1", name: "هيثم بن سليمان", gender: "M", father_id: "207", notes: "والدته: مريم الرومي (توفيت ١٤٣٢/١٠/٢٣)" },
+  { id: "M207_2", name: "محمد بن سليمان", gender: "M", father_id: "207", notes: "والدته: مريم الرومي" },
+  { id: "M207_3", name: "عبدالرحمن بن سليمان", gender: "M", father_id: "207", notes: "والدته: فاطمة الطريقي" },
+  { id: "M207_4", name: "سعاد بنت سليمان", gender: "F", father_id: "207", notes: "والدتها: فاطمة الطريقي" },
+  { id: "M207_5", name: "عمر بن سليمان", gender: "M", father_id: "207", notes: "والدته: فاطمة الطريقي" },
+  { id: "M207_6", name: "ناصر بن سليمان", gender: "M", father_id: "207", notes: "والدته: فاطمة الطريقي" },
+  { id: "M207_7", name: "بيان بنت سليمان", gender: "F", father_id: "207", notes: "والدتها: فاطمة الطريقي" },
+
+  // راشد بن محمد
+  { id: "208", name: "راشد بن محمد", gender: "M", father_id: "200", birth_year: "١٣٨٥", spouses: "مريم عبداللطيف القشعمي", notes: "والدته: مزنة البداح" },
+  { id: "M208_1", name: "فهد بن راشد", gender: "M", father_id: "208" },
+  { id: "M208_2", name: "شهد بنت راشد", gender: "F", father_id: "208" },
+  { id: "M208_3", name: "غادة بنت راشد", gender: "F", father_id: "208" },
+  { id: "M208_4", name: "مجد بنت راشد", gender: "F", father_id: "208" },
+  { id: "M208_5", name: "شمس بنت راشد", gender: "F", father_id: "208" },
+  { id: "M208_6", name: "محمد بن راشد", gender: "M", father_id: "208" },
+  { id: "M208_7", name: "تركي بن راشد", gender: "M", father_id: "208" },
+  { id: "M208_8", name: "فيصل بن راشد", gender: "M", father_id: "208" },
+
+  // علي بن محمد
+  { id: "209", name: "علي بن محمد", gender: "M", father_id: "200", birth_year: "١٣٨٩", spouses: "مها سليمان الرومي", notes: "والدته: مزنة البداح" },
+  { id: "M209_1", name: "محمد بن علي", gender: "M", father_id: "209" },
+  { id: "M209_2", name: "ريان بن علي", gender: "M", father_id: "209" },
+  { id: "M209_3", name: "عبدالله بن علي", gender: "M", father_id: "209" },
+  { id: "M209_4", name: "أحمد بن علي", gender: "M", father_id: "209" },
+  { id: "M209_5", name: "ألماس بنت علي", gender: "F", father_id: "209" },
+  { id: "M209_6", name: "يوسف بن علي", gender: "M", father_id: "209" },
 
   // ==========================================
   // --- فرع عبدالعزيز بن زيد (البيانات المحدثة) ---
