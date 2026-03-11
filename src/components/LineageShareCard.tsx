@@ -125,7 +125,7 @@ export async function generateLineageImage(
   // Branding
   ctx.fillStyle = "rgba(196, 164, 95, 0.5)";
   ctx.font = "bold 22px 'Tajawal', 'Arial', sans-serif";
-  ctx.fillText("شجرة عائلة الخنيني — حفظ الإرث للأجيال", W / 2, H - 60);
+  ctx.fillText("شجرة الخنيني — حفظ الإرث للأجيال", W / 2, H - 60);
 
   return new Promise((resolve) => {
     canvas.toBlob((blob) => resolve(blob!), "image/png");

@@ -52,7 +52,7 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
   const handleShare = useCallback(() => {
     const url = `${window.location.origin}/person/${memberId}`;
     if (navigator.share) {
-      navigator.share({ title: `نسب ${chain[0]?.name} — بوابة آل الخنيني`, url }).catch(() => {});
+      navigator.share({ title: `نسب ${chain[0]?.name} — بوابة الخنيني`, url }).catch(() => {});
     } else {
       navigator.clipboard.writeText(url).then(() => {
         setCopied(true);

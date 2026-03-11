@@ -48,7 +48,7 @@ export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHom
             <TreePine className="h-4.5 w-4.5 text-primary" />
           </div>
           <h1 className="text-base md:text-lg font-extrabold text-foreground tracking-tight hidden sm:block">
-            آل الخنيني
+            الخنيني
           </h1>
         </div>
 
