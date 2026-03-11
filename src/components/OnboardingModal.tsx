@@ -1,12 +1,12 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Progress } from "@/components/ui/progress";
-import { TreePine, Search, UserCheck, Phone, CalendarDays, ChevronLeft, Loader2 } from "lucide-react";
+import { TreePine, Search, UserCheck, Phone, CalendarDays, ChevronLeft, Loader2, QrCode, ExternalLink } from "lucide-react";
 import { familyMembers, type FamilyMember } from "@/data/familyData";
-import { sendOTP, verifyOTP } from "@/services/wasageSms";
+import { sendOTP, checkOTPStatus, verifyOTP, type SendOTPResult } from "@/services/wasageSms";
 import { useAuth } from "@/contexts/AuthContext";
 import { HijriDatePicker } from "@/components/HijriDatePicker";
 import { registerVerifiedUser } from "@/services/dataService";
