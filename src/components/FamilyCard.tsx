@@ -7,6 +7,7 @@ import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
 import { HeritageBadge } from "./HeritageBadge";
 import { isFounder, isDeceased, getChildrenOf } from "@/services/familyService";
 import { formatAge } from "@/utils/ageCalculator";
+import { getBranch, getBranchStyle } from "@/utils/branchUtils";
 
 export function FamilyCard({ data, selected }: NodeProps) {
   const member = data as unknown as FamilyMember & {
