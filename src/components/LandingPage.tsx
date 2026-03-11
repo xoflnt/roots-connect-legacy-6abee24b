@@ -79,22 +79,10 @@ function computeStats() {
     if (count > topFemaleCount) { topFemaleName = name; topFemaleCount = count; }
   }
 
-  // Father with most children
-  let topFatherId = "", topFatherChildCount = 0;
-  for (const [parentId, children] of childrenMap) {
-    if (parentId && children.length > topFatherChildCount) {
-      topFatherId = parentId;
-      topFatherChildCount = children.length;
-    }
-  }
-  const topFather = familyMembers.find((m) => m.id === topFatherId);
-  const topFatherName = topFather ? topFather.name.split(" ")[0] : "";
-
   return {
     total, generations: maxDepth, males, females,
     topMaleName, topMaleCount,
     topFemaleName, topFemaleCount,
-    topFatherName, topFatherChildCount,
   };
 }
 
