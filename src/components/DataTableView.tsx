@@ -168,6 +168,7 @@ export function DataTableView() {
               <TableRow className="bg-muted shadow-sm">
                 <TableHead className="text-right w-[70px]">المعرف</TableHead>
                 <TableHead className="text-right">الاسم</TableHead>
+                <TableHead className="text-right w-[90px]">الفرع</TableHead>
                 <TableHead className="text-right w-[60px]">الجنس</TableHead>
                 <TableHead className="text-right">الأب</TableHead>
                 <TableHead className="text-right">الوالدة</TableHead>
