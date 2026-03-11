@@ -19,6 +19,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/person/:id" element={<PersonPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
