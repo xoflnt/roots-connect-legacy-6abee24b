@@ -1,5 +1,6 @@
 import { useState, useRef, useMemo, useEffect, useCallback } from "react";
 import { Search, TreePine, ChevronDown, Users, Layers, Crown, User, UserRound, Heart, Quote, Send } from "lucide-react";
+import { getLineageLabel, getMemberSubtitle } from "@/utils/memberLabel";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FontSizeToggle } from "@/components/FontSizeToggle";
 import { Input } from "@/components/ui/input";
@@ -184,10 +185,12 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
 
             {showingResults && (
               <div className="absolute top-full mt-2 w-full bg-card border border-border rounded-2xl shadow-xl z-50 overflow-hidden max-h-72 overflow-y-auto">
-                {filtered.map((m) => (
+                {filtered.map((m) => {
+                  const subtitle = getMemberSubtitle(m);
+                  return (
                   <button
                     key={m.id}
-                    className="w-full text-right px-5 py-3.5 text-foreground hover:bg-muted transition-colors border-b border-border/30 last:border-b-0"
+                    className="w-full text-right px-5 py-3 text-foreground hover:bg-muted transition-colors border-b border-border/30 last:border-b-0"
                     style={{ minHeight: 48 }}
                     onMouseDown={() => {
                       onSearchSelect(m.id);
@@ -195,14 +198,13 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
                       setOpen(false);
                     }}
                   >
-                    <span className="font-bold">{m.name}</span>
-                    {m.death_year && (
-                      <span className="text-sm text-muted-foreground mr-2">
-                        (ت {m.death_year} هـ)
-                      </span>
+                    <span className="font-bold block">{getLineageLabel(m)}</span>
+                    {subtitle && (
+                      <span className="text-xs text-muted-foreground">{subtitle}</span>
                     )}
                   </button>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

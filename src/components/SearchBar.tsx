@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { familyMembers } from "@/data/familyData";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { getLineageLabel, getMemberSubtitle } from "@/utils/memberLabel";
 import {
   Dialog,
   DialogContent,
@@ -73,21 +74,22 @@ export function SearchBar({ onSelect }: SearchBarProps) {
             </div>
             <div className="flex-1 overflow-y-auto">
               {filtered.length > 0 ? (
-                filtered.map((m) => (
-                  <button
-                    key={m.id}
-                    className="w-full text-right px-5 py-4 text-foreground hover:bg-muted transition-colors border-b border-border/30 last:border-b-0 flex items-center gap-3"
-                    style={{ minHeight: 52 }}
-                    onClick={() => handleSelect(m.id, m.name)}
-                  >
-                    <span className="font-bold flex-1">{m.name}</span>
-                    {m.death_year && (
-                      <span className="text-sm text-muted-foreground shrink-0">
-                        (ت {m.death_year} هـ)
-                      </span>
-                    )}
-                  </button>
-                ))
+                 filtered.map((m) => {
+                   const subtitle = getMemberSubtitle(m);
+                   return (
+                   <button
+                     key={m.id}
+                     className="w-full text-right px-5 py-3 text-foreground hover:bg-muted transition-colors border-b border-border/30 last:border-b-0"
+                     style={{ minHeight: 52 }}
+                     onClick={() => handleSelect(m.id, m.name)}
+                   >
+                     <span className="font-bold block">{getLineageLabel(m)}</span>
+                     {subtitle && (
+                       <span className="text-xs text-muted-foreground">{subtitle}</span>
+                     )}
+                   </button>
+                   );
+                 })
               ) : query.trim() ? (
                 <div className="p-8 text-center text-muted-foreground">لا توجد نتائج</div>
               ) : (
@@ -121,21 +123,22 @@ export function SearchBar({ onSelect }: SearchBarProps) {
 
       {open && filtered.length > 0 && (
         <div className="absolute top-full mt-1 w-full bg-card border border-border rounded-lg shadow-lg z-50 overflow-hidden">
-          {filtered.map((m) => (
+          {filtered.map((m) => {
+            const subtitle = getMemberSubtitle(m);
+            return (
             <button
               key={m.id}
-              className="w-full text-right px-4 py-3 text-foreground hover:bg-muted transition-colors"
+              className="w-full text-right px-4 py-2.5 text-foreground hover:bg-muted transition-colors border-b border-border/20 last:border-b-0"
               style={{ minHeight: 44 }}
               onMouseDown={() => handleSelect(m.id, m.name)}
             >
-              <span className="font-medium">{m.name}</span>
-              {m.death_year && (
-                <span className="text-sm text-muted-foreground mr-2">
-                  (ت {m.death_year} هـ)
-                </span>
+              <span className="font-medium block text-sm">{getLineageLabel(m)}</span>
+              {subtitle && (
+                <span className="text-xs text-muted-foreground">{subtitle}</span>
               )}
             </button>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

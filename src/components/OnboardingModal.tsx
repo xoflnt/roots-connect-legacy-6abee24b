@@ -10,6 +10,7 @@ import { sendOTP, checkOTPStatus, verifyOTP, type SendOTPResult } from "@/servic
 import { useAuth } from "@/contexts/AuthContext";
 import { HijriDatePicker } from "@/components/HijriDatePicker";
 import { registerVerifiedUser } from "@/services/dataService";
+import { getLineageLabel } from "@/utils/memberLabel";
 
 const ONBOARDING_KEY = "hasSeenOnboarding";
 const TOTAL_STEPS = 5;
@@ -265,7 +266,10 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                                 className="w-full text-right px-4 min-h-[48px] flex items-center gap-2 hover:bg-muted/60 active:bg-muted transition-colors border-b border-border/20 last:border-0"
                               >
                                 <UserCheck className="h-4 w-4 text-primary shrink-0" />
-                                <span className="text-sm font-medium text-foreground">{getDisplayLabel(m)}</span>
+                                <div className="text-right">
+                                  <span className="text-sm font-medium text-foreground block">{getLineageLabel(m)}</span>
+                                  {m.birth_year && <span className="text-xs text-muted-foreground">م {m.birth_year}</span>}
+                                </div>
                               </button>
                             ))
                           )}
