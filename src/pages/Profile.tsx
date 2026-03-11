@@ -22,7 +22,8 @@ const Profile = () => {
   const member = useMemo(() => {
     if (!currentUser) return null;
     return getMemberById(currentUser.memberId) ?? null;
-  }, [currentUser]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser, refreshKey]);
 
   const chain = useMemo(() => {
     if (!member) return [];
