@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { User, Calendar, Heart, ArrowUp } from "lucide-react";
+import { User, Calendar, Heart, ArrowUp, Users } from "lucide-react";
 import { familyMembers, type FamilyMember } from "@/data/familyData";
 
 interface LineageViewProps {
