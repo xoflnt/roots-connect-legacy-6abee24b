@@ -1,5 +1,6 @@
-import { useMemo } from "react";
-import { User, Calendar, Heart, ArrowUp, Users } from "lucide-react";
+import { useMemo, useCallback } from "react";
+import { User, Calendar, Heart, ArrowUp, Users, Share2, Link2, Check } from "lucide-react";
+import { useState } from "react";
 import { familyMembers, type FamilyMember } from "@/data/familyData";
 
 interface LineageViewProps {
@@ -21,6 +22,8 @@ function toArabicNum(n: number): string {
 }
 
 export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
+  const [copied, setCopied] = useState(false);
+
   const { chain, childrenMap } = useMemo(() => {
     const memberMap = new Map(familyMembers.map((m) => [m.id, m]));
     const result: FamilyMember[] = [];
@@ -30,7 +33,6 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
       current = current.father_id ? memberMap.get(current.father_id) : undefined;
     }
 
-    // Build children map: father_id -> children[]
     const cMap = new Map<string, FamilyMember[]>();
     for (const m of familyMembers) {
       if (m.father_id) {
@@ -42,6 +44,18 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
 
     return { chain: result, childrenMap: cMap };
   }, [memberId]);
+
+  const handleShare = useCallback(() => {
+    const url = `${window.location.origin}/person/${memberId}`;
+    if (navigator.share) {
+      navigator.share({ title: `نسب ${chain[0]?.name} — بوابة آل الخنيني`, url }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(url).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      });
+    }
+  }, [memberId, chain]);
 
   if (chain.length === 0) {
     return (
@@ -65,6 +79,23 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
           <p className="text-muted-foreground text-sm">
             من {chain[0].name} إلى الجد الأعلى — {toArabicNum(chain.length)} أجيال
           </p>
+          {/* Share button */}
+          <button
+            onClick={handleShare}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-sm font-medium mt-2"
+          >
+            {copied ? (
+              <>
+                <Check className="h-4 w-4" />
+                تم النسخ!
+              </>
+            ) : (
+              <>
+                <Share2 className="h-4 w-4" />
+                شارك النسب
+              </>
+            )}
+          </button>
         </div>
 
         {/* Timeline */}
