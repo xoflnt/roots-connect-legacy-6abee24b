@@ -108,22 +108,21 @@ export const FamilyTree = forwardRef<FamilyTreeRef>(function FamilyTree(_, ref) 
         maxZoom={2}
         proOptions={{ hideAttribution: true }}
         style={{ background: 'transparent' }}
-      />
-
-      {/* MiniMap */}
-      <MiniMap
-        nodeStrokeWidth={3}
-        pannable
-        zoomable
-        className="!bg-card/80 !border-border !rounded-xl !shadow-lg !backdrop-blur-sm"
-        maskColor="hsl(var(--muted) / 0.5)"
-        nodeColor={(node) => {
-          const data = node.data as any;
-          if (node.type === 'spouseCard') return 'hsl(var(--accent))';
-          return data?.gender === 'M' ? 'hsl(var(--male))' : 'hsl(var(--female))';
-        }}
-        style={{ width: 160, height: 100 }}
-      />
+      >
+        <MiniMap
+          nodeStrokeWidth={3}
+          pannable
+          zoomable
+          className="!bg-card/80 !border-border !rounded-xl !shadow-lg !backdrop-blur-sm"
+          maskColor="hsl(var(--muted) / 0.5)"
+          nodeColor={(node) => {
+            const data = node.data as any;
+            if (node.type === 'spouseCard') return 'hsl(var(--accent))';
+            return data?.gender === 'M' ? 'hsl(var(--male))' : 'hsl(var(--female))';
+          }}
+          style={{ width: 160, height: 100 }}
+        />
+      </ReactFlow>
 
       {/* Zoom controls - pill design */}
       <div className="absolute bottom-5 left-5 flex flex-col bg-card/90 backdrop-blur-md rounded-2xl border border-border shadow-xl overflow-hidden z-10">
