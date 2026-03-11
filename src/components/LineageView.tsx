@@ -1,7 +1,10 @@
 import { useMemo, useCallback } from "react";
-import { User, Calendar, Heart, ArrowUp, Users, Share2, Link2, Check } from "lucide-react";
+import { User, Calendar, Heart, ArrowUp, Users, Share2, Check, Download } from "lucide-react";
 import { useState } from "react";
 import { familyMembers, type FamilyMember } from "@/data/familyData";
+import { HeritageBadge } from "./HeritageBadge";
+import { isFounder, isBranchHead, isDeceased, getDepth } from "@/services/familyService";
+import { downloadLineageCard } from "./LineageShareCard";
 
 interface LineageViewProps {
   memberId: string;
@@ -23,6 +26,7 @@ function toArabicNum(n: number): string {
 
 export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
   const [copied, setCopied] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   const { chain, childrenMap } = useMemo(() => {
     const memberMap = new Map(familyMembers.map((m) => [m.id, m]));
@@ -57,6 +61,16 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
     }
   }, [memberId, chain]);
 
+  const handleDownloadCard = useCallback(async () => {
+    if (chain.length === 0) return;
+    setDownloading(true);
+    try {
+      await downloadLineageCard(chain, memberId);
+    } finally {
+      setDownloading(false);
+    }
+  }, [chain, memberId]);
+
   if (chain.length === 0) {
     return (
       <div className="flex items-center justify-center h-full text-muted-foreground text-lg">
@@ -79,23 +93,33 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
           <p className="text-muted-foreground text-sm">
             من {chain[0].name} إلى الجد الأعلى — {toArabicNum(chain.length)} أجيال
           </p>
-          {/* Share button */}
-          <button
-            onClick={handleShare}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-sm font-medium mt-2"
-          >
-            {copied ? (
-              <>
-                <Check className="h-4 w-4" />
-                تم النسخ!
-              </>
-            ) : (
-              <>
-                <Share2 className="h-4 w-4" />
-                شارك النسب
-              </>
-            )}
-          </button>
+          {/* Action buttons */}
+          <div className="flex items-center justify-center gap-2 flex-wrap mt-2">
+            <button
+              onClick={handleShare}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-sm font-medium min-h-[44px]"
+            >
+              {copied ? (
+                <>
+                  <Check className="h-4 w-4" />
+                  تم النسخ!
+                </>
+              ) : (
+                <>
+                  <Share2 className="h-4 w-4" />
+                  شارك النسب
+                </>
+              )}
+            </button>
+            <button
+              onClick={handleDownloadCard}
+              disabled={downloading}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/15 text-accent hover:bg-accent/25 transition-colors text-sm font-medium min-h-[44px] disabled:opacity-50"
+            >
+              <Download className="h-4 w-4" />
+              {downloading ? "جاري التحميل..." : "بطاقة واتساب"}
+            </button>
+          </div>
         </div>
 
         {/* Timeline */}
@@ -111,7 +135,6 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
               <div key={member.id} className="relative flex gap-4 md:gap-5 items-stretch">
                 {/* Timeline rail */}
                 <div className="flex flex-col items-center shrink-0 w-8 md:w-10">
-                  {/* Dot */}
                   <div
                     className="w-5 h-5 md:w-6 md:h-6 rounded-full z-10 flex items-center justify-center shadow-lg ring-4 ring-background"
                     style={{ backgroundColor: dotColor }}
@@ -120,7 +143,6 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                       <div className="w-2 h-2 rounded-full bg-background" />
                     )}
                   </div>
-                  {/* Connecting line */}
                   {!isLast && (
                     <div
                       className="w-0.5 flex-1 min-h-[1.5rem]"
@@ -149,21 +171,16 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                     borderRightColor: isFirst ? dotColor : undefined,
                   }}
                 >
-                  {/* Generation badge */}
                   <div className="px-3 pt-3 md:px-5 md:pt-4">
                     <div className="flex items-start gap-2.5 md:gap-3">
                       <div
                         className={`w-9 h-9 md:w-11 md:h-11 rounded-xl flex items-center justify-center shrink-0 ${
-                          isMale
-                            ? "bg-male-light"
-                            : "bg-female-light"
+                          isMale ? "bg-male-light" : "bg-female-light"
                         }`}
                       >
                         <User
                           className={`h-4 w-4 md:h-5 md:w-5 ${
-                            isMale
-                              ? "text-male"
-                              : "text-female"
+                            isMale ? "text-male" : "text-female"
                           }`}
                         />
                       </div>
@@ -178,6 +195,13 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                             {isFirst && " — الشخص المطلوب"}
                             {isLast && " — الجد الأعلى"}
                           </p>
+                        </div>
+                        {/* Heritage badges */}
+                        <div className="flex flex-wrap gap-1 mt-1.5">
+                          {isFounder(member) && <HeritageBadge type="founder" />}
+                          {isBranchHead(member.id) && <HeritageBadge type="branchHead" />}
+                          {isDeceased(member) && <HeritageBadge type="deceased" />}
+                          <HeritageBadge type="generation" generationNum={genNum} />
                         </div>
                       </div>
                     </div>
@@ -212,11 +236,9 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                       </div>
                     )}
 
-                    {/* Children / Siblings */}
                     {(() => {
                       const children = childrenMap.get(member.id);
                       if (!children || children.length === 0) return null;
-                      // The child in the chain (next in lineage)
                       const chainChildId = index > 0 ? chain[index - 1].id : null;
                       return (
                         <div className="flex items-start gap-2 text-sm text-muted-foreground">
@@ -232,7 +254,7 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                                     onSelectMember?.(child.id);
                                   }}
                                   className={`
-                                    rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors
+                                    rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors min-h-[28px]
                                     ${isInChain
                                       ? "bg-primary/20 text-primary font-bold ring-1 ring-primary/30"
                                       : "bg-muted text-muted-foreground hover:bg-muted/80"
@@ -249,7 +271,6 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                     })()}
                   </div>
 
-                  {/* Quick lineage switch for ancestors */}
                   {!isFirst && onSelectMember && (
                     <div className="border-t border-border/30 px-3 py-2 md:px-5">
                       <button

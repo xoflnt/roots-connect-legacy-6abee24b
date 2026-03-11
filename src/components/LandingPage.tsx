@@ -1,6 +1,7 @@
 import { useState, useRef, useMemo, useEffect, useCallback } from "react";
 import { Search, TreePine, ChevronDown, Users, Layers, Crown, User, UserRound, Heart, Quote } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { FontSizeToggle } from "@/components/FontSizeToggle";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { familyMembers } from "@/data/familyData";
@@ -130,7 +131,8 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
       {/* Hero Section */}
       <section className="relative flex flex-col items-center justify-center min-h-screen px-4 text-center">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-accent to-transparent" />
-        <div className="absolute top-4 left-4 z-30">
+        <div className="absolute top-4 left-4 z-30 flex items-center gap-1.5">
+          <FontSizeToggle />
           <ThemeToggle />
         </div>
 
@@ -308,4 +310,3 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
     </div>
   );
 }
-

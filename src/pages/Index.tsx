@@ -5,6 +5,7 @@ import { FamilyTree, type FamilyTreeRef } from "@/components/FamilyTree";
 import { DataTableView } from "@/components/DataTableView";
 import { LandingPage } from "@/components/LandingPage";
 import { ListView } from "@/components/ListView";
+import { KinshipCalculator } from "@/components/KinshipCalculator";
 
 export type AppView = "landing" | ViewMode;
 
@@ -35,7 +36,7 @@ const Index = () => {
       <AppHeader
         activeView={activeView as ViewMode}
         onViewChange={(v) => {
-          if (v === "lineage") return; // lineage is now via /person/:id
+          if (v === "lineage") return;
           setActiveView(v);
         }}
         onSearch={(id) => {
@@ -52,6 +53,11 @@ const Index = () => {
         {activeView === "tree" && (
           <div className="w-full h-full rounded-2xl md:rounded-3xl shadow-xl overflow-hidden border border-border/50 bg-[hsl(var(--canvas-bg))] animate-fade-in">
             <FamilyTree ref={treeRef} />
+          </div>
+        )}
+        {activeView === "kinship" && (
+          <div className="w-full h-full rounded-2xl md:rounded-3xl shadow-xl overflow-auto border border-border/50 bg-card animate-fade-in">
+            <KinshipCalculator />
           </div>
         )}
         {activeView === "list" && (
