@@ -120,6 +120,7 @@ const Profile = () => {
         father_id: member.id,
         notes,
       });
+      refreshMembers();
       toast.success("تمت إضافة الابن/البنت بنجاح");
       setNewChildName("");
       setNewChildGender("M");
