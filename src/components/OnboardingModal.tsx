@@ -77,13 +77,42 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
     setOpen(false);
   };
 
+  // Stop polling on unmount
+  useEffect(() => {
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+    };
+  }, []);
+
+  const startPolling = useCallback((reference: string) => {
+    setPolling(true);
+    pollingRef.current = setInterval(async () => {
+      const result = await checkOTPStatus(reference);
+      if (result.verified) {
+        if (pollingRef.current) clearInterval(pollingRef.current);
+        setPolling(false);
+        setOtpVerified(true);
+        setStep(5);
+      }
+    }, 3000);
+    // Stop polling after 5 minutes
+    setTimeout(() => {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+      setPolling(false);
+    }, 300000);
+  }, []);
+
   const handleSendOTP = async () => {
     if (phone.length < 9) return;
     setLoading(true);
     setOtpError("");
-    await sendOTP(`+966${phone}`);
+    const result = await sendOTP(`+966${phone}`);
+    setOtpResult(result);
     setOtpSent(true);
     setLoading(false);
+    if (result.success && result.reference && result.clickable) {
+      startPolling(result.reference);
+    }
   };
 
   const handleVerifyOTP = async () => {
