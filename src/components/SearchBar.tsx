@@ -25,7 +25,10 @@ export function SearchBar({ onSelect }: SearchBarProps) {
 
   const members = getAllMembers();
   const filtered = query.trim()
-    ? members.filter((m) => m.name.includes(query.trim())).slice(0, 10)
+    ? (() => {
+        const q = normalizeForSearch(query);
+        return members.filter((m) => normalizeForSearch(m.name).includes(q)).slice(0, 10);
+      })()
     : [];
 
   const handleSelect = (id: string, name: string) => {

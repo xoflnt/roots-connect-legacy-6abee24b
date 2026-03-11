@@ -113,7 +113,7 @@ export function FamilyCard({ data, selected }: NodeProps) {
           dir="rtl"
         >
           <span className={!branchColor ? "text-muted-foreground" : undefined}>
-            والدته: {member.motherName}
+            {member.gender === "F" ? "والدتها" : "والدته"}: {member.motherName}
           </span>
         </p>
       )}
