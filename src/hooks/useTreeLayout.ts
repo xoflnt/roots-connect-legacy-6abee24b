@@ -110,12 +110,14 @@ export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number) {
     childrenByFatherAndMother.forEach((motherMap, fatherId) => {
       const names: string[] = [];
       motherMap.forEach((childIds, motherName) => {
+        // Sort children within each mother group by birth
+        const sortedChildIds = sortByBirth(childIds.map((id) => memberById.get(id)!)).map((m) => m.id);
         const ci = colorCounter % BRANCH_COLORS.length;
         colorCounter++;
         if (motherName !== "__unknown__") {
           names.push(motherName);
         }
-        childIds.forEach((childId) => {
+        sortedChildIds.forEach((childId) => {
           g.setEdge(fatherId, childId);
           if (motherName !== "__unknown__") {
             childColorMap.set(childId, ci);
