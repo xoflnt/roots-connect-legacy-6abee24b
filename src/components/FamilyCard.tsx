@@ -20,7 +20,7 @@ export function FamilyCard({ data, selected }: NodeProps) {
   return (
     <div
       className={`
-        relative w-[220px] h-[90px] overflow-visible flex flex-col justify-center items-center text-center
+        relative w-[220px] min-h-[90px] overflow-visible flex flex-col justify-center items-center text-center
         rounded-2xl border shadow-sm cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 antialiased
         ${selected ? "ring-2 ring-ring ring-offset-4 ring-offset-[hsl(var(--canvas-bg))]" : ""}
         ${isMale
@@ -40,7 +40,12 @@ export function FamilyCard({ data, selected }: NodeProps) {
 
       <Handle type="target" position={Position.Top} className="!bg-muted-foreground/50 !w-2 !h-2 !border-none" />
 
-      <h3 className="text-base font-bold text-foreground leading-tight px-3 truncate w-full">{member.name}</h3>
+      <h3
+        className="text-base font-bold text-foreground leading-tight px-3 w-full line-clamp-2"
+        dir="rtl"
+      >
+        {member.name}
+      </h3>
 
       {(member.birth_year || member.death_year) && (
         <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1 justify-center">
