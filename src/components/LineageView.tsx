@@ -93,7 +93,7 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                 <div
                   className={`
                     flex-1 mb-5 md:mb-6 rounded-2xl border transition-all duration-300 cursor-pointer
-                    backdrop-blur-sm active:scale-[0.98]
+                    backdrop-blur-sm active:scale-[0.98] overflow-hidden min-w-0
                     ${isFirst
                       ? "bg-accent/10 border-accent/30 shadow-lg"
                       : "bg-card/80 border-border/50 hover:border-primary/30 hover:shadow-md shadow-sm"
@@ -108,36 +108,39 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                   }}
                 >
                   {/* Generation badge */}
-                  <div className="flex items-center justify-between px-4 pt-3 md:px-5 md:pt-4">
-                    <div className="flex items-center gap-3">
+                  <div className="px-3 pt-3 md:px-5 md:pt-4">
+                    <div className="flex items-start gap-2.5 md:gap-3">
                       <div
-                        className={`w-10 h-10 md:w-11 md:h-11 rounded-xl flex items-center justify-center ${
+                        className={`w-9 h-9 md:w-11 md:h-11 rounded-xl flex items-center justify-center shrink-0 ${
                           isMale
-                            ? "bg-[hsl(var(--male-light))]"
-                            : "bg-[hsl(var(--female-light))]"
+                            ? "bg-male-light"
+                            : "bg-female-light"
                         }`}
                       >
                         <User
-                          className={`h-5 w-5 ${
+                          className={`h-4 w-4 md:h-5 md:w-5 ${
                             isMale
-                              ? "text-[hsl(var(--male))]"
-                              : "text-[hsl(var(--female))]"
+                              ? "text-male"
+                              : "text-female"
                           }`}
                         />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <h3 className="text-base md:text-lg font-bold text-foreground leading-snug">
+                        <h3 className="text-sm md:text-lg font-bold text-foreground leading-snug break-words">
                           {member.name}
                         </h3>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {isMale ? "ذكر" : "أنثى"}
-                          {isFirst && " — الشخص المطلوب"}
-                          {isLast && " — الجد الأعلى"}
-                        </p>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className={`inline-block w-2 h-2 rounded-full shrink-0 ${isMale ? "bg-male" : "bg-female"}`} />
+                          <p className="text-xs text-muted-foreground">
+                            {isMale ? "ذكر" : "أنثى"}
+                            {isFirst && " — الشخص المطلوب"}
+                            {isLast && " — الجد الأعلى"}
+                          </p>
+                        </div>
                       </div>
                     </div>
                     <div
-                      className="shrink-0 px-2.5 py-1 rounded-lg text-xs font-bold"
+                      className="mt-2 inline-block px-2.5 py-1 rounded-lg text-xs font-bold"
                       style={{
                         backgroundColor: `${dotColor}20`,
                         color: dotColor,
@@ -148,7 +151,7 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                   </div>
 
                   {/* Details */}
-                  <div className="px-4 pb-3 pt-2 md:px-5 md:pb-4 space-y-1.5">
+                  <div className="px-3 pb-3 pt-2 md:px-5 md:pb-4 space-y-1.5">
                     {(member.birth_year || member.death_year) && (
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Calendar className="h-3.5 w-3.5 shrink-0" />
@@ -161,16 +164,16 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                     )}
 
                     {member.spouses && (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Heart className="h-3.5 w-3.5 shrink-0" />
-                        <span className="truncate">{member.spouses}</span>
+                      <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                        <Heart className="h-3.5 w-3.5 shrink-0 mt-0.5 text-female fill-female/30" />
+                        <span className="break-words line-clamp-2">الزوجة: {member.spouses}</span>
                       </div>
                     )}
                   </div>
 
                   {/* Quick lineage switch for ancestors */}
                   {!isFirst && onSelectMember && (
-                    <div className="border-t border-border/30 px-4 py-2 md:px-5">
+                    <div className="border-t border-border/30 px-3 py-2 md:px-5">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();

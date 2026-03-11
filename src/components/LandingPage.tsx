@@ -291,13 +291,12 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
           <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 md:p-10 text-right border-r-4 border-r-accent">
             <Quote className="absolute top-4 right-4 h-8 w-8 text-accent/20" />
             <blockquote className="text-base md:text-lg text-muted-foreground leading-loose italic pr-8">
-              "الهدف من هذه الشجرة التوثيق حيث أنه لا يوجد مرجع موثق لها وقد أجمع كبار السن على صحتها
-              وأسأل الله أن يوفقنا لخدمة ديننا ثم مليكنا ووطننا."
+              "الهدف من هذه الشجرة التوثيق مثل تواريخ الميلاد، الوفاة، المصاهرة وترتيب الاخوة نسأل الله سبحانه وتعالى لأبائنا وامهاتنا وابائهم وامهاتهم ومن له حق علينا بالرحمة والمغفرة وان يجمعنا جميعاً معهم بجنات النعيم"
             </blockquote>
             <div className="mt-6 text-sm text-muted-foreground">
-              <span className="font-bold text-foreground">— جمع وتوثيق: علي المحمد الخنيني</span>
+              <span className="font-bold text-foreground">— جمع وتوثيق علي المحمد</span>
               <br />
-              <span>٢ / ١٢ / ١٤٤١ هـ</span>
+              <span>٢/١٢/١٤٤١</span>
             </div>
           </div>
         </div>
