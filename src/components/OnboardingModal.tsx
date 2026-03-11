@@ -315,7 +315,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
             </div>
           )}
 
-          {/* ─── Step 4: Phone + OTP ─── */}
+          {/* ─── Step 4: Phone + WhatsApp OTP ─── */}
           {step === 4 && (
             <div className="flex-1 flex flex-col gap-4 animate-fade-in">
               <h2 className="text-lg font-bold text-foreground text-center">
@@ -325,7 +325,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
 
               {!otpSent ? (
                 <>
-                  <p className="text-sm text-muted-foreground text-center">أدخل رقم جوالك السعودي للتحقق</p>
+                  <p className="text-sm text-muted-foreground text-center">أدخل رقم جوالك السعودي للتحقق عبر واتساب</p>
                   <div className="relative" dir="ltr">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base font-medium">+966</span>
                     <Input
@@ -343,7 +343,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                     disabled={phone.length < 9 || loading}
                     className="min-h-[52px] w-full text-base font-semibold rounded-xl"
                   >
-                    {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "إرسال رمز التحقق"}
+                    {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "تحقق عبر واتساب"}
                   </Button>
                   <Button variant="outline" onClick={() => setStep(3)} className="min-h-[52px] w-full rounded-xl">
                     <ChevronLeft className="h-4 w-4 ml-1" /> السابق
@@ -351,29 +351,73 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                 </>
               ) : !otpVerified ? (
                 <>
-                  <p className="text-sm text-muted-foreground text-center">
-                    أدخل رمز التحقق المرسل إلى <span dir="ltr" className="font-medium">+966{phone}</span>
-                  </p>
-                  <div className="flex justify-center" dir="ltr">
-                    <InputOTP maxLength={4} value={otpCode} onChange={setOtpCode}>
-                      <InputOTPGroup className="gap-2">
-                        {[0, 1, 2, 3].map((i) => (
-                          <InputOTPSlot key={i} index={i} className="w-14 h-14 text-xl rounded-xl border-border" />
-                        ))}
-                      </InputOTPGroup>
-                    </InputOTP>
-                  </div>
-                  {otpError && <p className="text-destructive text-sm text-center font-medium">{otpError}</p>}
-                  <Button
-                    onClick={handleVerifyOTP}
-                    disabled={otpCode.length < 4 || loading}
-                    className="min-h-[52px] w-full text-base font-semibold rounded-xl"
-                  >
-                    {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "تحقق"}
-                  </Button>
+                  {/* WhatsApp QR/Link flow */}
+                  {otpResult?.clickable ? (
+                    <div className="flex flex-col items-center gap-4">
+                      <p className="text-sm text-muted-foreground text-center">
+                        اضغط الزر أدناه لإرسال رمز التحقق عبر واتساب
+                      </p>
+                      
+                      {otpResult.qr && (
+                        <div className="p-3 bg-background rounded-xl border border-border shadow-sm">
+                          <img src={otpResult.qr} alt="QR Code" className="w-40 h-40 mx-auto" />
+                          <p className="text-xs text-muted-foreground text-center mt-2">أو امسح رمز QR</p>
+                        </div>
+                      )}
+
+                      <a
+                        href={otpResult.clickable}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center gap-2 min-h-[52px] w-full text-base font-semibold rounded-xl bg-[#25D366] hover:bg-[#20BD5A] text-white transition-colors"
+                      >
+                        <ExternalLink className="h-5 w-5" />
+                        فتح واتساب للتحقق
+                      </a>
+
+                      {polling && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span>في انتظار التحقق...</span>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    /* Fallback: manual OTP code entry (mock mode) */
+                    <>
+                      <p className="text-sm text-muted-foreground text-center">
+                        أدخل رمز التحقق (في وضع التجربة استخدم 1234)
+                      </p>
+                      <div className="flex justify-center" dir="ltr">
+                        <InputOTP maxLength={4} value={otpCode} onChange={setOtpCode}>
+                          <InputOTPGroup className="gap-2">
+                            {[0, 1, 2, 3].map((i) => (
+                              <InputOTPSlot key={i} index={i} className="w-14 h-14 text-xl rounded-xl border-border" />
+                            ))}
+                          </InputOTPGroup>
+                        </InputOTP>
+                      </div>
+                      {otpError && <p className="text-destructive text-sm text-center font-medium">{otpError}</p>}
+                      <Button
+                        onClick={handleVerifyOTP}
+                        disabled={otpCode.length < 4 || loading}
+                        className="min-h-[52px] w-full text-base font-semibold rounded-xl"
+                      >
+                        {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "تحقق"}
+                      </Button>
+                    </>
+                  )}
+
                   <Button
                     variant="ghost"
-                    onClick={() => { setOtpSent(false); setOtpCode(""); setOtpError(""); }}
+                    onClick={() => {
+                      if (pollingRef.current) clearInterval(pollingRef.current);
+                      setPolling(false);
+                      setOtpSent(false);
+                      setOtpResult(null);
+                      setOtpCode("");
+                      setOtpError("");
+                    }}
                     className="text-sm text-muted-foreground"
                   >
                     تغيير الرقم
