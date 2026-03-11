@@ -281,6 +281,28 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
         </div>
       </section>
 
+      {/* Dedication / Quote Section */}
+      <section className="py-12 md:py-20 px-4 border-t border-border/30">
+        <div className="max-w-3xl mx-auto text-center space-y-6 md:space-y-8">
+          <div className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary font-bold text-sm">
+            كلمة الموثّق
+          </div>
+
+          <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 md:p-10 text-right border-r-4 border-r-accent">
+            <Quote className="absolute top-4 right-4 h-8 w-8 text-accent/20" />
+            <blockquote className="text-base md:text-lg text-muted-foreground leading-loose italic pr-8">
+              "الهدف من هذه الشجرة التوثيق حيث أنه لا يوجد مرجع موثق لها وقد أجمع كبار السن على صحتها
+              وأسأل الله أن يوفقنا لخدمة ديننا ثم مليكنا ووطننا."
+            </blockquote>
+            <div className="mt-6 text-sm text-muted-foreground">
+              <span className="font-bold text-foreground">— جمع وتوثيق: علي المحمد الخنيني</span>
+              <br />
+              <span>٢ / ١٢ / ١٤٤١ هـ</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <footer className="py-8 text-center text-sm text-muted-foreground border-t border-border/30">
         <p>شجرة عائلة الخنيني — حفظ الإرث للأجيال القادمة</p>
       </footer>
