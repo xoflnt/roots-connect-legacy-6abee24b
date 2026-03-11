@@ -1,0 +1,165 @@
+import { useState, useRef } from "react";
+import { Search, TreePine, ChevronDown } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { familyMembers } from "@/data/familyData";
+
+interface LandingPageProps {
+  onSearchSelect: (memberId: string) => void;
+  onBrowseTree: () => void;
+}
+
+export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) {
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+  const aboutRef = useRef<HTMLDivElement>(null);
+
+  const filtered = query.trim()
+    ? familyMembers.filter((m) => m.name.includes(query.trim())).slice(0, 10)
+    : [];
+
+  return (
+    <div className="min-h-screen bg-background" dir="rtl">
+      {/* Hero Section */}
+      <section className="relative flex flex-col items-center justify-center min-h-screen px-4 text-center">
+        {/* Decorative top border */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-accent to-transparent" />
+
+        <div className="max-w-3xl mx-auto space-y-8">
+          {/* Ornamental icon */}
+          <div
+            className="mx-auto w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center opacity-0 animate-fade-in"
+            style={{ animationDelay: "0.1s" }}
+          >
+            <TreePine className="h-10 w-10 text-primary" />
+          </div>
+
+          {/* Title */}
+          <h1
+            className="text-4xl md:text-6xl font-extrabold text-primary leading-tight opacity-0 animate-fade-in"
+            style={{ animationDelay: "0.2s" }}
+          >
+            شجرة عائلة الخنيني
+          </h1>
+
+          {/* Subtitle */}
+          <p
+            className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed opacity-0 animate-fade-in"
+            style={{ animationDelay: "0.4s" }}
+          >
+            توثيق للأصالة، وامتداد للجذور... منصة رقمية تجمع أجيال العائلة وتحفظ إرثها.
+          </p>
+
+          {/* Search Bar */}
+          <div
+            className="relative max-w-lg mx-auto opacity-0 animate-fade-in"
+            style={{ animationDelay: "0.6s" }}
+          >
+            <div className="relative">
+              <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
+              <Input
+                placeholder="ابحث عن اسمك لمعرفة نسبك"
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setOpen(true);
+                }}
+                onFocus={() => query.trim() && setOpen(true)}
+                onBlur={() => setTimeout(() => setOpen(false), 200)}
+                className="pr-12 pl-4 h-14 text-lg rounded-2xl bg-card border-border shadow-lg focus:ring-2 focus:ring-accent placeholder:text-muted-foreground"
+              />
+            </div>
+
+            {open && filtered.length > 0 && (
+              <div className="absolute top-full mt-2 w-full bg-card border border-border rounded-2xl shadow-xl z-50 overflow-hidden max-h-72 overflow-y-auto">
+                {filtered.map((m) => (
+                  <button
+                    key={m.id}
+                    className="w-full text-right px-5 py-3.5 text-foreground hover:bg-muted transition-colors border-b border-border/30 last:border-b-0"
+                    style={{ minHeight: 48 }}
+                    onMouseDown={() => {
+                      onSearchSelect(m.id);
+                      setQuery(m.name);
+                      setOpen(false);
+                    }}
+                  >
+                    <span className="font-bold">{m.name}</span>
+                    {m.death_year && (
+                      <span className="text-sm text-muted-foreground mr-2">
+                        (ت {m.death_year} هـ)
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* CTA Button */}
+          <div
+            className="opacity-0 animate-fade-in"
+            style={{ animationDelay: "0.8s" }}
+          >
+            <Button
+              onClick={onBrowseTree}
+              size="lg"
+              className="h-14 px-10 text-lg rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover-scale font-bold"
+            >
+              <TreePine className="h-5 w-5 ml-2" />
+              تصفح الشجرة الكاملة
+            </Button>
+          </div>
+        </div>
+
+        {/* Scroll indicator */}
+        <button
+          onClick={() => aboutRef.current?.scrollIntoView({ behavior: "smooth" })}
+          className="absolute bottom-10 left-1/2 -translate-x-1/2 text-muted-foreground animate-bounce"
+        >
+          <ChevronDown className="h-6 w-6" />
+        </button>
+      </section>
+
+      {/* About Section */}
+      <section
+        ref={aboutRef}
+        className="py-20 px-4 bg-card/50 border-t border-border/30"
+      >
+        <div className="max-w-3xl mx-auto text-center space-y-8">
+          <div className="inline-block px-4 py-1.5 rounded-full bg-accent/15 text-accent font-bold text-sm">
+            عن العائلة
+          </div>
+
+          <h2 className="text-3xl md:text-4xl font-extrabold text-foreground">
+            جذور ممتدة عبر الأجيال
+          </h2>
+
+          <div className="space-y-6 text-lg text-muted-foreground leading-loose text-right">
+            <p>
+              تنحدر عائلة <strong className="text-foreground">الخنيني</strong> من قبيلة{" "}
+              <strong className="text-foreground">بني تميم</strong>، إحدى أعرق القبائل العربية.
+              ويُعدّ <strong className="text-foreground">محمد بن سالمة</strong> أول من حمل لقب
+              الخنيني، ليُصبح هذا الاسم رمزًا للعائلة عبر الأجيال.
+            </p>
+            <p>
+              تضرب جذور العائلة في نجد، وقد توارثت قيم الكرم والشجاعة والتماسك الأسري جيلاً بعد جيل.
+              هذه المنصة الرقمية هي خطوة لحفظ هذا الإرث العريق وتسهيل التواصل بين أبناء العائلة.
+            </p>
+          </div>
+
+          {/* Decorative line */}
+          <div className="flex items-center justify-center gap-4 pt-4">
+            <div className="h-px w-16 bg-accent/30" />
+            <div className="w-2 h-2 rounded-full bg-accent/50" />
+            <div className="h-px w-16 bg-accent/30" />
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-8 text-center text-sm text-muted-foreground border-t border-border/30">
+        <p>شجرة عائلة الخنيني — حفظ الإرث للأجيال القادمة</p>
+      </footer>
+    </div>
+  );
+}
