@@ -39,7 +39,7 @@ export async function generateLineageImage(
   ctx.textAlign = "center";
   ctx.fillStyle = "rgba(196, 164, 95, 0.5)";
   ctx.font = "bold 28px 'Tajawal', 'Arial', sans-serif";
-  ctx.fillText("بوابة آل الخنيني", W / 2, 110);
+  ctx.fillText("بوابة الخنيني", W / 2, 110);
 
   // Separator
   ctx.strokeStyle = "rgba(196, 164, 95, 0.3)";
