@@ -241,9 +241,6 @@ export function LandingPage({ onSearchSelect, onBrowseTree }: LandingPageProps) 
             <StatCard icon={UserRound} label="عدد البنات (إناث)" value={stats.females} />
             <StatCard icon={Crown} label={`أكثر اسم للذكور: ${stats.topMaleName}`} value={stats.topMaleCount} suffix=" مرة" />
             <StatCard icon={Heart} label={`أكثر اسم للإناث: ${stats.topFemaleName}`} value={stats.topFemaleCount} suffix=" مرة" />
-            <div className="col-span-2 md:col-span-3">
-              <StatCard icon={Baby} label={`أكثر أب إنجاباً: ${stats.topFatherName}`} value={stats.topFatherChildCount} suffix=" أبناء" />
-            </div>
           </div>
         </div>
       </section>
