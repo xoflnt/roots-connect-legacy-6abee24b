@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { TreePine, Search, UserCheck, Phone, CalendarDays, ChevronLeft, ChevronDown, Loader2, UserCircle, Users2, Heart, UserPlus, GitBranch, Edit3, BadgeCheck, Info, Lock } from "lucide-react";
 import type { FamilyMember } from "@/data/familyData";
 import { getAllMembers, searchMembers, getChildrenOf } from "@/services/familyService";
-import { sendOTP, checkOTPStatus, verifyOTP, type SendOTPResult } from "@/services/wasageSms";
+
 import { useAuth } from "@/contexts/AuthContext";
 import { HijriDatePicker } from "@/components/HijriDatePicker";
 import { registerVerifiedUser, submitRequest, getVerifiedMemberIds } from "@/services/dataService";
