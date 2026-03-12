@@ -161,6 +161,22 @@ const Profile = () => {
     setSaving(false);
   };
 
+  const handleDeleteChild = async () => {
+    if (!childToDelete || saving) return;
+    setSaving(true);
+    try {
+      await updateMember(childToDelete.id, { father_id: null });
+      await refreshMembers();
+      setRefreshKey((k) => k + 1);
+      window.dispatchEvent(new Event("family-data-updated"));
+      toast.success(`تم حذف ${childToDelete.name} بنجاح`);
+    } catch {
+      toast.error("حدث خطأ أثناء الحذف");
+    }
+    setChildToDelete(null);
+    setSaving(false);
+  };
+
   return (
     <div className="min-h-screen bg-background" dir="rtl">
       {/* Header */}
