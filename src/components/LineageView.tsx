@@ -247,6 +247,7 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                           {isBranchHead(member.id) && <HeritageBadge type="branchHead" />}
                           {isDeceased(member) && <HeritageBadge type="deceased" gender={member.gender as "M" | "F"} />}
                           <HeritageBadge type="generation" generationNum={genNum} />
+                          {member.id === DOCUMENTER_ID && <HeritageBadge type="documenter" />}
                         </div>
                       </div>
 
