@@ -111,6 +111,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [requestOpen, setRequestOpen] = useState(false);
+  const [forceOnboarding, setForceOnboarding] = useState(false);
   const stats = useMemo(computeStats, []);
   const navigate = useNavigate();
   const { currentUser } = useAuth();
@@ -124,7 +125,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden" dir="rtl">
-      <OnboardingModal />
+      <OnboardingModal forceOpen={forceOnboarding} />
 
       {/* ─── 1. Hero Title (compact) ─── */}
       <section className="relative flex flex-col items-center justify-center px-4 text-center pt-16 pb-10 md:pt-24 md:pb-14">
