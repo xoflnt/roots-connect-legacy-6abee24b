@@ -14,6 +14,8 @@ import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
 import { SubmitRequestForm } from "@/components/SubmitRequestForm";
 import { getBranch, getBranchStyle, DOCUMENTER_ID } from "@/utils/branchUtils";
 import { HeritageBadge } from "@/components/HeritageBadge";
+import { getVerifiedMemberIds } from "@/services/dataService";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 
 interface PersonDetailsProps {
   member: FamilyMember | null;
