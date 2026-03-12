@@ -6,13 +6,14 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 import { Progress } from "@/components/ui/progress";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Textarea } from "@/components/ui/textarea";
-import { TreePine, Search, UserCheck, Phone, CalendarDays, ChevronLeft, ChevronDown, Loader2, QrCode, ExternalLink, UserCircle, MessageCircle, Users2, Heart, UserPlus, GitBranch, Edit3 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { TreePine, Search, UserCheck, Phone, CalendarDays, ChevronLeft, ChevronDown, Loader2, QrCode, ExternalLink, UserCircle, MessageCircle, Users2, Heart, UserPlus, GitBranch, Edit3, BadgeCheck, Info } from "lucide-react";
 import type { FamilyMember } from "@/data/familyData";
 import { getAllMembers, searchMembers, getChildrenOf } from "@/services/familyService";
 import { sendOTP, checkOTPStatus, verifyOTP, type SendOTPResult } from "@/services/wasageSms";
 import { useAuth } from "@/contexts/AuthContext";
 import { HijriDatePicker } from "@/components/HijriDatePicker";
-import { registerVerifiedUser, submitRequest } from "@/services/dataService";
+import { registerVerifiedUser, submitRequest, getVerifiedMemberIds } from "@/services/dataService";
 import { getLineageLabel } from "@/utils/memberLabel";
 import { getBranch } from "@/utils/branchUtils";
 import { useNavigate } from "react-router-dom";
@@ -67,6 +68,10 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
   const [quickUpdateOpen, setQuickUpdateOpen] = useState(false);
   const [quickUpdateText, setQuickUpdateText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [preFilledBanner, setPreFilledBanner] = useState(false);
+
+  // Children dates (parent delegated entry)
+  const [childrenDates, setChildrenDates] = useState<Record<string, { day?: string; month?: string; year?: string }>>({});
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -80,6 +85,34 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
   }, [searchQuery]);
 
   const handleSkip = () => setOpen(false);
+
+  // Pre-fill birth date for "child logging in" scenario
+  useEffect(() => {
+    if (step === 5 && selectedMember) {
+      const verifiedIds = getVerifiedMemberIds();
+      const isAlreadyVerified = verifiedIds.has(selectedMember.id);
+      if (!isAlreadyVerified && selectedMember.birth_year) {
+        // Parse existing birth_year (format "YYYY/M/D" or just "YYYY")
+        const parts = selectedMember.birth_year.split("/");
+        const parsed: { day?: string; month?: string; year?: string } = { year: parts[0] };
+        if (parts[1]) parsed.month = parts[1];
+        if (parts[2]) parsed.day = parts[2];
+        setHijriDate(parsed);
+        setPreFilledBanner(true);
+      }
+
+      // Pre-fill children dates from existing birth_year
+      const children = getChildrenOf(selectedMember.id);
+      const initial: Record<string, { day?: string; month?: string; year?: string }> = {};
+      for (const child of children) {
+        if (child.birth_year) {
+          const p = child.birth_year.split("/");
+          initial[child.id] = { year: p[0], month: p[1], day: p[2] };
+        }
+      }
+      setChildrenDates(initial);
+    }
+  }, [step, selectedMember]);
 
   useEffect(() => {
     return () => { if (pollingRef.current) clearInterval(pollingRef.current); };
@@ -148,6 +181,15 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
       phone: `+966${phone}`,
       hijriBirthDate: dateStr,
     });
+
+    // Save children dates (parent delegated entry)
+    const verifiedIds = getVerifiedMemberIds();
+    for (const [childId, cDate] of Object.entries(childrenDates)) {
+      if (cDate.year && !verifiedIds.has(childId)) {
+        const childDateStr = `${cDate.year}/${cDate.month || "1"}/${cDate.day || "1"}`;
+        await updateMember(childId, { birth_year: childDateStr });
+      }
+    }
 
     // Fire quick-update request as free text
     if (quickUpdateText.trim()) {
@@ -263,9 +305,6 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
           <Progress value={progressValue} className="h-1.5 rounded-full" />
           <div className="flex justify-between items-center mt-2">
             <span className="text-xs text-muted-foreground">{step} / {TOTAL_STEPS}</span>
-            <Button variant="ghost" size="sm" onClick={handleSkip} className="text-xs text-muted-foreground h-8 px-2">
-              تخطي
-            </Button>
           </div>
         </div>
 
@@ -585,6 +624,16 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                 </div>
               )}
 
+              {/* ─── Pre-filled Banner ─── */}
+              {preFilledBanner && (
+                <div className="flex items-start gap-2 p-3 rounded-xl bg-accent/10 border border-accent/30">
+                  <Info className="h-4 w-4 text-accent shrink-0 mt-0.5" />
+                  <p className="text-xs text-accent font-medium leading-relaxed">
+                    تم إدخال تاريخ ميلادك مسبقاً. يمكنك تأكيده أو تعديله الآن لتكتمل عملية توثيق حسابك.
+                  </p>
+                </div>
+              )}
+
               {/* ─── Hijri Date ─── */}
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
@@ -593,6 +642,48 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                 </div>
                 <HijriDatePicker value={hijriDate} onChange={setHijriDate} />
               </div>
+
+              {/* ─── Children Dates (Parent Delegated Entry) ─── */}
+              {familyContext.children.length > 0 && (
+                <Collapsible>
+                  <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-2 rounded-xl bg-muted/50 border border-border/30 hover:bg-muted/70 transition-colors text-right">
+                    <div className="flex items-center gap-2">
+                      <UserPlus className="h-4 w-4 text-primary" />
+                      <span className="text-sm font-bold text-foreground">تواريخ ميلاد الأبناء</span>
+                      <span className="text-[10px] text-muted-foreground">(اختياري)</span>
+                    </div>
+                    <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform data-[state=open]:rotate-180" />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-2 space-y-3 px-1">
+                    {familyContext.children.map((child) => {
+                      const isChildVerified = getVerifiedMemberIds().has(child.id);
+                      return (
+                        <div key={child.id} className="space-y-1.5">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-foreground">{child.name.split(" ")[0]}</span>
+                            {isChildVerified && (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-green-600 dark:text-green-400 px-1.5 py-0.5 rounded-full bg-green-500/10">
+                                <BadgeCheck className="h-3 w-3" />
+                                تم التوثيق بواسطة {child.name.split(" ")[0]} ✅
+                              </span>
+                            )}
+                          </div>
+                          {isChildVerified ? (
+                            <p className="text-[11px] text-muted-foreground pr-1">
+                              {child.birth_year || "—"}
+                            </p>
+                          ) : (
+                            <HijriDatePicker
+                              value={childrenDates[child.id] || {}}
+                              onChange={(val) => setChildrenDates((prev) => ({ ...prev, [child.id]: val }))}
+                            />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </CollapsibleContent>
+                </Collapsible>
+              )}
 
               {/* ─── Optional Quick-Update ─── */}
               <Collapsible open={quickUpdateOpen} onOpenChange={setQuickUpdateOpen}>
