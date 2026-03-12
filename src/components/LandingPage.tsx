@@ -63,8 +63,8 @@ function computeStats() {
     }
   }
 
-  const males = familyMembers.filter((m) => m.gender === "M").length;
-  const females = familyMembers.filter((m) => m.gender === "F").length;
+  const males = allMembers.filter((m) => m.gender === "M").length;
+  const females = allMembers.filter((m) => m.gender === "F").length;
 
   const maleNameCounts = new Map<string, number>();
   const femaleNameCounts = new Map<string, number>();
