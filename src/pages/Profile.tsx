@@ -103,6 +103,7 @@ const Profile = () => {
     if (!newSpouse.trim()) return;
     setEditSpouses(prev => [...prev, newSpouse.trim()]);
     setNewSpouse("");
+    setSpousesDirty(true);
   };
 
   const handleRemoveSpouse = (index: number) => {
