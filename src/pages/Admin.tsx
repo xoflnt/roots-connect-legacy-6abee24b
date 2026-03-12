@@ -1,19 +1,11 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { AdminProtect } from "@/components/AdminProtect";
 import { Button } from "@/components/ui/button";
-import { Users, Eye, ShieldCheck, TreePine, Check, X, Loader2, ArrowRight, Bell } from "lucide-react";
-import { getRequests, approveRequest, rejectRequest, getVerifiedUsers, getVisitCount, type FamilyRequest } from "@/services/dataService";
-import { getAllMembers, refreshMembers } from "@/services/familyService";
+import { Users, Eye, ShieldCheck, TreePine, Check, Loader2, ArrowRight, Bell } from "lucide-react";
+import { getRequests, markRequestDone, getVerifiedUsers, getVisitCount, type FamilyRequest } from "@/services/dataService";
+import { getAllMembers } from "@/services/familyService";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-
-const REQUEST_TYPE_LABELS: Record<string, string> = {
-  add_child: "إضافة ابن / بنت",
-  add_spouse: "إضافة زوج / زوجة",
-  update_info: "تحديث بيانات",
-  correction: "تصحيح معلومة",
-  other: "أخرى",
-};
 
 function StatCard({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string | number }) {
   return (
@@ -30,79 +22,64 @@ function StatCard({ icon: Icon, label, value }: { icon: React.ElementType; label
 }
 
 function RequestCard({ req, onAction }: { req: FamilyRequest; onAction: () => void }) {
-  const [loading, setLoading] = useState<"approve" | "reject" | null>(null);
+  const [loading, setLoading] = useState(false);
   const members = getAllMembers();
   const member = members.find((m) => m.id === req.targetMemberId);
 
-  const handleApprove = async () => {
-    setLoading("approve");
-    const success = await approveRequest(req.id);
-    if (success) {
-      await refreshMembers();
-      window.dispatchEvent(new Event("family-data-updated"));
-    }
-    onAction();
-  };
+  const textContent = req.data?.text_content || req.notes || "";
+  // Legacy support: show old structured data if no text_content
+  const legacyDetails = !req.data?.text_content
+    ? Object.entries(req.data || {}).map(([k, v]) => `${k}: ${v}`).join("، ")
+    : "";
 
-  const handleReject = async () => {
-    setLoading("reject");
-    const success = await rejectRequest(req.id);
-    if (success) {
-      await refreshMembers();
-      window.dispatchEvent(new Event("family-data-updated"));
-    }
+  const handleMarkDone = async () => {
+    setLoading(true);
+    await markRequestDone(req.id);
     onAction();
   };
 
   return (
     <div className="bg-card border border-border/50 rounded-2xl p-5 space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-accent/15 text-accent">
-          {REQUEST_TYPE_LABELS[req.type] || req.type}
+        <span className="text-xs font-bold text-muted-foreground">
+          {req.submittedBy || member?.name || req.targetMemberId}
         </span>
         <span className="text-xs text-muted-foreground">
           {new Date(req.createdAt).toLocaleDateString("ar-SA")}
         </span>
       </div>
 
-      <div className="text-sm space-y-1">
+      <div className="text-sm space-y-2">
         <p className="font-bold text-foreground">
           الشخص: <span className="text-primary">{member?.name || req.targetMemberId}</span>
         </p>
-        {Object.entries(req.data).map(([k, v]) => (
-          <p key={k} className="text-muted-foreground">
-            <span className="font-medium">{k}:</span> {v}
+        {textContent && (
+          <p className="text-foreground bg-muted/50 rounded-xl p-3 leading-relaxed whitespace-pre-wrap">
+            {textContent}
           </p>
-        ))}
-        {req.notes && (
-          <p className="text-muted-foreground italic">ملاحظات: {req.notes}</p>
+        )}
+        {legacyDetails && !textContent && (
+          <p className="text-muted-foreground text-xs">{legacyDetails}</p>
+        )}
+        {req.notes && req.data?.text_content && (
+          <p className="text-muted-foreground italic text-xs">ملاحظات: {req.notes}</p>
         )}
       </div>
 
       {req.status === "pending" && (
-        <div className="flex gap-2 pt-1">
-          <Button
-            onClick={handleApprove}
-            disabled={!!loading}
-            className="flex-1 min-h-[44px] rounded-xl font-bold gap-1.5"
-          >
-            {loading === "approve" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-            موافقة وتحديث تلقائي
-          </Button>
-          <Button
-            variant="outline"
-            onClick={handleReject}
-            disabled={!!loading}
-            className="min-h-[44px] rounded-xl px-4"
-          >
-            {loading === "reject" ? <Loader2 className="h-4 w-4 animate-spin" /> : <X className="h-4 w-4" />}
-          </Button>
-        </div>
+        <Button
+          onClick={handleMarkDone}
+          disabled={loading}
+          className="w-full min-h-[44px] rounded-xl font-bold gap-1.5"
+        >
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+          تم التنفيذ
+        </Button>
       )}
 
       {req.status !== "pending" && (
-        <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${req.status === "approved" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"}`}>
-          {req.status === "approved" ? "تمت الموافقة" : "مرفوض"}
+        <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+          تم التنفيذ ✓
         </span>
       )}
     </div>
@@ -200,7 +177,7 @@ function AdminContent() {
         {/* Handled Requests */}
         {handled.length > 0 && (
           <section className="space-y-4">
-            <h2 className="text-lg font-bold text-foreground">الطلبات السابقة ({handled.length})</h2>
+            <h2 className="text-lg font-bold text-foreground">الطلبات المنجزة ({handled.length})</h2>
             <div className="grid gap-4">
               {handled.map((r) => (
                 <RequestCard key={r.id} req={r} onAction={loadData} />
