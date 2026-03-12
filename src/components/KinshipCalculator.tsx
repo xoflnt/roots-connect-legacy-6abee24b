@@ -172,10 +172,34 @@ export function KinshipCalculator({ initialMemberId }: KinshipCalculatorProps) {
         {showResult && result && relationText && (
           <div className="rounded-2xl border border-primary/20 bg-card shadow-lg overflow-hidden animate-fade-in">
             <div className="h-1 bg-gradient-to-r from-transparent via-accent/50 to-transparent" />
-            {/* Relation badge */}
-            <div className="bg-primary/10 p-5 text-center border-b border-primary/10">
+            {/* Directional relation display */}
+            <div className="bg-primary/10 p-5 text-center border-b border-primary/10 space-y-2">
               <p className="text-xs text-muted-foreground mb-2">صلة القرابة</p>
-              <p className="text-2xl md:text-3xl font-extrabold text-primary leading-tight">{relationText}</p>
+              {directional?.symmetric ? (
+                <p className="text-xl md:text-2xl font-extrabold text-primary leading-relaxed">
+                  <span className="text-foreground">{name1Short}</span> و <span className="text-foreground">{name2Short}</span> هما: {directional.symmetricTitle}
+                </p>
+              ) : directional && (directional.title1to2 || directional.title2to1) ? (
+                <div className="space-y-3">
+                  <div className="rounded-xl bg-primary/10 px-4 py-3">
+                    <p className="text-base md:text-lg font-extrabold text-primary leading-relaxed">
+                      <span className="text-foreground">{name1Short}</span> يعتبر: <span className="text-accent-foreground">{directional.title1to2}</span> لـ <span className="text-foreground">{name2Short}</span>
+                    </p>
+                  </div>
+                  <div className="rounded-xl bg-accent/10 px-4 py-3">
+                    <p className="text-base md:text-lg font-extrabold text-primary leading-relaxed">
+                      <span className="text-foreground">{name2Short}</span> يعتبر: <span className="text-accent-foreground">{directional.title2to1}</span> لـ <span className="text-foreground">{name1Short}</span>
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-lg font-extrabold text-primary">{relationText}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {name1Short} يرتفع عن {name2Short} بـ {result!.dist1} أجيال في شجرة النسب
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Tabs */}
