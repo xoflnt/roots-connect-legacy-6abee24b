@@ -10,7 +10,7 @@ import type { FamilyMember } from "@/data/familyData";
 import { OnboardingModal } from "@/components/OnboardingModal";
 import { SubmitRequestForm } from "@/components/SubmitRequestForm";
 import { trackVisit } from "@/services/dataService";
-import { getAllMembers, getDescendantCount, searchMembers } from "@/services/familyService";
+import { getAllMembers, getDescendantCount, searchMembers, loadMembers } from "@/services/familyService";
 import { PILLARS, DOCUMENTER_ID } from "@/utils/branchUtils";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -112,14 +112,15 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
   const [open, setOpen] = useState(false);
   const [requestOpen, setRequestOpen] = useState(false);
   const [forceOnboarding, setForceOnboarding] = useState(false);
-  const stats = useMemo(computeStats, []);
+  const [dataReady, setDataReady] = useState(false);
+  const stats = useMemo(computeStats, [dataReady]);
   const navigate = useNavigate();
   const { currentUser } = useAuth();
 
-  const pillarStats = useMemo(() => PILLARS.map((p) => ({ ...p, descendants: getDescendantCount(p.id) })), []);
+  const pillarStats = useMemo(() => PILLARS.map((p) => ({ ...p, descendants: getDescendantCount(p.id) })), [dataReady]);
 
   useEffect(() => { trackVisit(); }, []);
-
+  useEffect(() => { loadMembers().finally(() => setDataReady(true)); }, []);
   const filtered = searchMembers(query);
   const showingResults = open && filtered.length > 0;
 
