@@ -108,6 +108,7 @@ const Profile = () => {
 
   const handleRemoveSpouse = (index: number) => {
     setEditSpouses(prev => prev.filter((_, i) => i !== index));
+    setSpousesDirty(true);
   };
 
   const handleSave = async () => {
