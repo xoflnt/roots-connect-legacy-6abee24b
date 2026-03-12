@@ -68,7 +68,7 @@ function computeStats() {
 
   const maleNameCounts = new Map<string, number>();
   const femaleNameCounts = new Map<string, number>();
-  for (const m of familyMembers) {
+  for (const m of allMembers) {
     const firstName = m.name.split(" ")[0];
     if (m.gender === "M") {
       maleNameCounts.set(firstName, (maleNameCounts.get(firstName) || 0) + 1);
