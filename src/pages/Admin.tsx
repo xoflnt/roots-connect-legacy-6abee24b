@@ -276,13 +276,68 @@ function AdminContent() {
           </TabsContent>
 
           <TabsContent value="registry" className="mt-4 space-y-4">
-            <div className="flex justify-end">
-              <Button onClick={handleExportCSV} className="rounded-xl font-bold gap-2">
+            {/* Export toolbar */}
+            <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between bg-card border border-border/50 rounded-2xl p-4">
+              {/* Full export */}
+              <Button onClick={handleExportFull} className="rounded-xl font-bold gap-2 shrink-0">
                 <Download className="h-4 w-4" />
-                تصدير السجل الكامل (CSV)
+                تصدير السجل الكامل
               </Button>
+
+              {/* Sub-tree export */}
+              <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center flex-1 sm:justify-end">
+                {selectedExportMember ? (
+                  <Badge className="gap-1.5 py-1.5 px-3 text-sm">
+                    {selectedExportMember.name}
+                    <button onClick={() => setSelectedExportMember(null)} className="hover:opacity-70">
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </Badge>
+                ) : (
+                  <div className="relative w-full sm:w-64" ref={exportRef}>
+                    <div className="relative">
+                      <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                      <Input
+                        placeholder="ابحث لتصدير ذرية شخص..."
+                        value={exportSearch}
+                        onChange={e => { setExportSearch(e.target.value); setExportDropdownOpen(true); }}
+                        onFocus={() => setExportDropdownOpen(true)}
+                        onBlur={() => setTimeout(() => setExportDropdownOpen(false), 200)}
+                        className="pr-9 rounded-xl"
+                      />
+                    </div>
+                    {exportDropdownOpen && exportResults.length > 0 && (
+                      <div className="absolute z-50 top-full mt-1 w-full bg-popover border border-border rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                        {exportResults.map(m => (
+                          <button
+                            key={m.id}
+                            className="w-full text-right px-3 py-2 text-sm hover:bg-accent/50 transition-colors"
+                            onMouseDown={() => {
+                              setSelectedExportMember(m);
+                              setExportSearch("");
+                              setExportDropdownOpen(false);
+                            }}
+                          >
+                            {m.name}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+                <Button
+                  onClick={handleExportDescendants}
+                  disabled={!selectedExportMember}
+                  variant="secondary"
+                  className="rounded-xl font-bold gap-2 shrink-0"
+                >
+                  <TreePine className="h-4 w-4" />
+                  تصدير ذرية المختار
+                </Button>
+              </div>
             </div>
-            <div className="bg-card border border-border/50 rounded-2xl overflow-hidden" style={{ height: "calc(100vh - 320px)" }}>
+
+            <div className="bg-card border border-border/50 rounded-2xl overflow-hidden" style={{ height: "calc(100vh - 400px)" }}>
               <DataTableView />
             </div>
           </TabsContent>
