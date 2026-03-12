@@ -3,7 +3,7 @@ import { AdminProtect } from "@/components/AdminProtect";
 import { Button } from "@/components/ui/button";
 import { Users, Eye, ShieldCheck, TreePine, Check, X, Loader2, ArrowRight, Bell } from "lucide-react";
 import { getRequests, approveRequest, rejectRequest, getVerifiedUsers, getVisitCount, type FamilyRequest } from "@/services/dataService";
-import { getAllMembers } from "@/services/familyService";
+import { getAllMembers, refreshMembers } from "@/services/familyService";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -36,13 +36,21 @@ function RequestCard({ req, onAction }: { req: FamilyRequest; onAction: () => vo
 
   const handleApprove = async () => {
     setLoading("approve");
-    await approveRequest(req.id);
+    const success = await approveRequest(req.id);
+    if (success) {
+      await refreshMembers();
+      window.dispatchEvent(new Event("family-data-updated"));
+    }
     onAction();
   };
 
   const handleReject = async () => {
     setLoading("reject");
-    await rejectRequest(req.id);
+    const success = await rejectRequest(req.id);
+    if (success) {
+      await refreshMembers();
+      window.dispatchEvent(new Event("family-data-updated"));
+    }
     onAction();
   };
 

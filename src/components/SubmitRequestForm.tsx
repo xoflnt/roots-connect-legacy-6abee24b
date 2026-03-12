@@ -33,6 +33,7 @@ export function SubmitRequestForm({ open, onOpenChange, targetMember }: SubmitRe
 
   const [childName, setChildName] = useState("");
   const [childGender, setChildGender] = useState<"M" | "F">("M");
+  const [motherName, setMotherName] = useState("");
   const [spouseName, setSpouseName] = useState("");
   const [updateField, setUpdateField] = useState("");
   const [updateValue, setUpdateValue] = useState("");
@@ -52,6 +53,7 @@ export function SubmitRequestForm({ open, onOpenChange, targetMember }: SubmitRe
     if (requestType === "add_child") {
       data.childName = childName;
       data.gender = childGender;
+      if (motherName.trim()) data.motherName = motherName.trim();
     } else if (requestType === "add_spouse") {
       data.spouseName = spouseName;
     } else if (requestType === "update_info" || requestType === "correction") {
@@ -78,6 +80,7 @@ export function SubmitRequestForm({ open, onOpenChange, targetMember }: SubmitRe
     setShowSearch(!targetMember);
     setChildName("");
     setChildGender("M");
+    setMotherName("");
     setSpouseName("");
     setUpdateField("");
     setUpdateValue("");
@@ -177,6 +180,7 @@ export function SubmitRequestForm({ open, onOpenChange, targetMember }: SubmitRe
                   <SelectItem value="F">أنثى</SelectItem>
                 </SelectContent>
               </Select>
+              <Input value={motherName} onChange={(e) => setMotherName(e.target.value)} placeholder="اسم الأم (مطلوب)" className="rounded-xl min-h-[44px]" />
             </div>
           )}
 

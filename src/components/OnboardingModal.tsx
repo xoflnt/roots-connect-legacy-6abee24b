@@ -68,6 +68,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
   const [quickSpouse, setQuickSpouse] = useState("");
   const [quickChildName, setQuickChildName] = useState("");
   const [quickChildGender, setQuickChildGender] = useState<"M" | "F">("M");
+  const [quickChildMother, setQuickChildMother] = useState("");
   const [quickCorrection, setQuickCorrection] = useState("");
 
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -137,7 +138,13 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
       : undefined;
 
     const { updateMember } = await import("@/services/dataService");
-    await updateMember(selectedMember.id, { phone: `+966${phone}` });
+    // Update phone always
+    const memberUpdates: Record<string, string> = { phone: `+966${phone}` };
+    // Directly update birth_year for OTP-verified users (no admin queue)
+    if (dateStr) {
+      memberUpdates.birth_year = dateStr;
+    }
+    await updateMember(selectedMember.id, memberUpdates);
     await registerVerifiedUser({
       memberId: selectedMember.id,
       memberName: selectedMember.name,
@@ -156,10 +163,12 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
       }));
     }
     if (quickChildName.trim()) {
+      const childData: Record<string, string> = { child_name: quickChildName.trim(), child_gender: quickChildGender };
+      if (quickChildMother.trim()) childData.mother_name = quickChildMother.trim();
       requests.push(submitRequest({
         type: "add_child",
         targetMemberId: selectedMember.id,
-        data: { child_name: quickChildName.trim(), child_gender: quickChildGender },
+        data: childData,
         submittedBy: selectedMember.name,
       }));
     }
@@ -623,29 +632,35 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                       className="h-10 text-sm rounded-lg"
                     />
                   </div>
-                  {/* Add child */}
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-muted-foreground flex items-center gap-1">
-                      <UserPlus className="h-3 w-3" /> إضافة ابن/ابنة
-                    </label>
-                    <div className="flex gap-2">
-                      <Input
-                        value={quickChildName}
-                        onChange={(e) => setQuickChildName(e.target.value)}
-                        placeholder="الاسم الكامل"
-                        className="h-10 text-sm rounded-lg flex-1"
-                      />
-                      <Select value={quickChildGender} onValueChange={(v) => setQuickChildGender(v as "M" | "F")}>
-                        <SelectTrigger className="h-10 w-24 text-sm rounded-lg">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="M">ذكر</SelectItem>
-                          <SelectItem value="F">أنثى</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
+                   {/* Add child */}
+                   <div className="space-y-1">
+                     <label className="text-xs font-bold text-muted-foreground flex items-center gap-1">
+                       <UserPlus className="h-3 w-3" /> إضافة ابن/ابنة
+                     </label>
+                     <div className="flex gap-2">
+                       <Input
+                         value={quickChildName}
+                         onChange={(e) => setQuickChildName(e.target.value)}
+                         placeholder="الاسم الكامل"
+                         className="h-10 text-sm rounded-lg flex-1"
+                       />
+                       <Select value={quickChildGender} onValueChange={(v) => setQuickChildGender(v as "M" | "F")}>
+                         <SelectTrigger className="h-10 w-24 text-sm rounded-lg">
+                           <SelectValue />
+                         </SelectTrigger>
+                         <SelectContent>
+                           <SelectItem value="M">ذكر</SelectItem>
+                           <SelectItem value="F">أنثى</SelectItem>
+                         </SelectContent>
+                       </Select>
+                     </div>
+                     <Input
+                       value={quickChildMother}
+                       onChange={(e) => setQuickChildMother(e.target.value)}
+                       placeholder="اسم الأم"
+                       className="h-10 text-sm rounded-lg"
+                     />
+                   </div>
                   {/* Correction */}
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-muted-foreground flex items-center gap-1">

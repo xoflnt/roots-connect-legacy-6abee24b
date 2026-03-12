@@ -49,18 +49,40 @@ serve(async (req) => {
       // Apply the change
       const data = reqData.data as Record<string, string>;
       if (reqData.type === "add_child") {
+        // Accept both key formats from frontend
+        const childName = data.childName || data.child_name || "غير محدد";
+        const gender = data.gender || data.child_gender || "M";
+        const motherName = data.motherName || data.mother_name || "";
+        const birthYear = data.birthYear || data.birth_year || null;
+        const notes = motherName
+          ? `${gender === "F" ? "والدتها" : "والدته"}: ${motherName}`
+          : null;
+
         await supabase.from("family_members").insert({
           id: `REQ-${requestId.slice(0, 8)}`,
-          name: data.childName || "غير محدد",
-          gender: data.gender || "M",
+          name: childName,
+          gender: gender,
           father_id: reqData.target_member_id,
-          birth_year: data.birthYear || null,
+          birth_year: birthYear,
+          notes: notes,
         });
       } else if (reqData.type === "update_info" || reqData.type === "correction") {
         const updates: Record<string, string> = {};
+        // Map both camelCase and snake_case keys to DB columns
+        const keyMap: Record<string, string> = {
+          birthYear: "birth_year",
+          birth_year: "birth_year",
+          deathYear: "death_year",
+          death_year: "death_year",
+          name: "name",
+          phone: "phone",
+          notes: "notes",
+          spouses: "spouses",
+        };
         for (const [k, v] of Object.entries(data)) {
-          if (["name", "birth_year", "death_year", "phone", "notes", "spouses"].includes(k)) {
-            updates[k] = v;
+          const dbCol = keyMap[k];
+          if (dbCol) {
+            updates[dbCol] = v;
           }
         }
         if (Object.keys(updates).length > 0) {
@@ -70,13 +92,14 @@ serve(async (req) => {
             .eq("id", reqData.target_member_id);
         }
       } else if (reqData.type === "add_spouse") {
+        // Accept both key formats
+        const newSpouse = data.spouseName || data.spouse_name || "";
         const { data: member } = await supabase
           .from("family_members")
           .select("spouses")
           .eq("id", reqData.target_member_id)
           .single();
         const currentSpouses = member?.spouses || "";
-        const newSpouse = data.spouseName || "";
         await supabase
           .from("family_members")
           .update({
@@ -110,7 +133,6 @@ serve(async (req) => {
 
     // ─── TRACK VISIT ───
     if (path === "track-visit" && req.method === "POST") {
-      // Increment visit counter
       const { data: current } = await supabase
         .from("visit_stats")
         .select("count")
