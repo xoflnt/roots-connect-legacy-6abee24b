@@ -106,6 +106,7 @@ function AdminContent() {
   const [verifiedCount, setVerifiedCount] = useState(0);
   const [visitCount, setVisitCount] = useState(0);
   const [memberCount, setMemberCount] = useState(0);
+  const [hasNew, setHasNew] = useState(false);
   const navigate = useNavigate();
 
   const loadData = async () => {
@@ -118,7 +119,24 @@ function AdminContent() {
     setMemberCount(getAllMembers().length);
   };
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    loadData();
+
+    const channel = supabase
+      .channel('admin-requests')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'family_requests' },
+        () => {
+          setHasNew(true);
+          loadData();
+          setTimeout(() => setHasNew(false), 3000);
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, []);
 
   const pending = requests.filter((r) => r.status === "pending");
   const handled = requests.filter((r) => r.status !== "pending");
