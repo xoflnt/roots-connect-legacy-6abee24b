@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { AdminProtect } from "@/components/AdminProtect";
 import { Button } from "@/components/ui/button";
-import { Users, Eye, ShieldCheck, TreePine, Check, Loader2, ArrowRight, Bell } from "lucide-react";
+import { Users, Eye, ShieldCheck, TreePine, Check, Loader2, ArrowRight, Bell, Download } from "lucide-react";
 import { getRequests, markRequestDone, getVerifiedUsers, getVisitCount, type FamilyRequest } from "@/services/dataService";
 import { getAllMembers } from "@/services/familyService";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { DataTableView } from "@/components/DataTableView";
 
 function StatCard({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string | number }) {
   return (
