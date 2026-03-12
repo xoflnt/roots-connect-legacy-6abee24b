@@ -34,6 +34,7 @@ interface OnboardingModalProps {
 
 export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
   const { isLoggedIn, currentUser, login } = useAuth();
+  const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(1);
   const navigate = useNavigate();
