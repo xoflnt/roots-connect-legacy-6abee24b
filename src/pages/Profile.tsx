@@ -56,6 +56,7 @@ const Profile = () => {
 
   // Editable state — re-initialize when member refreshes
   const [editSpouses, setEditSpouses] = useState<string[]>([]);
+  const [spousesDirty, setSpousesDirty] = useState(false);
   const [newSpouse, setNewSpouse] = useState("");
   const [birthDate, setBirthDate] = useState<{ day?: string; month?: string; year?: string }>({});
 
