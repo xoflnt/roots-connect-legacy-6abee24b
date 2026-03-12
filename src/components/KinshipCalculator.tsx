@@ -105,8 +105,11 @@ export function KinshipCalculator({ initialMemberId }: KinshipCalculatorProps) {
   }, [person1, person2]);
 
   const relationText = result ? kinshipToArabic(result.dist1, result.dist2, person1!, person2!) : null;
+  const directional = result ? kinshipDirectional(result.dist1, result.dist2, person1!, person2!) : null;
   const motherName1 = person1 ? inferMotherName(person1) : null;
   const motherName2 = person2 ? inferMotherName(person2) : null;
+  const name1Short = person1?.name.split(" ")[0] ?? "";
+  const name2Short = person2?.name.split(" ")[0] ?? "";
 
   const handleSwap = () => {
     setPerson1(person2);
