@@ -97,7 +97,14 @@ export function DataTableView() {
     }
 
     if (search.trim()) {
-      list = list.filter((m) => m.name.includes(search.trim()));
+      const q = normalizeForSearch(search);
+      const tokens = q.split(" ").filter(Boolean);
+      if (tokens.length > 0) {
+        list = list.filter((m) => {
+          const normalized = normalizeForSearch(m.name);
+          return tokens.every((t) => normalized.includes(t));
+        });
+      }
     }
 
     return sortByBirth(list);

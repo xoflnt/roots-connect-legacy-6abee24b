@@ -25,9 +25,8 @@ function PersonPicker({
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
 
-  const filtered = useMemo(() => {
-    if (!query.trim()) return [];
-    return getAllMembers().filter((m) => m.name.includes(query.trim())).slice(0, 8);
+   const filtered = useMemo(() => {
+    return searchMembers(query, 8);
   }, [query]);
 
   return (
