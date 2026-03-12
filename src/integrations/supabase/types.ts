@@ -14,6 +14,89 @@ export type Database = {
   }
   public: {
     Tables: {
+      family_members: {
+        Row: {
+          birth_year: string | null
+          created_at: string | null
+          death_year: string | null
+          father_id: string | null
+          gender: string
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          spouses: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          birth_year?: string | null
+          created_at?: string | null
+          death_year?: string | null
+          father_id?: string | null
+          gender: string
+          id: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          spouses?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          birth_year?: string | null
+          created_at?: string | null
+          death_year?: string | null
+          father_id?: string | null
+          gender?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          spouses?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_members_father_id_fkey"
+            columns: ["father_id"]
+            isOneToOne: false
+            referencedRelation: "family_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      family_requests: {
+        Row: {
+          created_at: string | null
+          data: Json
+          id: string
+          notes: string | null
+          status: string
+          submitted_by: string | null
+          target_member_id: string
+          type: string
+        }
+        Insert: {
+          created_at?: string | null
+          data?: Json
+          id?: string
+          notes?: string | null
+          status?: string
+          submitted_by?: string | null
+          target_member_id: string
+          type: string
+        }
+        Update: {
+          created_at?: string | null
+          data?: Json
+          id?: string
+          notes?: string | null
+          status?: string
+          submitted_by?: string | null
+          target_member_id?: string
+          type?: string
+        }
+        Relationships: []
+      }
       otp_verifications: {
         Row: {
           clickable_url: string | null
@@ -56,6 +139,48 @@ export type Database = {
           reference?: string
           status?: string
           verified_at?: string | null
+        }
+        Relationships: []
+      }
+      verified_users: {
+        Row: {
+          hijri_birth_date: string | null
+          id: string
+          member_id: string
+          member_name: string
+          phone: string
+          verified_at: string | null
+        }
+        Insert: {
+          hijri_birth_date?: string | null
+          id?: string
+          member_id: string
+          member_name: string
+          phone: string
+          verified_at?: string | null
+        }
+        Update: {
+          hijri_birth_date?: string | null
+          id?: string
+          member_id?: string
+          member_name?: string
+          phone?: string
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
+      visit_stats: {
+        Row: {
+          count: number
+          id: number
+        }
+        Insert: {
+          count?: number
+          id?: number
+        }
+        Update: {
+          count?: number
+          id?: number
         }
         Relationships: []
       }
