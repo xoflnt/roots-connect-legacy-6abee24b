@@ -87,7 +87,7 @@ function PersonPicker({
 
 export function KinshipCalculator({ initialMemberId }: KinshipCalculatorProps) {
   const [person1, setPerson1] = useState<FamilyMember | null>(
-    initialMemberId ? familyMembers.find((m) => m.id === initialMemberId) || null : null
+    initialMemberId ? getAllMembers().find((m) => m.id === initialMemberId) || null : null
   );
   const [person2, setPerson2] = useState<FamilyMember | null>(null);
   const [showResult, setShowResult] = useState(false);
