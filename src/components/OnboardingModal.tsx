@@ -288,6 +288,9 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
               <Button onClick={() => setStep(2)} className="min-h-[52px] w-full text-base font-semibold rounded-xl">
                 التالي
               </Button>
+              <Button variant="ghost" onClick={handleSkip} className="w-full text-sm text-muted-foreground hover:text-foreground">
+                تصفح كزائر
+              </Button>
             </div>
           )}
 
