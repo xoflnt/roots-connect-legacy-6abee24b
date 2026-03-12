@@ -3,7 +3,7 @@ import { AdminProtect } from "@/components/AdminProtect";
 import { Button } from "@/components/ui/button";
 import { Users, Eye, ShieldCheck, TreePine, Check, X, Loader2, ArrowRight, Bell } from "lucide-react";
 import { getRequests, approveRequest, rejectRequest, getVerifiedUsers, getVisitCount, type FamilyRequest } from "@/services/dataService";
-import { getAllMembers } from "@/services/familyService";
+import { getAllMembers, refreshMembers } from "@/services/familyService";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
