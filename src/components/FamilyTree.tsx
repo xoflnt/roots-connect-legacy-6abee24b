@@ -8,12 +8,12 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
-import { refreshMembers } from "@/services/familyService";
+import { refreshMembers, getAllMembers } from "@/services/familyService";
 import { Plus, Minus, Maximize2, RotateCcw } from "lucide-react";
 import { useTreeLayout, getDefaultExpandedIds } from "@/hooks/useTreeLayout";
 import { FamilyCard } from "./FamilyCard";
 import { PersonDetails } from "./PersonDetails";
-import { familyMembers, type FamilyMember } from "@/data/familyData";
+import type { FamilyMember } from "@/data/familyData";
 import { getBranch } from "@/utils/branchUtils";
 import { getChildrenOf } from "@/services/familyService";
 
@@ -40,8 +40,8 @@ export const FamilyTree = forwardRef<FamilyTreeRef, FamilyTreeProps>(function Fa
 
   // Listen for data updates from Profile or other sources
   useEffect(() => {
-    const handler = () => {
-      refreshMembers();
+    const handler = async () => {
+      await refreshMembers();
       setRefreshKey((k) => k + 1);
     };
     window.addEventListener("family-data-updated", handler);
@@ -88,7 +88,8 @@ export const FamilyTree = forwardRef<FamilyTreeRef, FamilyTreeProps>(function Fa
   const handleSearch = useCallback(
     (memberId: string) => {
       if (!rfInstance.current) return;
-      const memberMap = new Map<string, FamilyMember>(familyMembers.map((m) => [m.id, m]));
+      const allMembers = getAllMembers();
+      const memberMap = new Map<string, FamilyMember>(allMembers.map((m) => [m.id, m]));
       const ancestorIds = new Set<string>();
       let current = memberMap.get(memberId);
       while (current?.father_id) {
@@ -205,10 +206,9 @@ export const FamilyTree = forwardRef<FamilyTreeRef, FamilyTreeProps>(function Fa
 });
 
 function getBranchExpandedIds(pillarId: string): Set<string> {
-  // Expand root → Zaid → pillar and first level children
   const ids = new Set<string>();
-  const memberMap = new Map(familyMembers.map((m) => [m.id, m]));
-  // Find ancestors of pillar
+  const allMembers = getAllMembers();
+  const memberMap = new Map(allMembers.map((m) => [m.id, m]));
   let current = memberMap.get(pillarId);
   while (current) {
     ids.add(current.id);
@@ -218,7 +218,6 @@ function getBranchExpandedIds(pillarId: string): Set<string> {
       break;
     }
   }
-  // Expand first-level children of the pillar
   const children = getChildrenOf(pillarId);
   children.forEach((c) => ids.add(c.id));
   return ids;

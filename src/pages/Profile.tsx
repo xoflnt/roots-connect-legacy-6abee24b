@@ -101,7 +101,7 @@ const Profile = () => {
         login({ ...currentUser, hijriBirthDate: dateStr });
       }
 
-      refreshMembers();
+      await refreshMembers();
       setRefreshKey((k) => k + 1);
       window.dispatchEvent(new Event("family-data-updated"));
       toast.success("تم حفظ التعديلات بنجاح");
@@ -124,7 +124,7 @@ const Profile = () => {
         father_id: member.id,
         notes,
       });
-      refreshMembers();
+      await refreshMembers();
       window.dispatchEvent(new Event("family-data-updated"));
       toast.success("تمت إضافة الابن/البنت بنجاح");
       setNewChildName("");

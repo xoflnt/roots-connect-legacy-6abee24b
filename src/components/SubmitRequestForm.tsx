@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Send, Loader2, UserCheck } from "lucide-react";
-import { familyMembers, type FamilyMember } from "@/data/familyData";
+import type { FamilyMember } from "@/data/familyData";
+import { getAllMembers } from "@/services/familyService";
 import { submitRequest, type RequestType } from "@/services/dataService";
 import { getLineageLabel, getMemberSubtitle } from "@/utils/memberLabel";
 import { toast } from "sonner";
@@ -40,7 +41,7 @@ export function SubmitRequestForm({ open, onOpenChange, targetMember }: SubmitRe
 
   const filtered = useMemo(() => {
     if (!searchQuery.trim()) return [];
-    return familyMembers.filter((m) => m.name.includes(searchQuery.trim())).slice(0, 10);
+    return getAllMembers().filter((m) => m.name.includes(searchQuery.trim())).slice(0, 10);
   }, [searchQuery]);
 
   const handleSubmit = async () => {

@@ -5,10 +5,11 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { FontSizeToggle } from "@/components/FontSizeToggle";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { familyMembers } from "@/data/familyData";
+import type { FamilyMember } from "@/data/familyData";
 import { OnboardingModal } from "@/components/OnboardingModal";
 import { SubmitRequestForm } from "@/components/SubmitRequestForm";
 import { trackVisit } from "@/services/dataService";
+import { getAllMembers } from "@/services/familyService";
 import { PILLARS, getBranch } from "@/utils/branchUtils";
 import { getDescendantCount } from "@/services/familyService";
 
@@ -42,11 +43,12 @@ function useCountUp(target: number, duration = 1500) {
 }
 
 function computeStats() {
-  const total = familyMembers.length;
-  const roots = familyMembers.filter((m) => !m.father_id);
+  const allMembers = getAllMembers();
+  const total = allMembers.length;
+  const roots = allMembers.filter((m) => !m.father_id);
 
   const childrenMap = new Map<string | null, string[]>();
-  for (const m of familyMembers) {
+  for (const m of allMembers) {
     const list = childrenMap.get(m.father_id) || [];
     list.push(m.id);
     childrenMap.set(m.father_id, list);
@@ -61,12 +63,12 @@ function computeStats() {
     }
   }
 
-  const males = familyMembers.filter((m) => m.gender === "M").length;
-  const females = familyMembers.filter((m) => m.gender === "F").length;
+  const males = allMembers.filter((m) => m.gender === "M").length;
+  const females = allMembers.filter((m) => m.gender === "F").length;
 
   const maleNameCounts = new Map<string, number>();
   const femaleNameCounts = new Map<string, number>();
-  for (const m of familyMembers) {
+  for (const m of allMembers) {
     const firstName = m.name.split(" ")[0];
     if (m.gender === "M") {
       maleNameCounts.set(firstName, (maleNameCounts.get(firstName) || 0) + 1);
@@ -138,8 +140,9 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
   // Track visit on mount
   useEffect(() => { trackVisit(); }, []);
 
+  const allMembers = getAllMembers();
   const filtered = query.trim()
-    ? familyMembers.filter((m) => m.name.includes(query.trim())).slice(0, 10)
+    ? allMembers.filter((m) => m.name.includes(query.trim())).slice(0, 10)
     : [];
 
   const showingResults = open && filtered.length > 0;

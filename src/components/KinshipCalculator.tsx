@@ -2,7 +2,8 @@ import { useState, useMemo } from "react";
 import { ArrowLeftRight, Search, User, Users, ChevronDown } from "lucide-react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { familyMembers, type FamilyMember } from "@/data/familyData";
+import type { FamilyMember } from "@/data/familyData";
+import { getAllMembers } from "@/services/familyService";
 import { findKinship, kinshipToArabic } from "@/services/familyService";
 import { getLineageLabel, getMemberSubtitle } from "@/utils/memberLabel";
 
@@ -26,7 +27,7 @@ function PersonPicker({
 
   const filtered = useMemo(() => {
     if (!query.trim()) return [];
-    return familyMembers.filter((m) => m.name.includes(query.trim())).slice(0, 8);
+    return getAllMembers().filter((m) => m.name.includes(query.trim())).slice(0, 8);
   }, [query]);
 
   return (
@@ -86,7 +87,7 @@ function PersonPicker({
 
 export function KinshipCalculator({ initialMemberId }: KinshipCalculatorProps) {
   const [person1, setPerson1] = useState<FamilyMember | null>(
-    initialMemberId ? familyMembers.find((m) => m.id === initialMemberId) || null : null
+    initialMemberId ? getAllMembers().find((m) => m.id === initialMemberId) || null : null
   );
   const [person2, setPerson2] = useState<FamilyMember | null>(null);
   const [showResult, setShowResult] = useState(false);

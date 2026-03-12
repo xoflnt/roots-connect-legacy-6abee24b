@@ -1,8 +1,10 @@
 /**
- * Data service — localStorage-backed, structured for future DB migration.
+ * Data service — Cloud-backed via Supabase.
+ * localStorage is ONLY used for device-local preferences.
  */
 
-import { familyMembers, type FamilyMember } from "@/data/familyData";
+import { supabase } from "@/integrations/supabase/client";
+import type { FamilyMember } from "@/data/familyData";
 
 // ─── Request Types ───
 
@@ -27,141 +29,177 @@ export interface VerifiedUser {
   verifiedAt: string;
 }
 
-// ─── Storage Keys ───
+// ─── Edge function helper ───
 
-const REQUESTS_KEY = "khunaini-requests";
-const VERIFIED_USERS_KEY = "khunaini-verified-users";
-const VISITS_KEY = "khunaini-visits";
-const MEMBER_OVERRIDES_KEY = "khunaini-member-overrides";
-
-// ─── Helpers ───
-
-function loadJSON<T>(key: string, fallback: T): T {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
-  } catch {
-    return fallback;
-  }
+async function callFamilyApi(action: string, body: Record<string, unknown>) {
+  const { data, error } = await supabase.functions.invoke("family-api/" + action, {
+    body,
+  });
+  if (error) throw error;
+  return data;
 }
 
-function saveJSON(key: string, data: unknown) {
-  localStorage.setItem(key, JSON.stringify(data));
-}
-
-// ─── Members (read from static data + overrides) ───
+// ─── Members (from cloud DB) ───
 
 export async function getMembers(): Promise<FamilyMember[]> {
-  const overrides: Record<string, Partial<FamilyMember>> = loadJSON(MEMBER_OVERRIDES_KEY, {});
-  const additions: FamilyMember[] = loadJSON("khunaini-added-members", []);
+  const { data, error } = await supabase
+    .from("family_members")
+    .select("*")
+    .order("created_at", { ascending: true });
 
-  const merged = familyMembers.map((m) => {
-    const ov = overrides[m.id];
-    return ov ? { ...m, ...ov } : m;
-  });
+  if (error) {
+    console.error("[dataService] getMembers error:", error);
+    return [];
+  }
 
-  return [...merged, ...additions];
+  return (data || []).map((row: any) => ({
+    id: row.id,
+    name: row.name,
+    gender: row.gender as "M" | "F",
+    father_id: row.father_id,
+    birth_year: row.birth_year,
+    death_year: row.death_year,
+    spouses: row.spouses,
+    phone: row.phone,
+    notes: row.notes,
+  }));
 }
 
 export async function updateMember(id: string, data: Partial<FamilyMember>): Promise<void> {
-  const overrides: Record<string, Partial<FamilyMember>> = loadJSON(MEMBER_OVERRIDES_KEY, {});
-  overrides[id] = { ...(overrides[id] || {}), ...data };
-  saveJSON(MEMBER_OVERRIDES_KEY, overrides);
+  await callFamilyApi("update-member", { id, data });
 }
 
 export async function addMember(member: FamilyMember): Promise<void> {
-  const additions: FamilyMember[] = loadJSON("khunaini-added-members", []);
-  additions.push(member);
-  saveJSON("khunaini-added-members", additions);
+  await callFamilyApi("add-member", { member });
 }
 
-// ─── Requests ───
+// ─── Requests (cloud DB) ───
 
 export async function submitRequest(req: Omit<FamilyRequest, "id" | "status" | "createdAt">): Promise<FamilyRequest> {
-  const requests: FamilyRequest[] = loadJSON(REQUESTS_KEY, []);
-  const newReq: FamilyRequest = {
-    ...req,
-    id: crypto.randomUUID(),
-    status: "pending",
-    createdAt: new Date().toISOString(),
+  const { data, error } = await supabase
+    .from("family_requests")
+    .insert({
+      type: req.type,
+      target_member_id: req.targetMemberId,
+      data: req.data,
+      notes: req.notes || null,
+      submitted_by: req.submittedBy || null,
+      status: "pending",
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  return {
+    id: data.id,
+    type: data.type as RequestType,
+    targetMemberId: data.target_member_id,
+    data: data.data as Record<string, string>,
+    notes: data.notes || undefined,
+    status: data.status as "pending" | "approved" | "rejected",
+    submittedBy: data.submitted_by || undefined,
+    createdAt: data.created_at,
   };
-  requests.push(newReq);
-  saveJSON(REQUESTS_KEY, requests);
-  return newReq;
 }
 
 export async function getRequests(): Promise<FamilyRequest[]> {
-  return loadJSON(REQUESTS_KEY, []);
+  const { data, error } = await supabase
+    .from("family_requests")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("[dataService] getRequests error:", error);
+    return [];
+  }
+
+  return (data || []).map((row: any) => ({
+    id: row.id,
+    type: row.type as RequestType,
+    targetMemberId: row.target_member_id,
+    data: row.data as Record<string, string>,
+    notes: row.notes || undefined,
+    status: row.status as "pending" | "approved" | "rejected",
+    submittedBy: row.submitted_by || undefined,
+    createdAt: row.created_at,
+  }));
 }
 
 export async function approveRequest(requestId: string): Promise<boolean> {
-  const requests: FamilyRequest[] = loadJSON(REQUESTS_KEY, []);
-  const req = requests.find((r) => r.id === requestId);
-  if (!req || req.status !== "pending") return false;
-
-  // Apply the change
-  if (req.type === "add_child") {
-    await addMember({
-      id: `REQ-${req.id.slice(0, 8)}`,
-      name: req.data.childName || "غير محدد",
-      gender: (req.data.gender as "M" | "F") || "M",
-      father_id: req.targetMemberId,
-      birth_year: req.data.birthYear,
-      spouses: req.data.spouses,
-    });
-  } else if (req.type === "update_info" || req.type === "correction") {
-    await updateMember(req.targetMemberId, req.data as Partial<FamilyMember>);
-  } else if (req.type === "add_spouse") {
-    const members = await getMembers();
-    const member = members.find((m) => m.id === req.targetMemberId);
-    const currentSpouses = member?.spouses || "";
-    const newSpouse = req.data.spouseName || "";
-    await updateMember(req.targetMemberId, {
-      spouses: currentSpouses ? `${currentSpouses}، ${newSpouse}` : newSpouse,
-    });
+  try {
+    await callFamilyApi("approve", { requestId });
+    return true;
+  } catch {
+    return false;
   }
-
-  req.status = "approved";
-  saveJSON(REQUESTS_KEY, requests);
-  return true;
 }
 
 export async function rejectRequest(requestId: string): Promise<boolean> {
-  const requests: FamilyRequest[] = loadJSON(REQUESTS_KEY, []);
-  const req = requests.find((r) => r.id === requestId);
-  if (!req || req.status !== "pending") return false;
-  req.status = "rejected";
-  saveJSON(REQUESTS_KEY, requests);
-  return true;
+  try {
+    await callFamilyApi("reject", { requestId });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
-// ─── Verified Users ───
+// ─── Verified Users (cloud DB) ───
 
 export async function registerVerifiedUser(user: Omit<VerifiedUser, "verifiedAt">): Promise<void> {
-  const users: VerifiedUser[] = loadJSON(VERIFIED_USERS_KEY, []);
-  const existing = users.findIndex((u) => u.memberId === user.memberId);
-  const entry: VerifiedUser = { ...user, verifiedAt: new Date().toISOString() };
-  if (existing >= 0) users[existing] = entry;
-  else users.push(entry);
-  saveJSON(VERIFIED_USERS_KEY, users);
+  await callFamilyApi("register-user", {
+    memberId: user.memberId,
+    memberName: user.memberName,
+    phone: user.phone,
+    hijriBirthDate: user.hijriBirthDate,
+  });
 
-  // Auto-update birth date if provided
+  // Also update member phone in DB
   if (user.hijriBirthDate) {
     await updateMember(user.memberId, { birth_year: user.hijriBirthDate });
   }
 }
 
 export async function getVerifiedUsers(): Promise<VerifiedUser[]> {
-  return loadJSON(VERIFIED_USERS_KEY, []);
+  const { data, error } = await supabase
+    .from("verified_users")
+    .select("*");
+
+  if (error) {
+    console.error("[dataService] getVerifiedUsers error:", error);
+    return [];
+  }
+
+  return (data || []).map((row: any) => ({
+    memberId: row.member_id,
+    memberName: row.member_name,
+    phone: row.phone,
+    hijriBirthDate: row.hijri_birth_date || undefined,
+    verifiedAt: row.verified_at,
+  }));
 }
 
-// ─── Visit Tracking ───
+// ─── Visit Tracking (cloud DB) ───
 
-export function trackVisit() {
-  const count = parseInt(localStorage.getItem(VISITS_KEY) || "0", 10);
-  localStorage.setItem(VISITS_KEY, String(count + 1));
+export async function trackVisit(): Promise<void> {
+  try {
+    await callFamilyApi("track-visit", {});
+  } catch (e) {
+    console.error("[dataService] trackVisit error:", e);
+  }
 }
 
-export function getVisitCount(): number {
-  return parseInt(localStorage.getItem(VISITS_KEY) || "0", 10);
+export async function getVisitCount(): Promise<number> {
+  const { data, error } = await supabase
+    .from("visit_stats")
+    .select("count")
+    .eq("id", 1)
+    .single();
+
+  if (error) {
+    console.error("[dataService] getVisitCount error:", error);
+    return 0;
+  }
+
+  return data?.count || 0;
 }

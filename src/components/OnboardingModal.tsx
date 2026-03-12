@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Progress } from "@/components/ui/progress";
 import { TreePine, Search, UserCheck, Phone, CalendarDays, ChevronLeft, Loader2, QrCode, ExternalLink, UserCircle, MessageCircle } from "lucide-react";
-import { familyMembers, type FamilyMember } from "@/data/familyData";
+import type { FamilyMember } from "@/data/familyData";
+import { getAllMembers } from "@/services/familyService";
 import { sendOTP, checkOTPStatus, verifyOTP, type SendOTPResult } from "@/services/wasageSms";
 import { useAuth } from "@/contexts/AuthContext";
 import { HijriDatePicker } from "@/components/HijriDatePicker";
@@ -16,11 +17,13 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 const TOTAL_STEPS = 5;
 
-const memberMap = new Map(familyMembers.map((m) => [m.id, m]));
+function getMemberMap() {
+  return new Map(getAllMembers().map((m) => [m.id, m]));
+}
 
 function getFatherName(member: FamilyMember): string | null {
   if (!member.father_id) return null;
-  return memberMap.get(member.father_id)?.name ?? null;
+  return getMemberMap().get(member.father_id)?.name ?? null;
 }
 
 function getDisplayLabel(member: FamilyMember): string {
@@ -72,7 +75,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
   const filtered = useMemo(() => {
     if (!searchQuery.trim()) return [];
     const q = searchQuery.trim();
-    return familyMembers.filter((m) => m.name.includes(q) || getDisplayLabel(m).includes(q)).slice(0, 15);
+    return getAllMembers().filter((m) => m.name.includes(q) || getDisplayLabel(m).includes(q)).slice(0, 15);
   }, [searchQuery]);
 
   const handleSkip = () => {
