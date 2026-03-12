@@ -704,10 +704,11 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
 
               {/* ─── Actions ─── */}
               <div className="mt-auto space-y-2 pt-2">
-                <Button onClick={handleComplete} className="min-h-[52px] w-full text-base font-semibold rounded-xl">
+                <Button type="button" onClick={handleComplete} disabled={isSubmitting} className="min-h-[52px] w-full text-base font-semibold rounded-xl">
+                  {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin ml-2" /> : null}
                   حفظ والدخول للبوابة
                 </Button>
-                <Button variant="ghost" onClick={handleComplete} className="w-full text-sm text-muted-foreground">
+                <Button type="button" variant="ghost" onClick={handleComplete} disabled={isSubmitting} className="w-full text-sm text-muted-foreground">
                   تخطي
                 </Button>
               </div>
