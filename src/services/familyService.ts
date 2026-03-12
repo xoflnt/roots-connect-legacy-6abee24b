@@ -1,6 +1,6 @@
 import { familyMembers as staticMembers, type FamilyMember } from "@/data/familyData";
 import { parseArabicYear } from "@/utils/ageCalculator";
-import { getMembers } from "./dataService";
+import { getMembers, loadVerifiedMemberIds } from "./dataService";
 
 // Mutable merged data — call refreshMembers() after any cloud update
 let mergedMembers: FamilyMember[] = [...staticMembers];
