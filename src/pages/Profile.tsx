@@ -315,9 +315,9 @@ const Profile = () => {
                         {child.birth_year && (
                           <p className="text-sm text-foreground">{child.birth_year} هـ</p>
                         )}
-                        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-green-500/10 border border-green-500/20 w-fit">
-                          <ShieldCheck className="h-3.5 w-3.5 text-green-600" />
-                          <span className="text-xs font-semibold text-green-700">
+                        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-accent/10 border border-accent/20 w-fit">
+                          <ShieldCheck className="h-3.5 w-3.5 text-accent" />
+                          <span className="text-xs font-semibold text-accent-foreground">
                             تم توثيق البيانات بواسطة {child.name} ✅
                           </span>
                         </div>
