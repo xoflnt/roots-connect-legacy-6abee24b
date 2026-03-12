@@ -170,6 +170,7 @@ const Profile = () => {
 
   const handleDeleteChild = async () => {
     if (!childToDelete || saving) return;
+    if (spousesDirty) await handleSave();
     setSaving(true);
     try {
       await updateMember(childToDelete.id, { father_id: null });
