@@ -163,10 +163,12 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
       }));
     }
     if (quickChildName.trim()) {
+      const childData: Record<string, string> = { child_name: quickChildName.trim(), child_gender: quickChildGender };
+      if (quickChildMother.trim()) childData.mother_name = quickChildMother.trim();
       requests.push(submitRequest({
         type: "add_child",
         targetMemberId: selectedMember.id,
-        data: { child_name: quickChildName.trim(), child_gender: quickChildGender },
+        data: childData,
         submittedBy: selectedMember.name,
       }));
     }
