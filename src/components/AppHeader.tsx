@@ -24,7 +24,6 @@ const navItems: { value: ViewMode; label: string; icon: typeof TreePine }[] = [
   { value: "lineage", label: "النسب", icon: GitBranch },
   { value: "kinship", label: "القرابة", icon: Users },
   { value: "list", label: "القوائم", icon: List },
-  { value: "table", label: "البيانات", icon: TableProperties },
 ];
 
 export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHome }: AppHeaderProps) {
