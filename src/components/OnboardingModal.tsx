@@ -83,7 +83,10 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
     return searchMembers(searchQuery, 15);
   }, [searchQuery]);
 
-  const handleSkip = () => setOpen(false);
+  const handleSkip = () => {
+    sessionStorage.setItem("onboarding-dismissed", "true");
+    setOpen(false);
+  };
 
   // Pre-fill birth date for "child logging in" scenario
   useEffect(() => {
