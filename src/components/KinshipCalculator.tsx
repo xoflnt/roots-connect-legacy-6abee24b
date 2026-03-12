@@ -195,13 +195,13 @@ export function KinshipCalculator({ initialMemberId }: KinshipCalculatorProps) {
               </div>
 
               <TabsContent value="tree" className="px-4 pb-2 mt-0">
-                <KinshipTreeView result={result} person1={person1!} person2={person2!} />
+                <KinshipTreeView result={result} person1={person1!} person2={person2!} motherName1={motherName1} motherName2={motherName2} />
               </TabsContent>
               <TabsContent value="document" className="px-4 pb-2 mt-0">
-                <KinshipDocumentView result={result} person1={person1!} person2={person2!} />
+                <KinshipDocumentView result={result} person1={person1!} person2={person2!} motherName1={motherName1} motherName2={motherName2} />
               </TabsContent>
               <TabsContent value="path" className="px-4 pb-2 mt-0">
-                <KinshipInteractiveView result={result} person1={person1!} person2={person2!} />
+                <KinshipInteractiveView result={result} person1={person1!} person2={person2!} motherName1={motherName1} motherName2={motherName2} />
               </TabsContent>
             </Tabs>
 
