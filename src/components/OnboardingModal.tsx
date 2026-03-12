@@ -151,38 +151,15 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
       hijriBirthDate: dateStr,
     });
 
-    // Fire quick-update requests
-    const requests: Promise<any>[] = [];
-    if (quickSpouse.trim()) {
-      requests.push(submitRequest({
-        type: "add_spouse",
+    // Fire quick-update request as free text
+    if (quickUpdateText.trim()) {
+      await submitRequest({
+        type: "other",
         targetMemberId: selectedMember.id,
-        data: { spouse_name: quickSpouse.trim() },
+        data: { text_content: quickUpdateText.trim() },
         submittedBy: selectedMember.name,
-      }));
-    }
-    if (quickChildName.trim()) {
-      const resolvedMother = quickChildMother === "__other__" ? quickChildMotherCustom.trim() : quickChildMother.trim();
-      const childData: Record<string, string> = { child_name: quickChildName.trim(), child_gender: quickChildGender };
-      if (resolvedMother) childData.mother_name = resolvedMother;
-      requests.push(submitRequest({
-        type: "add_child",
-        targetMemberId: selectedMember.id,
-        data: childData,
-        submittedBy: selectedMember.name,
-      }));
-    }
-    if (quickCorrection.trim()) {
-      requests.push(submitRequest({
-        type: "correction",
-        targetMemberId: selectedMember.id,
-        data: { correction: quickCorrection.trim() },
-        submittedBy: selectedMember.name,
-      }));
-    }
-    if (requests.length > 0) {
-      await Promise.all(requests);
-      toast.success("تم إرسال طلبات التحديث للمراجعة");
+      });
+      toast.success("تم إرسال طلب التحديث للمراجعة");
     }
 
     login({
