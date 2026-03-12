@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { User, Calendar, Heart, FileText, X, ExternalLink, Clock, Send, Users2, UserPlus } from "lucide-react";
+import { User, Calendar, Heart, FileText, X, ExternalLink, Clock, Send, Users2, UserPlus, BadgeCheck } from "lucide-react";
 import { downloadVCard } from "@/utils/vcard";
 import { WhatsAppIcon } from "./WhatsAppIcon";
 import { Button } from "@/components/ui/button";
