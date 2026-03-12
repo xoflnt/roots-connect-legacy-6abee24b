@@ -664,12 +664,28 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                          </SelectContent>
                        </Select>
                      </div>
-                     <Input
-                       value={quickChildMother}
-                       onChange={(e) => setQuickChildMother(e.target.value)}
-                       placeholder="اسم الأم"
-                       className="h-10 text-sm rounded-lg"
-                     />
+                     <Select value={quickChildMother} onValueChange={setQuickChildMother}>
+                       <SelectTrigger className="h-10 text-sm rounded-lg">
+                         <SelectValue placeholder="اختر الوالدة..." />
+                       </SelectTrigger>
+                       <SelectContent>
+                         {familyContext?.spouses?.map((s, i) => (
+                           <SelectItem key={`sp-${i}`} value={s}>{s}</SelectItem>
+                         ))}
+                         {quickSpouse.trim() && !familyContext?.spouses?.includes(quickSpouse.trim()) && (
+                           <SelectItem value={quickSpouse.trim()}>{quickSpouse.trim()} (جديدة)</SelectItem>
+                         )}
+                         <SelectItem value="__other__">أخرى (إدخال يدوي)</SelectItem>
+                       </SelectContent>
+                     </Select>
+                     {quickChildMother === "__other__" && (
+                       <Input
+                         value={quickChildMotherCustom}
+                         onChange={(e) => setQuickChildMotherCustom(e.target.value)}
+                         placeholder="اكتب اسم الأم..."
+                         className="h-10 text-sm rounded-lg"
+                       />
+                     )}
                    </div>
                   {/* Correction */}
                   <div className="space-y-1">
