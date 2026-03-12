@@ -1,5 +1,5 @@
 import { Handle, Position, type NodeProps } from "@xyflow/react";
-import { Plus, Minus, UserPlus, Heart } from "lucide-react";
+import { Plus, Minus, UserPlus, Heart, BadgeCheck } from "lucide-react";
 import { WhatsAppIcon } from "./WhatsAppIcon";
 import { downloadVCard } from "@/utils/vcard";
 import type { FamilyMember } from "@/data/familyData";
@@ -8,6 +8,7 @@ import { HeritageBadge } from "./HeritageBadge";
 import { isFounder, isDeceased, getChildrenOf } from "@/services/familyService";
 import { formatAge } from "@/utils/ageCalculator";
 import { getBranch, getBranchStyle, DOCUMENTER_ID } from "@/utils/branchUtils";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 
 export function FamilyCard({ data, selected }: NodeProps) {
   const member = data as unknown as FamilyMember & {
