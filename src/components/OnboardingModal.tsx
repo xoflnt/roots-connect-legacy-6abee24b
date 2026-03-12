@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Progress } from "@/components/ui/progress";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { TreePine, Search, UserCheck, Phone, CalendarDays, ChevronLeft, ChevronDown, Loader2, QrCode, ExternalLink, UserCircle, MessageCircle, Users2, Heart, UserPlus, GitBranch, Edit3 } from "lucide-react";
 import type { FamilyMember } from "@/data/familyData";
 import { getAllMembers, getChildrenOf } from "@/services/familyService";
