@@ -86,6 +86,34 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
 
   const handleSkip = () => setOpen(false);
 
+  // Pre-fill birth date for "child logging in" scenario
+  useEffect(() => {
+    if (step === 5 && selectedMember) {
+      const verifiedIds = getVerifiedMemberIds();
+      const isAlreadyVerified = verifiedIds.has(selectedMember.id);
+      if (!isAlreadyVerified && selectedMember.birth_year) {
+        // Parse existing birth_year (format "YYYY/M/D" or just "YYYY")
+        const parts = selectedMember.birth_year.split("/");
+        const parsed: { day?: string; month?: string; year?: string } = { year: parts[0] };
+        if (parts[1]) parsed.month = parts[1];
+        if (parts[2]) parsed.day = parts[2];
+        setHijriDate(parsed);
+        setPreFilledBanner(true);
+      }
+
+      // Pre-fill children dates from existing birth_year
+      const children = getChildrenOf(selectedMember.id);
+      const initial: Record<string, { day?: string; month?: string; year?: string }> = {};
+      for (const child of children) {
+        if (child.birth_year) {
+          const p = child.birth_year.split("/");
+          initial[child.id] = { year: p[0], month: p[1], day: p[2] };
+        }
+      }
+      setChildrenDates(initial);
+    }
+  }, [step, selectedMember]);
+
   useEffect(() => {
     return () => { if (pollingRef.current) clearInterval(pollingRef.current); };
   }, []);
