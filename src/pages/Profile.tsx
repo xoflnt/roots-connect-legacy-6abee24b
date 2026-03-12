@@ -131,6 +131,7 @@ const Profile = () => {
       await refreshMembers();
       setRefreshKey((k) => k + 1);
       window.dispatchEvent(new Event("family-data-updated"));
+      setSpousesDirty(false);
       toast.success("تم حفظ التعديلات بنجاح");
     } catch {
       toast.error("حدث خطأ أثناء الحفظ");
