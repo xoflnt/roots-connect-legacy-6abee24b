@@ -69,6 +69,8 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
   const [quickChildName, setQuickChildName] = useState("");
   const [quickChildGender, setQuickChildGender] = useState<"M" | "F">("M");
   const [quickChildMother, setQuickChildMother] = useState("");
+  const [quickChildMotherCustom, setQuickChildMotherCustom] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [quickCorrection, setQuickCorrection] = useState("");
 
   const searchInputRef = useRef<HTMLInputElement>(null);

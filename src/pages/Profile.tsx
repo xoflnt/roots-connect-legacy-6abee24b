@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { TreePine, Phone, CalendarDays, Users, LogOut, GitBranch, Home, Plus, Trash2, Save, Loader2 } from "lucide-react";
 import { getAncestorChain, getDescendantCount, getMemberById, getChildrenOf, refreshMembers } from "@/services/familyService";
 import { updateMember, addMember } from "@/services/dataService";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import { HijriDatePicker } from "@/components/HijriDatePicker";
 import { toast } from "sonner";
 import { formatAge } from "@/utils/ageCalculator";
@@ -18,6 +18,16 @@ const Profile = () => {
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  // Listen for global family-data-updated event
+  useEffect(() => {
+    const handler = async () => {
+      await refreshMembers();
+      setRefreshKey(k => k + 1);
+    };
+    window.addEventListener("family-data-updated", handler);
+    return () => window.removeEventListener("family-data-updated", handler);
+  }, []);
 
   const member = useMemo(() => {
     if (!currentUser) return null;
@@ -40,24 +50,31 @@ const Profile = () => {
     return getDescendantCount(member.id);
   }, [member]);
 
-  // Editable state
-  const [editSpouses, setEditSpouses] = useState<string[]>(() => {
-    if (!member?.spouses) return [];
-    return member.spouses.split("،").map(s => s.trim()).filter(Boolean);
-  });
+  // Editable state — re-initialize when member refreshes
+  const [editSpouses, setEditSpouses] = useState<string[]>([]);
   const [newSpouse, setNewSpouse] = useState("");
-  const [birthDate, setBirthDate] = useState<{ day?: string; month?: string; year?: string }>(() => {
-    if (!member?.birth_year) return {};
-    const parts = (member.birth_year as string).split("/");
-    if (parts.length === 3) return { year: parts[0], month: parts[1], day: parts[2] };
-    return { year: member.birth_year as string };
-  });
+  const [birthDate, setBirthDate] = useState<{ day?: string; month?: string; year?: string }>({});
+
+  useEffect(() => {
+    if (!member) return;
+    setEditSpouses(
+      member.spouses ? member.spouses.split("،").map(s => s.trim()).filter(Boolean) : []
+    );
+    if (member.birth_year) {
+      const parts = (member.birth_year as string).split("/");
+      if (parts.length === 3) setBirthDate({ year: parts[0], month: parts[1], day: parts[2] });
+      else setBirthDate({ year: member.birth_year as string });
+    }
+  }, [member]);
 
   // Add child state
   const [showAddChild, setShowAddChild] = useState(false);
   const [newChildName, setNewChildName] = useState("");
   const [newChildGender, setNewChildGender] = useState<"M" | "F">("M");
   const [newChildMother, setNewChildMother] = useState("");
+  const [customMother, setCustomMother] = useState("");
+
+  const resolvedMother = newChildMother === "__other__" ? customMother : newChildMother;
 
   if (!isLoggedIn || !currentUser) {
     return (
@@ -85,7 +102,7 @@ const Profile = () => {
   };
 
   const handleSave = async () => {
-    if (!member) return;
+    if (!member || saving) return;
     setSaving(true);
     try {
       const dateStr = birthDate.year
@@ -112,11 +129,12 @@ const Profile = () => {
   };
 
   const handleAddChild = async () => {
-    if (!member || !newChildName.trim()) return;
+    if (!member || !newChildName.trim() || saving) return;
     setSaving(true);
     try {
       const childId = `USR-${Date.now().toString(36)}`;
-      const notes = newChildMother ? `${newChildGender === "F" ? "والدتها" : "والدته"}: ${newChildMother}` : undefined;
+      const motherName = resolvedMother.trim();
+      const notes = motherName ? `${newChildGender === "F" ? "والدتها" : "والدته"}: ${motherName}` : undefined;
       await addMember({
         id: childId,
         name: newChildName.trim(),
@@ -130,6 +148,7 @@ const Profile = () => {
       setNewChildName("");
       setNewChildGender("M");
       setNewChildMother("");
+      setCustomMother("");
       setShowAddChild(false);
     } catch {
       toast.error("حدث خطأ أثناء الإضافة");
@@ -205,7 +224,7 @@ const Profile = () => {
               {editSpouses.map((spouse, i) => (
                 <div key={i} className="flex items-center gap-2 p-3 rounded-xl bg-muted/50 border border-border/30">
                   <span className="flex-1 text-sm font-medium text-foreground">{spouse}</span>
-                  <Button variant="ghost" size="icon" onClick={() => handleRemoveSpouse(i)} className="h-8 w-8 text-destructive hover:text-destructive">
+                  <Button type="button" variant="ghost" size="icon" onClick={() => handleRemoveSpouse(i)} className="h-8 w-8 text-destructive hover:text-destructive">
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
@@ -221,7 +240,7 @@ const Profile = () => {
               placeholder="اسم الزوجة الجديدة..."
               className="rounded-xl flex-1"
             />
-            <Button variant="outline" onClick={handleAddSpouse} className="rounded-xl shrink-0">
+            <Button type="button" variant="outline" onClick={handleAddSpouse} className="rounded-xl shrink-0">
               <Plus className="h-4 w-4 ml-1" /> إضافة
             </Button>
           </div>
@@ -231,7 +250,7 @@ const Profile = () => {
         <div className="bg-card border border-border/50 rounded-2xl p-6 space-y-4 shadow-sm">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-bold text-foreground">الأبناء ({children.length})</h3>
-            <Button variant="outline" size="sm" onClick={() => setShowAddChild(!showAddChild)} className="rounded-xl text-xs">
+            <Button type="button" variant="outline" size="sm" onClick={() => setShowAddChild(!showAddChild)} className="rounded-xl text-xs">
               <Plus className="h-3.5 w-3.5 ml-1" /> إضافة
             </Button>
           </div>
@@ -267,19 +286,27 @@ const Profile = () => {
                   <SelectItem value="F">أنثى</SelectItem>
                 </SelectContent>
               </Select>
-              {editSpouses.length > 0 && (
-                <Select value={newChildMother} onValueChange={setNewChildMother}>
-                  <SelectTrigger className="rounded-xl">
-                    <SelectValue placeholder="اختر الوالدة..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {editSpouses.map((s, i) => (
-                      <SelectItem key={i} value={s}>{s}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              {/* Dynamic mother selection */}
+              <Select value={newChildMother} onValueChange={setNewChildMother}>
+                <SelectTrigger className="rounded-xl">
+                  <SelectValue placeholder="اختر الوالدة..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {editSpouses.map((s, i) => (
+                    <SelectItem key={i} value={s}>{s}</SelectItem>
+                  ))}
+                  <SelectItem value="__other__">أخرى (إدخال يدوي)</SelectItem>
+                </SelectContent>
+              </Select>
+              {newChildMother === "__other__" && (
+                <Input
+                  value={customMother}
+                  onChange={(e) => setCustomMother(e.target.value)}
+                  placeholder="اكتب اسم الأم..."
+                  className="rounded-xl"
+                />
               )}
-              <Button onClick={handleAddChild} disabled={!newChildName.trim() || saving} className="w-full rounded-xl">
+              <Button type="button" onClick={handleAddChild} disabled={!newChildName.trim() || saving} className="w-full rounded-xl">
                 {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "إضافة"}
               </Button>
             </div>
@@ -297,6 +324,7 @@ const Profile = () => {
               {chain.map((ancestor, i) => (
                 <span key={ancestor.id} className="flex items-center gap-1.5">
                   <button
+                    type="button"
                     onClick={() => navigate(`/person/${ancestor.id}`)}
                     className={`text-sm font-medium px-2.5 py-1 rounded-lg transition-colors ${
                       ancestor.id === currentUser.memberId
@@ -316,6 +344,7 @@ const Profile = () => {
         {/* Save + Actions */}
         <div className="flex flex-col sm:flex-row gap-3">
           <Button
+            type="button"
             onClick={handleSave}
             disabled={saving}
             className="flex-1 min-h-[48px] rounded-xl font-bold"
@@ -324,6 +353,7 @@ const Profile = () => {
             حفظ التعديلات
           </Button>
           <Button
+            type="button"
             variant="outline"
             onClick={() => navigate(`/person/${currentUser.memberId}`)}
             className="flex-1 min-h-[48px] rounded-xl"
@@ -332,6 +362,7 @@ const Profile = () => {
             عرض في الشجرة
           </Button>
           <Button
+            type="button"
             variant="ghost"
             onClick={() => { logout(); navigate("/"); }}
             className="flex-1 min-h-[48px] rounded-xl text-destructive hover:text-destructive"
