@@ -5,6 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TreePine, Phone, CalendarDays, Users, LogOut, GitBranch, Home, Plus, Trash2, Save, Loader2 } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { getAncestorChain, getDescendantCount, getMemberById, getChildrenOf, refreshMembers } from "@/services/familyService";
 import { updateMember, addMember } from "@/services/dataService";
 import { useMemo, useState, useEffect, useCallback } from "react";
@@ -73,6 +77,7 @@ const Profile = () => {
   const [newChildGender, setNewChildGender] = useState<"M" | "F">("M");
   const [newChildMother, setNewChildMother] = useState("");
   const [customMother, setCustomMother] = useState("");
+  const [childToDelete, setChildToDelete] = useState<FamilyMember | null>(null);
 
   const resolvedMother = newChildMother === "__other__" ? customMother : newChildMother;
 
@@ -153,6 +158,22 @@ const Profile = () => {
     } catch {
       toast.error("حدث خطأ أثناء الإضافة");
     }
+    setSaving(false);
+  };
+
+  const handleDeleteChild = async () => {
+    if (!childToDelete || saving) return;
+    setSaving(true);
+    try {
+      await updateMember(childToDelete.id, { father_id: null });
+      await refreshMembers();
+      setRefreshKey((k) => k + 1);
+      window.dispatchEvent(new Event("family-data-updated"));
+      toast.success(`تم حذف ${childToDelete.name} بنجاح`);
+    } catch {
+      toast.error("حدث خطأ أثناء الحذف");
+    }
+    setChildToDelete(null);
     setSaving(false);
   };
 
@@ -264,6 +285,9 @@ const Profile = () => {
                   </Badge>
                   <span className="flex-1 text-sm font-medium text-foreground">{child.name}</span>
                   {child.birth_year && <span className="text-xs text-muted-foreground">{child.birth_year} هـ</span>}
+                  <Button type="button" variant="ghost" size="icon" onClick={() => setChildToDelete(child)} className="h-8 w-8 text-destructive hover:text-destructive">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
               ))}
             </div>
@@ -372,6 +396,24 @@ const Profile = () => {
           </Button>
         </div>
       </main>
+
+      {/* Child delete confirmation */}
+      <AlertDialog open={!!childToDelete} onOpenChange={(open) => !open && setChildToDelete(null)}>
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>تأكيد الحذف</AlertDialogTitle>
+            <AlertDialogDescription>
+              هل أنت متأكد من حذف <span className="font-bold">{childToDelete?.name}</span> من قائمة الأبناء؟
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-row-reverse gap-2">
+            <AlertDialogAction onClick={handleDeleteChild} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              حذف
+            </AlertDialogAction>
+            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
