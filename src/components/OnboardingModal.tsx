@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { TreePine, Search, UserCheck, Phone, CalendarDays, ChevronLeft, ChevronDown, Loader2, QrCode, ExternalLink, UserCircle, MessageCircle, Users2, Heart, UserPlus, GitBranch, Edit3, BadgeCheck, Info } from "lucide-react";
+import { TreePine, Search, UserCheck, Phone, CalendarDays, ChevronLeft, ChevronDown, Loader2, QrCode, ExternalLink, UserCircle, MessageCircle, Users2, Heart, UserPlus, GitBranch, Edit3, BadgeCheck, Info, Lock } from "lucide-react";
 import type { FamilyMember } from "@/data/familyData";
 import { getAllMembers, searchMembers, getChildrenOf } from "@/services/familyService";
 import { sendOTP, checkOTPStatus, verifyOTP, type SendOTPResult } from "@/services/wasageSms";
