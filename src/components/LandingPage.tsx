@@ -10,7 +10,7 @@ import type { FamilyMember } from "@/data/familyData";
 import { OnboardingModal } from "@/components/OnboardingModal";
 import { SubmitRequestForm } from "@/components/SubmitRequestForm";
 import { trackVisit } from "@/services/dataService";
-import { getAllMembers, getDescendantCount } from "@/services/familyService";
+import { getAllMembers, getDescendantCount, searchMembers } from "@/services/familyService";
 import { PILLARS, DOCUMENTER_ID } from "@/utils/branchUtils";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -119,8 +119,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
 
   useEffect(() => { trackVisit(); }, []);
 
-  const allMembers = getAllMembers();
-  const filtered = query.trim() ? allMembers.filter((m) => m.name.includes(query.trim())).slice(0, 10) : [];
+  const filtered = searchMembers(query);
   const showingResults = open && filtered.length > 0;
 
   return (
