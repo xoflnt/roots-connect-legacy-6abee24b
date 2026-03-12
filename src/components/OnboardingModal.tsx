@@ -92,7 +92,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
 
   // Pre-fill birth date for "child logging in" scenario
   useEffect(() => {
-    if (step === 5 && selectedMember) {
+    if (step === 6 && selectedMember) {
       const verifiedIds = getVerifiedMemberIds();
       const isAlreadyVerified = verifiedIds.has(selectedMember.id);
       if (!isAlreadyVerified && selectedMember.birth_year) {
