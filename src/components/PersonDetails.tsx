@@ -30,6 +30,7 @@ function DetailContent({ member }: { member: FamilyMember }) {
   const ageText = formatAge(member.birth_year, member.death_year);
   const motherName = inferMotherName(member);
   const phone = member.phone as string | undefined;
+  const isVerified = getVerifiedMemberIds().has(member.id);
   const children = sortByBirth(getChildrenOf(member.id));
 
   // Group children by mother with colors
