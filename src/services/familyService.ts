@@ -1,35 +1,15 @@
-import { familyMembers, type FamilyMember } from "@/data/familyData";
+import { familyMembers as staticMembers, type FamilyMember } from "@/data/familyData";
 import { parseArabicYear } from "@/utils/ageCalculator";
+import { getMembers } from "./dataService";
 
-// Mutable merged data — call refreshMembers() after any localStorage update
-let mergedMembers: FamilyMember[] = [];
+// Mutable merged data — call refreshMembers() after any cloud update
+let mergedMembers: FamilyMember[] = [...staticMembers];
 let memberMap = new Map<string, FamilyMember>();
 let childrenMap = new Map<string, FamilyMember[]>();
+let initialized = false;
 
-function loadOverrides(): { overrides: Record<string, Partial<FamilyMember>>; additions: FamilyMember[] } {
-  try {
-    const o = localStorage.getItem("khunaini-member-overrides");
-    const a = localStorage.getItem("khunaini-member-additions");
-    return {
-      overrides: o ? JSON.parse(o) : {},
-      additions: a ? JSON.parse(a) : [],
-    };
-  } catch {
-    return { overrides: {}, additions: [] };
-  }
-}
-
-function buildMaps() {
-  const { overrides, additions } = loadOverrides();
-  mergedMembers = familyMembers.map((m) => {
-    const ov = overrides[m.id];
-    return ov ? { ...m, ...ov } : m;
-  });
-  for (const a of additions) {
-    if (!mergedMembers.find((m) => m.id === a.id)) {
-      mergedMembers.push(a);
-    }
-  }
+function buildMaps(members: FamilyMember[]) {
+  mergedMembers = members;
   memberMap = new Map(mergedMembers.map((m) => [m.id, m]));
   childrenMap = new Map();
   for (const m of mergedMembers) {
@@ -41,12 +21,35 @@ function buildMaps() {
   }
 }
 
-// Initial build
-buildMaps();
+// Initial build with static data (synchronous fallback)
+buildMaps([...staticMembers]);
 
-/** Call after updateMember / addMember to refresh all maps */
-export function refreshMembers() {
-  buildMaps();
+/** Load members from cloud and rebuild maps */
+export async function loadMembers(): Promise<void> {
+  try {
+    const cloudMembers = await getMembers();
+    if (cloudMembers.length > 0) {
+      buildMaps(cloudMembers);
+      initialized = true;
+    } else if (!initialized) {
+      // Fallback to static data if cloud is empty (not yet seeded)
+      buildMaps([...staticMembers]);
+    }
+  } catch (e) {
+    console.error("[familyService] loadMembers error, using static fallback:", e);
+    if (!initialized) {
+      buildMaps([...staticMembers]);
+    }
+  }
+}
+
+/** Call after updateMember / addMember to refresh all maps from cloud */
+export async function refreshMembers(): Promise<void> {
+  await loadMembers();
+}
+
+export function isInitialized(): boolean {
+  return initialized;
 }
 
 export function getAllMembers(): FamilyMember[] {
@@ -71,7 +74,7 @@ export function getAncestorChain(id: string): FamilyMember[] {
   return chain;
 }
 
-/** Normalize Arabic text for fuzzy search: remove hamzas, taa marbuta, "بن"/"بنت" */
+/** Normalize Arabic text for fuzzy search */
 export function normalizeForSearch(text: string): string {
   return text
     .replace(/[أإآ]/g, "ا")
@@ -124,10 +127,6 @@ export function isDeceased(member: FamilyMember): boolean {
   return !!member.death_year;
 }
 
-/**
- * Extract mother name from member's notes field.
- * Looks for patterns like "والدته: X" or "والدتها: X"
- */
 export function extractMotherName(member: FamilyMember): string | null {
   if (!member.notes) return null;
   const match = member.notes.match(/والدت[هها]+:\s*([^-–—,،]+)/);
@@ -135,14 +134,7 @@ export function extractMotherName(member: FamilyMember): string | null {
   return null;
 }
 
-/**
- * Infer mother name for a member using multiple strategies:
- * 1. Direct extraction from the member's own notes
- * 2. From siblings (same father) who have mother info — if father has only one wife
- * 3. From father's spouses field if only one spouse
- */
 export function inferMotherName(member: FamilyMember): string | null {
-  // Strategy 1: own notes
   const direct = extractMotherName(member);
   if (direct) return direct;
 
@@ -150,17 +142,14 @@ export function inferMotherName(member: FamilyMember): string | null {
   const father = memberMap.get(member.father_id);
   if (!father) return null;
 
-  // Strategy 2: check siblings
   const siblings = childrenMap.get(member.father_id) || [];
   const motherNames = new Set<string>();
   for (const sib of siblings) {
     const mn = extractMotherName(sib);
     if (mn) motherNames.add(mn);
   }
-  // If all siblings with mother info share the same mother, use it
   if (motherNames.size === 1) return [...motherNames][0];
 
-  // Strategy 3: father has exactly one spouse
   if (father.spouses) {
     const spouseList = father.spouses.split("،").map((s) => s.trim()).filter(Boolean);
     if (spouseList.length === 1) return spouseList[0];
@@ -169,7 +158,6 @@ export function inferMotherName(member: FamilyMember): string | null {
   return null;
 }
 
-/** Sort members by birth year (oldest first). Members without birth year go last. */
 export function sortByBirth(members: FamilyMember[]): FamilyMember[] {
   return [...members].sort((a, b) => {
     const ya = parseArabicYear(a.birth_year);
@@ -181,7 +169,6 @@ export function sortByBirth(members: FamilyMember[]): FamilyMember[] {
   });
 }
 
-/** Find Lowest Common Ancestor and return distances */
 export function findKinship(id1: string, id2: string): { 
   lca: FamilyMember | null; 
   dist1: number; 
@@ -209,7 +196,6 @@ export function findKinship(id1: string, id2: string): {
   return null;
 }
 
-/** Translate kinship distances to Arabic */
 export function kinshipToArabic(dist1: number, dist2: number): string {
   if (dist1 === 0 && dist2 === 0) return "نفس الشخص";
   if (dist1 === 0 && dist2 === 1) return "أبوه";
