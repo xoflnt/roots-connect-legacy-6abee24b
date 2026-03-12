@@ -79,6 +79,7 @@ export function SubmitRequestForm({ open, onOpenChange, targetMember }: SubmitRe
     setShowSearch(!targetMember);
     setChildName("");
     setChildGender("M");
+    setMotherName("");
     setSpouseName("");
     setUpdateField("");
     setUpdateValue("");
