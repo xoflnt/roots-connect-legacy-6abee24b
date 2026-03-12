@@ -111,48 +111,12 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
     }
   }, [step, selectedMember]);
 
-  useEffect(() => {
-    return () => { if (pollingRef.current) clearInterval(pollingRef.current); };
-  }, []);
-
-  const startPolling = useCallback((reference: string) => {
-    setPolling(true);
-    pollingRef.current = setInterval(async () => {
-      const result = await checkOTPStatus(reference);
-      if (result.verified) {
-        if (pollingRef.current) clearInterval(pollingRef.current);
-        setPolling(false);
-        setOtpVerified(true);
-        setStep(6);
-      }
-    }, 3000);
-    setTimeout(() => {
-      if (pollingRef.current) clearInterval(pollingRef.current);
-      setPolling(false);
-    }, 300000);
-  }, []);
-
-  const handleSendOTP = async () => {
-    if (phone.length < 9) return;
-    setLoading(true);
-    setOtpError("");
-    const result = await sendOTP(`+966${phone}`);
-    setOtpResult(result);
-    setOtpSent(true);
-    setLoading(false);
-    if (result.success && result.reference && result.clickable) {
-      startPolling(result.reference);
+  const handlePhoneContinue = () => {
+    if (phone.length < 9) {
+      toast.error("الرجاء إدخال رقم جوال صحيح");
+      return;
     }
-  };
-
-  const handleVerifyOTP = async () => {
-    if (otpCode.length < 4) return;
-    setLoading(true);
-    setOtpError("");
-    const ok = await verifyOTP(`+966${phone}`, otpCode);
-    if (ok) { setOtpVerified(true); setStep(6); }
-    else { setOtpError("الرمز غير صحيح، حاول مرة أخرى"); }
-    setLoading(false);
+    setStep(6);
   };
 
   const handleComplete = async () => {
