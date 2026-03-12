@@ -119,8 +119,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
 
   useEffect(() => { trackVisit(); }, []);
 
-  const allMembers = getAllMembers();
-  const filtered = query.trim() ? allMembers.filter((m) => m.name.includes(query.trim())).slice(0, 10) : [];
+  const filtered = searchMembers(query);
   const showingResults = open && filtered.length > 0;
 
   return (
