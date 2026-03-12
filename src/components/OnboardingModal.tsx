@@ -65,6 +65,9 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Phase D — Hijri Date + Quick Update
+  const [familyPasscode, setFamilyPasscode] = useState("");
+
+  // Phase D — Hijri Date + Quick Update
   const [hijriDate, setHijriDate] = useState<{ day?: string; month?: string; year?: string }>({});
   const [quickUpdateOpen, setQuickUpdateOpen] = useState(false);
   const [quickUpdateText, setQuickUpdateText] = useState("");
