@@ -78,11 +78,6 @@ const Index = () => {
             <ListView onSelectMember={handleSearchSelect} />
           </div>
         )}
-        {activeView === "table" && (
-          <div className="w-full h-full rounded-2xl md:rounded-3xl shadow-xl overflow-hidden border border-border/50 bg-card animate-fade-in">
-            <DataTableView />
-          </div>
-        )}
       </main>
     </div>
   );

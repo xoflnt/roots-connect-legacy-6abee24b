@@ -219,6 +219,29 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         )}
       </section>
 
+      {/* ─── Guest CTA Banner ─── */}
+      {!currentUser && (
+        <section className="py-6 md:py-8 px-4">
+          <div className="max-w-2xl mx-auto rounded-2xl border-2 border-accent/30 bg-gradient-to-br from-accent/10 via-primary/5 to-accent/10 p-6 md:p-8 text-center space-y-4">
+            <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-accent/20 text-accent font-bold text-sm">
+              <UserCheck className="h-4 w-4" />
+              دعوة لأبناء العائلة
+            </div>
+            <p className="text-base md:text-lg text-foreground leading-relaxed font-medium">
+              هل أنت من أبناء العائلة؟ سجل دخولك الآن باستخدام رمز العائلة لتوثيق بياناتك، تحديث تواريخ ميلاد أبنائك، والحصول على شارة التوثيق ✅.
+            </p>
+            <Button
+              onClick={() => setForceOnboarding(true)}
+              size="lg"
+              className="min-h-[48px] rounded-xl font-extrabold text-base gap-2 bg-accent text-accent-foreground hover:bg-accent/90 shadow-lg"
+            >
+              <UserCircle className="h-5 w-5" />
+              تسجيل الدخول
+            </Button>
+          </div>
+        </section>
+      )}
+
       {/* ─── 4. Three Pillars ─── */}
       <section className="py-12 md:py-20 px-4 border-t border-border/30">
         <div className="max-w-4xl mx-auto text-center space-y-6 md:space-y-8">

@@ -80,25 +80,29 @@ export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHom
         )}
 
         <div className="flex items-center gap-1.5 shrink-0">
-          {isLoggedIn && currentUser && (
-            <button
-              onClick={() => navigate("/profile")}
-              className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-lg bg-muted/50 text-sm text-foreground hover:bg-muted transition-colors"
-            >
-              <UserCircle className="h-4 w-4 text-primary" />
-              <span className="font-medium">مرحباً، {currentUser.memberName}</span>
-            </button>
-          )}
-          {isLoggedIn && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate("/profile")}
-              className="sm:hidden h-11 w-11 min-w-[44px] min-h-[44px] rounded-xl"
-              title="الملف الشخصي"
-            >
-              <UserCircle className="h-5 w-5 text-primary" />
-            </Button>
+          {isLoggedIn && currentUser ? (
+            <>
+              <button
+                onClick={() => navigate("/profile")}
+                className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-lg bg-muted/50 text-sm text-foreground hover:bg-muted transition-colors"
+              >
+                <UserCircle className="h-4 w-4 text-primary" />
+                <span className="font-medium">مرحباً بك، {currentUser.memberName}</span>
+              </button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate("/profile")}
+                className="sm:hidden h-11 w-11 min-w-[44px] min-h-[44px] rounded-xl"
+                title="الملف الشخصي"
+              >
+                <UserCircle className="h-5 w-5 text-primary" />
+              </Button>
+            </>
+          ) : (
+            <span className="hidden sm:block text-xs text-muted-foreground font-medium px-2">
+              مرحباً بك في بوابة تراث الخنيني
+            </span>
           )}
           <Button
             variant="ghost"
