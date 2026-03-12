@@ -8,7 +8,7 @@ import type { FamilyMember } from "@/data/familyData";
 
 // ─── Request Types ───
 
-export type RequestType = "add_child" | "update_info" | "add_spouse" | "correction" | "other";
+export type RequestType = "other";
 
 export interface FamilyRequest {
   id: string;
@@ -16,7 +16,7 @@ export interface FamilyRequest {
   targetMemberId: string;
   data: Record<string, string>;
   notes?: string;
-  status: "pending" | "approved" | "rejected";
+  status: "pending" | "completed";
   submittedBy?: string;
   createdAt: string;
 }
@@ -97,7 +97,7 @@ export async function submitRequest(req: Omit<FamilyRequest, "id" | "status" | "
     targetMemberId: data.target_member_id,
     data: data.data as Record<string, string>,
     notes: data.notes || undefined,
-    status: data.status as "pending" | "approved" | "rejected",
+    status: data.status as "pending" | "completed",
     submittedBy: data.submitted_by || undefined,
     createdAt: data.created_at,
   };
@@ -120,24 +120,15 @@ export async function getRequests(): Promise<FamilyRequest[]> {
     targetMemberId: row.target_member_id,
     data: row.data as Record<string, string>,
     notes: row.notes || undefined,
-    status: row.status as "pending" | "approved" | "rejected",
+    status: row.status as "pending" | "completed",
     submittedBy: row.submitted_by || undefined,
     createdAt: row.created_at,
   }));
 }
 
-export async function approveRequest(requestId: string): Promise<boolean> {
+export async function markRequestDone(requestId: string): Promise<boolean> {
   try {
-    await callFamilyApi("approve", { requestId });
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-export async function rejectRequest(requestId: string): Promise<boolean> {
-  try {
-    await callFamilyApi("reject", { requestId });
+    await callFamilyApi("mark-done", { requestId });
     return true;
   } catch {
     return false;

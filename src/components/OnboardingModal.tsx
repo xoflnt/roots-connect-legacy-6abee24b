@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Progress } from "@/components/ui/progress";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { TreePine, Search, UserCheck, Phone, CalendarDays, ChevronLeft, ChevronDown, Loader2, QrCode, ExternalLink, UserCircle, MessageCircle, Users2, Heart, UserPlus, GitBranch, Edit3 } from "lucide-react";
 import type { FamilyMember } from "@/data/familyData";
 import { getAllMembers, getChildrenOf } from "@/services/familyService";
@@ -65,13 +65,8 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
   // Phase D — Hijri Date + Quick Update
   const [hijriDate, setHijriDate] = useState<{ day?: string; month?: string; year?: string }>({});
   const [quickUpdateOpen, setQuickUpdateOpen] = useState(false);
-  const [quickSpouse, setQuickSpouse] = useState("");
-  const [quickChildName, setQuickChildName] = useState("");
-  const [quickChildGender, setQuickChildGender] = useState<"M" | "F">("M");
-  const [quickChildMother, setQuickChildMother] = useState("");
-  const [quickChildMotherCustom, setQuickChildMotherCustom] = useState("");
+  const [quickUpdateText, setQuickUpdateText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [quickCorrection, setQuickCorrection] = useState("");
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -156,38 +151,15 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
       hijriBirthDate: dateStr,
     });
 
-    // Fire quick-update requests
-    const requests: Promise<any>[] = [];
-    if (quickSpouse.trim()) {
-      requests.push(submitRequest({
-        type: "add_spouse",
+    // Fire quick-update request as free text
+    if (quickUpdateText.trim()) {
+      await submitRequest({
+        type: "other",
         targetMemberId: selectedMember.id,
-        data: { spouse_name: quickSpouse.trim() },
+        data: { text_content: quickUpdateText.trim() },
         submittedBy: selectedMember.name,
-      }));
-    }
-    if (quickChildName.trim()) {
-      const resolvedMother = quickChildMother === "__other__" ? quickChildMotherCustom.trim() : quickChildMother.trim();
-      const childData: Record<string, string> = { child_name: quickChildName.trim(), child_gender: quickChildGender };
-      if (resolvedMother) childData.mother_name = resolvedMother;
-      requests.push(submitRequest({
-        type: "add_child",
-        targetMemberId: selectedMember.id,
-        data: childData,
-        submittedBy: selectedMember.name,
-      }));
-    }
-    if (quickCorrection.trim()) {
-      requests.push(submitRequest({
-        type: "correction",
-        targetMemberId: selectedMember.id,
-        data: { correction: quickCorrection.trim() },
-        submittedBy: selectedMember.name,
-      }));
-    }
-    if (requests.length > 0) {
-      await Promise.all(requests);
-      toast.success("تم إرسال طلبات التحديث للمراجعة");
+      });
+      toast.success("تم إرسال طلب التحديث للمراجعة");
     }
 
     login({
@@ -630,73 +602,15 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                   <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${quickUpdateOpen ? "rotate-180" : ""}`} />
                 </CollapsibleTrigger>
                 <CollapsibleContent className="mt-2 space-y-3 px-1">
-                  {/* Add spouse */}
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-muted-foreground flex items-center gap-1">
-                      <Heart className="h-3 w-3" /> إضافة زوجة
+                      <Edit3 className="h-3 w-3" /> تفاصيل التعديل أو الإضافة
                     </label>
-                    <Input
-                      value={quickSpouse}
-                      onChange={(e) => setQuickSpouse(e.target.value)}
-                      placeholder="اسم الزوجة"
-                      className="h-10 text-sm rounded-lg"
-                    />
-                  </div>
-                   {/* Add child */}
-                   <div className="space-y-1">
-                     <label className="text-xs font-bold text-muted-foreground flex items-center gap-1">
-                       <UserPlus className="h-3 w-3" /> إضافة ابن/ابنة
-                     </label>
-                     <div className="flex gap-2">
-                       <Input
-                         value={quickChildName}
-                         onChange={(e) => setQuickChildName(e.target.value)}
-                         placeholder="الاسم الكامل"
-                         className="h-10 text-sm rounded-lg flex-1"
-                       />
-                       <Select value={quickChildGender} onValueChange={(v) => setQuickChildGender(v as "M" | "F")}>
-                         <SelectTrigger className="h-10 w-24 text-sm rounded-lg">
-                           <SelectValue />
-                         </SelectTrigger>
-                         <SelectContent>
-                           <SelectItem value="M">ذكر</SelectItem>
-                           <SelectItem value="F">أنثى</SelectItem>
-                         </SelectContent>
-                       </Select>
-                     </div>
-                     <Select value={quickChildMother} onValueChange={setQuickChildMother}>
-                       <SelectTrigger className="h-10 text-sm rounded-lg">
-                         <SelectValue placeholder="اختر الوالدة..." />
-                       </SelectTrigger>
-                       <SelectContent>
-                         {familyContext?.spouses?.map((s, i) => (
-                           <SelectItem key={`sp-${i}`} value={s}>{s}</SelectItem>
-                         ))}
-                         {quickSpouse.trim() && !familyContext?.spouses?.includes(quickSpouse.trim()) && (
-                           <SelectItem value={quickSpouse.trim()}>{quickSpouse.trim()} (جديدة)</SelectItem>
-                         )}
-                         <SelectItem value="__other__">أخرى (إدخال يدوي)</SelectItem>
-                       </SelectContent>
-                     </Select>
-                     {quickChildMother === "__other__" && (
-                       <Input
-                         value={quickChildMotherCustom}
-                         onChange={(e) => setQuickChildMotherCustom(e.target.value)}
-                         placeholder="اكتب اسم الأم..."
-                         className="h-10 text-sm rounded-lg"
-                       />
-                     )}
-                   </div>
-                  {/* Correction */}
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-muted-foreground flex items-center gap-1">
-                      <Edit3 className="h-3 w-3" /> تصحيح معلومة
-                    </label>
-                    <Input
-                      value={quickCorrection}
-                      onChange={(e) => setQuickCorrection(e.target.value)}
-                      placeholder="اكتب التصحيح هنا..."
-                      className="h-10 text-sm rounded-lg"
+                    <Textarea
+                      value={quickUpdateText}
+                      onChange={(e) => setQuickUpdateText(e.target.value)}
+                      placeholder="مثال: رزقت بمولود جديد اسمه فهد، أو أود تعديل تاريخ ميلادي إلى..."
+                      className="min-h-[100px] text-sm rounded-lg resize-none leading-relaxed"
                     />
                   </div>
                 </CollapsibleContent>

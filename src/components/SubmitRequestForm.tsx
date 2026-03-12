@@ -3,11 +3,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Send, Loader2, UserCheck } from "lucide-react";
 import type { FamilyMember } from "@/data/familyData";
 import { getAllMembers } from "@/services/familyService";
-import { submitRequest, type RequestType } from "@/services/dataService";
+import { submitRequest } from "@/services/dataService";
 import { getLineageLabel, getMemberSubtitle } from "@/utils/memberLabel";
 import { toast } from "sonner";
 
@@ -17,27 +16,11 @@ interface SubmitRequestFormProps {
   targetMember?: FamilyMember | null;
 }
 
-const REQUEST_TYPES: { value: RequestType; label: string }[] = [
-  { value: "add_child", label: "إضافة ابن / بنت" },
-  { value: "add_spouse", label: "إضافة زوج / زوجة" },
-  { value: "update_info", label: "تحديث بيانات" },
-  { value: "correction", label: "تصحيح معلومة" },
-  { value: "other", label: "أخرى" },
-];
-
 export function SubmitRequestForm({ open, onOpenChange, targetMember }: SubmitRequestFormProps) {
-  const [requestType, setRequestType] = useState<RequestType | "">("");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTarget, setSelectedTarget] = useState<FamilyMember | null>(targetMember || null);
   const [showSearch, setShowSearch] = useState(!targetMember);
-
-  const [childName, setChildName] = useState("");
-  const [childGender, setChildGender] = useState<"M" | "F">("M");
-  const [motherName, setMotherName] = useState("");
-  const [spouseName, setSpouseName] = useState("");
-  const [updateField, setUpdateField] = useState("");
-  const [updateValue, setUpdateValue] = useState("");
-  const [notes, setNotes] = useState("");
+  const [textContent, setTextContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const filtered = useMemo(() => {
@@ -46,25 +29,14 @@ export function SubmitRequestForm({ open, onOpenChange, targetMember }: SubmitRe
   }, [searchQuery]);
 
   const handleSubmit = async () => {
-    if (!selectedTarget || !requestType) return;
+    if (!selectedTarget || !textContent.trim()) return;
     setSubmitting(true);
 
-    const data: Record<string, string> = {};
-    if (requestType === "add_child") {
-      data.childName = childName;
-      data.gender = childGender;
-      if (motherName.trim()) data.motherName = motherName.trim();
-    } else if (requestType === "add_spouse") {
-      data.spouseName = spouseName;
-    } else if (requestType === "update_info" || requestType === "correction") {
-      data[updateField || "info"] = updateValue;
-    }
-
     await submitRequest({
-      type: requestType,
+      type: "other",
       targetMemberId: selectedTarget.id,
-      data,
-      notes: notes || undefined,
+      data: { text_content: textContent.trim() },
+      submittedBy: selectedTarget.name,
     });
 
     toast.success("تم إرسال الطلب بنجاح! سيتم مراجعته من الإدارة.");
@@ -74,17 +46,10 @@ export function SubmitRequestForm({ open, onOpenChange, targetMember }: SubmitRe
   };
 
   const resetForm = () => {
-    setRequestType("");
     setSearchQuery("");
     if (!targetMember) setSelectedTarget(null);
     setShowSearch(!targetMember);
-    setChildName("");
-    setChildGender("M");
-    setMotherName("");
-    setSpouseName("");
-    setUpdateField("");
-    setUpdateValue("");
-    setNotes("");
+    setTextContent("");
   };
 
   return (
@@ -150,72 +115,26 @@ export function SubmitRequestForm({ open, onOpenChange, targetMember }: SubmitRe
             </div>
           ) : null}
 
-          {/* Request Type */}
+          {/* Free-text content */}
           {selectedTarget && (
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-foreground">نوع الطلب</label>
-              <Select value={requestType} onValueChange={(v) => setRequestType(v as RequestType)}>
-                <SelectTrigger className="rounded-xl min-h-[44px]">
-                  <SelectValue placeholder="اختر نوع الطلب" />
-                </SelectTrigger>
-                <SelectContent>
-                  {REQUEST_TYPES.map((t) => (
-                    <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          {/* Dynamic Fields */}
-          {requestType === "add_child" && (
-            <div className="space-y-3">
-              <Input value={childName} onChange={(e) => setChildName(e.target.value)} placeholder="اسم الابن / البنت" className="rounded-xl min-h-[44px]" />
-              <Select value={childGender} onValueChange={(v) => setChildGender(v as "M" | "F")}>
-                <SelectTrigger className="rounded-xl min-h-[44px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="M">ذكر</SelectItem>
-                  <SelectItem value="F">أنثى</SelectItem>
-                </SelectContent>
-              </Select>
-              <Input value={motherName} onChange={(e) => setMotherName(e.target.value)} placeholder="اسم الأم (مطلوب)" className="rounded-xl min-h-[44px]" />
-            </div>
-          )}
-
-          {requestType === "add_spouse" && (
-            <Input value={spouseName} onChange={(e) => setSpouseName(e.target.value)} placeholder="اسم الزوج / الزوجة" className="rounded-xl min-h-[44px]" />
-          )}
-
-          {(requestType === "update_info" || requestType === "correction") && (
-            <div className="space-y-3">
-              <Select value={updateField} onValueChange={setUpdateField}>
-                <SelectTrigger className="rounded-xl min-h-[44px]">
-                  <SelectValue placeholder="الحقل المراد تعديله" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="birth_year">سنة الميلاد</SelectItem>
-                  <SelectItem value="death_year">سنة الوفاة</SelectItem>
-                  <SelectItem value="name">الاسم</SelectItem>
-                  <SelectItem value="notes">ملاحظات</SelectItem>
-                </SelectContent>
-              </Select>
-              <Input value={updateValue} onChange={(e) => setUpdateValue(e.target.value)} placeholder="القيمة الجديدة" className="rounded-xl min-h-[44px]" />
-            </div>
-          )}
-
-          {/* Notes */}
-          {requestType && (
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-foreground">ملاحظات إضافية (اختياري)</label>
-              <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="أي تفاصيل إضافية..." className="rounded-xl min-h-[80px] resize-none" />
+              <label className="text-sm font-semibold text-foreground">تفاصيل التعديل أو الإضافة</label>
+              <Textarea
+                value={textContent}
+                onChange={(e) => setTextContent(e.target.value)}
+                placeholder="مثال: رزقت بمولود جديد اسمه فهد، أو أود تعديل تاريخ ميلادي إلى..."
+                className="rounded-xl min-h-[120px] resize-none text-sm leading-relaxed"
+              />
             </div>
           )}
 
           {/* Submit */}
-          {requestType && selectedTarget && (
-            <Button onClick={handleSubmit} disabled={submitting} className="w-full min-h-[48px] rounded-xl font-bold text-base">
+          {selectedTarget && (
+            <Button
+              onClick={handleSubmit}
+              disabled={submitting || !textContent.trim()}
+              className="w-full min-h-[48px] rounded-xl font-bold text-base"
+            >
               {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : "إرسال الطلب"}
             </Button>
           )}
