@@ -12,6 +12,7 @@ import { SubmitRequestForm } from "@/components/SubmitRequestForm";
 import { trackVisit } from "@/services/dataService";
 import { getAllMembers, getDescendantCount } from "@/services/familyService";
 import { PILLARS, DOCUMENTER_ID } from "@/utils/branchUtils";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface LandingPageProps {
   onSearchSelect: (memberId: string) => void;
