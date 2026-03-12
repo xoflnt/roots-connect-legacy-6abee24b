@@ -602,73 +602,15 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                   <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${quickUpdateOpen ? "rotate-180" : ""}`} />
                 </CollapsibleTrigger>
                 <CollapsibleContent className="mt-2 space-y-3 px-1">
-                  {/* Add spouse */}
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-muted-foreground flex items-center gap-1">
-                      <Heart className="h-3 w-3" /> إضافة زوجة
+                      <Edit3 className="h-3 w-3" /> تفاصيل التعديل أو الإضافة
                     </label>
-                    <Input
-                      value={quickSpouse}
-                      onChange={(e) => setQuickSpouse(e.target.value)}
-                      placeholder="اسم الزوجة"
-                      className="h-10 text-sm rounded-lg"
-                    />
-                  </div>
-                   {/* Add child */}
-                   <div className="space-y-1">
-                     <label className="text-xs font-bold text-muted-foreground flex items-center gap-1">
-                       <UserPlus className="h-3 w-3" /> إضافة ابن/ابنة
-                     </label>
-                     <div className="flex gap-2">
-                       <Input
-                         value={quickChildName}
-                         onChange={(e) => setQuickChildName(e.target.value)}
-                         placeholder="الاسم الكامل"
-                         className="h-10 text-sm rounded-lg flex-1"
-                       />
-                       <Select value={quickChildGender} onValueChange={(v) => setQuickChildGender(v as "M" | "F")}>
-                         <SelectTrigger className="h-10 w-24 text-sm rounded-lg">
-                           <SelectValue />
-                         </SelectTrigger>
-                         <SelectContent>
-                           <SelectItem value="M">ذكر</SelectItem>
-                           <SelectItem value="F">أنثى</SelectItem>
-                         </SelectContent>
-                       </Select>
-                     </div>
-                     <Select value={quickChildMother} onValueChange={setQuickChildMother}>
-                       <SelectTrigger className="h-10 text-sm rounded-lg">
-                         <SelectValue placeholder="اختر الوالدة..." />
-                       </SelectTrigger>
-                       <SelectContent>
-                         {familyContext?.spouses?.map((s, i) => (
-                           <SelectItem key={`sp-${i}`} value={s}>{s}</SelectItem>
-                         ))}
-                         {quickSpouse.trim() && !familyContext?.spouses?.includes(quickSpouse.trim()) && (
-                           <SelectItem value={quickSpouse.trim()}>{quickSpouse.trim()} (جديدة)</SelectItem>
-                         )}
-                         <SelectItem value="__other__">أخرى (إدخال يدوي)</SelectItem>
-                       </SelectContent>
-                     </Select>
-                     {quickChildMother === "__other__" && (
-                       <Input
-                         value={quickChildMotherCustom}
-                         onChange={(e) => setQuickChildMotherCustom(e.target.value)}
-                         placeholder="اكتب اسم الأم..."
-                         className="h-10 text-sm rounded-lg"
-                       />
-                     )}
-                   </div>
-                  {/* Correction */}
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-muted-foreground flex items-center gap-1">
-                      <Edit3 className="h-3 w-3" /> تصحيح معلومة
-                    </label>
-                    <Input
-                      value={quickCorrection}
-                      onChange={(e) => setQuickCorrection(e.target.value)}
-                      placeholder="اكتب التصحيح هنا..."
-                      className="h-10 text-sm rounded-lg"
+                    <Textarea
+                      value={quickUpdateText}
+                      onChange={(e) => setQuickUpdateText(e.target.value)}
+                      placeholder="مثال: رزقت بمولود جديد اسمه فهد، أو أود تعديل تاريخ ميلادي إلى..."
+                      className="min-h-[100px] text-sm rounded-lg resize-none leading-relaxed"
                     />
                   </div>
                 </CollapsibleContent>
