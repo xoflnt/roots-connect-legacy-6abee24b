@@ -196,6 +196,11 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
       phone: `+966${phone}`,
       hijriBirthDate: dateStr,
     });
+    } catch {
+      toast.error("حدث خطأ أثناء الحفظ");
+    } finally {
+      setIsSubmitting(false);
+    }
     setOpen(false);
   };
 
