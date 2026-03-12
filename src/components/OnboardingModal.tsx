@@ -580,8 +580,8 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
             </div>
           )}
 
-          {/* ─── Step 5: Mini-Dashboard ─── */}
-          {step === 5 && selectedMember && familyContext && (
+          {/* ─── Step 6: Mini-Dashboard ─── */}
+          {step === 6 && selectedMember && familyContext && (
             <div className="flex-1 flex flex-col gap-4 animate-fade-in overflow-y-auto max-h-[60vh]">
               {/* Welcome header */}
               <div className="text-center space-y-2 py-2">
