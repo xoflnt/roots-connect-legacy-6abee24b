@@ -69,6 +69,8 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
   const [quickChildName, setQuickChildName] = useState("");
   const [quickChildGender, setQuickChildGender] = useState<"M" | "F">("M");
   const [quickChildMother, setQuickChildMother] = useState("");
+  const [quickChildMotherCustom, setQuickChildMotherCustom] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [quickCorrection, setQuickCorrection] = useState("");
 
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -131,7 +133,9 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
   };
 
   const handleComplete = async () => {
-    if (!selectedMember) return;
+    if (!selectedMember || isSubmitting) return;
+    setIsSubmitting(true);
+    try {
 
     const dateStr = hijriDate.year
       ? `${hijriDate.year}/${hijriDate.month || "1"}/${hijriDate.day || "1"}`
@@ -163,8 +167,9 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
       }));
     }
     if (quickChildName.trim()) {
+      const resolvedMother = quickChildMother === "__other__" ? quickChildMotherCustom.trim() : quickChildMother.trim();
       const childData: Record<string, string> = { child_name: quickChildName.trim(), child_gender: quickChildGender };
-      if (quickChildMother.trim()) childData.mother_name = quickChildMother.trim();
+      if (resolvedMother) childData.mother_name = resolvedMother;
       requests.push(submitRequest({
         type: "add_child",
         targetMemberId: selectedMember.id,
@@ -191,6 +196,11 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
       phone: `+966${phone}`,
       hijriBirthDate: dateStr,
     });
+    } catch {
+      toast.error("حدث خطأ أثناء الحفظ");
+    } finally {
+      setIsSubmitting(false);
+    }
     setOpen(false);
   };
 
@@ -654,12 +664,28 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                          </SelectContent>
                        </Select>
                      </div>
-                     <Input
-                       value={quickChildMother}
-                       onChange={(e) => setQuickChildMother(e.target.value)}
-                       placeholder="اسم الأم"
-                       className="h-10 text-sm rounded-lg"
-                     />
+                     <Select value={quickChildMother} onValueChange={setQuickChildMother}>
+                       <SelectTrigger className="h-10 text-sm rounded-lg">
+                         <SelectValue placeholder="اختر الوالدة..." />
+                       </SelectTrigger>
+                       <SelectContent>
+                         {familyContext?.spouses?.map((s, i) => (
+                           <SelectItem key={`sp-${i}`} value={s}>{s}</SelectItem>
+                         ))}
+                         {quickSpouse.trim() && !familyContext?.spouses?.includes(quickSpouse.trim()) && (
+                           <SelectItem value={quickSpouse.trim()}>{quickSpouse.trim()} (جديدة)</SelectItem>
+                         )}
+                         <SelectItem value="__other__">أخرى (إدخال يدوي)</SelectItem>
+                       </SelectContent>
+                     </Select>
+                     {quickChildMother === "__other__" && (
+                       <Input
+                         value={quickChildMotherCustom}
+                         onChange={(e) => setQuickChildMotherCustom(e.target.value)}
+                         placeholder="اكتب اسم الأم..."
+                         className="h-10 text-sm rounded-lg"
+                       />
+                     )}
                    </div>
                   {/* Correction */}
                   <div className="space-y-1">
@@ -678,10 +704,11 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
 
               {/* ─── Actions ─── */}
               <div className="mt-auto space-y-2 pt-2">
-                <Button onClick={handleComplete} className="min-h-[52px] w-full text-base font-semibold rounded-xl">
+                <Button type="button" onClick={handleComplete} disabled={isSubmitting} className="min-h-[52px] w-full text-base font-semibold rounded-xl">
+                  {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin ml-2" /> : null}
                   حفظ والدخول للبوابة
                 </Button>
-                <Button variant="ghost" onClick={handleComplete} className="w-full text-sm text-muted-foreground">
+                <Button type="button" variant="ghost" onClick={handleComplete} disabled={isSubmitting} className="w-full text-sm text-muted-foreground">
                   تخطي
                 </Button>
               </div>

@@ -1,6 +1,6 @@
 import { useState, useRef, useMemo, useEffect, useCallback } from "react";
-import { Search, TreePine, ChevronDown, Users, Layers, Crown, User, UserRound, Heart, Quote, Send, BookOpen, UserCheck, Calculator, Shield, ScrollText } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Search, TreePine, ChevronDown, Users, Layers, Crown, User, UserRound, Heart, Quote, Send, BookOpen, UserCheck, Calculator, Shield, ScrollText, UserCircle } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { getLineageLabel, getMemberSubtitle } from "@/utils/memberLabel";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FontSizeToggle } from "@/components/FontSizeToggle";
@@ -12,6 +12,7 @@ import { SubmitRequestForm } from "@/components/SubmitRequestForm";
 import { trackVisit } from "@/services/dataService";
 import { getAllMembers, getDescendantCount } from "@/services/familyService";
 import { PILLARS, DOCUMENTER_ID } from "@/utils/branchUtils";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface LandingPageProps {
   onSearchSelect: (memberId: string) => void;
@@ -111,6 +112,8 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
   const [open, setOpen] = useState(false);
   const [requestOpen, setRequestOpen] = useState(false);
   const stats = useMemo(computeStats, []);
+  const navigate = useNavigate();
+  const { currentUser } = useAuth();
 
   const pillarStats = useMemo(() => PILLARS.map((p) => ({ ...p, descendants: getDescendantCount(p.id) })), []);
 
@@ -206,6 +209,14 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
             </div>
           )}
         </div>
+        {currentUser && (
+          <div className="max-w-lg mx-auto mt-4">
+            <Button onClick={() => navigate("/profile")} className="w-full min-h-[48px] rounded-xl font-bold text-base gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
+              <UserCircle className="h-5 w-5" />
+              الانتقال لملفي الشخصي
+            </Button>
+          </div>
+        )}
       </section>
 
       {/* ─── 4. Three Pillars ─── */}
