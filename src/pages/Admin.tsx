@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AdminProtect } from "@/components/AdminProtect";
 import { Button } from "@/components/ui/button";
-import { Users, Eye, ShieldCheck, TreePine, Check, X, Loader2, ArrowRight } from "lucide-react";
+import { Users, Eye, ShieldCheck, TreePine, Check, X, Loader2, ArrowRight, Bell } from "lucide-react";
 import { getRequests, approveRequest, rejectRequest, getVerifiedUsers, getVisitCount, type FamilyRequest } from "@/services/dataService";
 import { getAllMembers } from "@/services/familyService";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 const REQUEST_TYPE_LABELS: Record<string, string> = {
   add_child: "إضافة ابن / بنت",
@@ -105,6 +106,7 @@ function AdminContent() {
   const [verifiedCount, setVerifiedCount] = useState(0);
   const [visitCount, setVisitCount] = useState(0);
   const [memberCount, setMemberCount] = useState(0);
+  const [hasNew, setHasNew] = useState(false);
   const navigate = useNavigate();
 
   const loadData = async () => {
@@ -117,7 +119,24 @@ function AdminContent() {
     setMemberCount(getAllMembers().length);
   };
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    loadData();
+
+    const channel = supabase
+      .channel('admin-requests')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'family_requests' },
+        () => {
+          setHasNew(true);
+          loadData();
+          setTimeout(() => setHasNew(false), 3000);
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, []);
 
   const pending = requests.filter((r) => r.status === "pending");
   const handled = requests.filter((r) => r.status !== "pending");
@@ -129,6 +148,12 @@ function AdminContent() {
           <div className="flex items-center gap-2">
             <ShieldCheck className="h-5 w-5 text-primary" />
             <h1 className="text-lg font-bold text-foreground">لوحة الإدارة</h1>
+            {hasNew && (
+              <span className="flex items-center gap-1 text-xs font-bold text-accent animate-pulse">
+                <Bell className="h-3.5 w-3.5" />
+                طلب جديد
+              </span>
+            )}
           </div>
           <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="gap-1">
             <ArrowRight className="h-4 w-4" />

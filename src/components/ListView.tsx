@@ -7,7 +7,8 @@ import { getAllMembers, inferMotherName, sortByBirth } from "@/services/familySe
 import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
 import { formatAge } from "@/utils/ageCalculator";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PILLARS, getBranch, getBranchStyle } from "@/utils/branchUtils";
+import { PILLARS, getBranch, getBranchStyle, DOCUMENTER_ID } from "@/utils/branchUtils";
+import { HeritageBadge } from "./HeritageBadge";
 
 interface ListViewProps {
   onSelectMember?: (memberId: string) => void;
@@ -220,8 +221,9 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect 
           </div>
 
           <div className="flex-1 min-w-0">
-            <span className="font-bold text-foreground text-sm md:text-base block leading-snug">
+            <span className="font-bold text-foreground text-sm md:text-base leading-snug flex items-center gap-1.5">
               {member.name}
+              {member.id === DOCUMENTER_ID && <HeritageBadge type="documenter" />}
             </span>
             <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
               {branch && branchStyle && (
