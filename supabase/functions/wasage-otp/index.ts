@@ -189,6 +189,28 @@ serve(async (req) => {
         console.error("[wasage-otp] CALLBACK DB update error:", dbError);
       }
 
+      // Send confirmation reply to user via Wasage
+      const WASAGE_USERNAME = Deno.env.get("WASAGE_USERNAME");
+      const WASAGE_PASSWORD = Deno.env.get("WASAGE_PASSWORD");
+      if (WASAGE_USERNAME && WASAGE_PASSWORD && mobile) {
+        try {
+          const replyBody = new URLSearchParams({
+            Username: WASAGE_USERNAME,
+            Password: WASAGE_PASSWORD,
+            Mobile: mobile,
+            Message: "تم التحقق بنجاح ✅ يمكنك الآن العودة للبوابة.",
+          });
+          const replyRes = await fetch("https://wasage.com/api/send/", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: replyBody.toString(),
+          });
+          console.log("[wasage-otp] Confirmation reply sent, status:", replyRes.status);
+        } catch (replyErr) {
+          console.error("[wasage-otp] Failed to send confirmation reply:", replyErr);
+        }
+      }
+
       console.log("[wasage-otp] CALLBACK verified for reference:", reference);
       return new Response(
         JSON.stringify({ success: true }),
