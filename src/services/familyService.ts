@@ -295,7 +295,6 @@ function asymTitle(myDist: number, otherDist: number): string {
   // Deep fallback
   return "";
 }
-}
 
 export function generationText(n: number): string {
   if (n === 1) return "بجيل واحد";
