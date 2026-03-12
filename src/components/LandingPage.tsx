@@ -5,7 +5,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { FontSizeToggle } from "@/components/FontSizeToggle";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { familyMembers } from "@/data/familyData";
+import type { FamilyMember } from "@/data/familyData";
 import { OnboardingModal } from "@/components/OnboardingModal";
 import { SubmitRequestForm } from "@/components/SubmitRequestForm";
 import { trackVisit } from "@/services/dataService";
