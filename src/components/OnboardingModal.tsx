@@ -53,16 +53,9 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
   const [confirmed, setConfirmed] = useState(false);
 
-  // Phase B+C — Wasage WhatsApp OTP
+  // Phone number
   const [phone, setPhone] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpResult, setOtpResult] = useState<SendOTPResult | null>(null);
-  const [otpCode, setOtpCode] = useState("");
-  const [otpVerified, setOtpVerified] = useState(false);
-  const [otpError, setOtpError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [polling, setPolling] = useState(false);
-  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Phase D — Hijri Date + Quick Update
   const [familyPasscode, setFamilyPasscode] = useState("");
