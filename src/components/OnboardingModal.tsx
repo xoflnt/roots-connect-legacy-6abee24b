@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,10 +7,10 @@ import { Progress } from "@/components/ui/progress";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { TreePine, Search, UserCheck, Phone, CalendarDays, ChevronLeft, ChevronDown, Loader2, QrCode, ExternalLink, UserCircle, MessageCircle, Users2, Heart, UserPlus, GitBranch, Edit3, BadgeCheck, Info, Lock } from "lucide-react";
+import { TreePine, Search, UserCheck, Phone, CalendarDays, ChevronLeft, ChevronDown, Loader2, UserCircle, Users2, Heart, UserPlus, GitBranch, Edit3, BadgeCheck, Info, Lock } from "lucide-react";
 import type { FamilyMember } from "@/data/familyData";
 import { getAllMembers, searchMembers, getChildrenOf } from "@/services/familyService";
-import { sendOTP, checkOTPStatus, verifyOTP, type SendOTPResult } from "@/services/wasageSms";
+
 import { useAuth } from "@/contexts/AuthContext";
 import { HijriDatePicker } from "@/components/HijriDatePicker";
 import { registerVerifiedUser, submitRequest, getVerifiedMemberIds } from "@/services/dataService";
@@ -53,16 +53,9 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
   const [confirmed, setConfirmed] = useState(false);
 
-  // Phase B+C — Wasage WhatsApp OTP
+  // Phone number
   const [phone, setPhone] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpResult, setOtpResult] = useState<SendOTPResult | null>(null);
-  const [otpCode, setOtpCode] = useState("");
-  const [otpVerified, setOtpVerified] = useState(false);
-  const [otpError, setOtpError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [polling, setPolling] = useState(false);
-  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Phase D — Hijri Date + Quick Update
   const [familyPasscode, setFamilyPasscode] = useState("");
@@ -118,48 +111,12 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
     }
   }, [step, selectedMember]);
 
-  useEffect(() => {
-    return () => { if (pollingRef.current) clearInterval(pollingRef.current); };
-  }, []);
-
-  const startPolling = useCallback((reference: string) => {
-    setPolling(true);
-    pollingRef.current = setInterval(async () => {
-      const result = await checkOTPStatus(reference);
-      if (result.verified) {
-        if (pollingRef.current) clearInterval(pollingRef.current);
-        setPolling(false);
-        setOtpVerified(true);
-        setStep(6);
-      }
-    }, 3000);
-    setTimeout(() => {
-      if (pollingRef.current) clearInterval(pollingRef.current);
-      setPolling(false);
-    }, 300000);
-  }, []);
-
-  const handleSendOTP = async () => {
-    if (phone.length < 9) return;
-    setLoading(true);
-    setOtpError("");
-    const result = await sendOTP(`+966${phone}`);
-    setOtpResult(result);
-    setOtpSent(true);
-    setLoading(false);
-    if (result.success && result.reference && result.clickable) {
-      startPolling(result.reference);
+  const handlePhoneContinue = () => {
+    if (phone.length < 9) {
+      toast.error("الرجاء إدخال رقم جوال صحيح");
+      return;
     }
-  };
-
-  const handleVerifyOTP = async () => {
-    if (otpCode.length < 4) return;
-    setLoading(true);
-    setOtpError("");
-    const ok = await verifyOTP(`+966${phone}`, otpCode);
-    if (ok) { setOtpVerified(true); setStep(6); }
-    else { setOtpError("الرمز غير صحيح، حاول مرة أخرى"); }
-    setLoading(false);
+    setStep(6);
   };
 
   const handleComplete = async () => {
@@ -480,103 +437,30 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
             </div>
           )}
 
-          {/* ─── Step 5: Phone + WhatsApp OTP ─── */}
+          {/* ─── Step 5: Phone Number ─── */}
           {step === 5 && (
             <div className="flex-1 flex flex-col gap-4 animate-fade-in">
               <h2 className="text-lg font-bold text-foreground text-center">
                 <Phone className="inline h-5 w-5 ml-1" />
-                تأكيد رقم الجوال
+                رقم الجوال
               </h2>
-              {!otpSent ? (
-                <>
-                  <p className="text-sm text-muted-foreground text-center">أدخل رقم جوالك السعودي للتحقق عبر واتساب</p>
-                  <div className="relative" dir="ltr">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base font-medium">+966</span>
-                    <Input
-                      type="tel" inputMode="numeric" value={phone}
-                      onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 9))}
-                      placeholder="5XXXXXXXX"
-                      className="min-h-[52px] pl-16 text-base rounded-xl text-left tracking-wider"
-                      autoFocus
-                    />
-                  </div>
-                  <Button onClick={handleSendOTP} disabled={phone.length < 9 || loading} className="min-h-[52px] w-full text-base font-semibold rounded-xl">
-                    {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "تحقق عبر واتساب"}
-                  </Button>
-                  <Button variant="outline" onClick={() => setStep(4)} className="min-h-[52px] w-full rounded-xl">
-                    <ChevronLeft className="h-4 w-4 ml-1" /> السابق
-                  </Button>
-                </>
-              ) : !otpVerified ? (
-                <>
-                  {otpResult?.clickable ? (
-                    <div className="flex flex-col items-center gap-4">
-                      {!isMobile && otpResult.qr && (
-                        <div className="p-4 bg-background rounded-xl border border-border shadow-sm">
-                          <img src={otpResult.qr} alt="QR Code" className="w-44 h-44 mx-auto" />
-                          <p className="text-sm text-muted-foreground text-center mt-3 leading-relaxed">
-                            امسح الرمز بكاميرا جوالك لإرسال رسالة التوثيق عبر الواتساب
-                          </p>
-                        </div>
-                      )}
-                      {isMobile && (
-                        <div className="w-full flex flex-col items-center gap-3">
-                          <p className="text-sm text-muted-foreground text-center leading-relaxed">
-                            اضغط على الزر أدناه لإرسال رسالة التوثيق. بمجرد استلامك لرسالة التأكيد، عد إلى هذه الصفحة.
-                          </p>
-                          <a
-                            href={otpResult.clickable} target="_blank" rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center gap-2 min-h-[56px] w-full text-lg font-bold rounded-xl bg-[#25D366] hover:bg-[#20BD5A] text-white transition-colors shadow-md"
-                          >
-                            <MessageCircle className="h-6 w-6" />
-                            فتح الواتساب لإرسال الرسالة
-                          </a>
-                        </div>
-                      )}
-                      {!isMobile && (
-                        <a
-                          href={otpResult.clickable} target="_blank" rel="noopener noreferrer"
-                          className="inline-flex items-center justify-center gap-2 min-h-[44px] w-full text-sm font-medium rounded-xl border border-border text-foreground hover:bg-muted transition-colors"
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                          أو افتح الرابط مباشرة
-                        </a>
-                      )}
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground py-2">
-                        <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                        <span>في انتظار رسالة التوثيق الخاصة بك...</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <p className="text-sm text-muted-foreground text-center">أدخل رمز التحقق (في وضع التجربة استخدم 1234)</p>
-                      <div className="flex justify-center" dir="ltr">
-                        <InputOTP maxLength={4} value={otpCode} onChange={setOtpCode}>
-                          <InputOTPGroup className="gap-2">
-                            {[0, 1, 2, 3].map((i) => (
-                              <InputOTPSlot key={i} index={i} className="w-14 h-14 text-xl rounded-xl border-border" />
-                            ))}
-                          </InputOTPGroup>
-                        </InputOTP>
-                      </div>
-                      {otpError && <p className="text-destructive text-sm text-center font-medium">{otpError}</p>}
-                      <Button onClick={handleVerifyOTP} disabled={otpCode.length < 4 || loading} className="min-h-[52px] w-full text-base font-semibold rounded-xl">
-                        {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "تحقق"}
-                      </Button>
-                    </>
-                  )}
-                  <Button
-                    variant="ghost"
-                    onClick={() => {
-                      if (pollingRef.current) clearInterval(pollingRef.current);
-                      setPolling(false); setOtpSent(false); setOtpResult(null); setOtpCode(""); setOtpError("");
-                    }}
-                    className="text-sm text-muted-foreground"
-                  >
-                    تغيير الرقم
-                  </Button>
-                </>
-              ) : null}
+              <p className="text-sm text-muted-foreground text-center">أدخل رقم جوالك السعودي لحفظه في ملفك الشخصي</p>
+              <div className="relative" dir="ltr">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base font-medium">+966</span>
+                <Input
+                  type="tel" inputMode="numeric" value={phone}
+                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 9))}
+                  placeholder="5XXXXXXXX"
+                  className="min-h-[52px] pl-16 text-base rounded-xl text-left tracking-wider"
+                  autoFocus
+                />
+              </div>
+              <Button onClick={handlePhoneContinue} disabled={phone.length < 9} className="min-h-[52px] w-full text-base font-semibold rounded-xl">
+                متابعة
+              </Button>
+              <Button variant="outline" onClick={() => setStep(4)} className="min-h-[52px] w-full rounded-xl">
+                <ChevronLeft className="h-4 w-4 ml-1" /> السابق
+              </Button>
             </div>
           )}
 
