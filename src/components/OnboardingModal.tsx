@@ -23,7 +23,7 @@ function getMemberMap() {
 
 function getFatherName(member: FamilyMember): string | null {
   if (!member.father_id) return null;
-  return memberMap.get(member.father_id)?.name ?? null;
+  return getMemberMap().get(member.father_id)?.name ?? null;
 }
 
 function getDisplayLabel(member: FamilyMember): string {
