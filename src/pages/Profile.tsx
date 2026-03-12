@@ -120,7 +120,7 @@ const Profile = () => {
         : undefined;
 
       await updateMember(member.id, {
-        spouses: editSpouses.join("، ") || undefined,
+        spouses: editSpouses.length > 0 ? editSpouses.join("، ") : "",
         birth_year: dateStr || member.birth_year,
       });
 
