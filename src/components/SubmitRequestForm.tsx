@@ -41,7 +41,7 @@ export function SubmitRequestForm({ open, onOpenChange, targetMember }: SubmitRe
 
   const filtered = useMemo(() => {
     if (!searchQuery.trim()) return [];
-    return familyMembers.filter((m) => m.name.includes(searchQuery.trim())).slice(0, 10);
+    return getAllMembers().filter((m) => m.name.includes(searchQuery.trim())).slice(0, 10);
   }, [searchQuery]);
 
   const handleSubmit = async () => {

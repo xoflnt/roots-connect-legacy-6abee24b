@@ -27,7 +27,7 @@ function PersonPicker({
 
   const filtered = useMemo(() => {
     if (!query.trim()) return [];
-    return familyMembers.filter((m) => m.name.includes(query.trim())).slice(0, 8);
+    return getAllMembers().filter((m) => m.name.includes(query.trim())).slice(0, 8);
   }, [query]);
 
   return (

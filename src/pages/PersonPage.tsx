@@ -13,7 +13,7 @@ const PersonPage = () => {
     if (id) setMemberId(id);
   }, [id]);
 
-  const member = familyMembers.find((m) => m.id === memberId);
+  const member = getMemberById(memberId);
 
   const handleSearchSelect = (newId: string) => {
     navigate(`/person/${newId}`, { replace: true });

@@ -75,7 +75,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
   const filtered = useMemo(() => {
     if (!searchQuery.trim()) return [];
     const q = searchQuery.trim();
-    return familyMembers.filter((m) => m.name.includes(q) || getDisplayLabel(m).includes(q)).slice(0, 15);
+    return getAllMembers().filter((m) => m.name.includes(q) || getDisplayLabel(m).includes(q)).slice(0, 15);
   }, [searchQuery]);
 
   const handleSkip = () => {
