@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Progress } from "@/components/ui/progress";
-import { TreePine, Search, UserCheck, Phone, CalendarDays, ChevronLeft, Loader2, QrCode, ExternalLink, UserCircle } from "lucide-react";
+import { TreePine, Search, UserCheck, Phone, CalendarDays, ChevronLeft, Loader2, QrCode, ExternalLink, UserCircle, MessageCircle } from "lucide-react";
 import { familyMembers, type FamilyMember } from "@/data/familyData";
 import { sendOTP, checkOTPStatus, verifyOTP, type SendOTPResult } from "@/services/wasageSms";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,6 +12,7 @@ import { HijriDatePicker } from "@/components/HijriDatePicker";
 import { registerVerifiedUser } from "@/services/dataService";
 import { getLineageLabel } from "@/utils/memberLabel";
 import { useNavigate } from "react-router-dom";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const TOTAL_STEPS = 5;
 
