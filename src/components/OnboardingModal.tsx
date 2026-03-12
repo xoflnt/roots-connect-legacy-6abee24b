@@ -74,7 +74,9 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
 
   useEffect(() => {
     if (forceOpen) { setOpen(true); return; }
-    setOpen(true);
+    if (!sessionStorage.getItem("onboarding-dismissed")) {
+      setOpen(true);
+    }
   }, [forceOpen]);
 
   const filtered = useMemo(() => {
