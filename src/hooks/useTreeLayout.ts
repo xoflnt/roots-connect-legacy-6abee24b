@@ -58,6 +58,7 @@ export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number) {
     const currentMembers = getAllMembers();
     const memberById = new Map(currentMembers.map((m) => [m.id, m]));
     const childrenOfMap = buildChildrenOfMap(currentMembers);
+    const verifiedIds = getVerifiedMemberIds();
 
     const visibleIds = new Set<string>();
 
