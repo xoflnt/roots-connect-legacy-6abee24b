@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { AppHeader, type ViewMode } from "@/components/AppHeader";
 import { LineageView } from "@/components/LineageView";
-import { familyMembers } from "@/data/familyData";
+import { getAllMembers, getMemberById } from "@/services/familyService";
 
 const PersonPage = () => {
   const { id } = useParams<{ id: string }>();
