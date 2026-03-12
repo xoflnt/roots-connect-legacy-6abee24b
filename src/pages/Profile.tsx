@@ -62,15 +62,17 @@ const Profile = () => {
 
   useEffect(() => {
     if (!member) return;
-    setEditSpouses(
-      member.spouses ? member.spouses.split("،").map(s => s.trim()).filter(Boolean) : []
-    );
+    if (!spousesDirty) {
+      setEditSpouses(
+        member.spouses ? member.spouses.split("،").map(s => s.trim()).filter(Boolean) : []
+      );
+    }
     if (member.birth_year) {
       const parts = (member.birth_year as string).split("/");
       if (parts.length === 3) setBirthDate({ year: parts[0], month: parts[1], day: parts[2] });
       else setBirthDate({ year: member.birth_year as string });
     }
-  }, [member]);
+  }, [member, spousesDirty]);
 
   // Add child state
   const [showAddChild, setShowAddChild] = useState(false);
