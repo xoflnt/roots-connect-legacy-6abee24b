@@ -435,33 +435,52 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                 <>
                   {otpResult?.clickable ? (
                     <div className="flex flex-col items-center gap-4">
-                      <p className="text-sm text-muted-foreground text-center">
-                        اضغط الزر أدناه لإرسال رمز التحقق عبر واتساب
-                      </p>
-                      
-                      {otpResult.qr && (
-                        <div className="p-3 bg-background rounded-xl border border-border shadow-sm">
-                          <img src={otpResult.qr} alt="QR Code" className="w-40 h-40 mx-auto" />
-                          <p className="text-xs text-muted-foreground text-center mt-2">أو امسح رمز QR</p>
+                      {/* Desktop: QR Code */}
+                      {!isMobile && otpResult.qr && (
+                        <div className="p-4 bg-background rounded-xl border border-border shadow-sm">
+                          <img src={otpResult.qr} alt="QR Code" className="w-44 h-44 mx-auto" />
+                          <p className="text-sm text-muted-foreground text-center mt-3 leading-relaxed">
+                            امسح الرمز بكاميرا جوالك لإرسال رسالة التوثيق عبر الواتساب
+                          </p>
                         </div>
                       )}
 
-                      <a
-                        href={otpResult.clickable}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center gap-2 min-h-[52px] w-full text-base font-semibold rounded-xl bg-[#25D366] hover:bg-[#20BD5A] text-white transition-colors"
-                      >
-                        <ExternalLink className="h-5 w-5" />
-                        فتح واتساب للتحقق
-                      </a>
-
-                      {polling && (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          <span>في انتظار التحقق...</span>
+                      {/* Mobile: WhatsApp deep-link button */}
+                      {isMobile && (
+                        <div className="w-full flex flex-col items-center gap-3">
+                          <p className="text-sm text-muted-foreground text-center leading-relaxed">
+                            اضغط على الزر أدناه لإرسال رسالة التوثيق. بمجرد استلامك لرسالة التأكيد، عد إلى هذه الصفحة.
+                          </p>
+                          <a
+                            href={otpResult.clickable}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center justify-center gap-2 min-h-[56px] w-full text-lg font-bold rounded-xl bg-[#25D366] hover:bg-[#20BD5A] text-white transition-colors shadow-md"
+                          >
+                            <MessageCircle className="h-6 w-6" />
+                            فتح الواتساب لإرسال الرسالة
+                          </a>
                         </div>
                       )}
+
+                      {/* Desktop: smaller link button fallback */}
+                      {!isMobile && (
+                        <a
+                          href={otpResult.clickable}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center gap-2 min-h-[44px] w-full text-sm font-medium rounded-xl border border-border text-foreground hover:bg-muted transition-colors"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                          أو افتح الرابط مباشرة
+                        </a>
+                      )}
+
+                      {/* Waiting state */}
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground py-2">
+                        <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                        <span>في انتظار رسالة التوثيق الخاصة بك...</span>
+                      </div>
                     </div>
                   ) : (
                     <>
