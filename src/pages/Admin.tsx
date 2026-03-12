@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { AdminProtect } from "@/components/AdminProtect";
 import { Button } from "@/components/ui/button";
-import { Users, Eye, ShieldCheck, TreePine, Check, Loader2, ArrowRight, Bell } from "lucide-react";
+import { Users, Eye, ShieldCheck, TreePine, Check, Loader2, ArrowRight, Bell, Download } from "lucide-react";
 import { getRequests, markRequestDone, getVerifiedUsers, getVisitCount, type FamilyRequest } from "@/services/dataService";
 import { getAllMembers } from "@/services/familyService";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { DataTableView } from "@/components/DataTableView";
 
 function StatCard({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string | number }) {
   return (
@@ -126,10 +128,34 @@ function AdminContent() {
   const pending = requests.filter((r) => r.status === "pending");
   const handled = requests.filter((r) => r.status !== "pending");
 
+  const handleExportCSV = () => {
+    const members = getAllMembers();
+    const headers = ["المعرّف", "الاسم", "الجنس", "معرّف الأب", "سنة الميلاد", "سنة الوفاة", "الأزواج", "الهاتف", "ملاحظات"];
+    const rows = members.map(m => [
+      m.id,
+      m.name,
+      m.gender === "M" ? "ذكر" : "أنثى",
+      m.father_id || "",
+      m.birth_year || "",
+      m.Death_year || "",
+      m.spouses || "",
+      m.phone || "",
+      m.notes || "",
+    ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(","));
+    const csvContent = "\uFEFF" + [headers.join(","), ...rows].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `سجل_الخنيني_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="min-h-screen bg-background" dir="rtl">
       <header className="sticky top-0 z-30 bg-card/90 backdrop-blur-sm border-b border-border/30 px-4 py-3">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ShieldCheck className="h-5 w-5 text-primary" />
             <h1 className="text-lg font-bold text-foreground">لوحة الإدارة</h1>
@@ -147,7 +173,7 @@ function AdminContent() {
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto p-4 space-y-8">
+      <div className="max-w-6xl mx-auto p-4 space-y-6">
         {/* Stats */}
         <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <StatCard icon={Eye} label="عدد الزيارات" value={visitCount} />
@@ -155,36 +181,61 @@ function AdminContent() {
           <StatCard icon={TreePine} label="إجمالي الأفراد" value={memberCount} />
         </section>
 
-        {/* Pending Requests */}
-        <section className="space-y-4">
-          <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-            طلبات معلقة ({pending.length})
-          </h2>
-          {pending.length === 0 ? (
-            <div className="bg-card border border-border/50 rounded-2xl p-8 text-center">
-              <p className="text-muted-foreground">لا توجد طلبات معلقة</p>
-            </div>
-          ) : (
-            <div className="grid gap-4">
-              {pending.map((r) => (
-                <RequestCard key={r.id} req={r} onAction={loadData} />
-              ))}
-            </div>
-          )}
-        </section>
+        <Tabs defaultValue="requests" className="w-full">
+          <TabsList className="w-full justify-start rounded-xl bg-muted/50 p-1">
+            <TabsTrigger value="requests" className="rounded-lg font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              الطلبات ({requests.length})
+            </TabsTrigger>
+            <TabsTrigger value="registry" className="rounded-lg font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              السجل الكامل
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Handled Requests */}
-        {handled.length > 0 && (
-          <section className="space-y-4">
-            <h2 className="text-lg font-bold text-foreground">الطلبات المنجزة ({handled.length})</h2>
-            <div className="grid gap-4">
-              {handled.map((r) => (
-                <RequestCard key={r.id} req={r} onAction={loadData} />
-              ))}
+          <TabsContent value="requests" className="space-y-6 mt-4">
+            {/* Pending Requests */}
+            <section className="space-y-4">
+              <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+                طلبات معلقة ({pending.length})
+              </h2>
+              {pending.length === 0 ? (
+                <div className="bg-card border border-border/50 rounded-2xl p-8 text-center">
+                  <p className="text-muted-foreground">لا توجد طلبات معلقة</p>
+                </div>
+              ) : (
+                <div className="grid gap-4">
+                  {pending.map((r) => (
+                    <RequestCard key={r.id} req={r} onAction={loadData} />
+                  ))}
+                </div>
+              )}
+            </section>
+
+            {/* Handled Requests */}
+            {handled.length > 0 && (
+              <section className="space-y-4">
+                <h2 className="text-lg font-bold text-foreground">الطلبات المنجزة ({handled.length})</h2>
+                <div className="grid gap-4">
+                  {handled.map((r) => (
+                    <RequestCard key={r.id} req={r} onAction={loadData} />
+                  ))}
+                </div>
+              </section>
+            )}
+          </TabsContent>
+
+          <TabsContent value="registry" className="mt-4 space-y-4">
+            <div className="flex justify-end">
+              <Button onClick={handleExportCSV} className="rounded-xl font-bold gap-2">
+                <Download className="h-4 w-4" />
+                تصدير السجل الكامل (CSV)
+              </Button>
             </div>
-          </section>
-        )}
+            <div className="bg-card border border-border/50 rounded-2xl overflow-hidden" style={{ height: "calc(100vh - 320px)" }}>
+              <DataTableView />
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

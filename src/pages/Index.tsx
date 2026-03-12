@@ -2,14 +2,13 @@ import { useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AppHeader, type ViewMode } from "@/components/AppHeader";
 import { FamilyTree, type FamilyTreeRef } from "@/components/FamilyTree";
-import { DataTableView } from "@/components/DataTableView";
 import { LandingPage } from "@/components/LandingPage";
 import { ListView } from "@/components/ListView";
 import { KinshipCalculator } from "@/components/KinshipCalculator";
 
 export type AppView = "landing" | ViewMode;
 
-const VALID_VIEWS: ViewMode[] = ["tree", "list", "table", "kinship", "lineage"];
+const VALID_VIEWS: ViewMode[] = ["tree", "list", "kinship", "lineage"];
 
 const Index = () => {
   const treeRef = useRef<FamilyTreeRef>(null);
@@ -77,11 +76,6 @@ const Index = () => {
         {activeView === "list" && (
           <div className="w-full h-full rounded-2xl md:rounded-3xl shadow-xl overflow-auto border border-border/50 bg-card animate-fade-in">
             <ListView onSelectMember={handleSearchSelect} />
-          </div>
-        )}
-        {activeView === "table" && (
-          <div className="w-full h-full rounded-2xl md:rounded-3xl shadow-xl overflow-hidden border border-border/50 bg-card animate-fade-in">
-            <DataTableView />
           </div>
         )}
       </main>
