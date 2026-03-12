@@ -10,7 +10,7 @@ import type { FamilyMember } from "@/data/familyData";
 import { OnboardingModal } from "@/components/OnboardingModal";
 import { SubmitRequestForm } from "@/components/SubmitRequestForm";
 import { trackVisit } from "@/services/dataService";
-import { getAllMembers, getDescendantCount } from "@/services/familyService";
+import { getAllMembers, getDescendantCount, searchMembers } from "@/services/familyService";
 import { PILLARS, DOCUMENTER_ID } from "@/utils/branchUtils";
 import { useAuth } from "@/contexts/AuthContext";
 
