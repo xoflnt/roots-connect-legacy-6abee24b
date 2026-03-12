@@ -65,13 +65,8 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
   // Phase D — Hijri Date + Quick Update
   const [hijriDate, setHijriDate] = useState<{ day?: string; month?: string; year?: string }>({});
   const [quickUpdateOpen, setQuickUpdateOpen] = useState(false);
-  const [quickSpouse, setQuickSpouse] = useState("");
-  const [quickChildName, setQuickChildName] = useState("");
-  const [quickChildGender, setQuickChildGender] = useState<"M" | "F">("M");
-  const [quickChildMother, setQuickChildMother] = useState("");
-  const [quickChildMotherCustom, setQuickChildMotherCustom] = useState("");
+  const [quickUpdateText, setQuickUpdateText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [quickCorrection, setQuickCorrection] = useState("");
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
