@@ -77,6 +77,7 @@ const Profile = () => {
   const [newChildGender, setNewChildGender] = useState<"M" | "F">("M");
   const [newChildMother, setNewChildMother] = useState("");
   const [customMother, setCustomMother] = useState("");
+  const [childToDelete, setChildToDelete] = useState<FamilyMember | null>(null);
 
   const resolvedMother = newChildMother === "__other__" ? customMother : newChildMother;
 
