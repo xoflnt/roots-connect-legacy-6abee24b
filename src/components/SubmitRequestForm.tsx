@@ -179,6 +179,7 @@ export function SubmitRequestForm({ open, onOpenChange, targetMember }: SubmitRe
                   <SelectItem value="F">أنثى</SelectItem>
                 </SelectContent>
               </Select>
+              <Input value={motherName} onChange={(e) => setMotherName(e.target.value)} placeholder="اسم الأم (مطلوب)" className="rounded-xl min-h-[44px]" />
             </div>
           )}
 

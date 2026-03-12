@@ -36,13 +36,21 @@ function RequestCard({ req, onAction }: { req: FamilyRequest; onAction: () => vo
 
   const handleApprove = async () => {
     setLoading("approve");
-    await approveRequest(req.id);
+    const success = await approveRequest(req.id);
+    if (success) {
+      await refreshMembers();
+      window.dispatchEvent(new Event("family-data-updated"));
+    }
     onAction();
   };
 
   const handleReject = async () => {
     setLoading("reject");
-    await rejectRequest(req.id);
+    const success = await rejectRequest(req.id);
+    if (success) {
+      await refreshMembers();
+      window.dispatchEvent(new Event("family-data-updated"));
+    }
     onAction();
   };
 

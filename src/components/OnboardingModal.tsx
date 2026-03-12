@@ -632,29 +632,35 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                       className="h-10 text-sm rounded-lg"
                     />
                   </div>
-                  {/* Add child */}
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-muted-foreground flex items-center gap-1">
-                      <UserPlus className="h-3 w-3" /> إضافة ابن/ابنة
-                    </label>
-                    <div className="flex gap-2">
-                      <Input
-                        value={quickChildName}
-                        onChange={(e) => setQuickChildName(e.target.value)}
-                        placeholder="الاسم الكامل"
-                        className="h-10 text-sm rounded-lg flex-1"
-                      />
-                      <Select value={quickChildGender} onValueChange={(v) => setQuickChildGender(v as "M" | "F")}>
-                        <SelectTrigger className="h-10 w-24 text-sm rounded-lg">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="M">ذكر</SelectItem>
-                          <SelectItem value="F">أنثى</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
+                   {/* Add child */}
+                   <div className="space-y-1">
+                     <label className="text-xs font-bold text-muted-foreground flex items-center gap-1">
+                       <UserPlus className="h-3 w-3" /> إضافة ابن/ابنة
+                     </label>
+                     <div className="flex gap-2">
+                       <Input
+                         value={quickChildName}
+                         onChange={(e) => setQuickChildName(e.target.value)}
+                         placeholder="الاسم الكامل"
+                         className="h-10 text-sm rounded-lg flex-1"
+                       />
+                       <Select value={quickChildGender} onValueChange={(v) => setQuickChildGender(v as "M" | "F")}>
+                         <SelectTrigger className="h-10 w-24 text-sm rounded-lg">
+                           <SelectValue />
+                         </SelectTrigger>
+                         <SelectContent>
+                           <SelectItem value="M">ذكر</SelectItem>
+                           <SelectItem value="F">أنثى</SelectItem>
+                         </SelectContent>
+                       </Select>
+                     </div>
+                     <Input
+                       value={quickChildMother}
+                       onChange={(e) => setQuickChildMother(e.target.value)}
+                       placeholder="اسم الأم"
+                       className="h-10 text-sm rounded-lg"
+                     />
+                   </div>
                   {/* Correction */}
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-muted-foreground flex items-center gap-1">
