@@ -1,0 +1,1 @@
+CREATE POLICY "Allow public delete family_members" ON public.family_members FOR DELETE TO anon, authenticated USING (true);
