@@ -167,8 +167,9 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
       }));
     }
     if (quickChildName.trim()) {
+      const resolvedMother = quickChildMother === "__other__" ? quickChildMotherCustom.trim() : quickChildMother.trim();
       const childData: Record<string, string> = { child_name: quickChildName.trim(), child_gender: quickChildGender };
-      if (quickChildMother.trim()) childData.mother_name = quickChildMother.trim();
+      if (resolvedMother) childData.mother_name = resolvedMother;
       requests.push(submitRequest({
         type: "add_child",
         targetMemberId: selectedMember.id,
