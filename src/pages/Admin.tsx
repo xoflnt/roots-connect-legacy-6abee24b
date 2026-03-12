@@ -1,13 +1,64 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AdminProtect } from "@/components/AdminProtect";
 import { Button } from "@/components/ui/button";
-import { Users, Eye, ShieldCheck, TreePine, Check, Loader2, ArrowRight, Bell, Download } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Users, Eye, ShieldCheck, TreePine, Check, Loader2, ArrowRight, Bell, Download, Search, X } from "lucide-react";
 import { getRequests, markRequestDone, getVerifiedUsers, getVisitCount, type FamilyRequest } from "@/services/dataService";
-import { getAllMembers } from "@/services/familyService";
+import { getAllMembers, searchMembers, getMemberById } from "@/services/familyService";
+import type { FamilyMember } from "@/data/familyData";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DataTableView } from "@/components/DataTableView";
+
+// --- Smart Export Helpers ---
+
+function getDescendants(rootId: string, allMembers: FamilyMember[], gen = 1): (FamilyMember & { generation: number })[] {
+  const children = allMembers.filter(m => m.father_id === rootId);
+  return children.reduce<(FamilyMember & { generation: number })[]>((acc, child) => [
+    ...acc,
+    { ...child, generation: gen },
+    ...getDescendants(child.id, allMembers, gen + 1),
+  ], []);
+}
+
+function buildCSV(members: (FamilyMember & { generation?: number })[], memberMap: Map<string, FamilyMember>, isSubtree: boolean): string {
+  const headers = [
+    "مستوى الجيل",
+    "الاسم",
+    "اسم الأب",
+    "الجنس",
+    "سنة الميلاد",
+    "رقم الجوال",
+    "الزوجات",
+    "ملاحظات وتفاصيل الأم",
+  ];
+  const rows = members.map(m => {
+    const father = m.father_id ? memberMap.get(m.father_id) : null;
+    return [
+      isSubtree && m.generation != null ? String(m.generation) : "",
+      m.name,
+      father?.name || "",
+      m.gender === "M" ? "ذكر" : "أنثى",
+      m.birth_year || "",
+      m.phone || "",
+      m.spouses?.replace(/،/g, "، ") || "",
+      m.notes || "",
+    ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(",");
+  });
+  return "\uFEFF" + [headers.join(","), ...rows].join("\n");
+}
+
+function downloadCSV(content: string, filename: string) {
+  const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 function StatCard({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string | number }) {
   return (
@@ -128,28 +179,28 @@ function AdminContent() {
   const pending = requests.filter((r) => r.status === "pending");
   const handled = requests.filter((r) => r.status !== "pending");
 
-  const handleExportCSV = () => {
-    const members = getAllMembers();
-    const headers = ["المعرّف", "الاسم", "الجنس", "معرّف الأب", "سنة الميلاد", "سنة الوفاة", "الأزواج", "الهاتف", "ملاحظات"];
-    const rows = members.map(m => [
-      m.id,
-      m.name,
-      m.gender === "M" ? "ذكر" : "أنثى",
-      m.father_id || "",
-      m.birth_year || "",
-      m.Death_year || "",
-      m.spouses || "",
-      m.phone || "",
-      m.notes || "",
-    ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(","));
-    const csvContent = "\uFEFF" + [headers.join(","), ...rows].join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `سجل_الخنيني_${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+  // --- Export state ---
+  const [exportSearch, setExportSearch] = useState("");
+  const [selectedExportMember, setSelectedExportMember] = useState<FamilyMember | null>(null);
+  const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
+  const exportRef = useRef<HTMLDivElement>(null);
+
+  const exportResults = exportSearch.trim() ? searchMembers(exportSearch, 8) : [];
+
+  const membersAll = getAllMembers();
+  const memberMapExport = new Map(membersAll.map(m => [m.id, m]));
+
+  const handleExportFull = () => {
+    const csv = buildCSV(membersAll, memberMapExport, false);
+    downloadCSV(csv, "khunaini_registry_full.csv");
+  };
+
+  const handleExportDescendants = () => {
+    if (!selectedExportMember) return;
+    const descendants = getDescendants(selectedExportMember.id, membersAll);
+    const csv = buildCSV(descendants, memberMapExport, true);
+    const safeName = selectedExportMember.name.replace(/\s+/g, "_");
+    downloadCSV(csv, `khunaini_descendants_of_${safeName}.csv`);
   };
 
   return (
@@ -225,13 +276,68 @@ function AdminContent() {
           </TabsContent>
 
           <TabsContent value="registry" className="mt-4 space-y-4">
-            <div className="flex justify-end">
-              <Button onClick={handleExportCSV} className="rounded-xl font-bold gap-2">
+            {/* Export toolbar */}
+            <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between bg-card border border-border/50 rounded-2xl p-4">
+              {/* Full export */}
+              <Button onClick={handleExportFull} className="rounded-xl font-bold gap-2 shrink-0">
                 <Download className="h-4 w-4" />
-                تصدير السجل الكامل (CSV)
+                تصدير السجل الكامل
               </Button>
+
+              {/* Sub-tree export */}
+              <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center flex-1 sm:justify-end">
+                {selectedExportMember ? (
+                  <Badge className="gap-1.5 py-1.5 px-3 text-sm">
+                    {selectedExportMember.name}
+                    <button onClick={() => setSelectedExportMember(null)} className="hover:opacity-70">
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </Badge>
+                ) : (
+                  <div className="relative w-full sm:w-64" ref={exportRef}>
+                    <div className="relative">
+                      <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                      <Input
+                        placeholder="ابحث لتصدير ذرية شخص..."
+                        value={exportSearch}
+                        onChange={e => { setExportSearch(e.target.value); setExportDropdownOpen(true); }}
+                        onFocus={() => setExportDropdownOpen(true)}
+                        onBlur={() => setTimeout(() => setExportDropdownOpen(false), 200)}
+                        className="pr-9 rounded-xl"
+                      />
+                    </div>
+                    {exportDropdownOpen && exportResults.length > 0 && (
+                      <div className="absolute z-50 top-full mt-1 w-full bg-popover border border-border rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                        {exportResults.map(m => (
+                          <button
+                            key={m.id}
+                            className="w-full text-right px-3 py-2 text-sm hover:bg-accent/50 transition-colors"
+                            onMouseDown={() => {
+                              setSelectedExportMember(m);
+                              setExportSearch("");
+                              setExportDropdownOpen(false);
+                            }}
+                          >
+                            {m.name}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+                <Button
+                  onClick={handleExportDescendants}
+                  disabled={!selectedExportMember}
+                  variant="secondary"
+                  className="rounded-xl font-bold gap-2 shrink-0"
+                >
+                  <TreePine className="h-4 w-4" />
+                  تصدير ذرية المختار
+                </Button>
+              </div>
             </div>
-            <div className="bg-card border border-border/50 rounded-2xl overflow-hidden" style={{ height: "calc(100vh - 320px)" }}>
+
+            <div className="bg-card border border-border/50 rounded-2xl overflow-hidden" style={{ height: "calc(100vh - 400px)" }}>
               <DataTableView />
             </div>
           </TabsContent>
