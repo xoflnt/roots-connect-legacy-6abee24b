@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { TreePine, Search, UserCheck, Phone, CalendarDays, ChevronLeft, ChevronDown, Loader2, QrCode, ExternalLink, UserCircle, MessageCircle, Users2, Heart, UserPlus, GitBranch, Edit3, BadgeCheck, Info } from "lucide-react";
+import { TreePine, Search, UserCheck, Phone, CalendarDays, ChevronLeft, ChevronDown, Loader2, QrCode, ExternalLink, UserCircle, MessageCircle, Users2, Heart, UserPlus, GitBranch, Edit3, BadgeCheck, Info, Lock } from "lucide-react";
 import type { FamilyMember } from "@/data/familyData";
 import { getAllMembers, searchMembers, getChildrenOf } from "@/services/familyService";
 import { sendOTP, checkOTPStatus, verifyOTP, type SendOTPResult } from "@/services/wasageSms";
@@ -20,7 +20,8 @@ import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 6;
+const FAMILY_PASSCODE = import.meta.env.VITE_FAMILY_PASSCODE || "339921";
 
 function getMemberMap() {
   return new Map(getAllMembers().map((m) => [m.id, m]));
@@ -64,6 +65,9 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Phase D — Hijri Date + Quick Update
+  const [familyPasscode, setFamilyPasscode] = useState("");
+
+  // Phase D — Hijri Date + Quick Update
   const [hijriDate, setHijriDate] = useState<{ day?: string; month?: string; year?: string }>({});
   const [quickUpdateOpen, setQuickUpdateOpen] = useState(false);
   const [quickUpdateText, setQuickUpdateText] = useState("");
@@ -88,7 +92,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
 
   // Pre-fill birth date for "child logging in" scenario
   useEffect(() => {
-    if (step === 5 && selectedMember) {
+    if (step === 6 && selectedMember) {
       const verifiedIds = getVerifiedMemberIds();
       const isAlreadyVerified = verifiedIds.has(selectedMember.id);
       if (!isAlreadyVerified && selectedMember.birth_year) {
@@ -126,7 +130,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
         if (pollingRef.current) clearInterval(pollingRef.current);
         setPolling(false);
         setOtpVerified(true);
-        setStep(5);
+        setStep(6);
       }
     }, 3000);
     setTimeout(() => {
@@ -153,7 +157,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
     setLoading(true);
     setOtpError("");
     const ok = await verifyOTP(`+966${phone}`, otpCode);
-    if (ok) { setOtpVerified(true); setStep(5); }
+    if (ok) { setOtpVerified(true); setStep(6); }
     else { setOtpError("الرمز غير صحيح، حاول مرة أخرى"); }
     setLoading(false);
   };
@@ -436,8 +440,48 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
             </div>
           )}
 
-          {/* ─── Step 4: Phone + WhatsApp OTP ─── */}
+          {/* ─── Step 4: Family Passcode ─── */}
           {step === 4 && (
+            <div className="flex-1 flex flex-col items-center justify-center text-center gap-5 animate-fade-in">
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+                <Lock className="h-8 w-8 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-foreground mb-2">رمز دخول العائلة</h2>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  الرجاء إدخال الرمز السري الخاص بالعائلة للمتابعة
+                </p>
+              </div>
+              <div className="flex justify-center" dir="ltr">
+                <InputOTP maxLength={6} value={familyPasscode} onChange={setFamilyPasscode}>
+                  <InputOTPGroup className="gap-2">
+                    {[0, 1, 2, 3, 4, 5].map((i) => (
+                      <InputOTPSlot key={i} index={i} className="w-12 h-14 text-xl rounded-xl border-border" />
+                    ))}
+                  </InputOTPGroup>
+                </InputOTP>
+              </div>
+              <Button
+                onClick={() => {
+                  if (familyPasscode === FAMILY_PASSCODE) {
+                    setStep(5);
+                  } else {
+                    toast.error("الرمز السري غير صحيح. الرجاء التأكد من الرمز الخاص بالعائلة.");
+                  }
+                }}
+                disabled={familyPasscode.length < 6}
+                className="min-h-[52px] w-full text-base font-semibold rounded-xl"
+              >
+                متابعة
+              </Button>
+              <Button variant="outline" onClick={() => { setStep(3); setFamilyPasscode(""); }} className="min-h-[52px] w-full rounded-xl">
+                <ChevronLeft className="h-4 w-4 ml-1" /> السابق
+              </Button>
+            </div>
+          )}
+
+          {/* ─── Step 5: Phone + WhatsApp OTP ─── */}
+          {step === 5 && (
             <div className="flex-1 flex flex-col gap-4 animate-fade-in">
               <h2 className="text-lg font-bold text-foreground text-center">
                 <Phone className="inline h-5 w-5 ml-1" />
@@ -459,7 +503,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                   <Button onClick={handleSendOTP} disabled={phone.length < 9 || loading} className="min-h-[52px] w-full text-base font-semibold rounded-xl">
                     {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "تحقق عبر واتساب"}
                   </Button>
-                  <Button variant="outline" onClick={() => setStep(3)} className="min-h-[52px] w-full rounded-xl">
+                  <Button variant="outline" onClick={() => setStep(4)} className="min-h-[52px] w-full rounded-xl">
                     <ChevronLeft className="h-4 w-4 ml-1" /> السابق
                   </Button>
                 </>
@@ -536,8 +580,8 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
             </div>
           )}
 
-          {/* ─── Step 5: Mini-Dashboard ─── */}
-          {step === 5 && selectedMember && familyContext && (
+          {/* ─── Step 6: Mini-Dashboard ─── */}
+          {step === 6 && selectedMember && familyContext && (
             <div className="flex-1 flex flex-col gap-4 animate-fade-in overflow-y-auto max-h-[60vh]">
               {/* Welcome header */}
               <div className="text-center space-y-2 py-2">
