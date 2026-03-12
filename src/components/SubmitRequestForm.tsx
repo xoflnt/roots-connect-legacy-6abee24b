@@ -33,6 +33,7 @@ export function SubmitRequestForm({ open, onOpenChange, targetMember }: SubmitRe
 
   const [childName, setChildName] = useState("");
   const [childGender, setChildGender] = useState<"M" | "F">("M");
+  const [motherName, setMotherName] = useState("");
   const [spouseName, setSpouseName] = useState("");
   const [updateField, setUpdateField] = useState("");
   const [updateValue, setUpdateValue] = useState("");
