@@ -9,6 +9,7 @@ import { familyMembers } from "@/data/familyData";
 import { OnboardingModal } from "@/components/OnboardingModal";
 import { SubmitRequestForm } from "@/components/SubmitRequestForm";
 import { trackVisit } from "@/services/dataService";
+import { getAllMembers } from "@/services/familyService";
 import { PILLARS, getBranch } from "@/utils/branchUtils";
 import { getDescendantCount } from "@/services/familyService";
 
