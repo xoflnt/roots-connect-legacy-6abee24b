@@ -203,7 +203,12 @@ export function DataTableView() {
                     className={i % 2 === 0 ? "bg-background" : "bg-muted/30"}
                   >
                     <TableCell className="font-mono text-muted-foreground text-xs">{m.id}</TableCell>
-                    <TableCell className="font-semibold text-foreground">{m.name}</TableCell>
+                    <TableCell className="font-semibold text-foreground">
+                      <span className="flex items-center gap-1.5">
+                        {m.name}
+                        {m.id === DOCUMENTER_ID && <HeritageBadge type="documenter" />}
+                      </span>
+                    </TableCell>
                     <TableCell>
                       {(() => {
                         const br = getBranch(m.id);

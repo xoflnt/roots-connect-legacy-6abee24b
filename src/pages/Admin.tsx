@@ -148,6 +148,12 @@ function AdminContent() {
           <div className="flex items-center gap-2">
             <ShieldCheck className="h-5 w-5 text-primary" />
             <h1 className="text-lg font-bold text-foreground">لوحة الإدارة</h1>
+            {hasNew && (
+              <span className="flex items-center gap-1 text-xs font-bold text-accent animate-pulse">
+                <Bell className="h-3.5 w-3.5" />
+                طلب جديد
+              </span>
+            )}
           </div>
           <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="gap-1">
             <ArrowRight className="h-4 w-4" />
