@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { getAllMembers, inferMotherName, sortByBirth } from "@/services/familyService";
+import { getAllMembers, inferMotherName, sortByBirth, normalizeForSearch } from "@/services/familyService";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
