@@ -259,11 +259,9 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
 
   // ─── Non-logged-in: Full registration flow ───
   return (
-    <Dialog open={open} onOpenChange={() => {}}>
+    <Dialog open={open} onOpenChange={(v) => { if (!v) handleSkip(); else setOpen(true); }}>
       <DialogContent
-        className="max-w-md w-[95vw] p-0 gap-0 rounded-2xl overflow-hidden border-border/50 bg-card [&>button]:hidden"
-        onPointerDownOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
+        className="max-w-md w-[95vw] p-0 gap-0 rounded-2xl overflow-hidden border-border/50 bg-card"
       >
         <DialogTitle className="sr-only">التسجيل في بوابة الخنيني</DialogTitle>
         <DialogDescription className="sr-only">نموذج تسجيل الدخول عبر التحقق من رقم الجوال</DialogDescription>
