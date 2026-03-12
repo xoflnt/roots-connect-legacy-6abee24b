@@ -12,7 +12,8 @@ import { formatAge } from "@/utils/ageCalculator";
 import { inferMotherName, getChildrenOf, sortByBirth } from "@/services/familyService";
 import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
 import { SubmitRequestForm } from "@/components/SubmitRequestForm";
-import { getBranch, getBranchStyle } from "@/utils/branchUtils";
+import { getBranch, getBranchStyle, DOCUMENTER_ID } from "@/utils/branchUtils";
+import { HeritageBadge } from "@/components/HeritageBadge";
 
 interface PersonDetailsProps {
   member: FamilyMember | null;
@@ -72,8 +73,11 @@ function DetailContent({ member }: { member: FamilyMember }) {
                 : "bg-[hsl(var(--female-light))] text-[hsl(var(--female))]"
             }`}
           >
-            {isMale ? "ذكر" : "أنثى"}
+           {isMale ? "ذكر" : "أنثى"}
           </span>
+          {member.id === DOCUMENTER_ID && (
+            <div className="mt-1.5"><HeritageBadge type="documenter" /></div>
+          )}
           {(() => {
             const br = getBranch(member.id);
             const bs = br ? getBranchStyle(br.pillarId) : null;

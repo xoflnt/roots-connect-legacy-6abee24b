@@ -1,8 +1,8 @@
-import { Crown, GitBranch, Star, Layers } from "lucide-react";
+import { Crown, GitBranch, Star, Layers, ScrollText } from "lucide-react";
 import { Badge } from "./ui/badge";
 
 interface HeritageBadgeProps {
-  type: "founder" | "branchHead" | "deceased" | "generation";
+  type: "founder" | "branchHead" | "deceased" | "generation" | "documenter";
   generationNum?: number;
   gender?: "M" | "F";
 }
@@ -27,6 +27,11 @@ const CONFIG = {
     label: "الجيل",
     icon: Layers,
     className: "bg-secondary text-secondary-foreground border-border/50",
+  },
+  documenter: {
+    label: "موثق الشجرة",
+    icon: ScrollText,
+    className: "bg-[hsl(35,70%,92%)] text-[hsl(35,55%,30%)] border-[hsl(35,60%,40%)]/40",
   },
 };
 
