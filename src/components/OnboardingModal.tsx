@@ -17,7 +17,9 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 const TOTAL_STEPS = 5;
 
-const memberMap = new Map(familyMembers.map((m) => [m.id, m]));
+function getMemberMap() {
+  return new Map(getAllMembers().map((m) => [m.id, m]));
+}
 
 function getFatherName(member: FamilyMember): string | null {
   if (!member.father_id) return null;
