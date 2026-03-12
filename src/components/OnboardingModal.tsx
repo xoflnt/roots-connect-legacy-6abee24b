@@ -503,7 +503,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                   <Button onClick={handleSendOTP} disabled={phone.length < 9 || loading} className="min-h-[52px] w-full text-base font-semibold rounded-xl">
                     {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "تحقق عبر واتساب"}
                   </Button>
-                  <Button variant="outline" onClick={() => setStep(3)} className="min-h-[52px] w-full rounded-xl">
+                  <Button variant="outline" onClick={() => setStep(4)} className="min-h-[52px] w-full rounded-xl">
                     <ChevronLeft className="h-4 w-4 ml-1" /> السابق
                   </Button>
                 </>
