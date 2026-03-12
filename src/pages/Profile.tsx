@@ -141,6 +141,7 @@ const Profile = () => {
 
   const handleAddChild = async () => {
     if (!member || !newChildName.trim() || saving) return;
+    if (spousesDirty) await handleSave();
     setSaving(true);
     try {
       const childId = `USR-${Date.now().toString(36)}`;
