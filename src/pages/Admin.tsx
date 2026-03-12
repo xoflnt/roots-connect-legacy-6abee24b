@@ -179,28 +179,28 @@ function AdminContent() {
   const pending = requests.filter((r) => r.status === "pending");
   const handled = requests.filter((r) => r.status !== "pending");
 
-  const handleExportCSV = () => {
-    const members = getAllMembers();
-    const headers = ["المعرّف", "الاسم", "الجنس", "معرّف الأب", "سنة الميلاد", "سنة الوفاة", "الأزواج", "الهاتف", "ملاحظات"];
-    const rows = members.map(m => [
-      m.id,
-      m.name,
-      m.gender === "M" ? "ذكر" : "أنثى",
-      m.father_id || "",
-      m.birth_year || "",
-      m.Death_year || "",
-      m.spouses || "",
-      m.phone || "",
-      m.notes || "",
-    ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(","));
-    const csvContent = "\uFEFF" + [headers.join(","), ...rows].join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `سجل_الخنيني_${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+  // --- Export state ---
+  const [exportSearch, setExportSearch] = useState("");
+  const [selectedExportMember, setSelectedExportMember] = useState<FamilyMember | null>(null);
+  const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
+  const exportRef = useRef<HTMLDivElement>(null);
+
+  const exportResults = exportSearch.trim() ? searchMembers(exportSearch, 8) : [];
+
+  const membersAll = getAllMembers();
+  const memberMapExport = new Map(membersAll.map(m => [m.id, m]));
+
+  const handleExportFull = () => {
+    const csv = buildCSV(membersAll, memberMapExport, false);
+    downloadCSV(csv, "khunaini_registry_full.csv");
+  };
+
+  const handleExportDescendants = () => {
+    if (!selectedExportMember) return;
+    const descendants = getDescendants(selectedExportMember.id, membersAll);
+    const csv = buildCSV(descendants, memberMapExport, true);
+    const safeName = selectedExportMember.name.replace(/\s+/g, "_");
+    downloadCSV(csv, `khunaini_descendants_of_${safeName}.csv`);
   };
 
   return (
