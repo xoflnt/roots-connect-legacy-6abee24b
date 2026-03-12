@@ -68,6 +68,10 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
   const [quickUpdateOpen, setQuickUpdateOpen] = useState(false);
   const [quickUpdateText, setQuickUpdateText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [preFilledBanner, setPreFilledBanner] = useState(false);
+
+  // Children dates (parent delegated entry)
+  const [childrenDates, setChildrenDates] = useState<Record<string, { day?: string; month?: string; year?: string }>>({});
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
