@@ -138,7 +138,13 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
       : undefined;
 
     const { updateMember } = await import("@/services/dataService");
-    await updateMember(selectedMember.id, { phone: `+966${phone}` });
+    // Update phone always
+    const memberUpdates: Record<string, string> = { phone: `+966${phone}` };
+    // Directly update birth_year for OTP-verified users (no admin queue)
+    if (dateStr) {
+      memberUpdates.birth_year = dateStr;
+    }
+    await updateMember(selectedMember.id, memberUpdates);
     await registerVerifiedUser({
       memberId: selectedMember.id,
       memberName: selectedMember.name,
