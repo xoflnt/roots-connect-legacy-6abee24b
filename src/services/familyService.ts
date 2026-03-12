@@ -27,12 +27,14 @@ buildMaps([...staticMembers]);
 /** Load members from cloud and rebuild maps */
 export async function loadMembers(): Promise<void> {
   try {
-    const cloudMembers = await getMembers();
+    const [cloudMembers] = await Promise.all([
+      getMembers(),
+      loadVerifiedMemberIds(),
+    ]);
     if (cloudMembers.length > 0) {
       buildMaps(cloudMembers);
       initialized = true;
     } else if (!initialized) {
-      // Fallback to static data if cloud is empty (not yet seeded)
       buildMaps([...staticMembers]);
     }
   } catch (e) {
