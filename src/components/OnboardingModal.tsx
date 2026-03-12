@@ -130,7 +130,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
         if (pollingRef.current) clearInterval(pollingRef.current);
         setPolling(false);
         setOtpVerified(true);
-        setStep(5);
+        setStep(6);
       }
     }, 3000);
     setTimeout(() => {
