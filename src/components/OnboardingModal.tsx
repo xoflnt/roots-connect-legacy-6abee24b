@@ -157,7 +157,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
     setLoading(true);
     setOtpError("");
     const ok = await verifyOTP(`+966${phone}`, otpCode);
-    if (ok) { setOtpVerified(true); setStep(5); }
+    if (ok) { setOtpVerified(true); setStep(6); }
     else { setOtpError("الرمز غير صحيح، حاول مرة أخرى"); }
     setLoading(false);
   };
