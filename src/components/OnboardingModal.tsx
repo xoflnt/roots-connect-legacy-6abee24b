@@ -305,9 +305,6 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
           <Progress value={progressValue} className="h-1.5 rounded-full" />
           <div className="flex justify-between items-center mt-2">
             <span className="text-xs text-muted-foreground">{step} / {TOTAL_STEPS}</span>
-            <Button variant="ghost" size="sm" onClick={handleSkip} className="text-xs text-muted-foreground h-8 px-2">
-              تخطي
-            </Button>
           </div>
         </div>
 
