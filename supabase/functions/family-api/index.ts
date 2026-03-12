@@ -36,7 +36,6 @@ serve(async (req) => {
       const { requestId } = await req.json();
       if (!requestId) return json({ error: "requestId required" }, 400);
 
-      // Fetch the request
       const { data: reqData, error: fetchErr } = await supabase
         .from("family_requests")
         .select("*")
@@ -46,10 +45,18 @@ serve(async (req) => {
       if (fetchErr || !reqData) return json({ error: "Request not found" }, 404);
       if (reqData.status !== "pending") return json({ error: "Request already handled" }, 400);
 
-      // Apply the change
+      // Mark approved FIRST to prevent double-execution
+      const { error: updateErr } = await supabase
+        .from("family_requests")
+        .update({ status: "approved" })
+        .eq("id", requestId)
+        .eq("status", "pending");
+
+      if (updateErr) return json({ error: "Failed to update status" }, 500);
+
       const data = reqData.data as Record<string, string>;
+
       if (reqData.type === "add_child") {
-        // Accept both key formats from frontend
         const childName = data.childName || data.child_name || "غير محدد";
         const gender = data.gender || data.child_gender || "M";
         const motherName = data.motherName || data.mother_name || "";
@@ -57,6 +64,19 @@ serve(async (req) => {
         const notes = motherName
           ? `${gender === "F" ? "والدتها" : "والدته"}: ${motherName}`
           : null;
+
+        // Dedupe: check if child with same name+gender+father already exists
+        const { data: existing } = await supabase
+          .from("family_members")
+          .select("id")
+          .eq("father_id", reqData.target_member_id)
+          .eq("name", childName)
+          .eq("gender", gender)
+          .limit(1);
+
+        if (existing && existing.length > 0) {
+          return json({ success: true, note: "Child already exists, skipped insert" });
+        }
 
         await supabase.from("family_members").insert({
           id: `REQ-${requestId.slice(0, 8)}`,
@@ -68,7 +88,6 @@ serve(async (req) => {
         });
       } else if (reqData.type === "update_info" || reqData.type === "correction") {
         const updates: Record<string, string> = {};
-        // Map both camelCase and snake_case keys to DB columns
         const keyMap: Record<string, string> = {
           birthYear: "birth_year",
           birth_year: "birth_year",
@@ -92,28 +111,32 @@ serve(async (req) => {
             .eq("id", reqData.target_member_id);
         }
       } else if (reqData.type === "add_spouse") {
-        // Accept both key formats
-        const newSpouse = data.spouseName || data.spouse_name || "";
-        const { data: member } = await supabase
-          .from("family_members")
-          .select("spouses")
-          .eq("id", reqData.target_member_id)
-          .single();
-        const currentSpouses = member?.spouses || "";
-        await supabase
-          .from("family_members")
-          .update({
-            spouses: currentSpouses ? `${currentSpouses}، ${newSpouse}` : newSpouse,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", reqData.target_member_id);
-      }
+        const newSpouse = (data.spouseName || data.spouse_name || "").trim();
+        if (newSpouse) {
+          const { data: member } = await supabase
+            .from("family_members")
+            .select("spouses")
+            .eq("id", reqData.target_member_id)
+            .single();
 
-      // Mark approved
-      await supabase
-        .from("family_requests")
-        .update({ status: "approved" })
-        .eq("id", requestId);
+          const currentSpouses = member?.spouses || "";
+          // Dedupe: check if spouse name already in list
+          const spouseList = currentSpouses
+            ? currentSpouses.split("،").map((s: string) => s.trim()).filter(Boolean)
+            : [];
+
+          if (!spouseList.includes(newSpouse)) {
+            spouseList.push(newSpouse);
+            await supabase
+              .from("family_members")
+              .update({
+                spouses: spouseList.join("، "),
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", reqData.target_member_id);
+          }
+        }
+      }
 
       return json({ success: true });
     }
