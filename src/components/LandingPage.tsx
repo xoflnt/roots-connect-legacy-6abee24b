@@ -48,7 +48,7 @@ function computeStats() {
   const roots = allMembers.filter((m) => !m.father_id);
 
   const childrenMap = new Map<string | null, string[]>();
-  for (const m of familyMembers) {
+  for (const m of allMembers) {
     const list = childrenMap.get(m.father_id) || [];
     list.push(m.id);
     childrenMap.set(m.father_id, list);
