@@ -182,6 +182,15 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
       hijriBirthDate: dateStr,
     });
 
+    // Save children dates (parent delegated entry)
+    const verifiedIds = getVerifiedMemberIds();
+    for (const [childId, cDate] of Object.entries(childrenDates)) {
+      if (cDate.year && !verifiedIds.has(childId)) {
+        const childDateStr = `${cDate.year}/${cDate.month || "1"}/${cDate.day || "1"}`;
+        await updateMember(childId, { birth_year: childDateStr });
+      }
+    }
+
     // Fire quick-update request as free text
     if (quickUpdateText.trim()) {
       await submitRequest({
