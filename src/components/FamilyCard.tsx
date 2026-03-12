@@ -17,6 +17,7 @@ export function FamilyCard({ data, selected }: NodeProps) {
     spouseNames: string[];
     hasChildren: boolean;
     isExpanded: boolean;
+    isVerified: boolean;
   };
   const isMale = member.gender === "M";
   const branchColor = member.branchColorIndex >= 0 ? BRANCH_COLORS[member.branchColorIndex % BRANCH_COLORS.length] : null;
