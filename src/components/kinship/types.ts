@@ -12,4 +12,6 @@ export interface KinshipViewProps {
   result: KinshipResult;
   person1: FamilyMember;
   person2: FamilyMember;
+  motherName1?: string | null;
+  motherName2?: string | null;
 }

@@ -4,7 +4,7 @@ import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "./ui/tabs";
 import type { FamilyMember } from "@/data/familyData";
-import { getAllMembers, searchMembers, findKinship, kinshipToArabic } from "@/services/familyService";
+import { getAllMembers, searchMembers, findKinship, kinshipToArabic, inferMotherName } from "@/services/familyService";
 import { getLineageLabel, getMemberSubtitle } from "@/utils/memberLabel";
 import { useAuth } from "@/contexts/AuthContext";
 import { KinshipTreeView } from "./kinship/KinshipTreeView";
@@ -104,7 +104,9 @@ export function KinshipCalculator({ initialMemberId }: KinshipCalculatorProps) {
     return findKinship(person1.id, person2.id);
   }, [person1, person2]);
 
-  const relationText = result ? kinshipToArabic(result.dist1, result.dist2) : null;
+  const relationText = result ? kinshipToArabic(result.dist1, result.dist2, person1!, person2!) : null;
+  const motherName1 = person1 ? inferMotherName(person1) : null;
+  const motherName2 = person2 ? inferMotherName(person2) : null;
 
   const handleSwap = () => {
     setPerson1(person2);
@@ -193,13 +195,13 @@ export function KinshipCalculator({ initialMemberId }: KinshipCalculatorProps) {
               </div>
 
               <TabsContent value="tree" className="px-4 pb-2 mt-0">
-                <KinshipTreeView result={result} person1={person1!} person2={person2!} />
+                <KinshipTreeView result={result} person1={person1!} person2={person2!} motherName1={motherName1} motherName2={motherName2} />
               </TabsContent>
               <TabsContent value="document" className="px-4 pb-2 mt-0">
-                <KinshipDocumentView result={result} person1={person1!} person2={person2!} />
+                <KinshipDocumentView result={result} person1={person1!} person2={person2!} motherName1={motherName1} motherName2={motherName2} />
               </TabsContent>
               <TabsContent value="path" className="px-4 pb-2 mt-0">
-                <KinshipInteractiveView result={result} person1={person1!} person2={person2!} />
+                <KinshipInteractiveView result={result} person1={person1!} person2={person2!} motherName1={motherName1} motherName2={motherName2} />
               </TabsContent>
             </Tabs>
 
