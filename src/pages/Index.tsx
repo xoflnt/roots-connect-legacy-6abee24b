@@ -1,10 +1,11 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AppHeader, type ViewMode } from "@/components/AppHeader";
 import { FamilyTree, type FamilyTreeRef } from "@/components/FamilyTree";
 import { LandingPage } from "@/components/LandingPage";
 import { ListView } from "@/components/ListView";
 import { KinshipCalculator } from "@/components/KinshipCalculator";
+import { loadMembers } from "@/services/familyService";
 
 export type AppView = "landing" | ViewMode;
 
@@ -13,6 +14,11 @@ const VALID_VIEWS: ViewMode[] = ["tree", "list", "kinship", "lineage"];
 const Index = () => {
   const treeRef = useRef<FamilyTreeRef>(null);
   const [searchParams] = useSearchParams();
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    loadMembers().finally(() => setReady(true));
+  }, []);
   const initialView = searchParams.get("view");
   const [activeView, setActiveView] = useState<AppView>(
     initialView && VALID_VIEWS.includes(initialView as ViewMode) ? (initialView as AppView) : "landing"
