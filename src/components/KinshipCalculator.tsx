@@ -3,7 +3,7 @@ import { ArrowLeftRight, Search, User, Users, ChevronDown } from "lucide-react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import type { FamilyMember } from "@/data/familyData";
-import { getAllMembers } from "@/services/familyService";
+import { searchMembers } from "@/services/familyService";
 import { findKinship, kinshipToArabic } from "@/services/familyService";
 import { getLineageLabel, getMemberSubtitle } from "@/utils/memberLabel";
 
