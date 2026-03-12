@@ -1,5 +1,6 @@
 import { useState, useRef, useMemo, useEffect, useCallback } from "react";
-import { Search, TreePine, ChevronDown, Users, Layers, Crown, User, UserRound, Heart, Quote, Send, BookOpen, UserCheck, Calculator, Shield } from "lucide-react";
+import { Search, TreePine, ChevronDown, Users, Layers, Crown, User, UserRound, Heart, Quote, Send, BookOpen, UserCheck, Calculator, Shield, ScrollText } from "lucide-react";
+import { Link } from "react-router-dom";
 import { getLineageLabel, getMemberSubtitle } from "@/utils/memberLabel";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FontSizeToggle } from "@/components/FontSizeToggle";
@@ -9,9 +10,8 @@ import type { FamilyMember } from "@/data/familyData";
 import { OnboardingModal } from "@/components/OnboardingModal";
 import { SubmitRequestForm } from "@/components/SubmitRequestForm";
 import { trackVisit } from "@/services/dataService";
-import { getAllMembers } from "@/services/familyService";
-import { PILLARS, getBranch } from "@/utils/branchUtils";
-import { getDescendantCount } from "@/services/familyService";
+import { getAllMembers, getDescendantCount } from "@/services/familyService";
+import { PILLARS, DOCUMENTER_ID } from "@/utils/branchUtils";
 
 interface LandingPageProps {
   onSearchSelect: (memberId: string) => void;
@@ -22,9 +22,7 @@ interface LandingPageProps {
 function useCountUp(target: number, duration = 1500) {
   const [value, setValue] = useState(0);
   const [started, setStarted] = useState(false);
-
   const start = useCallback(() => setStarted(true), []);
-
   useEffect(() => {
     if (!started || target === 0) return;
     let raf: number;
@@ -38,7 +36,6 @@ function useCountUp(target: number, duration = 1500) {
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
   }, [started, target, duration]);
-
   return { value: started ? value : 0, start };
 }
 
@@ -46,7 +43,6 @@ function computeStats() {
   const allMembers = getAllMembers();
   const total = allMembers.length;
   const roots = allMembers.filter((m) => !m.father_id);
-
   const childrenMap = new Map<string | null, string[]>();
   for (const m of allMembers) {
     const list = childrenMap.get(m.father_id) || [];
@@ -62,21 +58,15 @@ function computeStats() {
       stack.push({ id: childId, depth: depth + 1 });
     }
   }
-
   const males = allMembers.filter((m) => m.gender === "M").length;
   const females = allMembers.filter((m) => m.gender === "F").length;
-
   const maleNameCounts = new Map<string, number>();
   const femaleNameCounts = new Map<string, number>();
   for (const m of allMembers) {
     const firstName = m.name.split(" ")[0];
-    if (m.gender === "M") {
-      maleNameCounts.set(firstName, (maleNameCounts.get(firstName) || 0) + 1);
-    } else {
-      femaleNameCounts.set(firstName, (femaleNameCounts.get(firstName) || 0) + 1);
-    }
+    if (m.gender === "M") maleNameCounts.set(firstName, (maleNameCounts.get(firstName) || 0) + 1);
+    else femaleNameCounts.set(firstName, (femaleNameCounts.get(firstName) || 0) + 1);
   }
-
   let topMaleName = "", topMaleCount = 0;
   for (const [name, count] of maleNameCounts) {
     if (count > topMaleCount) { topMaleName = name; topMaleCount = count; }
@@ -85,18 +75,12 @@ function computeStats() {
   for (const [name, count] of femaleNameCounts) {
     if (count > topFemaleCount) { topFemaleName = name; topFemaleCount = count; }
   }
-
-  return {
-    total, generations: maxDepth, males, females,
-    topMaleName, topMaleCount,
-    topFemaleName, topFemaleCount,
-  };
+  return { total, generations: maxDepth, males, females, topMaleName, topMaleCount, topFemaleName, topFemaleCount };
 }
 
 function StatCard({ icon: Icon, label, value, suffix, highlight }: { icon: React.ElementType; label: string; value: number; suffix?: string; highlight?: string }) {
   const counter = useCountUp(value);
   const ref = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -104,7 +88,6 @@ function StatCard({ icon: Icon, label, value, suffix, highlight }: { icon: React
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
-
   return (
     <div ref={ref} className="flex flex-col items-center gap-1.5 p-3 md:p-4 rounded-2xl bg-card border border-border/50 shadow-sm overflow-hidden">
       <Icon className="h-5 w-5 text-accent shrink-0" />
@@ -127,143 +110,105 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [requestOpen, setRequestOpen] = useState(false);
-  const aboutRef = useRef<HTMLDivElement>(null);
   const stats = useMemo(computeStats, []);
 
-  const pillarStats = useMemo(() => {
-    return PILLARS.map((p) => ({
-      ...p,
-      descendants: getDescendantCount(p.id),
-    }));
-  }, []);
+  const pillarStats = useMemo(() => PILLARS.map((p) => ({ ...p, descendants: getDescendantCount(p.id) })), []);
 
-  // Track visit on mount
   useEffect(() => { trackVisit(); }, []);
 
   const allMembers = getAllMembers();
-  const filtered = query.trim()
-    ? allMembers.filter((m) => m.name.includes(query.trim())).slice(0, 10)
-    : [];
-
+  const filtered = query.trim() ? allMembers.filter((m) => m.name.includes(query.trim())).slice(0, 10) : [];
   const showingResults = open && filtered.length > 0;
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden" dir="rtl">
-      {/* Onboarding shown directly on landing page */}
       <OnboardingModal />
 
-      {/* Hero Section */}
-      <section className="relative flex flex-col items-center justify-center min-h-screen px-4 text-center">
+      {/* ─── 1. Hero Title (compact) ─── */}
+      <section className="relative flex flex-col items-center justify-center px-4 text-center pt-16 pb-10 md:pt-24 md:pb-14">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-accent to-transparent" />
         <div className="absolute top-4 left-4 z-30 flex items-center gap-1.5">
           <FontSizeToggle />
           <ThemeToggle />
         </div>
 
-        <div className="max-w-3xl mx-auto space-y-6 md:space-y-8 w-full pb-24">
-          <div
-            className="mx-auto w-16 h-16 md:w-20 md:h-20 rounded-full bg-primary/10 flex items-center justify-center opacity-0 animate-fade-in"
-            style={{ animationDelay: "0.1s" }}
-          >
+        <div className="max-w-3xl mx-auto space-y-4 w-full">
+          <div className="mx-auto w-16 h-16 md:w-20 md:h-20 rounded-full bg-primary/10 flex items-center justify-center opacity-0 animate-fade-in" style={{ animationDelay: "0.1s" }}>
             <TreePine className="h-8 w-8 md:h-10 md:w-10 text-primary" />
           </div>
-
-          <h1
-            className="text-3xl md:text-6xl font-extrabold text-primary leading-tight opacity-0 animate-fade-in"
-            style={{ animationDelay: "0.2s" }}
-          >
+          <h1 className="text-3xl md:text-6xl font-extrabold text-primary leading-tight opacity-0 animate-fade-in" style={{ animationDelay: "0.2s" }}>
             بوابة تراث الخنيني - فرع الزلفي
           </h1>
-
-          <p
-            className="text-base md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed opacity-0 animate-fade-in px-2"
-            style={{ animationDelay: "0.4s" }}
-          >
+          <p className="text-base md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed opacity-0 animate-fade-in px-2" style={{ animationDelay: "0.4s" }}>
             توثيق للأصالة، وامتداد للجذور... منصة رقمية تجمع أجيال العائلة وتحفظ إرثها.
           </p>
+        </div>
+      </section>
 
-          {/* Search Bar */}
-          <div
-            className="relative max-w-lg mx-auto opacity-0 animate-fade-in w-full px-2 z-20"
-            style={{ animationDelay: "0.6s" }}
-          >
-            <div className="relative">
-              <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
-              <Input
-                placeholder="ابحث عن اسمك لمعرفة نسبك"
-                value={query}
-                onChange={(e) => {
-                  setQuery(e.target.value);
-                  setOpen(true);
-                }}
-                onFocus={() => query.trim() && setOpen(true)}
-                onBlur={() => setTimeout(() => setOpen(false), 200)}
-                className="pr-12 pl-4 h-14 text-base md:text-lg rounded-2xl bg-card border-border shadow-lg focus:ring-2 focus:ring-accent placeholder:text-muted-foreground"
-              />
+      {/* ─── 2. كلمة الموثّق ─── */}
+      <section className="py-8 md:py-12 px-4">
+        <div className="max-w-3xl mx-auto text-center space-y-4">
+          <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[hsl(35,70%,92%)] text-[hsl(35,55%,30%)] font-bold text-sm">
+            <ScrollText className="h-4 w-4" />
+            كلمة الموثّق
+          </div>
+
+          <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 md:p-10 text-right border-r-4 border-r-[hsl(35,60%,45%)]">
+            <Quote className="absolute top-4 right-4 h-8 w-8 text-[hsl(35,60%,45%)]/20" />
+            <blockquote className="text-base md:text-lg text-muted-foreground leading-loose italic pr-8">
+              "الهدف من هذه الشجرة التوثيق مثل تواريخ الميلاد، الوفاة، المصاهرة وترتيب الاخوة نسأل الله سبحانه وتعالى لأبائنا وامهاتنا وابائهم وامهاتهم ومن له حق علينا بالرحمة والمغفرة وان يجمعنا جميعاً معهم بجنات النعيم"
+            </blockquote>
+            <div className="mt-6 text-sm text-muted-foreground">
+              <span className="font-bold">— جمع وتوثيق </span>
+              <Link
+                to={`/person/${DOCUMENTER_ID}`}
+                className="font-extrabold text-[hsl(35,55%,30%)] hover:text-[hsl(35,60%,40%)] underline underline-offset-4 decoration-[hsl(35,60%,45%)]/40 transition-colors"
+              >
+                علي المحمد
+              </Link>
+              <br />
+              <span>٢/١٢/١٤٤١</span>
             </div>
+          </div>
+        </div>
+      </section>
 
-            {showingResults && (
-              <div className="absolute top-full mt-2 w-full bg-card border border-border rounded-2xl shadow-xl z-50 overflow-hidden max-h-72 overflow-y-auto">
-                {filtered.map((m) => {
-                  const subtitle = getMemberSubtitle(m);
-                  return (
+      {/* ─── 3. Search Bar ─── */}
+      <section className="py-6 md:py-8 px-4">
+        <div className="max-w-lg mx-auto relative z-20">
+          <div className="relative">
+            <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
+            <Input
+              placeholder="ابحث عن اسمك لمعرفة نسبك"
+              value={query}
+              onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
+              onFocus={() => query.trim() && setOpen(true)}
+              onBlur={() => setTimeout(() => setOpen(false), 200)}
+              className="pr-12 pl-4 h-14 text-base md:text-lg rounded-2xl bg-card border-border shadow-lg focus:ring-2 focus:ring-accent placeholder:text-muted-foreground"
+            />
+          </div>
+          {showingResults && (
+            <div className="absolute top-full mt-2 w-full bg-card border border-border rounded-2xl shadow-xl z-50 overflow-hidden max-h-72 overflow-y-auto">
+              {filtered.map((m) => {
+                const subtitle = getMemberSubtitle(m);
+                return (
                   <button
                     key={m.id}
                     className="w-full text-right px-5 py-3 text-foreground hover:bg-muted transition-colors border-b border-border/30 last:border-b-0"
                     style={{ minHeight: 48 }}
-                    onMouseDown={() => {
-                      onSearchSelect(m.id);
-                      setQuery(m.name);
-                      setOpen(false);
-                    }}
+                    onMouseDown={() => { onSearchSelect(m.id); setQuery(m.name); setOpen(false); }}
                   >
                     <span className="font-bold block">{getLineageLabel(m)}</span>
-                    {subtitle && (
-                      <span className="text-xs text-muted-foreground">{subtitle}</span>
-                    )}
+                    {subtitle && <span className="text-xs text-muted-foreground">{subtitle}</span>}
                   </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* CTA Buttons */}
-          {!showingResults && (
-            <div
-              className="opacity-0 animate-fade-in px-2 space-y-3"
-              style={{ animationDelay: "0.8s" }}
-            >
-              <Button
-                onClick={onBrowseTree}
-                size="lg"
-                className="h-14 px-10 text-base md:text-lg rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover-scale font-bold w-full md:w-auto"
-              >
-                <TreePine className="h-5 w-5 ml-2" />
-                تصفح الشجرة الكاملة
-              </Button>
-              <Button
-                onClick={() => setRequestOpen(true)}
-                variant="outline"
-                size="lg"
-                className="h-12 px-8 text-base rounded-2xl border-accent/30 text-accent hover:bg-accent/10 font-bold w-full md:w-auto"
-              >
-                <Send className="h-4 w-4 ml-2" />
-                أرسل طلب تعديل
-              </Button>
+                );
+              })}
             </div>
           )}
         </div>
-
-        <button
-          onClick={() => aboutRef.current?.scrollIntoView({ behavior: "smooth" })}
-          className="absolute bottom-6 left-1/2 -translate-x-1/2 text-muted-foreground animate-bounce min-w-[44px] min-h-[44px] flex items-center justify-center z-10"
-        >
-          <ChevronDown className="h-6 w-6" />
-        </button>
       </section>
 
-      {/* Family Pillars Section */}
+      {/* ─── 4. Three Pillars ─── */}
       <section className="py-12 md:py-20 px-4 border-t border-border/30">
         <div className="max-w-4xl mx-auto text-center space-y-6 md:space-y-8">
           <div className="inline-block px-5 py-2 rounded-full bg-accent/15 text-accent font-bold text-sm">
@@ -275,7 +220,6 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
           <p className="text-muted-foreground text-sm md:text-base max-w-xl mx-auto">
             يقوم فرع الزلفي على ثلاثة أعمام هم أبناء زيد، ومنهم تفرّعت جميع عائلات الخنيني في الزلفي
           </p>
-
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-4">
             {pillarStats.map((pillar, i) => {
               const colors = PILLAR_COLORS[i];
@@ -288,9 +232,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                   <div className={`w-14 h-14 rounded-2xl bg-background/60 flex items-center justify-center ${colors.icon}`}>
                     <Shield className="h-7 w-7" />
                   </div>
-                  <h3 className="text-xl md:text-2xl font-extrabold text-foreground">
-                    {pillar.name}
-                  </h3>
+                  <h3 className="text-xl md:text-2xl font-extrabold text-foreground">{pillar.name}</h3>
                   <div className="flex items-center gap-1.5 text-muted-foreground text-sm font-bold">
                     <Users className="h-4 w-4" />
                     <span>{pillar.descendants} فرد</span>
@@ -298,10 +240,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                   <Button
                     variant="outline"
                     className="mt-2 rounded-xl font-bold group-hover:bg-background/80 transition-colors"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onBrowseBranch?.(pillar.id);
-                    }}
+                    onClick={(e) => { e.stopPropagation(); onBrowseBranch?.(pillar.id); }}
                   >
                     <TreePine className="h-4 w-4 ml-1.5" />
                     تصفح الفرع
@@ -313,13 +252,26 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         </div>
       </section>
 
-      {/* Fun Stats Section */}
+      {/* ─── 5. Browse Full Tree CTA ─── */}
+      <section className="py-6 md:py-10 px-4">
+        <div className="max-w-lg mx-auto">
+          <Button
+            onClick={onBrowseTree}
+            size="lg"
+            className="h-16 w-full text-lg md:text-xl rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-xl hover:shadow-2xl transition-all font-extrabold"
+          >
+            <TreePine className="h-6 w-6 ml-3" />
+            تصفح كامل الشجرة
+          </Button>
+        </div>
+      </section>
+
+      {/* ─── 6. Statistics ─── */}
       <section className="py-12 md:py-20 px-4 border-t border-border/30">
         <div className="max-w-3xl mx-auto text-center space-y-6 md:space-y-8">
           <div className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary font-bold text-sm">
             العائلة بالأرقام
           </div>
-
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
             <StatCard icon={Users} label="إجمالي الأفراد" value={stats.total} />
             <StatCard icon={Layers} label="عدد الأجيال" value={stats.generations} />
@@ -331,7 +283,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         </div>
       </section>
 
-      {/* How to Use Section */}
+      {/* ─── 7. How to Use ─── */}
       <section className="py-12 md:py-20 px-4 border-t border-border/30">
         <div className="max-w-3xl mx-auto text-center space-y-6 md:space-y-8">
           <div className="inline-block px-4 py-1.5 rounded-full bg-accent/15 text-accent font-bold text-sm">
@@ -353,31 +305,36 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
               </div>
             ))}
           </div>
-          <Button
-            variant="outline"
-            onClick={() => window.location.href = "/guide"}
-            className="rounded-2xl h-12 px-8 text-base font-bold border-primary/30 text-primary hover:bg-primary/10"
-          >
-            <BookOpen className="h-4 w-4 ml-2" />
-            دليل الاستخدام الكامل
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button
+              variant="outline"
+              onClick={() => window.location.href = "/guide"}
+              className="rounded-2xl h-12 px-8 text-base font-bold border-primary/30 text-primary hover:bg-primary/10"
+            >
+              <BookOpen className="h-4 w-4 ml-2" />
+              دليل الاستخدام الكامل
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setRequestOpen(true)}
+              className="rounded-2xl h-12 px-8 text-base font-bold border-accent/30 text-accent hover:bg-accent/10"
+            >
+              <Send className="h-4 w-4 ml-2" />
+              أرسل طلب تعديل
+            </Button>
+          </div>
         </div>
       </section>
 
-      {/* About Section */}
-      <section
-        ref={aboutRef}
-        className="py-12 md:py-20 px-4 bg-card/50 border-t border-border/30"
-      >
+      {/* ─── 8. About ─── */}
+      <section className="py-12 md:py-20 px-4 bg-card/50 border-t border-border/30">
         <div className="max-w-3xl mx-auto text-center space-y-6 md:space-y-8">
           <div className="inline-block px-4 py-1.5 rounded-full bg-accent/15 text-accent font-bold text-sm">
             عن العائلة
           </div>
-
           <h2 className="text-2xl md:text-4xl font-extrabold text-foreground">
             جذور ممتدة عبر الأجيال
           </h2>
-
           <div className="space-y-6 text-base md:text-lg text-muted-foreground leading-loose text-right">
             <p>
               تنحدر عائلة <strong className="text-foreground">الخنيني</strong> من{" "}
@@ -391,7 +348,6 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
               هذه المنصة الرقمية هي خطوة لحفظ هذا الإرث العريق وتسهيل التواصل بين أبناء العائلة.
             </p>
           </div>
-
           <div className="flex items-center justify-center gap-4 pt-4">
             <div className="h-px w-16 bg-accent/30" />
             <div className="w-2 h-2 rounded-full bg-accent/50" />
@@ -400,32 +356,11 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         </div>
       </section>
 
-      {/* Dedication / Quote Section */}
-      <section className="py-12 md:py-20 px-4 border-t border-border/30">
-        <div className="max-w-3xl mx-auto text-center space-y-6 md:space-y-8">
-          <div className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary font-bold text-sm">
-            كلمة الموثّق
-          </div>
-
-          <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 md:p-10 text-right border-r-4 border-r-accent">
-            <Quote className="absolute top-4 right-4 h-8 w-8 text-accent/20" />
-            <blockquote className="text-base md:text-lg text-muted-foreground leading-loose italic pr-8">
-              "الهدف من هذه الشجرة التوثيق مثل تواريخ الميلاد، الوفاة، المصاهرة وترتيب الاخوة نسأل الله سبحانه وتعالى لأبائنا وامهاتنا وابائهم وامهاتهم ومن له حق علينا بالرحمة والمغفرة وان يجمعنا جميعاً معهم بجنات النعيم"
-            </blockquote>
-            <div className="mt-6 text-sm text-muted-foreground">
-              <span className="font-bold text-foreground">— جمع وتوثيق علي المحمد</span>
-              <br />
-              <span>٢/١٢/١٤٤١</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
+      {/* ─── 9. Footer ─── */}
       <footer className="py-8 text-center text-sm text-muted-foreground border-t border-border/30">
         <p>شجرة عائلة الخنيني — حفظ الإرث للأجيال القادمة</p>
       </footer>
 
-      {/* Submit Request Form */}
       <SubmitRequestForm open={requestOpen} onOpenChange={setRequestOpen} />
     </div>
   );
