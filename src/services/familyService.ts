@@ -238,6 +238,65 @@ export function kinshipToArabic(dist1: number, dist2: number, person1?: FamilyMe
   return `قريبه (${toArabicNum(dist1)} أجيال / ${toArabicNum(dist2)} أجيال من الجد المشترك)`;
 }
 
+export interface DirectionalKinship {
+  symmetric: boolean;
+  symmetricTitle: string;
+  title1to2: string;
+  title2to1: string;
+}
+
+export function kinshipDirectional(
+  d1: number,
+  d2: number,
+  person1?: FamilyMember,
+  person2?: FamilyMember
+): DirectionalKinship {
+  // Symmetric cases
+  if (d1 === d2) {
+    if (d1 === 0) return { symmetric: true, symmetricTitle: "نفس الشخص", title1to2: "", title2to1: "" };
+    if (d1 === 1) {
+      const mother1 = person1 ? extractMotherName(person1) : null;
+      const mother2 = person2 ? extractMotherName(person2) : null;
+      const isFull = mother1 && mother2 && mother1 === mother2;
+      const title = isFull ? "أخوان شقيقان" : "أخوان من الأب";
+      return { symmetric: true, symmetricTitle: title, title1to2: "", title2to1: "" };
+    }
+    if (d1 === 2) return { symmetric: true, symmetricTitle: "أبناء عم", title1to2: "", title2to1: "" };
+    if (d1 === 3) return { symmetric: true, symmetricTitle: "أبناء عمومة من الدرجة الثانية", title1to2: "", title2to1: "" };
+    return { symmetric: true, symmetricTitle: `أبناء عمومة من الدرجة ${toOrdinal(d1 - 1) || toArabicNum(d1 - 1)}`, title1to2: "", title2to1: "" };
+  }
+
+  // Asymmetric — compute both directions
+  const t1 = asymTitle(d1, d2);
+  const t2 = asymTitle(d2, d1);
+  return { symmetric: false, symmetricTitle: "", title1to2: t1, title2to1: t2 };
+}
+
+function asymTitle(myDist: number, otherDist: number): string {
+  // Direct lineage
+  if (myDist === 0 && otherDist === 1) return "أب";
+  if (myDist === 1 && otherDist === 0) return "ابن";
+  if (myDist === 0 && otherDist === 2) return "جد";
+  if (myDist === 2 && otherDist === 0) return "حفيد";
+  if (myDist === 0 && otherDist >= 3) return `جد ${toOrdinal(otherDist - 1) || toArabicNum(otherDist - 1)}`;
+  if (myDist >= 3 && otherDist === 0) return `حفيد ${toOrdinal(myDist - 1) || toArabicNum(myDist - 1)}`;
+
+  // Uncle / nephew
+  if (myDist === 1 && otherDist === 2) return "عم";
+  if (myDist === 2 && otherDist === 1) return "ابن أخ";
+  if (myDist === 1 && otherDist === 3) return "عم الأب";
+  if (myDist === 3 && otherDist === 1) return "ابن ابن أخ";
+  if (myDist === 1 && otherDist > 3) return `عم من الدرجة ${toArabicNum(otherDist - 1)}`;
+
+  // Cousin-based
+  if (myDist === 2 && otherDist === 3) return "ابن عم الأب";
+  if (myDist === 3 && otherDist === 2) return "ابن ابن عم";
+
+  // Deep fallback
+  return "";
+}
+}
+
 export function generationText(n: number): string {
   if (n === 1) return "بجيل واحد";
   if (n === 2) return "بجيلين";
