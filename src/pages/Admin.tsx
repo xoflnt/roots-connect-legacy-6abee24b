@@ -1,13 +1,64 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AdminProtect } from "@/components/AdminProtect";
 import { Button } from "@/components/ui/button";
-import { Users, Eye, ShieldCheck, TreePine, Check, Loader2, ArrowRight, Bell, Download } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Users, Eye, ShieldCheck, TreePine, Check, Loader2, ArrowRight, Bell, Download, Search, X } from "lucide-react";
 import { getRequests, markRequestDone, getVerifiedUsers, getVisitCount, type FamilyRequest } from "@/services/dataService";
-import { getAllMembers } from "@/services/familyService";
+import { getAllMembers, searchMembers, getMemberById } from "@/services/familyService";
+import type { FamilyMember } from "@/data/familyData";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DataTableView } from "@/components/DataTableView";
+
+// --- Smart Export Helpers ---
+
+function getDescendants(rootId: string, allMembers: FamilyMember[], gen = 1): (FamilyMember & { generation: number })[] {
+  const children = allMembers.filter(m => m.father_id === rootId);
+  return children.reduce<(FamilyMember & { generation: number })[]>((acc, child) => [
+    ...acc,
+    { ...child, generation: gen },
+    ...getDescendants(child.id, allMembers, gen + 1),
+  ], []);
+}
+
+function buildCSV(members: (FamilyMember & { generation?: number })[], memberMap: Map<string, FamilyMember>, isSubtree: boolean): string {
+  const headers = [
+    "مستوى الجيل",
+    "الاسم",
+    "اسم الأب",
+    "الجنس",
+    "سنة الميلاد",
+    "رقم الجوال",
+    "الزوجات",
+    "ملاحظات وتفاصيل الأم",
+  ];
+  const rows = members.map(m => {
+    const father = m.father_id ? memberMap.get(m.father_id) : null;
+    return [
+      isSubtree && m.generation != null ? String(m.generation) : "",
+      m.name,
+      father?.name || "",
+      m.gender === "M" ? "ذكر" : "أنثى",
+      m.birth_year || "",
+      m.phone || "",
+      m.spouses?.replace(/،/g, "، ") || "",
+      m.notes || "",
+    ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(",");
+  });
+  return "\uFEFF" + [headers.join(","), ...rows].join("\n");
+}
+
+function downloadCSV(content: string, filename: string) {
+  const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 function StatCard({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string | number }) {
   return (
