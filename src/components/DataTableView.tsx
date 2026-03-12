@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { getAllMembers, inferMotherName, sortByBirth } from "@/services/familyService";
+import { getAllMembers, inferMotherName, sortByBirth, normalizeForSearch } from "@/services/familyService";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -97,7 +97,14 @@ export function DataTableView() {
     }
 
     if (search.trim()) {
-      list = list.filter((m) => m.name.includes(search.trim()));
+      const q = normalizeForSearch(search);
+      const tokens = q.split(" ").filter(Boolean);
+      if (tokens.length > 0) {
+        list = list.filter((m) => {
+          const normalized = normalizeForSearch(m.name);
+          return tokens.every((t) => normalized.includes(t));
+        });
+      }
     }
 
     return sortByBirth(list);

@@ -3,7 +3,7 @@ import { ArrowLeftRight, Search, User, Users, ChevronDown } from "lucide-react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import type { FamilyMember } from "@/data/familyData";
-import { getAllMembers } from "@/services/familyService";
+import { getAllMembers, searchMembers } from "@/services/familyService";
 import { findKinship, kinshipToArabic } from "@/services/familyService";
 import { getLineageLabel, getMemberSubtitle } from "@/utils/memberLabel";
 
@@ -25,9 +25,8 @@ function PersonPicker({
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
 
-  const filtered = useMemo(() => {
-    if (!query.trim()) return [];
-    return getAllMembers().filter((m) => m.name.includes(query.trim())).slice(0, 8);
+   const filtered = useMemo(() => {
+    return searchMembers(query, 8);
   }, [query]);
 
   return (
