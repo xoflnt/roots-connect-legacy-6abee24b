@@ -128,7 +128,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
   };
 
   const handleComplete = async () => {
-    if (!selectedMember || isSubmitting) return;
+    if (!selectedMember || isSubmitting || !hijriDate.year) return;
     setIsSubmitting(true);
     try {
 
@@ -161,6 +161,11 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
       });
       toast.success("تم إرسال طلب التحديث للمراجعة");
     }
+
+    // Refresh data instantly so tree/cards reflect new birth date
+    const { refreshMembers } = await import("@/services/familyService");
+    await refreshMembers();
+    window.dispatchEvent(new Event("family-data-updated"));
 
     login({
       memberId: selectedMember.id,
@@ -618,12 +623,12 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
 
               {/* ─── Actions ─── */}
               <div className="mt-auto space-y-2 pt-2">
-                <Button type="button" onClick={handleComplete} disabled={isSubmitting} className="min-h-[52px] w-full text-base font-semibold rounded-xl">
+                {!hijriDate.year && (
+                  <p className="text-xs text-destructive text-center font-medium">يرجى اختيار سنة الميلاد على الأقل للمتابعة</p>
+                )}
+                <Button type="button" onClick={handleComplete} disabled={isSubmitting || !hijriDate.year} className="min-h-[52px] w-full text-base font-semibold rounded-xl">
                   {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin ml-2" /> : null}
                   حفظ والدخول للبوابة
-                </Button>
-                <Button type="button" variant="ghost" onClick={handleComplete} disabled={isSubmitting} className="w-full text-sm text-muted-foreground">
-                  تخطي
                 </Button>
               </div>
             </div>

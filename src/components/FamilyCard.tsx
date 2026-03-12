@@ -1,5 +1,5 @@
 import { Handle, Position, type NodeProps } from "@xyflow/react";
-import { Plus, Minus, UserPlus, Heart } from "lucide-react";
+import { Plus, Minus, UserPlus, Heart, BadgeCheck } from "lucide-react";
 import { WhatsAppIcon } from "./WhatsAppIcon";
 import { downloadVCard } from "@/utils/vcard";
 import type { FamilyMember } from "@/data/familyData";
@@ -8,6 +8,7 @@ import { HeritageBadge } from "./HeritageBadge";
 import { isFounder, isDeceased, getChildrenOf } from "@/services/familyService";
 import { formatAge } from "@/utils/ageCalculator";
 import { getBranch, getBranchStyle, DOCUMENTER_ID } from "@/utils/branchUtils";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 
 export function FamilyCard({ data, selected }: NodeProps) {
   const member = data as unknown as FamilyMember & {
@@ -16,6 +17,7 @@ export function FamilyCard({ data, selected }: NodeProps) {
     spouseNames: string[];
     hasChildren: boolean;
     isExpanded: boolean;
+    isVerified: boolean;
   };
   const isMale = member.gender === "M";
   const branchColor = member.branchColorIndex >= 0 ? BRANCH_COLORS[member.branchColorIndex % BRANCH_COLORS.length] : null;
@@ -80,12 +82,21 @@ export function FamilyCard({ data, selected }: NodeProps) {
 
       <Handle type="target" position={Position.Top} className="!bg-muted-foreground/40 !w-2.5 !h-2.5 !border-2 !border-card" />
 
-      <h3
-        className="text-base font-bold text-foreground leading-tight px-3 w-full line-clamp-2"
-        dir="rtl"
-      >
-        {member.name}
-      </h3>
+      <div className="flex items-center justify-center gap-1 px-3 w-full" dir="rtl">
+        <h3 className="text-base font-bold text-foreground leading-tight line-clamp-2">
+          {member.name}
+        </h3>
+        {member.isVerified && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <BadgeCheck className="h-4 w-4 shrink-0 text-[#22c55e]" />
+              </TooltipTrigger>
+              <TooltipContent side="top"><span>حساب موثق</span></TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
+      </div>
 
       {/* Spouse names inside card */}
       {spouseNames.length > 0 && (

@@ -1,6 +1,6 @@
 import { familyMembers as staticMembers, type FamilyMember } from "@/data/familyData";
 import { parseArabicYear } from "@/utils/ageCalculator";
-import { getMembers } from "./dataService";
+import { getMembers, loadVerifiedMemberIds } from "./dataService";
 
 // Mutable merged data — call refreshMembers() after any cloud update
 let mergedMembers: FamilyMember[] = [...staticMembers];
@@ -27,12 +27,14 @@ buildMaps([...staticMembers]);
 /** Load members from cloud and rebuild maps */
 export async function loadMembers(): Promise<void> {
   try {
-    const cloudMembers = await getMembers();
+    const [cloudMembers] = await Promise.all([
+      getMembers(),
+      loadVerifiedMemberIds(),
+    ]);
     if (cloudMembers.length > 0) {
       buildMaps(cloudMembers);
       initialized = true;
     } else if (!initialized) {
-      // Fallback to static data if cloud is empty (not yet seeded)
       buildMaps([...staticMembers]);
     }
   } catch (e) {
@@ -90,7 +92,14 @@ export function normalizeForSearch(text: string): string {
 export function searchMembers(query: string, limit = 10): FamilyMember[] {
   if (!query.trim()) return [];
   const q = normalizeForSearch(query);
-  return mergedMembers.filter((m) => normalizeForSearch(m.name).includes(q)).slice(0, limit);
+  const tokens = q.split(" ").filter(Boolean);
+  if (tokens.length === 0) return [];
+  return mergedMembers
+    .filter((m) => {
+      const normalized = normalizeForSearch(m.name);
+      return tokens.every((t) => normalized.includes(t));
+    })
+    .slice(0, limit);
 }
 
 export function getDescendantCount(id: string): number {

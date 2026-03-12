@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { User, Calendar, Heart, FileText, X, ExternalLink, Clock, Send, Users2, UserPlus } from "lucide-react";
+import { User, Calendar, Heart, FileText, X, ExternalLink, Clock, Send, Users2, UserPlus, BadgeCheck } from "lucide-react";
 import { downloadVCard } from "@/utils/vcard";
 import { WhatsAppIcon } from "./WhatsAppIcon";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,8 @@ import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
 import { SubmitRequestForm } from "@/components/SubmitRequestForm";
 import { getBranch, getBranchStyle, DOCUMENTER_ID } from "@/utils/branchUtils";
 import { HeritageBadge } from "@/components/HeritageBadge";
+import { getVerifiedMemberIds } from "@/services/dataService";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 
 interface PersonDetailsProps {
   member: FamilyMember | null;
@@ -28,6 +30,7 @@ function DetailContent({ member }: { member: FamilyMember }) {
   const ageText = formatAge(member.birth_year, member.death_year);
   const motherName = inferMotherName(member);
   const phone = member.phone as string | undefined;
+  const isVerified = getVerifiedMemberIds().has(member.id);
   const children = sortByBirth(getChildrenOf(member.id));
 
   // Group children by mother with colors
@@ -65,7 +68,19 @@ function DetailContent({ member }: { member: FamilyMember }) {
           <User className={`h-7 w-7 ${isMale ? "text-[hsl(var(--male))]" : "text-[hsl(var(--female))]"}`} />
         </div>
         <div>
-          <h3 className="text-xl font-extrabold text-foreground">{member.name}</h3>
+          <div className="flex items-center justify-center gap-1.5">
+            <h3 className="text-xl font-extrabold text-foreground">{member.name}</h3>
+            {isVerified && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <BadgeCheck className="h-5 w-5 shrink-0 text-[#22c55e]" />
+                  </TooltipTrigger>
+                  <TooltipContent side="top"><span>حساب موثق</span></TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
           <span
             className={`inline-block mt-1.5 text-xs font-bold px-3 py-1 rounded-full ${
               isMale

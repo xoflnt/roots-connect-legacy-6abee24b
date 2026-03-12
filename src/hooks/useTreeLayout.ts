@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import dagre from "dagre";
 import type { Node, Edge } from "@xyflow/react";
 import { getAllMembers, inferMotherName, sortByBirth } from "@/services/familyService";
+import { getVerifiedMemberIds } from "@/services/dataService";
 
 const NODE_WIDTH = 220;
 const NODE_HEIGHT = 100;
@@ -57,6 +58,7 @@ export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number) {
     const currentMembers = getAllMembers();
     const memberById = new Map(currentMembers.map((m) => [m.id, m]));
     const childrenOfMap = buildChildrenOfMap(currentMembers);
+    const verifiedIds = getVerifiedMemberIds();
 
     const visibleIds = new Set<string>();
 
@@ -157,6 +159,7 @@ export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number) {
           spouseNames: fatherSpouseNames.get(member.id) ?? [],
           hasChildren: hasChildrenInData(member.id),
           isExpanded: expandedIds.has(member.id),
+          isVerified: verifiedIds.has(member.id),
         },
       };
     });
