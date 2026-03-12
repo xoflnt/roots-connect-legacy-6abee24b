@@ -140,8 +140,9 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
   // Track visit on mount
   useEffect(() => { trackVisit(); }, []);
 
+  const allMembers = getAllMembers();
   const filtered = query.trim()
-    ? familyMembers.filter((m) => m.name.includes(query.trim())).slice(0, 10)
+    ? allMembers.filter((m) => m.name.includes(query.trim())).slice(0, 10)
     : [];
 
   const showingResults = open && filtered.length > 0;

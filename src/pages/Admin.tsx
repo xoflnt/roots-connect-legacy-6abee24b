@@ -3,7 +3,7 @@ import { AdminProtect } from "@/components/AdminProtect";
 import { Button } from "@/components/ui/button";
 import { Users, Eye, ShieldCheck, TreePine, Check, X, Loader2, ArrowRight } from "lucide-react";
 import { getRequests, approveRequest, rejectRequest, getVerifiedUsers, getVisitCount, type FamilyRequest } from "@/services/dataService";
-import { familyMembers } from "@/data/familyData";
+import { getAllMembers } from "@/services/familyService";
 import { useNavigate } from "react-router-dom";
 
 const REQUEST_TYPE_LABELS: Record<string, string> = {
@@ -30,7 +30,8 @@ function StatCard({ icon: Icon, label, value }: { icon: React.ElementType; label
 
 function RequestCard({ req, onAction }: { req: FamilyRequest; onAction: () => void }) {
   const [loading, setLoading] = useState<"approve" | "reject" | null>(null);
-  const member = familyMembers.find((m) => m.id === req.targetMemberId);
+  const members = getAllMembers();
+  const member = members.find((m) => m.id === req.targetMemberId);
 
   const handleApprove = async () => {
     setLoading("approve");
@@ -103,6 +104,7 @@ function AdminContent() {
   const [requests, setRequests] = useState<FamilyRequest[]>([]);
   const [verifiedCount, setVerifiedCount] = useState(0);
   const [visitCount, setVisitCount] = useState(0);
+  const [memberCount, setMemberCount] = useState(0);
   const navigate = useNavigate();
 
   const loadData = async () => {
@@ -110,7 +112,9 @@ function AdminContent() {
     setRequests(reqs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
     const users = await getVerifiedUsers();
     setVerifiedCount(users.length);
-    setVisitCount(getVisitCount());
+    const vc = await getVisitCount();
+    setVisitCount(vc);
+    setMemberCount(getAllMembers().length);
   };
 
   useEffect(() => { loadData(); }, []);
@@ -138,7 +142,7 @@ function AdminContent() {
         <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <StatCard icon={Eye} label="عدد الزيارات" value={visitCount} />
           <StatCard icon={Users} label="الحسابات الموثقة" value={verifiedCount} />
-          <StatCard icon={TreePine} label="إجمالي الأفراد" value={familyMembers.length} />
+          <StatCard icon={TreePine} label="إجمالي الأفراد" value={memberCount} />
         </section>
 
         {/* Pending Requests */}
