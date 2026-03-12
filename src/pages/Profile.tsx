@@ -5,6 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TreePine, Phone, CalendarDays, Users, LogOut, GitBranch, Home, Plus, Trash2, Save, Loader2 } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { getAncestorChain, getDescendantCount, getMemberById, getChildrenOf, refreshMembers } from "@/services/familyService";
 import { updateMember, addMember } from "@/services/dataService";
 import { useMemo, useState, useEffect, useCallback } from "react";
