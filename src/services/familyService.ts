@@ -84,7 +84,7 @@ export function normalizeForSearch(text: string): string {
     .replace(/ئ/g, "ي")
     .replace(/ة/g, "ه")
     .replace(/ى/g, "ي")
-    .replace(/\b(بن|بنت|ابن)\b/g, "")
+    .replace(/(^|\s)(بن|بنت|ابن)(\s|$)/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
