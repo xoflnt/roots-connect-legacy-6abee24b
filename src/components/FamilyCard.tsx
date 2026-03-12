@@ -174,6 +174,7 @@ export function FamilyCard({ data, selected }: NodeProps) {
             {branch.label}
           </span>
         )}
+        {member.id === DOCUMENTER_ID && <HeritageBadge type="documenter" />}
         {founder && <HeritageBadge type="founder" />}
         {deceased && <HeritageBadge type="deceased" gender={member.gender as "M" | "F"} />}
       </div>
