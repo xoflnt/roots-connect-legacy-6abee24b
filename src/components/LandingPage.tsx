@@ -209,6 +209,14 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
             </div>
           )}
         </div>
+        {currentUser && (
+          <div className="max-w-lg mx-auto mt-4">
+            <Button onClick={() => navigate("/profile")} className="w-full min-h-[48px] rounded-xl font-bold text-base gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
+              <UserCircle className="h-5 w-5" />
+              الانتقال لملفي الشخصي
+            </Button>
+          </div>
+        )}
       </section>
 
       {/* ─── 4. Three Pillars ─── */}
