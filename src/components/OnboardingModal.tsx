@@ -440,8 +440,48 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
             </div>
           )}
 
-          {/* ─── Step 4: Phone + WhatsApp OTP ─── */}
+          {/* ─── Step 4: Family Passcode ─── */}
           {step === 4 && (
+            <div className="flex-1 flex flex-col items-center justify-center text-center gap-5 animate-fade-in">
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+                <Lock className="h-8 w-8 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-foreground mb-2">رمز دخول العائلة</h2>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  الرجاء إدخال الرمز السري الخاص بالعائلة للمتابعة
+                </p>
+              </div>
+              <div className="flex justify-center" dir="ltr">
+                <InputOTP maxLength={6} value={familyPasscode} onChange={setFamilyPasscode}>
+                  <InputOTPGroup className="gap-2">
+                    {[0, 1, 2, 3, 4, 5].map((i) => (
+                      <InputOTPSlot key={i} index={i} className="w-12 h-14 text-xl rounded-xl border-border" />
+                    ))}
+                  </InputOTPGroup>
+                </InputOTP>
+              </div>
+              <Button
+                onClick={() => {
+                  if (familyPasscode === FAMILY_PASSCODE) {
+                    setStep(5);
+                  } else {
+                    toast.error("الرمز السري غير صحيح. الرجاء التأكد من الرمز الخاص بالعائلة.");
+                  }
+                }}
+                disabled={familyPasscode.length < 6}
+                className="min-h-[52px] w-full text-base font-semibold rounded-xl"
+              >
+                متابعة
+              </Button>
+              <Button variant="outline" onClick={() => { setStep(3); setFamilyPasscode(""); }} className="min-h-[52px] w-full rounded-xl">
+                <ChevronLeft className="h-4 w-4 ml-1" /> السابق
+              </Button>
+            </div>
+          )}
+
+          {/* ─── Step 5: Phone + WhatsApp OTP ─── */}
+          {step === 5 && (
             <div className="flex-1 flex flex-col gap-4 animate-fade-in">
               <h2 className="text-lg font-bold text-foreground text-center">
                 <Phone className="inline h-5 w-5 ml-1" />
