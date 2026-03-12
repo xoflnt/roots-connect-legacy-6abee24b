@@ -4,7 +4,7 @@ import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "./ui/tabs";
 import type { FamilyMember } from "@/data/familyData";
-import { getAllMembers, searchMembers, findKinship, kinshipToArabic } from "@/services/familyService";
+import { getAllMembers, searchMembers, findKinship, kinshipToArabic, inferMotherName } from "@/services/familyService";
 import { getLineageLabel, getMemberSubtitle } from "@/utils/memberLabel";
 import { useAuth } from "@/contexts/AuthContext";
 import { KinshipTreeView } from "./kinship/KinshipTreeView";
