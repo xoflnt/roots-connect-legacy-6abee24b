@@ -133,7 +133,9 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
   };
 
   const handleComplete = async () => {
-    if (!selectedMember) return;
+    if (!selectedMember || isSubmitting) return;
+    setIsSubmitting(true);
+    try {
 
     const dateStr = hijriDate.year
       ? `${hijriDate.year}/${hijriDate.month || "1"}/${hijriDate.day || "1"}`
