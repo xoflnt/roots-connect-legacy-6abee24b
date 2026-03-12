@@ -20,7 +20,8 @@ import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 6;
+const FAMILY_PASSCODE = import.meta.env.VITE_FAMILY_PASSCODE || "339921";
 
 function getMemberMap() {
   return new Map(getAllMembers().map((m) => [m.id, m]));
