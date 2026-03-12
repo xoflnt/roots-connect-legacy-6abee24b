@@ -56,20 +56,23 @@ const Profile = () => {
 
   // Editable state — re-initialize when member refreshes
   const [editSpouses, setEditSpouses] = useState<string[]>([]);
+  const [spousesDirty, setSpousesDirty] = useState(false);
   const [newSpouse, setNewSpouse] = useState("");
   const [birthDate, setBirthDate] = useState<{ day?: string; month?: string; year?: string }>({});
 
   useEffect(() => {
     if (!member) return;
-    setEditSpouses(
-      member.spouses ? member.spouses.split("،").map(s => s.trim()).filter(Boolean) : []
-    );
+    if (!spousesDirty) {
+      setEditSpouses(
+        member.spouses ? member.spouses.split("،").map(s => s.trim()).filter(Boolean) : []
+      );
+    }
     if (member.birth_year) {
       const parts = (member.birth_year as string).split("/");
       if (parts.length === 3) setBirthDate({ year: parts[0], month: parts[1], day: parts[2] });
       else setBirthDate({ year: member.birth_year as string });
     }
-  }, [member]);
+  }, [member, spousesDirty]);
 
   // Add child state
   const [showAddChild, setShowAddChild] = useState(false);
@@ -100,10 +103,12 @@ const Profile = () => {
     if (!newSpouse.trim()) return;
     setEditSpouses(prev => [...prev, newSpouse.trim()]);
     setNewSpouse("");
+    setSpousesDirty(true);
   };
 
   const handleRemoveSpouse = (index: number) => {
     setEditSpouses(prev => prev.filter((_, i) => i !== index));
+    setSpousesDirty(true);
   };
 
   const handleSave = async () => {
@@ -126,6 +131,7 @@ const Profile = () => {
       await refreshMembers();
       setRefreshKey((k) => k + 1);
       window.dispatchEvent(new Event("family-data-updated"));
+      setSpousesDirty(false);
       toast.success("تم حفظ التعديلات بنجاح");
     } catch {
       toast.error("حدث خطأ أثناء الحفظ");
@@ -135,6 +141,7 @@ const Profile = () => {
 
   const handleAddChild = async () => {
     if (!member || !newChildName.trim() || saving) return;
+    if (spousesDirty) await handleSave();
     setSaving(true);
     try {
       const childId = `USR-${Date.now().toString(36)}`;
@@ -163,6 +170,7 @@ const Profile = () => {
 
   const handleDeleteChild = async () => {
     if (!childToDelete || saving) return;
+    if (spousesDirty) await handleSave();
     setSaving(true);
     try {
       await updateMember(childToDelete.id, { father_id: null });
