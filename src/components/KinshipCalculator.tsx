@@ -1,11 +1,15 @@
 import { useState, useMemo } from "react";
-import { ArrowLeftRight, Search, User, Users, ChevronDown } from "lucide-react";
+import { ArrowLeftRight, Search, User, Users, ChevronDown, TreePine, FileText, Route } from "lucide-react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "./ui/tabs";
 import type { FamilyMember } from "@/data/familyData";
-import { getAllMembers, searchMembers } from "@/services/familyService";
-import { findKinship, kinshipToArabic } from "@/services/familyService";
+import { getAllMembers, searchMembers, findKinship, kinshipToArabic } from "@/services/familyService";
 import { getLineageLabel, getMemberSubtitle } from "@/utils/memberLabel";
+import { useAuth } from "@/contexts/AuthContext";
+import { KinshipTreeView } from "./kinship/KinshipTreeView";
+import { KinshipDocumentView } from "./kinship/KinshipDocumentView";
+import { KinshipInteractiveView } from "./kinship/KinshipInteractiveView";
 
 interface KinshipCalculatorProps {
   initialMemberId?: string;
@@ -25,9 +29,7 @@ function PersonPicker({
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
 
-   const filtered = useMemo(() => {
-    return searchMembers(query, 8);
-  }, [query]);
+  const filtered = useMemo(() => searchMembers(query, 8), [query]);
 
   return (
     <div className="flex-1 min-w-0">
@@ -65,14 +67,14 @@ function PersonPicker({
                 {filtered.map((m) => {
                   const subtitle = getMemberSubtitle(m);
                   return (
-                  <button
-                    key={m.id}
-                    className="w-full text-right px-4 py-2.5 text-sm text-foreground hover:bg-primary/10 transition-colors border-b border-border/20 last:border-b-0 min-h-[44px]"
-                    onMouseDown={() => { onSelect(m); setQuery(m.name); setOpen(false); }}
-                  >
-                    <span className="block font-medium">{getLineageLabel(m)}</span>
-                    {subtitle && <span className="text-xs text-muted-foreground">{subtitle}</span>}
-                  </button>
+                    <button
+                      key={m.id}
+                      className="w-full text-right px-4 py-2.5 text-sm text-foreground hover:bg-primary/10 transition-colors border-b border-border/20 last:border-b-0 min-h-[44px]"
+                      onMouseDown={() => { onSelect(m); setQuery(m.name); setOpen(false); }}
+                    >
+                      <span className="block font-medium">{getLineageLabel(m)}</span>
+                      {subtitle && <span className="text-xs text-muted-foreground">{subtitle}</span>}
+                    </button>
                   );
                 })}
               </div>
@@ -85,9 +87,15 @@ function PersonPicker({
 }
 
 export function KinshipCalculator({ initialMemberId }: KinshipCalculatorProps) {
-  const [person1, setPerson1] = useState<FamilyMember | null>(
-    initialMemberId ? getAllMembers().find((m) => m.id === initialMemberId) || null : null
-  );
+  const { currentUser } = useAuth();
+
+  const resolveInitialPerson = (): FamilyMember | null => {
+    if (initialMemberId) return getAllMembers().find((m) => m.id === initialMemberId) || null;
+    if (currentUser?.memberId) return getAllMembers().find((m) => m.id === currentUser.memberId) || null;
+    return null;
+  };
+
+  const [person1, setPerson1] = useState<FamilyMember | null>(resolveInitialPerson);
   const [person2, setPerson2] = useState<FamilyMember | null>(null);
   const [showResult, setShowResult] = useState(false);
 
@@ -98,65 +106,28 @@ export function KinshipCalculator({ initialMemberId }: KinshipCalculatorProps) {
 
   const relationText = result ? kinshipToArabic(result.dist1, result.dist2) : null;
 
-  const handleCalculate = () => {
-    setShowResult(true);
-  };
-
   const handleSwap = () => {
-    const temp = person1;
     setPerson1(person2);
-    setPerson2(temp);
+    setPerson2(person1);
     setShowResult(false);
   };
 
   const handleReset = () => {
-    setPerson1(null);
+    setPerson1(resolveInitialPerson());
     setPerson2(null);
     setShowResult(false);
   };
 
-  // Build vertical path description
-  const pathNodes = useMemo(() => {
-    if (!result || !showResult) return [];
-    const nodes: { name: string; relation: string }[] = [];
-
-    // Path from person1 up to LCA
-    for (let i = 0; i < result.path1.length; i++) {
-      const m = result.path1[i];
-      nodes.push({
-        name: m.name.split(" ")[0],
-        relation: i === 0 ? "الشخص الأول" : "والده",
-      });
-    }
-
-    // Path from LCA down to person2 (skip LCA since it's already included)
-    if (result.path2.length > 1) {
-      const downPath = [...result.path2].reverse();
-      // Skip first element (LCA, already in path1)
-      for (let i = 1; i < downPath.length; i++) {
-        const m = downPath[i];
-        nodes.push({
-          name: m.name.split(" ")[0],
-          relation: i === downPath.length - 1 ? "الشخص الثاني" : "ابنه",
-        });
-      }
-    }
-
-    return nodes;
-  }, [result, showResult]);
-
   return (
     <div className="py-6 md:py-10 px-4 md:px-6 overflow-auto" dir="rtl">
-      <div className="max-w-md mx-auto space-y-5">
+      <div className="max-w-lg mx-auto space-y-5">
         {/* Header */}
         <div className="text-center space-y-2">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary">
             <Users className="h-4 w-4" />
             <span className="font-bold text-sm">حاسبة القرابة</span>
           </div>
-          <h2 className="text-xl md:text-2xl font-extrabold text-foreground">
-            من أنا لك؟
-          </h2>
+          <h2 className="text-xl md:text-2xl font-extrabold text-foreground">من أنا لك؟</h2>
         </div>
 
         {/* Pickers */}
@@ -167,8 +138,6 @@ export function KinshipCalculator({ initialMemberId }: KinshipCalculatorProps) {
             onSelect={(m) => { setPerson1(m); setShowResult(false); }}
             accentClass="bg-primary/15 text-primary"
           />
-
-          {/* Swap button */}
           <div className="flex justify-center">
             <button
               onClick={handleSwap}
@@ -178,7 +147,6 @@ export function KinshipCalculator({ initialMemberId }: KinshipCalculatorProps) {
               <ArrowLeftRight className="h-4 w-4" />
             </button>
           </div>
-
           <PersonPicker
             label="الشخص الثاني"
             selected={person2}
@@ -189,77 +157,55 @@ export function KinshipCalculator({ initialMemberId }: KinshipCalculatorProps) {
 
         {/* Calculate button */}
         {person1 && person2 && !showResult && (
-          <Button
-            onClick={handleCalculate}
-            className="w-full h-12 rounded-xl text-base font-bold"
-            size="lg"
-          >
+          <Button onClick={() => setShowResult(true)} className="w-full h-12 rounded-xl text-base font-bold" size="lg">
             <Users className="h-5 w-5 ml-2" />
             احسب القرابة
           </Button>
         )}
 
-        {/* Result */}
+        {/* Tabbed Result */}
         {showResult && result && relationText && (
-          <div
-            className="rounded-2xl border border-primary/20 bg-card shadow-lg overflow-hidden animate-fade-in"
-          >
-            {/* Gold top accent + Relation badge */}
+          <div className="rounded-2xl border border-primary/20 bg-card shadow-lg overflow-hidden animate-fade-in">
             <div className="h-1 bg-gradient-to-r from-transparent via-accent/50 to-transparent" />
+            {/* Relation badge */}
             <div className="bg-primary/10 p-5 text-center border-b border-primary/10">
               <p className="text-xs text-muted-foreground mb-2">صلة القرابة</p>
-              <p className="text-2xl md:text-3xl font-extrabold text-primary leading-tight">
-                {relationText}
-              </p>
+              <p className="text-2xl md:text-3xl font-extrabold text-primary leading-tight">{relationText}</p>
             </div>
 
-            {/* Names */}
-            <div className="p-4 flex items-center justify-between text-sm">
-              <div className="text-center flex-1">
-                <p className="font-bold text-foreground">{person1!.name.split(" ")[0]}</p>
+            {/* Tabs */}
+            <Tabs defaultValue="tree" className="w-full">
+              <div className="px-4 pt-4">
+                <TabsList className="grid w-full grid-cols-3 h-auto p-1 bg-muted/60">
+                  <TabsTrigger value="tree" className="text-xs py-2 gap-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                    <TreePine className="h-3.5 w-3.5" />
+                    المخطط
+                  </TabsTrigger>
+                  <TabsTrigger value="document" className="text-xs py-2 gap-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                    <FileText className="h-3.5 w-3.5" />
+                    الوثيقة
+                  </TabsTrigger>
+                  <TabsTrigger value="path" className="text-xs py-2 gap-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                    <Route className="h-3.5 w-3.5" />
+                    المسار
+                  </TabsTrigger>
+                </TabsList>
               </div>
-              <ChevronDown className="h-4 w-4 text-muted-foreground rotate-[-90deg]" />
-              <div className="text-center flex-1">
-                <p className="font-bold text-foreground">{person2!.name.split(" ")[0]}</p>
-              </div>
-            </div>
 
-            {/* Vertical path */}
-            {pathNodes.length > 0 && (
-              <div className="px-5 pb-5 border-t border-border/30 pt-4">
-                <p className="text-xs font-bold text-muted-foreground mb-3 text-center">
-                  المسار عبر الجد المشترك: {result.lca?.name.split(" ")[0]}
-                </p>
-                <div className="flex flex-col items-center gap-0">
-                  {pathNodes.map((node, i) => (
-                    <div key={i} className="flex flex-col items-center">
-                      {i > 0 && (
-                        <div className="w-px h-4 bg-border" />
-                      )}
-                      <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs ${
-                        i === 0 || i === pathNodes.length - 1
-                          ? "bg-primary/10 text-primary font-bold"
-                          : node.name === result.lca?.name.split(" ")[0]
-                            ? "bg-accent/10 text-accent-foreground font-bold ring-1 ring-accent/30"
-                            : "bg-muted text-muted-foreground"
-                      }`}>
-                        <span>{node.name}</span>
-                        <span className="text-[10px] opacity-70">({node.relation})</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+              <TabsContent value="tree" className="px-4 pb-2 mt-0">
+                <KinshipTreeView result={result} person1={person1!} person2={person2!} />
+              </TabsContent>
+              <TabsContent value="document" className="px-4 pb-2 mt-0">
+                <KinshipDocumentView result={result} person1={person1!} person2={person2!} />
+              </TabsContent>
+              <TabsContent value="path" className="px-4 pb-2 mt-0">
+                <KinshipInteractiveView result={result} person1={person1!} person2={person2!} />
+              </TabsContent>
+            </Tabs>
 
             {/* Reset */}
             <div className="px-5 pb-4">
-              <Button
-                variant="outline"
-                onClick={handleReset}
-                className="w-full rounded-xl text-sm"
-                size="sm"
-              >
+              <Button variant="outline" onClick={handleReset} className="w-full rounded-xl text-sm" size="sm">
                 بحث جديد
               </Button>
             </div>
@@ -270,9 +216,7 @@ export function KinshipCalculator({ initialMemberId }: KinshipCalculatorProps) {
         {showResult && person1 && person2 && !result && (
           <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-5 text-center space-y-3">
             <p className="text-destructive font-bold">لم يتم العثور على صلة قرابة</p>
-            <Button variant="outline" onClick={handleReset} size="sm" className="rounded-xl">
-              بحث جديد
-            </Button>
+            <Button variant="outline" onClick={handleReset} size="sm" className="rounded-xl">بحث جديد</Button>
           </div>
         )}
       </div>
