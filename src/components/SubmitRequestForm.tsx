@@ -53,6 +53,7 @@ export function SubmitRequestForm({ open, onOpenChange, targetMember }: SubmitRe
     if (requestType === "add_child") {
       data.childName = childName;
       data.gender = childGender;
+      if (motherName.trim()) data.motherName = motherName.trim();
     } else if (requestType === "add_spouse") {
       data.spouseName = spouseName;
     } else if (requestType === "update_info" || requestType === "correction") {
