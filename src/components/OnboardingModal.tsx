@@ -128,7 +128,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
   };
 
   const handleComplete = async () => {
-    if (!selectedMember || isSubmitting) return;
+    if (!selectedMember || isSubmitting || !hijriDate.year) return;
     setIsSubmitting(true);
     try {
 
@@ -161,6 +161,11 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
       });
       toast.success("تم إرسال طلب التحديث للمراجعة");
     }
+
+    // Refresh data instantly so tree/cards reflect new birth date
+    const { refreshMembers } = await import("@/services/familyService");
+    await refreshMembers();
+    window.dispatchEvent(new Event("family-data-updated"));
 
     login({
       memberId: selectedMember.id,
