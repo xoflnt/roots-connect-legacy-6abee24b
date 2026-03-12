@@ -285,6 +285,9 @@ const Profile = () => {
                   </Badge>
                   <span className="flex-1 text-sm font-medium text-foreground">{child.name}</span>
                   {child.birth_year && <span className="text-xs text-muted-foreground">{child.birth_year} هـ</span>}
+                  <Button type="button" variant="ghost" size="icon" onClick={() => setChildToDelete(child)} className="h-8 w-8 text-destructive hover:text-destructive">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
               ))}
             </div>
