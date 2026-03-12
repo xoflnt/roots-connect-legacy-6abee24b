@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import dagre from "dagre";
 import type { Node, Edge } from "@xyflow/react";
 import { getAllMembers, inferMotherName, sortByBirth } from "@/services/familyService";
+import { getVerifiedMemberIds } from "@/services/dataService";
 
 const NODE_WIDTH = 220;
 const NODE_HEIGHT = 100;
