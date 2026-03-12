@@ -43,7 +43,8 @@ function useCountUp(target: number, duration = 1500) {
 }
 
 function computeStats() {
-  const total = familyMembers.length;
+  const allMembers = getAllMembers();
+  const total = allMembers.length;
   const roots = familyMembers.filter((m) => !m.father_id);
 
   const childrenMap = new Map<string | null, string[]>();
