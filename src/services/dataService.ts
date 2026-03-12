@@ -170,6 +170,28 @@ export async function getVerifiedUsers(): Promise<VerifiedUser[]> {
   }));
 }
 
+// ─── Verified Member IDs (cached) ───
+
+let verifiedIdsCache: Set<string> | null = null;
+
+export async function loadVerifiedMemberIds(): Promise<Set<string>> {
+  const { data, error } = await supabase
+    .from("verified_users")
+    .select("member_id");
+
+  if (error) {
+    console.error("[dataService] loadVerifiedMemberIds error:", error);
+    return verifiedIdsCache || new Set();
+  }
+
+  verifiedIdsCache = new Set((data || []).map((row: any) => row.member_id));
+  return verifiedIdsCache;
+}
+
+export function getVerifiedMemberIds(): Set<string> {
+  return verifiedIdsCache || new Set();
+}
+
 // ─── Visit Tracking (cloud DB) ───
 
 export async function trackVisit(): Promise<void> {

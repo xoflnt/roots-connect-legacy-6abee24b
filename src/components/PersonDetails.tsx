@@ -68,7 +68,19 @@ function DetailContent({ member }: { member: FamilyMember }) {
           <User className={`h-7 w-7 ${isMale ? "text-[hsl(var(--male))]" : "text-[hsl(var(--female))]"}`} />
         </div>
         <div>
-          <h3 className="text-xl font-extrabold text-foreground">{member.name}</h3>
+          <div className="flex items-center justify-center gap-1.5">
+            <h3 className="text-xl font-extrabold text-foreground">{member.name}</h3>
+            {isVerified && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <BadgeCheck className="h-5 w-5 shrink-0 text-[#22c55e]" />
+                  </TooltipTrigger>
+                  <TooltipContent side="top"><span>حساب موثق</span></TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
           <span
             className={`inline-block mt-1.5 text-xs font-bold px-3 py-1 rounded-full ${
               isMale

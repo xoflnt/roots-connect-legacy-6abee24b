@@ -159,6 +159,7 @@ export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number) {
           spouseNames: fatherSpouseNames.get(member.id) ?? [],
           hasChildren: hasChildrenInData(member.id),
           isExpanded: expandedIds.has(member.id),
+          isVerified: verifiedIds.has(member.id),
         },
       };
     });
