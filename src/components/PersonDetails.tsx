@@ -12,7 +12,8 @@ import { formatAge } from "@/utils/ageCalculator";
 import { inferMotherName, getChildrenOf, sortByBirth } from "@/services/familyService";
 import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
 import { SubmitRequestForm } from "@/components/SubmitRequestForm";
-import { getBranch, getBranchStyle } from "@/utils/branchUtils";
+import { getBranch, getBranchStyle, DOCUMENTER_ID } from "@/utils/branchUtils";
+import { HeritageBadge } from "@/components/HeritageBadge";
 
 interface PersonDetailsProps {
   member: FamilyMember | null;
