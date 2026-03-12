@@ -3,27 +3,44 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { TreePine, Phone, CalendarDays, Users, LogOut, GitBranch, Home, Plus, Trash2, Save, Loader2 } from "lucide-react";
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { getAncestorChain, getDescendantCount, getMemberById, getChildrenOf, refreshMembers } from "@/services/familyService";
-import { updateMember, addMember } from "@/services/dataService";
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { TreePine, Phone, CalendarDays, Users, LogOut, GitBranch, Home, Save, Loader2, MessageSquarePlus, ShieldCheck, User, Heart } from "lucide-react";
+import { getAncestorChain, getDescendantCount, getMemberById, getChildrenOf, refreshMembers, inferMotherName } from "@/services/familyService";
+import { updateMember, getVerifiedMemberIds } from "@/services/dataService";
+import { useMemo, useState, useEffect } from "react";
 import { HijriDatePicker } from "@/components/HijriDatePicker";
+import { SubmitRequestForm } from "@/components/SubmitRequestForm";
 import { toast } from "sonner";
 import { formatAge } from "@/utils/ageCalculator";
+import { getBranch, getBranchStyle } from "@/utils/branchUtils";
 import type { FamilyMember } from "@/data/familyData";
+
+type HijriDate = { day?: string; month?: string; year?: string };
+
+function parseHijriDate(dateStr: string | null | undefined): HijriDate {
+  if (!dateStr) return {};
+  const parts = dateStr.split("/");
+  if (parts.length === 3) return { year: parts[0], month: parts[1], day: parts[2] };
+  if (parts.length === 2) return { year: parts[0], month: parts[1] };
+  return { year: parts[0] };
+}
+
+function formatHijriDate(d: HijriDate): string | undefined {
+  if (!d.year) return undefined;
+  return `${d.year}${d.month ? `/${d.month}` : ""}${d.day ? `/${d.day}` : ""}`;
+}
 
 const Profile = () => {
   const { currentUser, logout, isLoggedIn, login } = useAuth();
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [requestOpen, setRequestOpen] = useState(false);
 
-  // Listen for global family-data-updated event
+  // Editable fields
+  const [phone, setPhone] = useState("");
+  const [birthDate, setBirthDate] = useState<HijriDate>({});
+  const [childBirthYears, setChildBirthYears] = useState<Record<string, HijriDate>>({});
+
   useEffect(() => {
     const handler = async () => {
       await refreshMembers();
@@ -39,9 +56,14 @@ const Profile = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser, refreshKey]);
 
-  const chain = useMemo(() => {
-    if (!member) return [];
-    return getAncestorChain(member.id);
+  const father = useMemo(() => {
+    if (!member?.father_id) return null;
+    return getMemberById(member.father_id) ?? null;
+  }, [member]);
+
+  const motherName = useMemo(() => {
+    if (!member) return null;
+    return inferMotherName(member);
   }, [member]);
 
   const children = useMemo(() => {
@@ -49,40 +71,43 @@ const Profile = () => {
     return getChildrenOf(member.id);
   }, [member]);
 
+  const chain = useMemo(() => {
+    if (!member) return [];
+    return getAncestorChain(member.id);
+  }, [member]);
+
   const descendantCount = useMemo(() => {
     if (!member) return 0;
     return getDescendantCount(member.id);
   }, [member]);
 
-  // Editable state — re-initialize when member refreshes
-  const [editSpouses, setEditSpouses] = useState<string[]>([]);
-  const [spousesDirty, setSpousesDirty] = useState(false);
-  const [newSpouse, setNewSpouse] = useState("");
-  const [birthDate, setBirthDate] = useState<{ day?: string; month?: string; year?: string }>({});
+  const branch = useMemo(() => {
+    if (!member) return null;
+    return getBranch(member.id);
+  }, [member]);
 
+  const verifiedIds = useMemo(() => getVerifiedMemberIds(), [refreshKey]);
+
+  const spousesList = useMemo(() => {
+    if (!member?.spouses) return [];
+    return member.spouses.split("،").map(s => s.trim()).filter(Boolean);
+  }, [member]);
+
+  // Initialize editable state when member loads
   useEffect(() => {
     if (!member) return;
-    if (!spousesDirty) {
-      setEditSpouses(
-        member.spouses ? member.spouses.split("،").map(s => s.trim()).filter(Boolean) : []
-      );
-    }
-    if (member.birth_year) {
-      const parts = (member.birth_year as string).split("/");
-      if (parts.length === 3) setBirthDate({ year: parts[0], month: parts[1], day: parts[2] });
-      else setBirthDate({ year: member.birth_year as string });
-    }
-  }, [member, spousesDirty]);
+    setPhone(member.phone || currentUser?.phone || "");
+    setBirthDate(parseHijriDate(member.birth_year));
 
-  // Add child state
-  const [showAddChild, setShowAddChild] = useState(false);
-  const [newChildName, setNewChildName] = useState("");
-  const [newChildGender, setNewChildGender] = useState<"M" | "F">("M");
-  const [newChildMother, setNewChildMother] = useState("");
-  const [customMother, setCustomMother] = useState("");
-  const [childToDelete, setChildToDelete] = useState<FamilyMember | null>(null);
-
-  const resolvedMother = newChildMother === "__other__" ? customMother : newChildMother;
+    const initial: Record<string, HijriDate> = {};
+    for (const child of getChildrenOf(member.id)) {
+      if (!verifiedIds.has(child.id)) {
+        initial[child.id] = parseHijriDate(child.birth_year);
+      }
+    }
+    setChildBirthYears(initial);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [member]);
 
   if (!isLoggedIn || !currentUser) {
     return (
@@ -98,90 +123,45 @@ const Profile = () => {
   }
 
   const ageText = member ? formatAge(member.birth_year, member.death_year) : null;
-
-  const handleAddSpouse = () => {
-    if (!newSpouse.trim()) return;
-    setEditSpouses(prev => [...prev, newSpouse.trim()]);
-    setNewSpouse("");
-    setSpousesDirty(true);
-  };
-
-  const handleRemoveSpouse = (index: number) => {
-    setEditSpouses(prev => prev.filter((_, i) => i !== index));
-    setSpousesDirty(true);
-  };
+  const branchStyle = branch ? getBranchStyle(branch.pillarId) : null;
 
   const handleSave = async () => {
     if (!member || saving) return;
     setSaving(true);
     try {
-      const dateStr = birthDate.year
-        ? `${birthDate.year}${birthDate.month ? `/${birthDate.month}` : ""}${birthDate.day ? `/${birthDate.day}` : ""}`
-        : undefined;
+      const dateStr = formatHijriDate(birthDate);
 
+      // 1. Update own phone + birth_year
       await updateMember(member.id, {
-        spouses: editSpouses.length > 0 ? editSpouses.join("، ") : "",
+        phone: phone.trim() || member.phone,
         birth_year: dateStr || member.birth_year,
       });
 
-      if (dateStr) {
-        login({ ...currentUser, hijriBirthDate: dateStr });
+      // 2. Update unverified children's birth years
+      for (const [childId, date] of Object.entries(childBirthYears)) {
+        if (!verifiedIds.has(childId)) {
+          const childDateStr = formatHijriDate(date);
+          if (childDateStr) {
+            await updateMember(childId, { birth_year: childDateStr });
+          }
+        }
       }
 
+      // 3. Update auth context
+      login({
+        ...currentUser,
+        phone: phone.trim() || currentUser.phone,
+        hijriBirthDate: dateStr || currentUser.hijriBirthDate,
+      });
+
+      // 4. Refresh
       await refreshMembers();
-      setRefreshKey((k) => k + 1);
+      setRefreshKey(k => k + 1);
       window.dispatchEvent(new Event("family-data-updated"));
-      setSpousesDirty(false);
       toast.success("تم حفظ التعديلات بنجاح");
     } catch {
       toast.error("حدث خطأ أثناء الحفظ");
     }
-    setSaving(false);
-  };
-
-  const handleAddChild = async () => {
-    if (!member || !newChildName.trim() || saving) return;
-    if (spousesDirty) await handleSave();
-    setSaving(true);
-    try {
-      const childId = `USR-${Date.now().toString(36)}`;
-      const motherName = resolvedMother.trim();
-      const notes = motherName ? `${newChildGender === "F" ? "والدتها" : "والدته"}: ${motherName}` : undefined;
-      await addMember({
-        id: childId,
-        name: newChildName.trim(),
-        gender: newChildGender,
-        father_id: member.id,
-        notes,
-      });
-      await refreshMembers();
-      window.dispatchEvent(new Event("family-data-updated"));
-      toast.success("تمت إضافة الابن/البنت بنجاح");
-      setNewChildName("");
-      setNewChildGender("M");
-      setNewChildMother("");
-      setCustomMother("");
-      setShowAddChild(false);
-    } catch {
-      toast.error("حدث خطأ أثناء الإضافة");
-    }
-    setSaving(false);
-  };
-
-  const handleDeleteChild = async () => {
-    if (!childToDelete || saving) return;
-    if (spousesDirty) await handleSave();
-    setSaving(true);
-    try {
-      await updateMember(childToDelete.id, { father_id: null });
-      await refreshMembers();
-      setRefreshKey((k) => k + 1);
-      window.dispatchEvent(new Event("family-data-updated"));
-      toast.success(`تم حذف ${childToDelete.name} بنجاح`);
-    } catch {
-      toast.error("حدث خطأ أثناء الحذف");
-    }
-    setChildToDelete(null);
     setSaving(false);
   };
 
@@ -193,161 +173,176 @@ const Profile = () => {
           <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
             <TreePine className="h-4.5 w-4.5 text-primary" />
           </div>
-          <h1 className="text-base md:text-lg font-extrabold text-foreground">الملف الشخصي</h1>
+          <h1 className="text-base md:text-lg font-extrabold text-foreground">البطاقة الشخصية</h1>
         </div>
         <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="h-11 w-11 rounded-xl">
           <Home className="h-5 w-5" />
         </Button>
       </header>
 
-      <main className="max-w-2xl mx-auto p-4 md:p-8 space-y-6">
-        {/* User Card */}
-        <div className="bg-card border border-border/50 rounded-2xl p-6 space-y-4 shadow-sm">
+      <main className="max-w-2xl mx-auto p-4 md:p-8 space-y-5">
+
+        {/* ═══════ 1. User Identity Card ═══════ */}
+        <section className="bg-card border border-border/50 rounded-2xl p-6 space-y-4 shadow-sm">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
               <TreePine className="h-8 w-8 text-primary" />
             </div>
-            <div>
+            <div className="space-y-1.5">
               <h2 className="text-xl font-bold text-foreground">{currentUser.memberName}</h2>
-              <div className="flex items-center gap-2 mt-1">
-                <Badge variant="secondary">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="secondary" className="text-xs">
                   {member?.gender === "F" ? "أنثى" : "ذكر"}
                 </Badge>
                 {ageText && <span className="text-xs text-accent font-semibold">{ageText}</span>}
+                {branch && branchStyle && (
+                  <span
+                    className="text-xs font-bold px-2.5 py-0.5 rounded-full"
+                    style={{ backgroundColor: branchStyle.bg, color: branchStyle.text }}
+                  >
+                    {branch.label}
+                  </span>
+                )}
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="flex items-center gap-2 p-3 rounded-xl bg-muted/50 border border-border/30">
-              <Phone className="h-4 w-4 text-primary shrink-0" />
-              <div>
-                <p className="text-xs text-muted-foreground">رقم الجوال</p>
-                <p className="text-sm font-semibold text-foreground" dir="ltr">{currentUser.phone}</p>
-              </div>
-            </div>
+          {/* Stats row */}
+          <div className="grid grid-cols-2 gap-3">
             <div className="flex items-center gap-2 p-3 rounded-xl bg-muted/50 border border-border/30">
               <Users className="h-4 w-4 text-primary shrink-0" />
               <div>
-                <p className="text-xs text-muted-foreground">عدد الذرية</p>
-                <p className="text-sm font-semibold text-foreground">{descendantCount} فرد</p>
+                <p className="text-xs text-muted-foreground">الأبناء</p>
+                <p className="text-sm font-semibold text-foreground">{children.length}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-muted/50 border border-border/30">
+              <GitBranch className="h-4 w-4 text-primary shrink-0" />
+              <div>
+                <p className="text-xs text-muted-foreground">إجمالي الذرية</p>
+                <p className="text-sm font-semibold text-foreground">{descendantCount}</p>
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Edit Birth Date */}
-        <div className="bg-card border border-border/50 rounded-2xl p-6 space-y-4 shadow-sm">
+        {/* ═══════ 2. Editable: Phone ═══════ */}
+        <section className="bg-card border border-border/50 rounded-2xl p-6 space-y-3 shadow-sm">
+          <div className="flex items-center gap-2">
+            <Phone className="h-5 w-5 text-primary" />
+            <h3 className="text-lg font-bold text-foreground">رقم الجوال</h3>
+          </div>
+          <Input
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="05xxxxxxxx"
+            className="rounded-xl text-base"
+            dir="ltr"
+          />
+        </section>
+
+        {/* ═══════ 3. Editable: Birth Date ═══════ */}
+        <section className="bg-card border border-border/50 rounded-2xl p-6 space-y-3 shadow-sm">
           <div className="flex items-center gap-2">
             <CalendarDays className="h-5 w-5 text-primary" />
             <h3 className="text-lg font-bold text-foreground">تاريخ الميلاد (هجري)</h3>
           </div>
           <HijriDatePicker value={birthDate} onChange={setBirthDate} />
-        </div>
+        </section>
 
-        {/* Edit Spouses */}
-        <div className="bg-card border border-border/50 rounded-2xl p-6 space-y-4 shadow-sm">
-          <h3 className="text-lg font-bold text-foreground">الزوجات</h3>
-          {editSpouses.length > 0 ? (
-            <div className="space-y-2">
-              {editSpouses.map((spouse, i) => (
-                <div key={i} className="flex items-center gap-2 p-3 rounded-xl bg-muted/50 border border-border/30">
-                  <span className="flex-1 text-sm font-medium text-foreground">{spouse}</span>
-                  <Button type="button" variant="ghost" size="icon" onClick={() => handleRemoveSpouse(i)} className="h-8 w-8 text-destructive hover:text-destructive">
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">لا توجد زوجات مسجلة</p>
-          )}
-          <div className="flex gap-2">
-            <Input
-              value={newSpouse}
-              onChange={(e) => setNewSpouse(e.target.value)}
-              placeholder="اسم الزوجة الجديدة..."
-              className="rounded-xl flex-1"
-            />
-            <Button type="button" variant="outline" onClick={handleAddSpouse} className="rounded-xl shrink-0">
-              <Plus className="h-4 w-4 ml-1" /> إضافة
-            </Button>
-          </div>
-        </div>
-
-        {/* Children */}
-        <div className="bg-card border border-border/50 rounded-2xl p-6 space-y-4 shadow-sm">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-foreground">الأبناء ({children.length})</h3>
-            <Button type="button" variant="outline" size="sm" onClick={() => setShowAddChild(!showAddChild)} className="rounded-xl text-xs">
-              <Plus className="h-3.5 w-3.5 ml-1" /> إضافة
-            </Button>
+        {/* ═══════ 4. Family Info (Read-Only) ═══════ */}
+        <section className="bg-card border border-border/50 rounded-2xl p-6 space-y-4 shadow-sm">
+          <div className="flex items-center gap-2">
+            <User className="h-5 w-5 text-primary" />
+            <h3 className="text-lg font-bold text-foreground">معلومات العائلة</h3>
           </div>
 
-          {children.length > 0 && (
-            <div className="space-y-2">
-              {children.map((child) => (
-                <div key={child.id} className="flex items-center gap-2 p-3 rounded-xl bg-muted/50 border border-border/30">
-                  <Badge variant={child.gender === "M" ? "default" : "secondary"} className="text-xs shrink-0">
-                    {child.gender === "M" ? "ذكر" : "أنثى"}
-                  </Badge>
-                  <span className="flex-1 text-sm font-medium text-foreground">{child.name}</span>
-                  {child.birth_year && <span className="text-xs text-muted-foreground">{child.birth_year} هـ</span>}
-                  <Button type="button" variant="ghost" size="icon" onClick={() => setChildToDelete(child)} className="h-8 w-8 text-destructive hover:text-destructive">
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
+          <div className="space-y-3">
+            {/* Father */}
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/50 border border-border/30">
+              <span className="text-xs text-muted-foreground w-16 shrink-0">الأب</span>
+              <span className="text-sm font-semibold text-foreground">
+                {father ? father.name : "—"}
+              </span>
             </div>
-          )}
 
-          {showAddChild && (
-            <div className="space-y-3 p-4 rounded-xl bg-muted/30 border border-border/30">
-              <Input
-                value={newChildName}
-                onChange={(e) => setNewChildName(e.target.value)}
-                placeholder="اسم الابن/البنت..."
-                className="rounded-xl"
-              />
-              <Select value={newChildGender} onValueChange={(v) => setNewChildGender(v as "M" | "F")}>
-                <SelectTrigger className="rounded-xl">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="M">ذكر</SelectItem>
-                  <SelectItem value="F">أنثى</SelectItem>
-                </SelectContent>
-              </Select>
-              {/* Dynamic mother selection */}
-              <Select value={newChildMother} onValueChange={setNewChildMother}>
-                <SelectTrigger className="rounded-xl">
-                  <SelectValue placeholder="اختر الوالدة..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {editSpouses.map((s, i) => (
-                    <SelectItem key={i} value={s}>{s}</SelectItem>
+            {/* Mother */}
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/50 border border-border/30">
+              <span className="text-xs text-muted-foreground w-16 shrink-0">الأم</span>
+              <span className="text-sm font-semibold text-foreground">
+                {motherName || "—"}
+              </span>
+            </div>
+
+            {/* Spouses */}
+            {spousesList.length > 0 && (
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-muted/50 border border-border/30">
+                <Heart className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                <div className="flex flex-wrap gap-1.5">
+                  {spousesList.map((s, i) => (
+                    <Badge key={i} variant="outline" className="text-xs font-medium">
+                      {s}
+                    </Badge>
                   ))}
-                  <SelectItem value="__other__">أخرى (إدخال يدوي)</SelectItem>
-                </SelectContent>
-              </Select>
-              {newChildMother === "__other__" && (
-                <Input
-                  value={customMother}
-                  onChange={(e) => setCustomMother(e.target.value)}
-                  placeholder="اكتب اسم الأم..."
-                  className="rounded-xl"
-                />
-              )}
-              <Button type="button" onClick={handleAddChild} disabled={!newChildName.trim() || saving} className="w-full rounded-xl">
-                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "إضافة"}
-              </Button>
-            </div>
-          )}
-        </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
 
-        {/* Lineage Chain */}
+        {/* ═══════ 5. Children Section ═══════ */}
+        {children.length > 0 && (
+          <section className="bg-card border border-border/50 rounded-2xl p-6 space-y-4 shadow-sm">
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" />
+              <h3 className="text-lg font-bold text-foreground">الأبناء ({children.length})</h3>
+            </div>
+
+            <div className="space-y-3">
+              {children.map((child) => {
+                const isVerified = verifiedIds.has(child.id);
+                return (
+                  <div key={child.id} className="p-4 rounded-xl bg-muted/30 border border-border/30 space-y-2.5">
+                    <div className="flex items-center gap-2">
+                      <Badge variant={child.gender === "M" ? "default" : "secondary"} className="text-xs shrink-0">
+                        {child.gender === "M" ? "ذكر" : "أنثى"}
+                      </Badge>
+                      <span className="text-sm font-bold text-foreground flex-1">{child.name}</span>
+                    </div>
+
+                    {isVerified ? (
+                      <div className="space-y-1.5">
+                        {child.birth_year && (
+                          <p className="text-sm text-foreground">{child.birth_year} هـ</p>
+                        )}
+                        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-green-500/10 border border-green-500/20 w-fit">
+                          <ShieldCheck className="h-3.5 w-3.5 text-green-600" />
+                          <span className="text-xs font-semibold text-green-700">
+                            تم توثيق البيانات بواسطة {child.name} ✅
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-1.5">
+                        <p className="text-xs text-muted-foreground">تاريخ الميلاد (هجري)</p>
+                        <HijriDatePicker
+                          value={childBirthYears[child.id] || {}}
+                          onChange={(val) =>
+                            setChildBirthYears(prev => ({ ...prev, [child.id]: val }))
+                          }
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* ═══════ 6. Lineage Chain ═══════ */}
         {chain.length > 0 && (
-          <div className="bg-card border border-border/50 rounded-2xl p-6 space-y-4 shadow-sm">
+          <section className="bg-card border border-border/50 rounded-2xl p-6 space-y-4 shadow-sm">
             <div className="flex items-center gap-2">
               <GitBranch className="h-5 w-5 text-accent" />
               <h3 className="text-lg font-bold text-foreground">سلسلة النسب</h3>
@@ -370,20 +365,38 @@ const Profile = () => {
                 </span>
               ))}
             </div>
-          </div>
+          </section>
         )}
 
-        {/* Save + Actions */}
-        <div className="flex flex-col sm:flex-row gap-3">
+        {/* ═══════ 7. Save Button ═══════ */}
+        <Button
+          type="button"
+          onClick={handleSave}
+          disabled={saving}
+          className="w-full min-h-[52px] rounded-xl font-bold text-base"
+        >
+          {saving ? <Loader2 className="h-5 w-5 animate-spin ml-2" /> : <Save className="h-5 w-5 ml-2" />}
+          حفظ التعديلات
+        </Button>
+
+        {/* ═══════ 8. Request Change Portal ═══════ */}
+        <div className="bg-muted/30 border border-border/40 rounded-2xl p-5 text-center space-y-3">
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            هل تود إضافة فرد جديد أو تعديل بيانات أخرى؟
+          </p>
           <Button
             type="button"
-            onClick={handleSave}
-            disabled={saving}
-            className="flex-1 min-h-[48px] rounded-xl font-bold"
+            variant="outline"
+            onClick={() => setRequestOpen(true)}
+            className="rounded-xl min-h-[48px] font-bold w-full"
           >
-            {saving ? <Loader2 className="h-4 w-4 animate-spin ml-2" /> : <Save className="h-4 w-4 ml-2" />}
-            حفظ التعديلات
+            <MessageSquarePlus className="h-5 w-5 ml-2" />
+            إرسال طلب تعديل
           </Button>
+        </div>
+
+        {/* ═══════ 9. View in tree + Logout ═══════ */}
+        <div className="flex flex-col sm:flex-row gap-3 pb-6">
           <Button
             type="button"
             variant="outline"
@@ -405,23 +418,12 @@ const Profile = () => {
         </div>
       </main>
 
-      {/* Child delete confirmation */}
-      <AlertDialog open={!!childToDelete} onOpenChange={(open) => !open && setChildToDelete(null)}>
-        <AlertDialogContent dir="rtl">
-          <AlertDialogHeader>
-            <AlertDialogTitle>تأكيد الحذف</AlertDialogTitle>
-            <AlertDialogDescription>
-              هل أنت متأكد من حذف <span className="font-bold">{childToDelete?.name}</span> من قائمة الأبناء؟
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="flex-row-reverse gap-2">
-            <AlertDialogAction onClick={handleDeleteChild} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              حذف
-            </AlertDialogAction>
-            <AlertDialogCancel>إلغاء</AlertDialogCancel>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* Request Change Dialog */}
+      <SubmitRequestForm
+        open={requestOpen}
+        onOpenChange={setRequestOpen}
+        targetMember={member}
+      />
     </div>
   );
 };
