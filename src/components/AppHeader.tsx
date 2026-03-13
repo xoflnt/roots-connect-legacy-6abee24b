@@ -31,6 +31,7 @@ export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHom
   const isMobile = useIsMobile();
   const { currentUser, isLoggedIn } = useAuth();
   const navigate = useNavigate();
+  const isAdmin = isLoggedIn && currentUser && ADMIN_MEMBER_IDS.includes(currentUser.memberId);
 
   return (
     <>
