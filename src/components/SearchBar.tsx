@@ -44,13 +44,6 @@ export function SearchBar({ onSelect }: SearchBarProps) {
 
   const filtered = searchMembers(query);
 
-  // Scroll first result into view when results change
-  useEffect(() => {
-    if (dialogOpen && filtered.length > 0 && resultsRef.current) {
-      const firstBtn = resultsRef.current.querySelector("button");
-      firstBtn?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }
-  }, [filtered.length, dialogOpen]);
 
   const handleSelect = (id: string, name: string) => {
     onSelect(id);
