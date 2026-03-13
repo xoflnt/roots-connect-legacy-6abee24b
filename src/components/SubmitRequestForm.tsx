@@ -71,8 +71,10 @@ export function SubmitRequestForm({ open, onOpenChange, targetMember }: SubmitRe
               <div className="relative">
                 <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                 <Input
+                  ref={kbd.inputRef}
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => { setSearchQuery(e.target.value); kbd.recalc(); }}
+                  onFocus={kbd.recalc}
                   placeholder="ابحث عن الشخص..."
                   className="pr-9 rounded-xl"
                 />
