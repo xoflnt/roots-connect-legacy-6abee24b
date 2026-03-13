@@ -46,9 +46,7 @@ export default function Documents() {
   // Comments state
   const [comments, setComments] = useState<Record<string, Comment[]>>({});
   const [commentCounts, setCommentCounts] = useState<Record<string, number>>({});
-  const [newComment, setNewComment] = useState("");
-  const [showComments, setShowComments] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const [initialComments, setInitialComments] = useState(false);
 
   // Load likes & comments
   useEffect(() => {
