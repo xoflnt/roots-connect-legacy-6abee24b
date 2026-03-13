@@ -1,4 +1,5 @@
 import { useState, useRef, useMemo, useEffect, useCallback } from "react";
+import { useKeyboardSafeDropdown } from "@/hooks/useKeyboardSafeDropdown";
 import { Search, TreePine, ChevronDown, Users, Layers, Crown, User, UserRound, Heart, Quote, Send, BookOpen, UserCheck, Calculator, Shield, ScrollText, UserCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { getLineageLabel, getMemberSubtitle } from "@/utils/memberLabel";
