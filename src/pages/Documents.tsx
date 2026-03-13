@@ -119,28 +119,6 @@ export default function Documents() {
     }
   }, [currentUser, userLikes]);
 
-  const submitComment = async () => {
-    if (!currentUser || !selectedDoc || !newComment.trim()) {
-      if (!currentUser) toast.error("سجّل دخولك أولاً للتعليق");
-      return;
-    }
-    setSubmitting(true);
-    const { error } = await supabase.from("document_comments").insert({
-      document_id: selectedDoc.id,
-      user_name: currentUser.memberName,
-      user_phone: currentUser.phone,
-      content: newComment.trim(),
-    });
-    setSubmitting(false);
-    if (error) {
-      toast.error("حدث خطأ أثناء إرسال التعليق");
-      return;
-    }
-    setNewComment("");
-    loadCommentsForDoc(selectedDoc.id);
-    setCommentCounts((prev) => ({ ...prev, [selectedDoc.id]: (prev[selectedDoc.id] || 0) + 1 }));
-    toast.success("تم إرسال التعليق");
-  };
 
   const handleDownload = async (doc: { title: string; imagePath: string }) => {
     try {
