@@ -58,8 +58,8 @@ function PersonResultRow({ m, onSelect }: { m: FamilyMember; onSelect: (m: Famil
       onClick={() => onSelect(m)}
       onMouseDown={(e) => e.preventDefault()}
     >
-      <span className="block font-medium leading-snug">{getLineageLabel(m)}</span>
-      {subtitle && <span className="text-xs text-muted-foreground">{subtitle}</span>}
+      <span className="block font-medium leading-snug truncate">{getLineageLabel(m)}</span>
+      {subtitle && <span className="block text-xs text-muted-foreground truncate">{subtitle}</span>}
     </button>
   );
 }
