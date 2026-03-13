@@ -1,22 +1,3 @@
-import { useState, useMemo, useCallback } from "react";
-import { ArrowLeftRight, Search, User, Users, TreePine, FileText, Route, X } from "lucide-react";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "./ui/tabs";
-import { Dialog, DialogContent, DialogTitle } from "./ui/dialog";
-import type { FamilyMember } from "@/data/familyData";
-import { getAllMembers, searchMembers, findKinship, kinshipToArabic, kinshipDirectional, inferMotherName } from "@/services/familyService";
-import { getLineageLabel, getMemberSubtitle } from "@/utils/memberLabel";
-import { useAuth } from "@/contexts/AuthContext";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { KinshipTreeView } from "./kinship/KinshipTreeView";
-import { KinshipDocumentView } from "./kinship/KinshipDocumentView";
-import { KinshipInteractiveView } from "./kinship/KinshipInteractiveView";
-
-interface KinshipCalculatorProps {
-  initialMemberId?: string;
-}
-
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { ArrowLeftRight, Search, User, Users, TreePine, FileText, Route, X } from "lucide-react";
 import { Input } from "./ui/input";
