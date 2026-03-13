@@ -205,7 +205,7 @@ function AdminContent() {
 
   return (
     <div className="min-h-screen bg-background" dir="rtl">
-      <header className="sticky top-0 z-30 bg-card/90 backdrop-blur-sm border-b border-border/30 px-4 py-3">
+      <header className="sticky top-0 z-30 bg-card/90 backdrop-blur-sm border-b border-border/30 px-4 py-3" style={{ paddingTop: `max(0.75rem, env(safe-area-inset-top))` }}>
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ShieldCheck className="h-5 w-5 text-primary" />
