@@ -27,6 +27,11 @@ export function useKeyboardSafeDropdown(minItems = 3, itemHeight = 52, gap = 8) 
       // ensure at least minItems visible (or all available space)
       const minHeight = minItems * itemHeight;
       setMaxHeight(Math.max(available, minHeight));
+
+      // scroll dropdown into view
+      if (dropdownRef.current) {
+        dropdownRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
     });
   }, [gap, minItems, itemHeight]);
 
