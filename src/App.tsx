@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { FontSizeProvider } from "@/contexts/FontSizeContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { SWUpdateBanner } from "@/components/SWUpdateBanner";
 import { lazy, Suspense } from "react";
 
 const Index = lazy(() => import("./pages/Index.tsx"));
@@ -31,6 +32,7 @@ const App = () => (
           <TooltipProvider>
             <Toaster />
             <Sonner />
+            <SWUpdateBanner />
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<Suspense fallback={<LoadingSpinner />}><Index /></Suspense>} />

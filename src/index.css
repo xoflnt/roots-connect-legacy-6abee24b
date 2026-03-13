@@ -109,6 +109,7 @@
 @layer base {
   * {
     @apply border-border;
+    touch-action: manipulation;
   }
 
   html {
@@ -124,6 +125,12 @@
     padding-bottom: env(safe-area-inset-bottom);
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
+  }
+
+  /* Allow pinch-to-zoom on family tree canvas */
+  .react-flow,
+  .react-flow * {
+    touch-action: auto !important;
   }
 }
 
