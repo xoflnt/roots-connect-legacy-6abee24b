@@ -1,6 +1,7 @@
 import { getMemberById } from "@/services/familyService";
 
 export const DOCUMENTER_ID = "209";
+export const ADMIN_MEMBER_IDS = ["209", "M209_3"];
 
 export const PILLARS = [
   { id: "300", label: "فرع ناصر", name: "ناصر بن زيد" },

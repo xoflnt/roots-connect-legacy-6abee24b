@@ -86,6 +86,17 @@ export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHom
         )}
 
         <div className="flex items-center gap-1.5 shrink-0">
+          {isAdmin && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/admin")}
+              className="h-11 w-11 min-w-[44px] min-h-[44px] rounded-xl text-primary hover:bg-primary/10"
+              aria-label="لوحة الإدارة"
+            >
+              <Shield className="h-5 w-5" />
+            </Button>
+          )}
           {isLoggedIn && currentUser ? (
             <>
               <button
