@@ -301,6 +301,31 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         </div>
       </section>
 
+      {/* ─── مستندات تاريخية ─── */}
+      <section className="py-10 md:py-16 px-4 border-t border-border/30">
+        <div className="max-w-2xl mx-auto text-center space-y-5">
+          <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-accent/15 text-accent font-bold text-sm">
+            <ScrollText className="h-4 w-4" />
+            مستندات تاريخية
+          </div>
+          <h2 className="text-xl md:text-3xl font-extrabold text-foreground">
+            أرشيف العائلة الموثّق
+          </h2>
+          <p className="text-sm md:text-base text-muted-foreground leading-relaxed max-w-md mx-auto">
+            وثائق ومستندات تاريخية تحفظ جزءاً من إرث العائلة عبر الزمن
+          </p>
+          <Button
+            onClick={() => navigate("/documents")}
+            variant="outline"
+            size="lg"
+            className="rounded-2xl h-14 px-8 text-base font-extrabold border-accent/30 text-accent hover:bg-accent/10 gap-2"
+          >
+            <ScrollText className="h-5 w-5" />
+            استعرض المستندات
+          </Button>
+        </div>
+      </section>
+
       {/* ─── 6. Statistics ─── */}
       <section className="py-12 md:py-20 px-4 border-t border-border/30">
         <div className="max-w-3xl mx-auto text-center space-y-6 md:space-y-8">

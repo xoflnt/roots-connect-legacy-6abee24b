@@ -29,6 +29,7 @@ const PersonPage = lazyRetry(() => import("./pages/PersonPage.tsx"));
 const Admin = lazyRetry(() => import("./pages/Admin.tsx"));
 const Profile = lazyRetry(() => import("./pages/Profile.tsx"));
 const Guide = lazyRetry(() => import("./pages/Guide.tsx"));
+const Documents = lazyRetry(() => import("./pages/Documents.tsx"));
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -56,6 +57,7 @@ const App = () => (
                   <Route path="/profile" element={<Suspense fallback={<LoadingSpinner />}><Profile /></Suspense>} />
                   <Route path="/guide" element={<Suspense fallback={<LoadingSpinner />}><Guide /></Suspense>} />
                   <Route path="/admin" element={<Suspense fallback={<LoadingSpinner />}><Admin /></Suspense>} />
+                  <Route path="/documents" element={<Suspense fallback={<LoadingSpinner />}><Documents /></Suspense>} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>
