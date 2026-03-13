@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { searchMembers } from "@/services/familyService";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useKeyboardSafeDropdown } from "@/hooks/useKeyboardSafeDropdown";
 import { getLineageLabel, getMemberSubtitle } from "@/utils/memberLabel";
 import {
   Dialog,
