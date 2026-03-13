@@ -122,7 +122,7 @@ export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHom
 
       {/* Mobile bottom navigation bar */}
       {isMobile && (
-        <nav className="fixed bottom-0 left-0 right-0 z-50 flex items-stretch justify-around border-t border-border/40 bg-card/80 backdrop-blur-xl shadow-[0_-2px_10px_rgba(0,0,0,0.08)]">
+        <nav className="fixed bottom-0 left-0 right-0 z-50 flex items-stretch justify-around border-t border-border/40 bg-card/80 backdrop-blur-xl shadow-[0_-2px_10px_rgba(0,0,0,0.08)]" style={{ paddingBottom: `env(safe-area-inset-bottom)` }}>
           {navItems.map((item) => {
             const isActive = activeView === item.value;
             return (
