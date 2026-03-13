@@ -17,16 +17,35 @@ interface KinshipCalculatorProps {
   initialMemberId?: string;
 }
 
+import { useState, useMemo, useCallback, useEffect } from "react";
+import { ArrowLeftRight, Search, User, Users, TreePine, FileText, Route, X } from "lucide-react";
+import { Input } from "./ui/input";
+import { Button } from "./ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "./ui/tabs";
+import { Dialog, DialogContent, DialogTitle } from "./ui/dialog";
+import type { FamilyMember } from "@/data/familyData";
+import { getAllMembers, searchMembers, findKinship, kinshipToArabic, kinshipDirectional, inferMotherName } from "@/services/familyService";
+import { getLineageLabel, getMemberSubtitle } from "@/utils/memberLabel";
+import { useAuth } from "@/contexts/AuthContext";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { KinshipTreeView } from "./kinship/KinshipTreeView";
+import { KinshipDocumentView } from "./kinship/KinshipDocumentView";
+import { KinshipInteractiveView } from "./kinship/KinshipInteractiveView";
+
+interface KinshipCalculatorProps {
+  initialMemberId?: string;
+}
+
 /* ── Visual viewport height for mobile keyboard ── */
 function useVisualViewportHeight(): number | null {
   const [h, setH] = useState<number | null>(null);
-  useState(() => {
+  useEffect(() => {
     if (typeof window === "undefined" || !window.visualViewport) return;
     const update = () => setH(window.visualViewport!.height);
     update();
     window.visualViewport.addEventListener("resize", update);
     return () => window.visualViewport?.removeEventListener("resize", update);
-  });
+  }, []);
   return h;
 }
 
