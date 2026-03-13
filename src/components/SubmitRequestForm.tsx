@@ -9,6 +9,7 @@ import { searchMembers } from "@/services/familyService";
 import { submitRequest } from "@/services/dataService";
 import { getLineageLabel, getMemberSubtitle } from "@/utils/memberLabel";
 import { toast } from "sonner";
+import { useKeyboardSafeDropdown } from "@/hooks/useKeyboardSafeDropdown";
 
 interface SubmitRequestFormProps {
   open: boolean;
