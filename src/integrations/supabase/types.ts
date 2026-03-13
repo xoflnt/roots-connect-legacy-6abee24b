@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      document_comments: {
+        Row: {
+          content: string
+          created_at: string | null
+          document_id: string
+          id: string
+          user_name: string
+          user_phone: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          document_id: string
+          id?: string
+          user_name: string
+          user_phone: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          document_id?: string
+          id?: string
+          user_name?: string
+          user_phone?: string
+        }
+        Relationships: []
+      }
+      document_likes: {
+        Row: {
+          created_at: string | null
+          document_id: string
+          id: string
+          user_phone: string
+        }
+        Insert: {
+          created_at?: string | null
+          document_id: string
+          id?: string
+          user_phone: string
+        }
+        Update: {
+          created_at?: string | null
+          document_id?: string
+          id?: string
+          user_phone?: string
+        }
+        Relationships: []
+      }
       family_members: {
         Row: {
           birth_year: string | null
