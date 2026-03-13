@@ -11,7 +11,7 @@ import { OnboardingModal } from "@/components/OnboardingModal";
 import { SubmitRequestForm } from "@/components/SubmitRequestForm";
 import { trackVisit } from "@/services/dataService";
 import { getAllMembers, getDescendantCount, searchMembers, loadMembers } from "@/services/familyService";
-import { PILLARS, DOCUMENTER_ID } from "@/utils/branchUtils";
+import { PILLARS, DOCUMENTER_ID, ADMIN_MEMBER_IDS } from "@/utils/branchUtils";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface LandingPageProps {
@@ -219,6 +219,22 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
           </div>
         )}
       </section>
+
+      {/* ─── Admin Shortcut Banner ─── */}
+      {currentUser && ADMIN_MEMBER_IDS.includes(currentUser.memberId) && (
+        <section className="py-4 px-4">
+          <div className="max-w-lg mx-auto">
+            <Button
+              onClick={() => navigate("/admin")}
+              size="lg"
+              className="w-full min-h-[56px] rounded-2xl font-extrabold text-base gap-3 bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-xl"
+            >
+              <Shield className="h-6 w-6" />
+              لوحة تحكم المشرفين
+            </Button>
+          </div>
+        </section>
+      )}
 
       {/* ─── Guest CTA Banner ─── */}
       {!currentUser && (
