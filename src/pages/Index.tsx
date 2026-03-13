@@ -68,22 +68,24 @@ const Index = () => {
         onReset={() => { setFocusBranch(undefined); treeRef.current?.reset(); }}
         onGoHome={handleGoHome}
       />
-      <main className="flex-1 overflow-hidden p-2 md:p-5 pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-5" key={activeView}>
-        {activeView === "tree" && (
-          <div className="w-full h-full rounded-2xl md:rounded-3xl shadow-xl overflow-hidden border border-border/50 bg-[hsl(var(--canvas-bg))] animate-fade-in relative">
-            <FamilyTree ref={treeRef} focusBranch={focusBranch} />
-          </div>
-        )}
-        {activeView === "kinship" && (
-          <div className="w-full h-full rounded-2xl md:rounded-3xl shadow-xl overflow-auto border border-border/50 bg-card animate-fade-in">
-            <KinshipCalculator />
-          </div>
-        )}
-        {activeView === "list" && (
-          <div className="w-full h-full rounded-2xl md:rounded-3xl shadow-xl overflow-auto border border-border/50 bg-card animate-fade-in">
-            <ListView onSelectMember={handleSearchSelect} />
-          </div>
-        )}
+      <main className="flex-1 overflow-hidden p-2 md:p-5 pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-5">
+        <div key={activeView} className="w-full h-full animate-slide-up">
+          {activeView === "tree" && (
+            <div className="w-full h-full rounded-2xl md:rounded-3xl shadow-xl overflow-hidden border border-border/50 bg-[hsl(var(--canvas-bg))] relative">
+              <FamilyTree ref={treeRef} focusBranch={focusBranch} />
+            </div>
+          )}
+          {activeView === "kinship" && (
+            <div className="w-full h-full rounded-2xl md:rounded-3xl shadow-xl overflow-auto border border-border/50 bg-card">
+              <KinshipCalculator />
+            </div>
+          )}
+          {activeView === "list" && (
+            <div className="w-full h-full rounded-2xl md:rounded-3xl shadow-xl overflow-auto border border-border/50 bg-card">
+              <ListView onSelectMember={handleSearchSelect} />
+            </div>
+          )}
+        </div>
       </main>
     </div>
   );

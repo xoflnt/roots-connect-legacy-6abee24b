@@ -1,4 +1,4 @@
-import { TreePine, TableProperties, Home, List, GitBranch, Users, UserCircle, BookOpen } from "lucide-react";
+import { TreePine, TableProperties, Home, List, GitBranch, Users, UserCircle, BookOpen, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ThemeToggle } from "./ThemeToggle";
 import { FontSizeToggle } from "./FontSizeToggle";
@@ -8,6 +8,7 @@ import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
 import { Button } from "./ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
+import { ADMIN_MEMBER_IDS } from "@/utils/branchUtils";
 
 export type ViewMode = "tree" | "lineage" | "list" | "table" | "kinship";
 
@@ -30,6 +31,7 @@ export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHom
   const isMobile = useIsMobile();
   const { currentUser, isLoggedIn } = useAuth();
   const navigate = useNavigate();
+  const isAdmin = isLoggedIn && currentUser && ADMIN_MEMBER_IDS.includes(currentUser.memberId);
 
   return (
     <>
@@ -84,6 +86,17 @@ export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHom
         )}
 
         <div className="flex items-center gap-1.5 shrink-0">
+          {isAdmin && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/admin")}
+              className="h-11 w-11 min-w-[44px] min-h-[44px] rounded-xl text-primary hover:bg-primary/10"
+              aria-label="لوحة الإدارة"
+            >
+              <Shield className="h-5 w-5" />
+            </Button>
+          )}
           {isLoggedIn && currentUser ? (
             <>
               <button
