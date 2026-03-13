@@ -21,6 +21,37 @@ export default defineConfig(({ mode }) => ({
       workbox: {
         navigateFallbackDenylist: [/^\/~oauth/],
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/.*\.supabase\.co\//,
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "api-cache",
+              expiration: { maxEntries: 50, maxAgeSeconds: 300 },
+            },
+          },
+          {
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "image-cache",
+              expiration: { maxEntries: 100, maxAgeSeconds: 30 * 24 * 60 * 60 },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/fonts\.googleapis\.com\//,
+            handler: "StaleWhileRevalidate",
+            options: { cacheName: "google-fonts-stylesheets" },
+          },
+          {
+            urlPattern: /^https:\/\/fonts\.gstatic\.com\//,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "google-fonts-webfonts",
+              expiration: { maxEntries: 20, maxAgeSeconds: 365 * 24 * 60 * 60 },
+            },
+          },
+        ],
       },
       manifest: {
         name: "شجرة عائلة الخنيني - فرع الزلفي",
@@ -33,22 +64,16 @@ export default defineConfig(({ mode }) => ({
         lang: "ar",
         start_url: "/",
         icons: [
-          {
-            src: "/pwa/icon-192x192.png",
-            sizes: "192x192",
-            type: "image/png",
-          },
-          {
-            src: "/pwa/icon-512x512.png",
-            sizes: "512x512",
-            type: "image/png",
-          },
-          {
-            src: "/pwa/icon-512x512.png",
-            sizes: "512x512",
-            type: "image/png",
-            purpose: "maskable",
-          },
+          { src: "/pwa/icon-48x48.png", sizes: "48x48", type: "image/png" },
+          { src: "/pwa/icon-72x72.png", sizes: "72x72", type: "image/png" },
+          { src: "/pwa/icon-96x96.png", sizes: "96x96", type: "image/png" },
+          { src: "/pwa/icon-128x128.png", sizes: "128x128", type: "image/png" },
+          { src: "/pwa/icon-144x144.png", sizes: "144x144", type: "image/png" },
+          { src: "/pwa/icon-152x152.png", sizes: "152x152", type: "image/png" },
+          { src: "/pwa/icon-192x192.png", sizes: "192x192", type: "image/png" },
+          { src: "/pwa/icon-384x384.png", sizes: "384x384", type: "image/png" },
+          { src: "/pwa/icon-512x512.png", sizes: "512x512", type: "image/png" },
+          { src: "/pwa/icon-512x512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
         ],
       },
     }),

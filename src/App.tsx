@@ -6,14 +6,14 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { FontSizeProvider } from "@/contexts/FontSizeContext";
 import { AuthProvider } from "@/contexts/AuthContext";
-import Index from "./pages/Index.tsx";
-import PersonPage from "./pages/PersonPage.tsx";
-import NotFound from "./pages/NotFound.tsx";
 import { lazy, Suspense } from "react";
 
+const Index = lazy(() => import("./pages/Index.tsx"));
+const PersonPage = lazy(() => import("./pages/PersonPage.tsx"));
 const Admin = lazy(() => import("./pages/Admin.tsx"));
 const Profile = lazy(() => import("./pages/Profile.tsx"));
 const Guide = lazy(() => import("./pages/Guide.tsx"));
+import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
 
@@ -33,8 +33,8 @@ const App = () => (
             <Sonner />
             <BrowserRouter>
               <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/person/:id" element={<PersonPage />} />
+                <Route path="/" element={<Suspense fallback={<LoadingSpinner />}><Index /></Suspense>} />
+                <Route path="/person/:id" element={<Suspense fallback={<LoadingSpinner />}><PersonPage /></Suspense>} />
                 <Route path="/profile" element={<Suspense fallback={<LoadingSpinner />}><Profile /></Suspense>} />
                 <Route path="/guide" element={<Suspense fallback={<LoadingSpinner />}><Guide /></Suspense>} />
                 <Route path="/admin" element={<Suspense fallback={<LoadingSpinner />}><Admin /></Suspense>} />
