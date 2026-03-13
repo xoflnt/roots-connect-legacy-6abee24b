@@ -26,7 +26,7 @@ const PersonPage = () => {
 
   if (!member) {
     return (
-      <div className="flex flex-col h-screen bg-background" dir="rtl">
+      <div className="flex flex-col h-[100dvh] bg-background" dir="rtl">
         <AppHeader
           activeView="lineage"
           onViewChange={() => navigate("/")}
@@ -42,7 +42,7 @@ const PersonPage = () => {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-background overflow-x-hidden">
+    <div className="flex flex-col h-[100dvh] bg-background overflow-x-hidden">
       <AppHeader
         activeView="lineage"
         onViewChange={(v) => {
