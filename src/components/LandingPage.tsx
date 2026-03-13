@@ -117,6 +117,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
   const stats = useMemo(computeStats, [dataReady]);
   const navigate = useNavigate();
   const { currentUser } = useAuth();
+  const landingSearch = useKeyboardSafeDropdown();
 
   const pillarStats = useMemo(() => PILLARS.map((p) => ({ ...p, descendants: getDescendantCount(p.id) })), [dataReady]);
 
