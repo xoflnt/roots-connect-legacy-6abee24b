@@ -29,6 +29,7 @@ function PersonPicker({
 }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
+  const kbd = useKeyboardSafeDropdown();
 
   const filtered = useMemo(() => searchMembers(query, 8), [query]);
 
@@ -56,15 +57,20 @@ function PersonPicker({
           <div className="relative">
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
             <Input
+              ref={kbd.inputRef}
               placeholder="ابحث باسم الشخص..."
               value={query}
-              onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
-              onFocus={() => query.trim() && setOpen(true)}
+              onChange={(e) => { setQuery(e.target.value); setOpen(true); kbd.recalc(); }}
+              onFocus={() => { query.trim() && setOpen(true); kbd.recalc(); }}
               onBlur={() => setTimeout(() => setOpen(false), 200)}
               className="pr-10 h-11 rounded-xl text-sm border-border/50"
             />
             {open && filtered.length > 0 && (
-              <div className="absolute top-full mt-1 w-full bg-card border border-border rounded-xl shadow-xl z-50 max-h-48 overflow-y-auto">
+              <div
+                ref={kbd.dropdownRef}
+                className="absolute top-full mt-1 w-full bg-card border border-border rounded-xl shadow-xl z-50 overflow-y-auto"
+                style={{ maxHeight: kbd.maxHeight ?? 192 }}
+              >
                 {filtered.map((m) => {
                   const subtitle = getMemberSubtitle(m);
                   return (

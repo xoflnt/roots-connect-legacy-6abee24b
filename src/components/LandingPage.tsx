@@ -184,16 +184,21 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
           <div className="relative">
             <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
             <Input
+              ref={landingSearch.inputRef}
               placeholder="ابحث عن اسمك لمعرفة نسبك"
               value={query}
-              onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
-              onFocus={() => query.trim() && setOpen(true)}
+              onChange={(e) => { setQuery(e.target.value); setOpen(true); landingSearch.recalc(); }}
+              onFocus={() => { query.trim() && setOpen(true); landingSearch.recalc(); }}
               onBlur={() => setTimeout(() => setOpen(false), 200)}
               className="pr-12 pl-4 h-14 text-base md:text-lg rounded-2xl bg-card border-border shadow-lg focus:ring-2 focus:ring-accent placeholder:text-muted-foreground"
             />
           </div>
           {showingResults && (
-            <div className="absolute top-full mt-2 w-full bg-card border border-border rounded-2xl shadow-xl z-50 overflow-hidden max-h-72 overflow-y-auto">
+            <div
+              ref={landingSearch.dropdownRef}
+              className="absolute top-full mt-2 w-full bg-card border border-border rounded-2xl shadow-xl z-50 overflow-hidden overflow-y-auto"
+              style={{ maxHeight: landingSearch.maxHeight ?? 288 }}
+            >
               {filtered.map((m) => {
                 const subtitle = getMemberSubtitle(m);
                 return (

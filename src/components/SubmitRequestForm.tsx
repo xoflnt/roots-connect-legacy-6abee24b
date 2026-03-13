@@ -80,7 +80,7 @@ export function SubmitRequestForm({ open, onOpenChange, targetMember }: SubmitRe
                 />
               </div>
               {searchQuery.trim() && (
-                <div className="border border-border/50 rounded-xl overflow-hidden max-h-[160px] overflow-y-auto bg-background">
+                <div ref={kbd.dropdownRef} className="border border-border/50 rounded-xl overflow-hidden overflow-y-auto bg-background" style={{ maxHeight: kbd.maxHeight ?? 160 }}>
                   {filtered.length === 0 ? (
                     <p className="p-3 text-center text-sm text-muted-foreground">لم يتم العثور على نتائج</p>
                   ) : (
