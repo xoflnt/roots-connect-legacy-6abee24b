@@ -340,9 +340,10 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                       <div className="relative">
                         <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
                         <Input
-                          ref={searchInputRef}
+                          ref={(el) => { (searchInputRef as React.MutableRefObject<HTMLInputElement | null>).current = el; if (el && onboardKbd.inputRef) (onboardKbd.inputRef as React.MutableRefObject<HTMLInputElement | null>).current = el; }}
                           value={searchQuery}
-                          onChange={(e) => { setSearchQuery(e.target.value); setSelectedMember(null); }}
+                          onChange={(e) => { setSearchQuery(e.target.value); setSelectedMember(null); onboardKbd.recalc(); }}
+                          onFocus={onboardKbd.recalc}
                           placeholder="اكتب اسمك للبحث..."
                           className="min-h-[52px] pr-10 text-base rounded-xl border-border"
                           autoFocus
