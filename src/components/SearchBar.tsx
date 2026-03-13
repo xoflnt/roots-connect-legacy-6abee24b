@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { searchMembers } from "@/services/familyService";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useKeyboardSafeDropdown } from "@/hooks/useKeyboardSafeDropdown";
 import { getLineageLabel, getMemberSubtitle } from "@/utils/memberLabel";
 import {
   Dialog,
@@ -135,18 +136,22 @@ export function SearchBar({ onSelect }: SearchBarProps) {
   }
 
   // Desktop: inline input
+  const desktopKbd = useKeyboardSafeDropdown();
+
   return (
     <div ref={ref} className="relative flex-1 max-w-sm">
       <div className="relative">
         <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
         <Input
+          ref={desktopKbd.inputRef}
           placeholder="بحث بالاسم..."
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
             setOpen(true);
+            desktopKbd.recalc();
           }}
-          onFocus={() => setOpen(true)}
+          onFocus={() => { setOpen(true); desktopKbd.recalc(); }}
           onBlur={() => setTimeout(() => setOpen(false), 200)}
           className="pr-10 bg-card text-foreground placeholder:text-muted-foreground border-border"
           style={{ minHeight: 44 }}
@@ -154,7 +159,11 @@ export function SearchBar({ onSelect }: SearchBarProps) {
       </div>
 
       {open && filtered.length > 0 && (
-        <div className="absolute top-full mt-1 w-full bg-card border border-border rounded-lg shadow-lg z-50 overflow-hidden">
+        <div
+          ref={desktopKbd.dropdownRef}
+          className="absolute top-full mt-1 w-full bg-card border border-border rounded-lg shadow-lg z-50 overflow-hidden overflow-y-auto"
+          style={{ maxHeight: desktopKbd.maxHeight ?? 300 }}
+        >
           {filtered.map((m) => {
             const subtitle = getMemberSubtitle(m);
             return (
