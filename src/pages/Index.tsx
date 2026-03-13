@@ -51,7 +51,7 @@ const Index = () => {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-background overflow-x-hidden">
+    <div className="flex flex-col h-[100dvh] bg-background overflow-x-hidden">
       <AppHeader
         activeView={activeView as ViewMode}
         onViewChange={(v) => {

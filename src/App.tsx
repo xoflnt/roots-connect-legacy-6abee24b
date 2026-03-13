@@ -7,13 +7,28 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { FontSizeProvider } from "@/contexts/FontSizeContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { SWUpdateBanner } from "@/components/SWUpdateBanner";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { lazy, Suspense } from "react";
 
-const Index = lazy(() => import("./pages/Index.tsx"));
-const PersonPage = lazy(() => import("./pages/PersonPage.tsx"));
-const Admin = lazy(() => import("./pages/Admin.tsx"));
-const Profile = lazy(() => import("./pages/Profile.tsx"));
-const Guide = lazy(() => import("./pages/Guide.tsx"));
+function lazyRetry(factory: () => Promise<{ default: React.ComponentType<any> }>) {
+  return lazy(() =>
+    factory().catch((err) => {
+      // If chunk load fails, force reload once
+      const key = "chunk_reload";
+      if (!sessionStorage.getItem(key)) {
+        sessionStorage.setItem(key, "1");
+        window.location.reload();
+      }
+      throw err;
+    })
+  );
+}
+
+const Index = lazyRetry(() => import("./pages/Index.tsx"));
+const PersonPage = lazyRetry(() => import("./pages/PersonPage.tsx"));
+const Admin = lazyRetry(() => import("./pages/Admin.tsx"));
+const Profile = lazyRetry(() => import("./pages/Profile.tsx"));
+const Guide = lazyRetry(() => import("./pages/Guide.tsx"));
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -25,29 +40,31 @@ const LoadingSpinner = () => (
 );
 
 const App = () => (
-  <ThemeProvider>
-    <FontSizeProvider>
-      <AuthProvider>
-        <QueryClientProvider client={queryClient}>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <SWUpdateBanner />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Suspense fallback={<LoadingSpinner />}><Index /></Suspense>} />
-                <Route path="/person/:id" element={<Suspense fallback={<LoadingSpinner />}><PersonPage /></Suspense>} />
-                <Route path="/profile" element={<Suspense fallback={<LoadingSpinner />}><Profile /></Suspense>} />
-                <Route path="/guide" element={<Suspense fallback={<LoadingSpinner />}><Guide /></Suspense>} />
-                <Route path="/admin" element={<Suspense fallback={<LoadingSpinner />}><Admin /></Suspense>} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </QueryClientProvider>
-      </AuthProvider>
-    </FontSizeProvider>
-  </ThemeProvider>
+  <ErrorBoundary>
+    <ThemeProvider>
+      <FontSizeProvider>
+        <AuthProvider>
+          <QueryClientProvider client={queryClient}>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <SWUpdateBanner />
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<Suspense fallback={<LoadingSpinner />}><Index /></Suspense>} />
+                  <Route path="/person/:id" element={<Suspense fallback={<LoadingSpinner />}><PersonPage /></Suspense>} />
+                  <Route path="/profile" element={<Suspense fallback={<LoadingSpinner />}><Profile /></Suspense>} />
+                  <Route path="/guide" element={<Suspense fallback={<LoadingSpinner />}><Guide /></Suspense>} />
+                  <Route path="/admin" element={<Suspense fallback={<LoadingSpinner />}><Admin /></Suspense>} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </TooltipProvider>
+          </QueryClientProvider>
+        </AuthProvider>
+      </FontSizeProvider>
+    </ThemeProvider>
+  </ErrorBoundary>
 );
 
 export default App;
