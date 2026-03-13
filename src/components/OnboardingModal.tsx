@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { useKeyboardSafeDropdown } from "@/hooks/useKeyboardSafeDropdown";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,7 +47,6 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(1);
   const navigate = useNavigate();
-  const onboardKbd = useKeyboardSafeDropdown();
 
   // Phase A
   const [searchQuery, setSearchQuery] = useState("");
@@ -341,17 +339,16 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                       <div className="relative">
                         <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
                         <Input
-                          ref={(el) => { (searchInputRef as React.MutableRefObject<HTMLInputElement | null>).current = el; if (el && onboardKbd.inputRef) (onboardKbd.inputRef as React.MutableRefObject<HTMLInputElement | null>).current = el; }}
+                          ref={searchInputRef}
                           value={searchQuery}
-                          onChange={(e) => { setSearchQuery(e.target.value); setSelectedMember(null); onboardKbd.recalc(); }}
-                          onFocus={onboardKbd.recalc}
+                          onChange={(e) => { setSearchQuery(e.target.value); setSelectedMember(null); }}
                           placeholder="اكتب اسمك للبحث..."
                           className="min-h-[52px] pr-10 text-base rounded-xl border-border"
                           autoFocus
                         />
                       </div>
                       {searchQuery.trim() && (
-                        <div ref={onboardKbd.dropdownRef} className="border border-border/50 rounded-xl overflow-hidden overflow-y-auto bg-background" style={{ maxHeight: onboardKbd.maxHeight ?? 220 }}>
+                        <div className="border border-border/50 rounded-xl overflow-hidden max-h-[220px] overflow-y-auto bg-background">
                           {filtered.length === 0 ? (
                             <p className="p-4 text-center text-sm text-muted-foreground">لم يتم العثور على نتائج</p>
                           ) : (

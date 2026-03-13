@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { useKeyboardSafeDropdown } from "@/hooks/useKeyboardSafeDropdown";
 import { AdminProtect } from "@/components/AdminProtect";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -185,7 +184,6 @@ function AdminContent() {
   const [selectedExportMember, setSelectedExportMember] = useState<FamilyMember | null>(null);
   const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
-  const adminKbd = useKeyboardSafeDropdown();
 
   const exportResults = exportSearch.trim() ? searchMembers(exportSearch, 8) : [];
 
@@ -300,17 +298,16 @@ function AdminContent() {
                     <div className="relative">
                       <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                       <Input
-                        ref={adminKbd.inputRef}
                         placeholder="ابحث لتصدير ذرية شخص..."
                         value={exportSearch}
-                        onChange={e => { setExportSearch(e.target.value); setExportDropdownOpen(true); adminKbd.recalc(); }}
-                        onFocus={() => { setExportDropdownOpen(true); adminKbd.recalc(); }}
+                        onChange={e => { setExportSearch(e.target.value); setExportDropdownOpen(true); }}
+                        onFocus={() => setExportDropdownOpen(true)}
                         onBlur={() => setTimeout(() => setExportDropdownOpen(false), 200)}
                         className="pr-9 rounded-xl"
                       />
                     </div>
                     {exportDropdownOpen && exportResults.length > 0 && (
-                      <div ref={adminKbd.dropdownRef} className="absolute z-50 top-full mt-1 w-full bg-popover border border-border rounded-xl shadow-lg overflow-y-auto" style={{ maxHeight: adminKbd.maxHeight ?? 192 }}>
+                      <div className="absolute z-50 top-full mt-1 w-full bg-popover border border-border rounded-xl shadow-lg max-h-48 overflow-y-auto">
                         {exportResults.map(m => (
                           <button
                             key={m.id}

@@ -1,5 +1,4 @@
 import { useState, useMemo } from "react";
-import { useKeyboardSafeDropdown } from "@/hooks/useKeyboardSafeDropdown";
 import { ArrowLeftRight, Search, User, Users, ChevronDown, TreePine, FileText, Route } from "lucide-react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
@@ -29,7 +28,6 @@ function PersonPicker({
 }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
-  const kbd = useKeyboardSafeDropdown();
 
   const filtered = useMemo(() => searchMembers(query, 8), [query]);
 
@@ -57,20 +55,15 @@ function PersonPicker({
           <div className="relative">
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
             <Input
-              ref={kbd.inputRef}
               placeholder="ابحث باسم الشخص..."
               value={query}
-              onChange={(e) => { setQuery(e.target.value); setOpen(true); kbd.recalc(); }}
-              onFocus={() => { query.trim() && setOpen(true); kbd.recalc(); }}
+              onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
+              onFocus={() => query.trim() && setOpen(true)}
               onBlur={() => setTimeout(() => setOpen(false), 200)}
               className="pr-10 h-11 rounded-xl text-sm border-border/50"
             />
             {open && filtered.length > 0 && (
-              <div
-                ref={kbd.dropdownRef}
-                className="absolute top-full mt-1 w-full bg-card border border-border rounded-xl shadow-xl z-50 overflow-y-auto"
-                style={{ maxHeight: kbd.maxHeight ?? 192 }}
-              >
+              <div className="absolute top-full mt-1 w-full bg-card border border-border rounded-xl shadow-xl z-50 max-h-48 overflow-y-auto">
                 {filtered.map((m) => {
                   const subtitle = getMemberSubtitle(m);
                   return (

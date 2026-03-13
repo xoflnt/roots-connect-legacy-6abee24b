@@ -9,7 +9,6 @@ import { searchMembers } from "@/services/familyService";
 import { submitRequest } from "@/services/dataService";
 import { getLineageLabel, getMemberSubtitle } from "@/utils/memberLabel";
 import { toast } from "sonner";
-import { useKeyboardSafeDropdown } from "@/hooks/useKeyboardSafeDropdown";
 
 interface SubmitRequestFormProps {
   open: boolean;
@@ -23,7 +22,6 @@ export function SubmitRequestForm({ open, onOpenChange, targetMember }: SubmitRe
   const [showSearch, setShowSearch] = useState(!targetMember);
   const [textContent, setTextContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const kbd = useKeyboardSafeDropdown();
 
   const filtered = useMemo(() => {
     return searchMembers(searchQuery, 10);
@@ -71,16 +69,14 @@ export function SubmitRequestForm({ open, onOpenChange, targetMember }: SubmitRe
               <div className="relative">
                 <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                 <Input
-                  ref={kbd.inputRef}
                   value={searchQuery}
-                  onChange={(e) => { setSearchQuery(e.target.value); kbd.recalc(); }}
-                  onFocus={kbd.recalc}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="ابحث عن الشخص..."
                   className="pr-9 rounded-xl"
                 />
               </div>
               {searchQuery.trim() && (
-                <div ref={kbd.dropdownRef} className="border border-border/50 rounded-xl overflow-hidden overflow-y-auto bg-background" style={{ maxHeight: kbd.maxHeight ?? 160 }}>
+                <div className="border border-border/50 rounded-xl overflow-hidden max-h-[160px] overflow-y-auto bg-background">
                   {filtered.length === 0 ? (
                     <p className="p-3 text-center text-sm text-muted-foreground">لم يتم العثور على نتائج</p>
                   ) : (
