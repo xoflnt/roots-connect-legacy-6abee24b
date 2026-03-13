@@ -350,7 +350,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                         />
                       </div>
                       {searchQuery.trim() && (
-                        <div className="border border-border/50 rounded-xl overflow-hidden max-h-[220px] overflow-y-auto bg-background">
+                        <div ref={onboardKbd.dropdownRef} className="border border-border/50 rounded-xl overflow-hidden overflow-y-auto bg-background" style={{ maxHeight: onboardKbd.maxHeight ?? 220 }}>
                           {filtered.length === 0 ? (
                             <p className="p-4 text-center text-sm text-muted-foreground">لم يتم العثور على نتائج</p>
                           ) : (
