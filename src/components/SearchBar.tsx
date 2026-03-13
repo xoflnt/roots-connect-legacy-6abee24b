@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -16,14 +16,40 @@ interface SearchBarProps {
   onSelect: (memberId: string) => void;
 }
 
+function useVisualViewportHeight() {
+  const [height, setHeight] = useState<number | null>(null);
+
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+
+    const update = () => setHeight(vv.height);
+    update();
+    vv.addEventListener("resize", update);
+    return () => vv.removeEventListener("resize", update);
+  }, []);
+
+  return height;
+}
+
 export function SearchBar({ onSelect }: SearchBarProps) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
+  const viewportHeight = useVisualViewportHeight();
 
   const filtered = searchMembers(query);
+
+  // Scroll first result into view when results change
+  useEffect(() => {
+    if (dialogOpen && filtered.length > 0 && resultsRef.current) {
+      const firstBtn = resultsRef.current.querySelector("button");
+      firstBtn?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [filtered.length, dialogOpen]);
 
   const handleSelect = (id: string, name: string) => {
     onSelect(id);
@@ -34,6 +60,10 @@ export function SearchBar({ onSelect }: SearchBarProps) {
 
   // Mobile: icon button + full-screen dialog
   if (isMobile) {
+    const dialogStyle: React.CSSProperties = viewportHeight
+      ? { height: viewportHeight, maxHeight: viewportHeight }
+      : {};
+
     return (
       <>
         <Button
@@ -47,10 +77,14 @@ export function SearchBar({ onSelect }: SearchBarProps) {
         </Button>
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="top-0 translate-y-0 max-w-full w-full h-full sm:rounded-none p-0 gap-0 border-0" dir="rtl">
+          <DialogContent
+            className="top-0 translate-y-0 max-w-full w-full sm:rounded-none p-0 gap-0 border-0 flex flex-col"
+            style={dialogStyle}
+            dir="rtl"
+          >
             <DialogTitle className="sr-only">بحث</DialogTitle>
             <DialogDescription className="sr-only">ابحث عن فرد من العائلة</DialogDescription>
-            <div className="flex items-center gap-2 p-3 border-b border-border">
+            <div className="flex items-center gap-2 p-3 border-b border-border shrink-0">
               <Button
                 variant="ghost"
                 size="icon"
@@ -70,7 +104,7 @@ export function SearchBar({ onSelect }: SearchBarProps) {
                 />
               </div>
             </div>
-            <div className="flex-1 overflow-y-auto">
+            <div ref={resultsRef} className="flex-1 overflow-y-auto min-h-0">
               {filtered.length > 0 ? (
                  filtered.map((m) => {
                    const subtitle = getMemberSubtitle(m);
