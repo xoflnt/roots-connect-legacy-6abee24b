@@ -23,6 +23,7 @@ export function SubmitRequestForm({ open, onOpenChange, targetMember }: SubmitRe
   const [showSearch, setShowSearch] = useState(!targetMember);
   const [textContent, setTextContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const kbd = useKeyboardSafeDropdown();
 
   const filtered = useMemo(() => {
     return searchMembers(searchQuery, 10);
