@@ -125,19 +125,17 @@ function PersonPicker({
             </button>
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogContent
-                className="p-0 gap-0 max-w-full w-full h-full max-h-full rounded-none border-0 sm:rounded-none [&>button]:hidden"
-                style={vpHeight ? { maxHeight: vpHeight } : undefined}
+                className="p-0 gap-0 fixed bottom-0 top-auto translate-y-0 max-w-full w-full rounded-t-2xl rounded-b-none border-0 border-t border-border/40 shadow-2xl [&>button]:hidden data-[state=open]:slide-in-from-bottom data-[state=closed]:slide-out-to-bottom"
+                style={{ maxHeight: vpHeight ? vpHeight * 0.7 : '70dvh' }}
               >
                 <DialogTitle className="sr-only">{label}</DialogTitle>
                 <div className="flex flex-col h-full" dir="rtl">
+                  {/* Drag handle */}
+                  <div className="flex justify-center py-2">
+                    <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
+                  </div>
                   {/* Search header */}
-                  <div className="shrink-0 flex items-center gap-2 px-3 py-2 border-b border-border/40 bg-card">
-                    <button
-                      onClick={() => setDialogOpen(false)}
-                      className="w-10 h-10 flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground"
-                    >
-                      <X className="h-5 w-5" />
-                    </button>
+                  <div className="shrink-0 flex items-center gap-2 px-4 pb-3">
                     <div className="flex-1 relative">
                       <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                       <Input
@@ -145,12 +143,18 @@ function PersonPicker({
                         placeholder="ابحث باسم الشخص..."
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
-                        className="pr-10 h-11 rounded-xl text-sm border-border/50"
+                        className="pr-10 h-12 rounded-xl text-sm border-border/50"
                       />
                     </div>
+                    <button
+                      onClick={() => setDialogOpen(false)}
+                      className="w-10 h-10 flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground shrink-0"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
                   </div>
                   {/* Results */}
-                  <div className="flex-1 overflow-y-auto overscroll-contain">
+                  <div className="flex-1 overflow-y-auto overscroll-contain border-t border-border/20">
                     {filtered.length > 0 ? (
                       filtered.map((m) => (
                         <PersonResultRow key={m.id} m={m} onSelect={handleSelect} />
