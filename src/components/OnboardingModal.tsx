@@ -48,6 +48,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(1);
   const navigate = useNavigate();
+  const onboardKbd = useKeyboardSafeDropdown();
 
   // Phase A
   const [searchQuery, setSearchQuery] = useState("");
