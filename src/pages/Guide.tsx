@@ -131,7 +131,7 @@ export default function Guide() {
 
   return (
     <div className="min-h-screen bg-background" dir="rtl">
-      <header className="sticky top-0 z-50 flex items-center justify-between gap-2 px-4 md:px-6 py-3 border-b border-border/40 bg-card/60 backdrop-blur-xl">
+      <header className="sticky top-0 z-50 flex items-center justify-between gap-2 px-4 md:px-6 py-3 border-b border-border/40 bg-card/60 backdrop-blur-xl" style={{ paddingTop: `max(0.75rem, env(safe-area-inset-top))` }}>
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
             <BookOpen className="h-4.5 w-4.5 text-primary" />
