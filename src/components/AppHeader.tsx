@@ -34,7 +34,11 @@ export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHom
   return (
     <>
       {/* Top bar */}
-      <header className="sticky top-0 z-50 flex items-center justify-between gap-2 px-3 md:px-6 py-2 md:py-2.5 border-b border-border/40 bg-card/60 backdrop-blur-xl shadow-sm" style={{ paddingTop: `max(0.5rem, env(safe-area-inset-top))` }}>
+      <header
+        className="sticky top-0 z-50 flex items-center justify-between gap-2 px-3 md:px-6 py-2 md:py-2.5 border-b border-border/40 bg-card/60 backdrop-blur-xl shadow-sm"
+        style={{ paddingTop: `max(0.5rem, env(safe-area-inset-top))` }}
+        role="banner"
+      >
         <div className="flex items-center gap-2 shrink-0">
           {onGoHome && (
             <Button
@@ -42,12 +46,12 @@ export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHom
               size="icon"
               onClick={onGoHome}
               className="h-11 w-11 min-w-[44px] min-h-[44px] rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted"
-              title="الرئيسية"
+              aria-label="الرئيسية"
             >
               <Home className="h-5 w-5" />
             </Button>
           )}
-          <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-primary/10">
+          <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-primary/10" aria-hidden="true">
             <TreePine className="h-4.5 w-4.5 text-primary" />
           </div>
           <h1 className="text-base md:text-lg font-extrabold text-foreground tracking-tight hidden sm:block">
@@ -84,7 +88,8 @@ export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHom
             <>
               <button
                 onClick={() => navigate("/profile")}
-                className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-lg bg-muted/50 text-sm text-foreground hover:bg-muted transition-colors"
+                className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-lg bg-muted/50 text-sm text-foreground hover:bg-muted transition-colors min-h-[44px]"
+                aria-label="الملف الشخصي"
               >
                 <UserCircle className="h-4 w-4 text-primary" />
                 <span className="font-medium">مرحباً بك، {currentUser.memberName}</span>
@@ -94,7 +99,7 @@ export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHom
                 size="icon"
                 onClick={() => navigate("/profile")}
                 className="sm:hidden h-11 w-11 min-w-[44px] min-h-[44px] rounded-xl"
-                title="الملف الشخصي"
+                aria-label="الملف الشخصي"
               >
                 <UserCircle className="h-5 w-5 text-primary" />
               </Button>
@@ -109,7 +114,7 @@ export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHom
             size="icon"
             onClick={() => navigate("/guide")}
             className="h-11 w-11 min-w-[44px] min-h-[44px] rounded-xl text-muted-foreground hover:text-foreground"
-            title="دليل الاستخدام"
+            aria-label="دليل الاستخدام"
           >
             <BookOpen className="h-5 w-5" />
           </Button>
@@ -122,13 +127,20 @@ export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHom
 
       {/* Mobile bottom navigation bar */}
       {isMobile && (
-        <nav className="fixed bottom-0 left-0 right-0 z-50 flex items-stretch justify-around border-t border-border/40 bg-card/80 backdrop-blur-xl shadow-[0_-2px_10px_rgba(0,0,0,0.08)]" style={{ paddingBottom: `env(safe-area-inset-bottom)` }}>
+        <nav
+          className="fixed bottom-0 left-0 right-0 z-50 flex items-stretch justify-around border-t border-border/40 bg-card/80 backdrop-blur-xl shadow-[0_-2px_10px_rgba(0,0,0,0.08)]"
+          style={{ paddingBottom: `env(safe-area-inset-bottom)` }}
+          role="navigation"
+          aria-label="التنقل الرئيسي"
+        >
           {navItems.map((item) => {
             const isActive = activeView === item.value;
             return (
               <button
                 key={item.value}
                 onClick={() => onViewChange(item.value)}
+                aria-label={item.label}
+                aria-current={isActive ? "page" : undefined}
                 className={`relative flex flex-col items-center justify-center gap-0.5 flex-1 min-h-[56px] py-1.5 transition-all ${
                   isActive
                     ? "text-primary"
