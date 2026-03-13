@@ -185,6 +185,7 @@ function AdminContent() {
   const [selectedExportMember, setSelectedExportMember] = useState<FamilyMember | null>(null);
   const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
+  const adminKbd = useKeyboardSafeDropdown();
 
   const exportResults = exportSearch.trim() ? searchMembers(exportSearch, 8) : [];
 
