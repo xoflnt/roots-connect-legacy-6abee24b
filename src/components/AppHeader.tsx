@@ -35,7 +35,7 @@ export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHom
     <>
       {/* Top bar */}
       <header
-        className="sticky top-0 z-50 flex items-center justify-between gap-2 px-3 md:px-6 py-2 md:py-2.5 border-b border-border/40 bg-card/60 backdrop-blur-xl shadow-sm"
+        className="shrink-0 z-50 flex items-center justify-between gap-2 px-3 md:px-6 py-2 md:py-2.5 border-b border-border/40 bg-card/80 backdrop-blur-xl shadow-sm"
         style={{ paddingTop: `max(0.5rem, env(safe-area-inset-top))` }}
         role="banner"
       >

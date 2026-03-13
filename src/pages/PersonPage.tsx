@@ -53,7 +53,7 @@ const PersonPage = () => {
         onReset={() => {}}
         onGoHome={handleGoHome}
       />
-      <main className="flex-1 overflow-hidden p-2 md:p-5 pb-16 md:pb-5">
+      <main className="flex-1 overflow-hidden p-2 md:p-5 pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-5">
         <div className="w-full h-full rounded-2xl md:rounded-3xl shadow-xl overflow-auto border border-border/50 bg-card animate-fade-in">
           <LineageView memberId={memberId} onSelectMember={handleSearchSelect} />
         </div>

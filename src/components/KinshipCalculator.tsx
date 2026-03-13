@@ -1,12 +1,14 @@
-import { useState, useMemo } from "react";
-import { ArrowLeftRight, Search, User, Users, ChevronDown, TreePine, FileText, Route } from "lucide-react";
+import { useState, useMemo, useCallback } from "react";
+import { ArrowLeftRight, Search, User, Users, TreePine, FileText, Route, X } from "lucide-react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "./ui/tabs";
+import { Dialog, DialogContent, DialogTitle } from "./ui/dialog";
 import type { FamilyMember } from "@/data/familyData";
 import { getAllMembers, searchMembers, findKinship, kinshipToArabic, kinshipDirectional, inferMotherName } from "@/services/familyService";
 import { getLineageLabel, getMemberSubtitle } from "@/utils/memberLabel";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { KinshipTreeView } from "./kinship/KinshipTreeView";
 import { KinshipDocumentView } from "./kinship/KinshipDocumentView";
 import { KinshipInteractiveView } from "./kinship/KinshipInteractiveView";
@@ -15,6 +17,35 @@ interface KinshipCalculatorProps {
   initialMemberId?: string;
 }
 
+/* ── Visual viewport height for mobile keyboard ── */
+function useVisualViewportHeight(): number | null {
+  const [h, setH] = useState<number | null>(null);
+  useState(() => {
+    if (typeof window === "undefined" || !window.visualViewport) return;
+    const update = () => setH(window.visualViewport!.height);
+    update();
+    window.visualViewport.addEventListener("resize", update);
+    return () => window.visualViewport?.removeEventListener("resize", update);
+  });
+  return h;
+}
+
+/* ── Search result row ── */
+function PersonResultRow({ m, onSelect }: { m: FamilyMember; onSelect: (m: FamilyMember) => void }) {
+  const subtitle = getMemberSubtitle(m);
+  return (
+    <button
+      className="w-full text-right px-4 py-3 text-sm text-foreground hover:bg-primary/10 active:bg-primary/15 transition-colors border-b border-border/20 last:border-b-0 min-h-[48px]"
+      onClick={() => onSelect(m)}
+      onMouseDown={(e) => e.preventDefault()}
+    >
+      <span className="block font-medium leading-snug">{getLineageLabel(m)}</span>
+      {subtitle && <span className="text-xs text-muted-foreground">{subtitle}</span>}
+    </button>
+  );
+}
+
+/* ── PersonPicker ── */
 function PersonPicker({
   label,
   selected,
@@ -27,9 +58,24 @@ function PersonPicker({
   accentClass: string;
 }) {
   const [query, setQuery] = useState("");
-  const [open, setOpen] = useState(false);
+  const [desktopOpen, setDesktopOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const isMobile = useIsMobile();
+  const vpHeight = useVisualViewportHeight();
 
-  const filtered = useMemo(() => searchMembers(query, 8), [query]);
+  const filtered = useMemo(() => searchMembers(query, 12), [query]);
+
+  const handleSelect = useCallback((m: FamilyMember) => {
+    onSelect(m);
+    setQuery("");
+    setDesktopOpen(false);
+    setDialogOpen(false);
+  }, [onSelect]);
+
+  const handleClear = useCallback(() => {
+    onSelect(null);
+    setQuery("");
+  }, [onSelect]);
 
   return (
     <div className="flex-1 min-w-0">
@@ -42,41 +88,81 @@ function PersonPicker({
         </div>
 
         {selected ? (
-          <button
-            onClick={() => { onSelect(null); setQuery(""); }}
-            className="w-full text-right group"
-          >
+          <button onClick={handleClear} className="w-full text-right group">
             <p className="text-base font-extrabold text-foreground group-hover:text-primary transition-colors">
               {selected.name}
             </p>
             <p className="text-xs text-muted-foreground mt-1">اضغط لتغيير الشخص</p>
           </button>
+        ) : isMobile ? (
+          /* ── Mobile: tap to open fullscreen dialog ── */
+          <>
+            <button
+              onClick={() => setDialogOpen(true)}
+              className="w-full flex items-center gap-2 h-11 px-3 rounded-xl border border-border/50 bg-background text-sm text-muted-foreground"
+            >
+              <Search className="h-4 w-4 shrink-0" />
+              <span>ابحث باسم الشخص...</span>
+            </button>
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <DialogContent
+                className="p-0 gap-0 max-w-full w-full h-full max-h-full rounded-none border-0 sm:rounded-none [&>button]:hidden"
+                style={vpHeight ? { maxHeight: vpHeight } : undefined}
+              >
+                <DialogTitle className="sr-only">{label}</DialogTitle>
+                <div className="flex flex-col h-full" dir="rtl">
+                  {/* Search header */}
+                  <div className="shrink-0 flex items-center gap-2 px-3 py-2 border-b border-border/40 bg-card">
+                    <button
+                      onClick={() => setDialogOpen(false)}
+                      className="w-10 h-10 flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                    <div className="flex-1 relative">
+                      <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                      <Input
+                        autoFocus
+                        placeholder="ابحث باسم الشخص..."
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        className="pr-10 h-11 rounded-xl text-sm border-border/50"
+                      />
+                    </div>
+                  </div>
+                  {/* Results */}
+                  <div className="flex-1 overflow-y-auto overscroll-contain">
+                    {filtered.length > 0 ? (
+                      filtered.map((m) => (
+                        <PersonResultRow key={m.id} m={m} onSelect={handleSelect} />
+                      ))
+                    ) : query.trim() ? (
+                      <p className="text-center text-muted-foreground text-sm py-8">لا توجد نتائج</p>
+                    ) : (
+                      <p className="text-center text-muted-foreground text-sm py-8">اكتب اسم الشخص للبحث</p>
+                    )}
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </>
         ) : (
+          /* ── Desktop: inline dropdown ── */
           <div className="relative">
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
             <Input
               placeholder="ابحث باسم الشخص..."
               value={query}
-              onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
-              onFocus={() => query.trim() && setOpen(true)}
-              onBlur={() => setTimeout(() => setOpen(false), 200)}
+              onChange={(e) => { setQuery(e.target.value); setDesktopOpen(true); }}
+              onFocus={() => query.trim() && setDesktopOpen(true)}
+              onBlur={() => setTimeout(() => setDesktopOpen(false), 200)}
               className="pr-10 h-11 rounded-xl text-sm border-border/50"
             />
-            {open && filtered.length > 0 && (
+            {desktopOpen && filtered.length > 0 && (
               <div className="absolute top-full mt-1 w-full bg-card border border-border rounded-xl shadow-xl z-50 max-h-48 overflow-y-auto">
-                {filtered.map((m) => {
-                  const subtitle = getMemberSubtitle(m);
-                  return (
-                    <button
-                      key={m.id}
-                      className="w-full text-right px-4 py-2.5 text-sm text-foreground hover:bg-primary/10 transition-colors border-b border-border/20 last:border-b-0 min-h-[44px]"
-                      onMouseDown={() => { onSelect(m); setQuery(m.name); setOpen(false); }}
-                    >
-                      <span className="block font-medium">{getLineageLabel(m)}</span>
-                      {subtitle && <span className="text-xs text-muted-foreground">{subtitle}</span>}
-                    </button>
-                  );
-                })}
+                {filtered.map((m) => (
+                  <PersonResultRow key={m.id} m={m} onSelect={handleSelect} />
+                ))}
               </div>
             )}
           </div>
@@ -86,6 +172,7 @@ function PersonPicker({
   );
 }
 
+/* ── KinshipCalculator ── */
 export function KinshipCalculator({ initialMemberId }: KinshipCalculatorProps) {
   const { currentUser } = useAuth();
 
@@ -172,7 +259,6 @@ export function KinshipCalculator({ initialMemberId }: KinshipCalculatorProps) {
         {showResult && result && relationText && (
           <div className="rounded-2xl border border-primary/20 bg-card shadow-lg overflow-hidden animate-fade-in">
             <div className="h-1 bg-gradient-to-r from-transparent via-accent/50 to-transparent" />
-            {/* Directional relation display */}
             <div className="bg-primary/10 p-5 text-center border-b border-primary/10 space-y-2">
               <p className="text-xs text-muted-foreground mb-2">صلة القرابة</p>
               {directional?.symmetric ? (
@@ -202,7 +288,6 @@ export function KinshipCalculator({ initialMemberId }: KinshipCalculatorProps) {
               )}
             </div>
 
-            {/* Tabs */}
             <Tabs defaultValue="tree" className="w-full">
               <div className="px-4 pt-4">
                 <TabsList className="grid w-full grid-cols-3 h-auto p-1 bg-muted/60">
@@ -232,7 +317,6 @@ export function KinshipCalculator({ initialMemberId }: KinshipCalculatorProps) {
               </TabsContent>
             </Tabs>
 
-            {/* Reset */}
             <div className="px-5 pb-4">
               <Button variant="outline" onClick={handleReset} className="w-full rounded-xl text-sm" size="sm">
                 بحث جديد
