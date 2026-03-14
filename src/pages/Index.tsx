@@ -5,12 +5,12 @@ import { FamilyTree, type FamilyTreeRef } from "@/components/FamilyTree";
 import { LandingPage } from "@/components/LandingPage";
 import { KinshipCalculator } from "@/components/KinshipCalculator";
 import { TreeExplorer } from "@/components/tree/TreeExplorer";
-import { loadMembers, searchMembers } from "@/services/familyService";
+import { loadMembers, searchMembers, getMemberById } from "@/services/familyService";
 import { useAuth } from "@/contexts/AuthContext";
 import { getLineageLabel, getMemberSubtitle } from "@/utils/memberLabel";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Search, User, ChevronLeft } from "lucide-react";
 
 export type AppView = "landing" | ViewMode;
 
@@ -65,11 +65,7 @@ const Index = () => {
         isLineageActive={false}
         onViewChange={(v) => {
           if (v === "lineage") {
-            if (isLoggedIn && currentUser?.memberId) {
-              navigate(`/person/${currentUser.memberId}`);
-            } else {
-              setShowLineageSearch(true);
-            }
+            setShowLineageSearch(true);
             return;
           }
           setActiveView(v);
@@ -100,13 +96,42 @@ const Index = () => {
       <Sheet open={showLineageSearch} onOpenChange={setShowLineageSearch}>
         <SheetContent side="bottom" className="rounded-t-2xl max-h-[70dvh]" dir="rtl">
           <SheetHeader>
-            <SheetTitle className="text-center">ابحث عن شخص لعرض نسبه</SheetTitle>
+            <SheetTitle className="text-base font-bold text-right">نسب من؟</SheetTitle>
           </SheetHeader>
           <div className="mt-4 space-y-3">
+            {/* Shortcut card for logged-in user */}
+            {isLoggedIn && currentUser?.memberId && (() => {
+              const member = getMemberById(currentUser.memberId);
+              if (!member) return null;
+              const isMale = member.gender === "M";
+              return (
+                <>
+                  <button
+                    onClick={() => {
+                      setShowLineageSearch(false);
+                      setLineageQuery("");
+                      navigate(`/person/${currentUser.memberId}`);
+                    }}
+                    className="w-full rounded-xl border bg-primary/5 border-primary/20 p-3 flex items-center gap-3"
+                  >
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${isMale ? 'bg-blue-100 text-blue-600 dark:bg-blue-950 dark:text-blue-400' : 'bg-pink-100 text-pink-600 dark:bg-pink-950 dark:text-pink-400'}`}>
+                      <User className="h-4 w-4" />
+                    </div>
+                    <div className="flex-1 text-right min-w-0">
+                      <div className="text-sm font-bold text-foreground truncate">{currentUser.memberName}</div>
+                      <div className="text-xs text-primary">عرض نسبي أنا</div>
+                    </div>
+                    <ChevronLeft className="h-4 w-4 text-muted-foreground shrink-0" />
+                  </button>
+                  <p className="text-xs text-muted-foreground text-center my-3">أو ابحث عن شخص آخر</p>
+                </>
+              );
+            })()}
+            {/* Search input */}
             <div className="relative">
               <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="اكتب اسم الشخص..."
+                placeholder="ابحث عن اسم..."
                 value={lineageQuery}
                 onChange={(e) => setLineageQuery(e.target.value)}
                 className="pr-10 h-12 rounded-xl text-base"
