@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { motion } from "framer-motion";
 import { User, Calendar, Heart, FileText, X, ExternalLink, Clock, Send, Users2, UserPlus, BadgeCheck } from "lucide-react";
 import { downloadVCard } from "@/utils/vcard";
 import { WhatsAppIcon } from "./WhatsAppIcon";
@@ -16,6 +17,7 @@ import { getBranch, getBranchStyle, DOCUMENTER_ID } from "@/utils/branchUtils";
 import { HeritageBadge } from "@/components/HeritageBadge";
 import { getVerifiedMemberIds } from "@/services/dataService";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
+import { staggerContainer, staggerItem, springConfig } from "@/lib/animations";
 
 interface PersonDetailsProps {
   member: FamilyMember | null;
@@ -106,9 +108,14 @@ function DetailContent({ member }: { member: FamilyMember }) {
       </div>
 
       {/* Info cards */}
-      <div className="space-y-2.5">
+      <motion.div
+        className="space-y-2.5"
+        variants={staggerContainer}
+        initial="initial"
+        animate="animate"
+      >
         {ageText && (
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-accent/10 border border-accent/20">
+          <motion.div variants={staggerItem} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-accent/10 border border-accent/20">
             <div className="w-9 h-9 rounded-lg bg-accent/15 flex items-center justify-center shrink-0">
               <Clock className="h-4 w-4 text-accent" />
             </div>
@@ -116,11 +123,11 @@ function DetailContent({ member }: { member: FamilyMember }) {
               <p className="text-[11px] text-muted-foreground font-medium">العمر</p>
               <p className="text-sm font-bold text-foreground">{ageText}</p>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {motherName && (
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-muted/50 border border-border/30">
+          <motion.div variants={staggerItem} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-muted/50 border border-border/30">
             <div className="w-9 h-9 rounded-lg bg-accent/15 flex items-center justify-center shrink-0">
               <Users2 className="h-4 w-4 text-accent" />
             </div>
@@ -128,11 +135,11 @@ function DetailContent({ member }: { member: FamilyMember }) {
               <p className="text-[11px] text-muted-foreground font-medium">الوالدة</p>
               <p className="text-sm font-bold text-foreground">{motherName}</p>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {member.birth_year && (
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-muted/50 border border-border/30">
+          <motion.div variants={staggerItem} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-muted/50 border border-border/30">
             <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
               <Calendar className="h-4 w-4 text-primary" />
             </div>
@@ -140,11 +147,11 @@ function DetailContent({ member }: { member: FamilyMember }) {
               <p className="text-[11px] text-muted-foreground font-medium">سنة الميلاد</p>
               <p className="text-sm font-bold text-foreground">{member.birth_year} هـ</p>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {member.death_year && (
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-muted/50 border border-border/30">
+          <motion.div variants={staggerItem} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-muted/50 border border-border/30">
             <div className="w-9 h-9 rounded-lg bg-muted-foreground/10 flex items-center justify-center shrink-0">
               <Calendar className="h-4 w-4 text-muted-foreground" />
             </div>
@@ -152,12 +159,13 @@ function DetailContent({ member }: { member: FamilyMember }) {
               <p className="text-[11px] text-muted-foreground font-medium">سنة الوفاة</p>
               <p className="text-sm font-bold text-foreground">{member.death_year} هـ</p>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* Phone + WhatsApp */}
         {phone && (
-          <a
+          <motion.a
+            variants={staggerItem}
             href={`https://wa.me/${phone.replace(/[^0-9]/g, "")}`}
             target="_blank"
             rel="noopener noreferrer"
@@ -170,12 +178,13 @@ function DetailContent({ member }: { member: FamilyMember }) {
               <p className="text-[11px] text-muted-foreground font-medium">تواصل عبر واتساب</p>
               <p className="text-sm font-bold text-foreground" dir="ltr">{phone}</p>
             </div>
-          </a>
+          </motion.a>
         )}
 
         {/* Save contact button */}
         {phone && (
-          <button
+          <motion.button
+            variants={staggerItem}
             onClick={() => downloadVCard(member.name, phone)}
             className="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/15 transition-colors w-full text-right"
           >
@@ -186,12 +195,12 @@ function DetailContent({ member }: { member: FamilyMember }) {
               <p className="text-[11px] text-muted-foreground font-medium">حفظ في جهات الاتصال</p>
               <p className="text-sm font-bold text-foreground">{member.name}</p>
             </div>
-          </button>
+          </motion.button>
         )}
 
         {/* Spouses with colors */}
         {spouseList.length > 0 && (
-          <div className="px-4 py-3 rounded-xl bg-muted/50 border border-border/30 space-y-2">
+          <motion.div variants={staggerItem} className="px-4 py-3 rounded-xl bg-muted/50 border border-border/30 space-y-2">
             <div className="flex items-center gap-2">
               <Heart className="h-4 w-4 text-accent shrink-0" />
               <p className="text-[11px] text-muted-foreground font-medium">
@@ -212,12 +221,12 @@ function DetailContent({ member }: { member: FamilyMember }) {
                 );
               })}
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* Children grouped by mother */}
         {groupedChildren.length > 0 && (
-          <div className="px-4 py-3 rounded-xl bg-muted/50 border border-border/30 space-y-2">
+          <motion.div variants={staggerItem} className="px-4 py-3 rounded-xl bg-muted/50 border border-border/30 space-y-2">
             <p className="text-[11px] text-muted-foreground font-medium">الأبناء ({children.length})</p>
             {groupedChildren.map(([motherKey, group]) => {
               const color = group.colorIndex >= 0 ? BRANCH_COLORS[group.colorIndex % BRANCH_COLORS.length] : null;
@@ -232,25 +241,29 @@ function DetailContent({ member }: { member: FamilyMember }) {
                     </div>
                   )}
                   <div className="flex flex-wrap gap-1.5">
-                    {group.children.map((child) => (
-                      <button
+                    {group.children.map((child, i) => (
+                      <motion.button
                         key={child.id}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ ...springConfig, delay: i * 0.03 }}
+                        whileTap={{ scale: 0.95 }}
                         onClick={() => navigate(`/person/${child.id}`)}
                         className="text-xs font-medium px-2.5 py-1 rounded-full transition-colors min-h-[28px] bg-muted text-foreground hover:bg-muted/80"
                         style={color ? { borderLeft: `3px solid ${color.stroke}` } : undefined}
                       >
                         {child.name}
-                      </button>
+                      </motion.button>
                     ))}
                   </div>
                 </div>
               );
             })}
-          </div>
+          </motion.div>
         )}
 
         {member.notes && (
-          <div className="flex items-start gap-3 px-4 py-3 rounded-xl bg-muted/50 border border-border/30">
+          <motion.div variants={staggerItem} className="flex items-start gap-3 px-4 py-3 rounded-xl bg-muted/50 border border-border/30">
             <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
               <FileText className="h-4 w-4 text-primary" />
             </div>
@@ -258,9 +271,9 @@ function DetailContent({ member }: { member: FamilyMember }) {
               <p className="text-[11px] text-muted-foreground font-medium">ملاحظات</p>
               <p className="text-sm text-foreground leading-relaxed">{member.notes}</p>
             </div>
-          </div>
+          </motion.div>
         )}
-      </div>
+      </motion.div>
 
       {/* Actions */}
       <div className="space-y-2">

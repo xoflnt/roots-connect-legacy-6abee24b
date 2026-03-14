@@ -8,6 +8,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { refreshMembers, getAllMembers, isDeceased as checkDeceased } from "@/services/familyService";
 import { Plus, Minus, Maximize2, RotateCcw, LocateFixed, Eye, EyeOff, Layers, Filter } from "lucide-react";
 import { useTreeLayout, getDefaultExpandedIds, type TreeFilters } from "@/hooks/useTreeLayout";
@@ -18,6 +19,7 @@ import type { FamilyMember } from "@/data/familyData";
 import { getBranch, PILLARS } from "@/utils/branchUtils";
 import { getChildrenOf } from "@/services/familyService";
 import { useAuth } from "@/contexts/AuthContext";
+import { springConfig, gentleSpring } from "@/lib/animations";
 
 const nodeTypes = { familyCard: FamilyCard, generationBand: GenerationBandNode };
 
@@ -285,87 +287,108 @@ export const FamilyTree = forwardRef<FamilyTreeRef, FamilyTreeProps>(function Fa
 
       {/* Zoom + utility controls */}
       <div className="absolute bottom-5 left-5 flex flex-col bg-card/90 backdrop-blur-md rounded-2xl border border-border shadow-xl overflow-visible z-10">
-        <button
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
           onClick={() => rfInstance.current?.zoomIn({ duration: 200 })}
           className="w-11 h-11 flex items-center justify-center text-foreground hover:bg-accent/15 hover:text-accent transition-colors"
           title="تكبير"
         >
           <Plus className="h-4 w-4" />
-        </button>
+        </motion.button>
         <div className="h-px bg-border mx-2" />
-        <button
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
           onClick={() => rfInstance.current?.zoomOut({ duration: 200 })}
           className="w-11 h-11 flex items-center justify-center text-foreground hover:bg-accent/15 hover:text-accent transition-colors"
           title="تصغير"
         >
           <Minus className="h-4 w-4" />
-        </button>
+        </motion.button>
         <div className="h-px bg-border mx-2" />
-        <button
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
           onClick={() => rfInstance.current?.fitView({ duration: 400, padding: 0.2 })}
           className="w-11 h-11 flex items-center justify-center text-foreground hover:bg-accent/15 hover:text-accent transition-colors"
           title="ملائمة العرض"
         >
           <Maximize2 className="h-4 w-4" />
-        </button>
+        </motion.button>
         <div className="h-px bg-border mx-2" />
-        <button
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
           onClick={handleLocateMe}
           className="w-11 h-11 flex items-center justify-center text-foreground hover:bg-accent/15 hover:text-accent transition-colors"
           title="أين أنا؟"
         >
           <LocateFixed className="h-4 w-4" />
-        </button>
+        </motion.button>
         <div className="h-px bg-border mx-2" />
 
         {/* Multi-level expand */}
         <div className="relative">
-          <button
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
             onClick={() => setShowExpandMenu((v) => !v)}
             className="w-11 h-11 flex items-center justify-center text-foreground hover:bg-accent/15 hover:text-accent transition-colors"
             title="توسيع الشجرة"
           >
             <Layers className="h-4 w-4" />
-          </button>
-          {showExpandMenu && (
-            <>
-              <div className="fixed inset-0 z-20" onClick={() => setShowExpandMenu(false)} />
-              <div className="absolute bottom-0 left-full ml-2 bg-card border border-border rounded-xl shadow-xl z-30 min-w-[160px] py-1" dir="rtl">
-                <button
-                  onClick={() => { expandLevels(1); setShowExpandMenu(false); }}
-                  className="w-full text-right px-3 py-2 text-sm text-foreground hover:bg-accent/15 transition-colors"
+          </motion.button>
+          <AnimatePresence>
+            {showExpandMenu && (
+              <>
+                <div className="fixed inset-0 z-20" onClick={() => setShowExpandMenu(false)} />
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                  transition={gentleSpring}
+                  className="absolute bottom-0 left-full ml-2 bg-card border border-border rounded-xl shadow-xl z-30 min-w-[160px] py-1"
+                  dir="rtl"
                 >
-                  توسيع جيل واحد
-                </button>
-                <button
-                  onClick={() => { expandLevels(2); setShowExpandMenu(false); }}
-                  className="w-full text-right px-3 py-2 text-sm text-foreground hover:bg-accent/15 transition-colors"
-                >
-                  توسيع جيلين
-                </button>
-                <button
-                  onClick={() => { expandLevels(3); setShowExpandMenu(false); }}
-                  className="w-full text-right px-3 py-2 text-sm text-foreground hover:bg-accent/15 transition-colors"
-                >
-                  توسيع ٣ أجيال
-                </button>
-                <div className="h-px bg-border mx-2 my-1" />
-                <button
-                  onClick={() => { expandLevels(999); setShowExpandMenu(false); }}
-                  className="w-full text-right px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
-                >
-                  توسيع الكل ⚠️
-                </button>
-              </div>
-            </>
-          )}
+                  <button
+                    onClick={() => { expandLevels(1); setShowExpandMenu(false); }}
+                    className="w-full text-right px-3 py-2 text-sm text-foreground hover:bg-accent/15 transition-colors"
+                  >
+                    توسيع جيل واحد
+                  </button>
+                  <button
+                    onClick={() => { expandLevels(2); setShowExpandMenu(false); }}
+                    className="w-full text-right px-3 py-2 text-sm text-foreground hover:bg-accent/15 transition-colors"
+                  >
+                    توسيع جيلين
+                  </button>
+                  <button
+                    onClick={() => { expandLevels(3); setShowExpandMenu(false); }}
+                    className="w-full text-right px-3 py-2 text-sm text-foreground hover:bg-accent/15 transition-colors"
+                  >
+                    توسيع ٣ أجيال
+                  </button>
+                  <div className="h-px bg-border mx-2 my-1" />
+                  <button
+                    onClick={() => { expandLevels(999); setShowExpandMenu(false); }}
+                    className="w-full text-right px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
+                  >
+                    توسيع الكل ⚠️
+                  </button>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
         </div>
 
         <div className="h-px bg-border mx-2" />
 
         {/* Filter button */}
         <div className="relative">
-          <button
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
             onClick={() => setShowFilterMenu((v) => !v)}
             className="w-11 h-11 flex items-center justify-center text-foreground hover:bg-accent/15 hover:text-accent transition-colors relative"
             title="تصفية"
@@ -376,76 +399,89 @@ export const FamilyTree = forwardRef<FamilyTreeRef, FamilyTreeProps>(function Fa
                 {activeFilterCount}
               </span>
             )}
-          </button>
-          {showFilterMenu && (
-            <>
-              <div className="fixed inset-0 z-20" onClick={() => setShowFilterMenu(false)} />
-              <div className="absolute bottom-0 left-full ml-2 bg-card border border-border rounded-2xl shadow-xl z-30 w-64 p-4" dir="rtl">
-                {/* Branch filter */}
-                <div className="mb-3">
-                  <p className="text-xs font-semibold text-foreground mb-1.5">الفرع:</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    <FilterPill active={filters.branch === 'all'} onClick={() => setFilters(f => ({ ...f, branch: 'all' }))}>الكل</FilterPill>
-                    {PILLARS.map(p => (
-                      <FilterPill
-                        key={p.id}
-                        active={filters.branch === p.id}
-                        onClick={() => setFilters(f => ({ ...f, branch: p.id }))}
-                        style={filters.branch === p.id ? {
-                          backgroundColor: p.id === '200' ? 'hsl(45 70% 92%)' : p.id === '300' ? 'hsl(155 40% 90%)' : 'hsl(25 50% 90%)',
-                          color: p.id === '200' ? 'hsl(45 60% 35%)' : p.id === '300' ? 'hsl(155 45% 30%)' : 'hsl(25 55% 35%)',
-                          borderColor: 'transparent',
-                        } : undefined}
-                      >
-                        {p.label}
-                      </FilterPill>
-                    ))}
+          </motion.button>
+          <AnimatePresence>
+            {showFilterMenu && (
+              <>
+                <div className="fixed inset-0 z-20" onClick={() => setShowFilterMenu(false)} />
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                  transition={gentleSpring}
+                  className="absolute bottom-0 left-full ml-2 bg-card border border-border rounded-2xl shadow-xl z-30 w-64 p-4"
+                  dir="rtl"
+                >
+                  {/* Branch filter */}
+                  <div className="mb-3">
+                    <p className="text-xs font-semibold text-foreground mb-1.5">الفرع:</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      <FilterPill active={filters.branch === 'all'} onClick={() => setFilters(f => ({ ...f, branch: 'all' }))}>الكل</FilterPill>
+                      {PILLARS.map(p => (
+                        <FilterPill
+                          key={p.id}
+                          active={filters.branch === p.id}
+                          onClick={() => setFilters(f => ({ ...f, branch: p.id }))}
+                          style={filters.branch === p.id ? {
+                            backgroundColor: p.id === '200' ? 'hsl(45 70% 92%)' : p.id === '300' ? 'hsl(155 40% 90%)' : 'hsl(25 50% 90%)',
+                            color: p.id === '200' ? 'hsl(45 60% 35%)' : p.id === '300' ? 'hsl(155 45% 30%)' : 'hsl(25 55% 35%)',
+                            borderColor: 'transparent',
+                          } : undefined}
+                        >
+                          {p.label}
+                        </FilterPill>
+                      ))}
+                    </div>
                   </div>
-                </div>
 
-                {/* Gender filter */}
-                <div className="mb-3">
-                  <p className="text-xs font-semibold text-foreground mb-1.5">الجنس:</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    <FilterPill active={filters.gender === 'all'} onClick={() => setFilters(f => ({ ...f, gender: 'all' }))}>الكل</FilterPill>
-                    <FilterPill active={filters.gender === 'M'} onClick={() => setFilters(f => ({ ...f, gender: 'M' }))}>ذكور 🔵</FilterPill>
-                    <FilterPill active={filters.gender === 'F'} onClick={() => setFilters(f => ({ ...f, gender: 'F' }))}>إناث 🩷</FilterPill>
+                  {/* Gender filter */}
+                  <div className="mb-3">
+                    <p className="text-xs font-semibold text-foreground mb-1.5">الجنس:</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      <FilterPill active={filters.gender === 'all'} onClick={() => setFilters(f => ({ ...f, gender: 'all' }))}>الكل</FilterPill>
+                      <FilterPill active={filters.gender === 'M'} onClick={() => setFilters(f => ({ ...f, gender: 'M' }))}>ذكور 🔵</FilterPill>
+                      <FilterPill active={filters.gender === 'F'} onClick={() => setFilters(f => ({ ...f, gender: 'F' }))}>إناث 🩷</FilterPill>
+                    </div>
                   </div>
-                </div>
 
-                {/* Living filter */}
-                <div className="mb-3">
-                  <p className="text-xs font-semibold text-foreground mb-1.5">الحالة:</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    <FilterPill active={filters.living === 'all'} onClick={() => setFilters(f => ({ ...f, living: 'all' }))}>الكل</FilterPill>
-                    <FilterPill active={filters.living === 'living'} onClick={() => setFilters(f => ({ ...f, living: 'living' }))}>أحياء</FilterPill>
-                    <FilterPill active={filters.living === 'deceased'} onClick={() => setFilters(f => ({ ...f, living: 'deceased' }))}>متوفون</FilterPill>
+                  {/* Living filter */}
+                  <div className="mb-3">
+                    <p className="text-xs font-semibold text-foreground mb-1.5">الحالة:</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      <FilterPill active={filters.living === 'all'} onClick={() => setFilters(f => ({ ...f, living: 'all' }))}>الكل</FilterPill>
+                      <FilterPill active={filters.living === 'living'} onClick={() => setFilters(f => ({ ...f, living: 'living' }))}>أحياء</FilterPill>
+                      <FilterPill active={filters.living === 'deceased'} onClick={() => setFilters(f => ({ ...f, living: 'deceased' }))}>متوفون</FilterPill>
+                    </div>
                   </div>
-                </div>
 
-                {activeFilterCount > 0 && (
-                  <button
-                    onClick={() => setFilters({ branch: 'all', gender: 'all', living: 'all' })}
-                    className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    إعادة تعيين
-                  </button>
-                )}
-              </div>
-            </>
-          )}
+                  {activeFilterCount > 0 && (
+                    <button
+                      onClick={() => setFilters({ branch: 'all', gender: 'all', living: 'all' })}
+                      className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      إعادة تعيين
+                    </button>
+                  )}
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
         </div>
 
         <div className="h-px bg-border mx-2" />
-        <button
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
           onClick={() => setShowMiniMap((v) => !v)}
           className="w-11 h-11 flex items-center justify-center text-foreground hover:bg-accent/15 hover:text-accent transition-colors"
           title={showMiniMap ? "إخفاء الخريطة المصغرة" : "إظهار الخريطة المصغرة"}
         >
           {showMiniMap ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-        </button>
+        </motion.button>
         <div className="h-px bg-border mx-2" />
-        <button
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
           onClick={() => {
             setExpandedIds(getDefaultExpandedIds());
             setSelectedMember(null);
@@ -456,7 +492,7 @@ export const FamilyTree = forwardRef<FamilyTreeRef, FamilyTreeProps>(function Fa
           title="إعادة الضبط"
         >
           <RotateCcw className="h-4 w-4" />
-        </button>
+        </motion.button>
       </div>
 
       <PersonDetails

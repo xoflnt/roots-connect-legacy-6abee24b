@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   getChildrenOf,
   sortByBirth,
@@ -22,6 +23,7 @@ import { getVerifiedMemberIds } from "@/services/dataService";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { FamilyMember } from "@/data/familyData";
+import { staggerContainer, staggerItem, gentleSpring } from "@/lib/animations";
 
 const FOUNDER_IDS = new Set(["100", "200", "300", "400"]);
 
@@ -33,7 +35,7 @@ function borderOpacity(depth: number): number {
 }
 
 // ══════════════════════════════════════════
-// MOBILE: Dashboard Components
+// Stats hook (unchanged)
 // ══════════════════════════════════════════
 
 interface BranchStats {
@@ -57,11 +59,8 @@ function useBranchStats(selectedBranch: string): BranchStats {
   return useMemo(() => {
     const all = getAllMembers();
     const members = all.filter((m) => getBranch(m.id)?.pillarId === selectedBranch);
-
     const maleCount = members.filter((m) => m.gender === "M").length;
     const femaleCount = members.filter((m) => m.gender === "F").length;
-
-    // Generations
     const grouped = new Map<number, FamilyMember[]>();
     for (const m of members) {
       const d = getDepth(m.id);
@@ -73,14 +72,10 @@ function useBranchStats(selectedBranch: string): BranchStats {
       generations.push({ depth, members: sortByBirth(g) });
     }
     generations.sort((a, b) => a.depth - b.depth);
-
-    // Sub-branch count
     let subBranchCount = 0;
     for (const m of members) {
       if (isBranchHead(m.id)) subBranchCount++;
     }
-
-    // Notable members
     const founder = getMemberById(selectedBranch);
     let oldest: FamilyMember | undefined;
     let youngest: FamilyMember | undefined;
@@ -88,27 +83,15 @@ function useBranchStats(selectedBranch: string): BranchStats {
     let mostChildrenCount = 0;
     let oldestYear = Infinity;
     let youngestYear = -Infinity;
-
     for (const m of members) {
       const y = parseArabicYear(m.birth_year);
       if (y !== null) {
-        if (!m.death_year && y < oldestYear) {
-          oldestYear = y;
-          oldest = m;
-        }
-        if (y > youngestYear) {
-          youngestYear = y;
-          youngest = m;
-        }
+        if (!m.death_year && y < oldestYear) { oldestYear = y; oldest = m; }
+        if (y > youngestYear) { youngestYear = y; youngest = m; }
       }
       const cc = getChildrenOf(m.id).length;
-      if (cc > mostChildrenCount) {
-        mostChildrenCount = cc;
-        mostChildren = m;
-      }
+      if (cc > mostChildrenCount) { mostChildrenCount = cc; mostChildren = m; }
     }
-
-    // Common names
     const nameFreq = new Map<string, number>();
     for (const m of members) {
       const firstName = m.name.split(" ")[0];
@@ -118,32 +101,20 @@ function useBranchStats(selectedBranch: string): BranchStats {
       .sort((a, b) => b[1] - a[1])
       .slice(0, 5)
       .map(([name, count]) => ({ name, count }));
-
     return {
-      members,
-      totalCount: members.length,
-      generationCount: generations.length,
-      subBranchCount: Math.max(subBranchCount, 1),
-      maleCount,
-      femaleCount,
-      generations,
-      notableMembers: { founder, oldest, mostChildren, youngest },
-      commonNames,
+      members, totalCount: members.length, generationCount: generations.length,
+      subBranchCount: Math.max(subBranchCount, 1), maleCount, femaleCount, generations,
+      notableMembers: { founder, oldest, mostChildren, youngest }, commonNames,
     };
   }, [selectedBranch]);
 }
 
 // Generation members sheet row
 const GenMemberRow = React.memo(function GenMemberRow({
-  member,
-  onSelect,
-}: {
-  member: FamilyMember;
-  onSelect: (m: FamilyMember) => void;
-}) {
+  member, onSelect,
+}: { member: FamilyMember; onSelect: (m: FamilyMember) => void; }) {
   const verified = getVerifiedMemberIds().has(member.id);
   const deceased = isDeceased(member);
-
   return (
     <button
       onClick={() => onSelect(member)}
@@ -153,16 +124,11 @@ const GenMemberRow = React.memo(function GenMemberRow({
       )}
       dir="rtl"
     >
-      <div
-        className="w-2 h-2 rounded-full shrink-0"
-        style={{ backgroundColor: `hsl(var(--${member.gender === "M" ? "male" : "female"}))` }}
-      />
+      <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: `hsl(var(--${member.gender === "M" ? "male" : "female"}))` }} />
       <span className="font-bold text-sm text-foreground truncate flex-1">{member.name}</span>
       {verified && <BadgeCheck className="h-3.5 w-3.5 text-green-500 shrink-0" />}
       {member.birth_year && (
-        <span className="text-xs text-muted-foreground shrink-0">
-          {formatAge(member.birth_year, member.death_year)}
-        </span>
+        <span className="text-xs text-muted-foreground shrink-0">{formatAge(member.birth_year, member.death_year)}</span>
       )}
     </button>
   );
@@ -170,34 +136,19 @@ const GenMemberRow = React.memo(function GenMemberRow({
 
 // Notable member card
 const NotableCard = React.memo(function NotableCard({
-  label,
-  icon: Icon,
-  member,
-  detail,
-  branchStyle,
-  index,
-  onSelect,
+  label, icon: Icon, member, detail, branchStyle, index, onSelect,
 }: {
-  label: string;
-  icon: React.ElementType;
-  member: FamilyMember | undefined;
-  detail: string;
-  branchStyle: { bg: string; text: string };
-  index: number;
-  onSelect: (m: FamilyMember) => void;
+  label: string; icon: React.ElementType; member: FamilyMember | undefined; detail: string;
+  branchStyle: { bg: string; text: string }; index: number; onSelect: (m: FamilyMember) => void;
 }) {
   if (!member) return null;
   return (
-    <button
+    <motion.button
+      variants={staggerItem}
+      whileTap={{ scale: 0.98 }}
       onClick={() => onSelect(member)}
-      className="w-[140px] flex-shrink-0 rounded-2xl border bg-card p-3 text-right animate-fade-in hover:shadow-md transition-all min-h-[44px]"
-      style={{
-        borderColor: branchStyle.text,
-        borderWidth: "1px",
-        borderRightWidth: "3px",
-        animationDelay: `${index * 0.08}s`,
-        animationFillMode: "backwards",
-      }}
+      className="w-[140px] flex-shrink-0 rounded-2xl border bg-card p-3 text-right hover:shadow-md transition-all min-h-[44px]"
+      style={{ borderColor: branchStyle.text, borderWidth: "1px", borderRightWidth: "3px" }}
       dir="rtl"
     >
       <div className="flex items-center gap-1.5 mb-2">
@@ -206,7 +157,7 @@ const NotableCard = React.memo(function NotableCard({
       </div>
       <p className="font-bold text-sm text-foreground line-clamp-2 leading-tight mb-1">{member.name}</p>
       <span className="text-[10px] text-muted-foreground">{detail}</span>
-    </button>
+    </motion.button>
   );
 });
 
@@ -225,15 +176,8 @@ function MobileBranchesView() {
     setAnimKey((k) => k + 1);
   }, []);
 
-  const maxGenCount = useMemo(
-    () => Math.max(...stats.generations.map((g) => g.members.length), 1),
-    [stats.generations]
-  );
-
-  const maxNameCount = useMemo(
-    () => Math.max(...stats.commonNames.map((n) => n.count), 1),
-    [stats.commonNames]
-  );
+  const maxGenCount = useMemo(() => Math.max(...stats.generations.map((g) => g.members.length), 1), [stats.generations]);
+  const maxNameCount = useMemo(() => Math.max(...stats.commonNames.map((n) => n.count), 1), [stats.commonNames]);
 
   const malePercent = stats.totalCount > 0 ? Math.round((stats.maleCount / stats.totalCount) * 100) : 0;
   const femalePercent = 100 - malePercent;
@@ -254,16 +198,9 @@ function MobileBranchesView() {
                   "flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2.5 px-2 min-h-[44px] text-sm font-bold transition-all duration-200",
                   isActive ? "text-white shadow-md" : "hover:bg-muted/50"
                 )}
-                style={
-                  isActive
-                    ? { backgroundColor: style.text, color: "white" }
-                    : { color: style.text }
-                }
+                style={isActive ? { backgroundColor: style.text, color: "white" } : { color: style.text }}
               >
-                <div
-                  className="w-2 h-2 rounded-full shrink-0"
-                  style={{ backgroundColor: isActive ? "white" : style.text }}
-                />
+                <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: isActive ? "white" : style.text }} />
                 <span>{p.name.split(" ")[0]}</span>
               </button>
             );
@@ -271,13 +208,18 @@ function MobileBranchesView() {
         </div>
       </div>
 
-      <div key={animKey} className="p-3 space-y-4 animate-fade-in">
+      <motion.div
+        key={animKey}
+        className="p-3 space-y-4"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25 }}
+      >
         {/* ── HERO CARD ── */}
         <div
           className="rounded-2xl p-4"
           style={{
-            borderRightWidth: "4px",
-            borderRightColor: branchStyle.text,
+            borderRightWidth: "4px", borderRightColor: branchStyle.text,
             background: `linear-gradient(135deg, ${branchStyle.text}12 0%, transparent 60%)`,
           }}
         >
@@ -288,19 +230,24 @@ function MobileBranchesView() {
           >
             المؤسس: {pillar?.name}
           </button>
-          <div className="grid grid-cols-3 gap-2 mt-3">
+          <motion.div
+            className="grid grid-cols-3 gap-2 mt-3"
+            variants={staggerContainer}
+            initial="initial"
+            animate="animate"
+          >
             {[
               { icon: Users, value: stats.totalCount, label: "فرداً" },
               { icon: Layers, value: stats.generationCount, label: "أجيال" },
               { icon: GitBranchIcon, value: stats.subBranchCount, label: "أفرع" },
             ].map((s, i) => (
-              <div key={i} className="flex flex-col items-center gap-1 bg-muted/30 rounded-xl py-2.5 px-1">
+              <motion.div key={i} variants={staggerItem} className="flex flex-col items-center gap-1 bg-muted/30 rounded-xl py-2.5 px-1">
                 <s.icon className="h-4 w-4 text-muted-foreground" />
                 <span className="text-lg font-extrabold text-foreground">{s.value.toLocaleString("ar-SA")}</span>
                 <span className="text-[10px] text-muted-foreground">{s.label}</span>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
 
         {/* ── GENDER DISTRIBUTION ── */}
@@ -310,28 +257,14 @@ function MobileBranchesView() {
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground w-12 shrink-0">ذكور</span>
               <div className="flex-1 h-5 rounded-full bg-muted/40 overflow-hidden">
-                <div
-                  className="h-full rounded-full"
-                  style={{
-                    width: `${malePercent}%`,
-                    backgroundColor: "hsl(var(--male))",
-                    transition: "width 600ms ease",
-                  }}
-                />
+                <div className="h-full rounded-full" style={{ width: `${malePercent}%`, backgroundColor: "hsl(var(--male))", transition: "width 600ms ease" }} />
               </div>
               <span className="text-xs font-bold text-foreground w-10 text-left">{malePercent.toLocaleString("ar-SA")}%</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground w-12 shrink-0">إناث</span>
               <div className="flex-1 h-5 rounded-full bg-muted/40 overflow-hidden">
-                <div
-                  className="h-full rounded-full"
-                  style={{
-                    width: `${femalePercent}%`,
-                    backgroundColor: "hsl(var(--female))",
-                    transition: "width 600ms ease",
-                  }}
-                />
+                <div className="h-full rounded-full" style={{ width: `${femalePercent}%`, backgroundColor: "hsl(var(--female))", transition: "width 600ms ease" }} />
               </div>
               <span className="text-xs font-bold text-foreground w-10 text-left">{femalePercent.toLocaleString("ar-SA")}%</span>
             </div>
@@ -346,15 +279,16 @@ function MobileBranchesView() {
           <h3 className="font-bold text-sm text-foreground mb-3">الأجيال</h3>
           <div className="space-y-2">
             {stats.generations.map((gen, i) => (
-              <button
+              <motion.button
                 key={gen.depth}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.05 }}
                 onClick={() => setGenSheet(gen)}
                 className="w-full flex items-center gap-2 rounded-xl px-2 py-1.5 hover:bg-muted/40 transition-colors min-h-[36px]"
                 dir="rtl"
               >
-                <span className="text-[11px] text-muted-foreground w-14 shrink-0 font-medium">
-                  الجيل {gen.depth.toLocaleString("ar-SA")}
-                </span>
+                <span className="text-[11px] text-muted-foreground w-14 shrink-0 font-medium">الجيل {gen.depth.toLocaleString("ar-SA")}</span>
                 <div className="flex-1 h-4 rounded-full bg-muted/30 overflow-hidden">
                   <div
                     className="h-full rounded-full"
@@ -362,16 +296,13 @@ function MobileBranchesView() {
                       width: `${(gen.members.length / maxGenCount) * 100}%`,
                       backgroundColor: branchStyle.text,
                       opacity: 0.5 + (i / (stats.generations.length || 1)) * 0.4,
-                      transition: "width 500ms ease",
-                      transitionDelay: `${i * 80}ms`,
+                      transition: "width 500ms ease", transitionDelay: `${i * 80}ms`,
                     }}
                   />
                 </div>
-                <span className="text-xs font-bold text-foreground w-8 text-left">
-                  {gen.members.length.toLocaleString("ar-SA")}
-                </span>
+                <span className="text-xs font-bold text-foreground w-8 text-left">{gen.members.length.toLocaleString("ar-SA")}</span>
                 <ChevronLeft className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-              </button>
+              </motion.button>
             ))}
           </div>
         </div>
@@ -379,47 +310,18 @@ function MobileBranchesView() {
         {/* ── NOTABLE MEMBERS ── */}
         <div>
           <h3 className="font-bold text-sm text-foreground mb-2 px-1">أبرز الأفراد</h3>
-          <div
+          <motion.div
             className="flex flex-row-reverse gap-3 overflow-x-auto pb-2 pr-1"
             style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}
+            variants={staggerContainer}
+            initial="initial"
+            animate="animate"
           >
-            <NotableCard
-              label="المؤسس"
-              icon={Crown}
-              member={stats.notableMembers.founder}
-              detail={pillar?.name || ""}
-              branchStyle={branchStyle}
-              index={0}
-              onSelect={setSelectedMember}
-            />
-            <NotableCard
-              label="أكبر عمراً"
-              icon={Star}
-              member={stats.notableMembers.oldest}
-              detail={stats.notableMembers.oldest?.birth_year ? formatAge(stats.notableMembers.oldest.birth_year, stats.notableMembers.oldest.death_year) : ""}
-              branchStyle={branchStyle}
-              index={1}
-              onSelect={setSelectedMember}
-            />
-            <NotableCard
-              label="أكثر أبناء"
-              icon={Trophy}
-              member={stats.notableMembers.mostChildren}
-              detail={stats.notableMembers.mostChildren ? `${getChildrenOf(stats.notableMembers.mostChildren.id).length.toLocaleString("ar-SA")} أبناء` : ""}
-              branchStyle={branchStyle}
-              index={2}
-              onSelect={setSelectedMember}
-            />
-            <NotableCard
-              label="أحدث مولود"
-              icon={Baby}
-              member={stats.notableMembers.youngest}
-              detail={stats.notableMembers.youngest?.birth_year || ""}
-              branchStyle={branchStyle}
-              index={3}
-              onSelect={setSelectedMember}
-            />
-          </div>
+            <NotableCard label="المؤسس" icon={Crown} member={stats.notableMembers.founder} detail={pillar?.name || ""} branchStyle={branchStyle} index={0} onSelect={setSelectedMember} />
+            <NotableCard label="أكبر عمراً" icon={Star} member={stats.notableMembers.oldest} detail={stats.notableMembers.oldest?.birth_year ? formatAge(stats.notableMembers.oldest.birth_year, stats.notableMembers.oldest.death_year) : ""} branchStyle={branchStyle} index={1} onSelect={setSelectedMember} />
+            <NotableCard label="أكثر أبناء" icon={Trophy} member={stats.notableMembers.mostChildren} detail={stats.notableMembers.mostChildren ? `${getChildrenOf(stats.notableMembers.mostChildren.id).length.toLocaleString("ar-SA")} أبناء` : ""} branchStyle={branchStyle} index={2} onSelect={setSelectedMember} />
+            <NotableCard label="أحدث مولود" icon={Baby} member={stats.notableMembers.youngest} detail={stats.notableMembers.youngest?.birth_year || ""} branchStyle={branchStyle} index={3} onSelect={setSelectedMember} />
+          </motion.div>
         </div>
 
         {/* ── COMMON NAMES ── */}
@@ -428,52 +330,29 @@ function MobileBranchesView() {
           <div className="space-y-2">
             {stats.commonNames.map((n, i) => (
               <div key={n.name} className="flex items-center gap-2" dir="rtl">
-                <span className="text-xs font-bold text-muted-foreground w-5 shrink-0">
-                  {(i + 1).toLocaleString("ar-SA")}.
-                </span>
+                <span className="text-xs font-bold text-muted-foreground w-5 shrink-0">{(i + 1).toLocaleString("ar-SA")}.</span>
                 <span className="text-sm font-bold text-foreground w-16 shrink-0 truncate">{n.name}</span>
                 <div className="flex-1 h-3.5 rounded-full bg-muted/30 overflow-hidden">
-                  <div
-                    className="h-full rounded-full"
-                    style={{
-                      width: `${(n.count / maxNameCount) * 100}%`,
-                      backgroundColor: branchStyle.text,
-                      opacity: 0.7,
-                      transition: "width 500ms ease",
-                      transitionDelay: `${i * 60}ms`,
-                    }}
-                  />
+                  <div className="h-full rounded-full" style={{ width: `${(n.count / maxNameCount) * 100}%`, backgroundColor: branchStyle.text, opacity: 0.7, transition: "width 500ms ease", transitionDelay: `${i * 60}ms` }} />
                 </div>
-                <span className="text-xs font-bold text-foreground w-6 text-left">
-                  {n.count.toLocaleString("ar-SA")}
-                </span>
+                <span className="text-xs font-bold text-foreground w-6 text-left">{n.count.toLocaleString("ar-SA")}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Bottom padding for mobile nav */}
         <div className="h-16" />
-      </div>
+      </motion.div>
 
       {/* Generation members sheet */}
       <Sheet open={!!genSheet} onOpenChange={(open) => !open && setGenSheet(null)}>
         <SheetContent side="bottom" className="max-h-[70vh] rounded-t-2xl" dir="rtl">
           <SheetHeader className="text-right">
-            <SheetTitle>
-              الجيل {genSheet?.depth.toLocaleString("ar-SA")} • {genSheet?.members.length.toLocaleString("ar-SA")} شخصاً
-            </SheetTitle>
+            <SheetTitle>الجيل {genSheet?.depth.toLocaleString("ar-SA")} • {genSheet?.members.length.toLocaleString("ar-SA")} شخصاً</SheetTitle>
           </SheetHeader>
           <div className="overflow-y-auto mt-2 space-y-0.5 max-h-[50vh]">
             {genSheet?.members.map((m) => (
-              <GenMemberRow
-                key={m.id}
-                member={m}
-                onSelect={(member) => {
-                  setGenSheet(null);
-                  setTimeout(() => setSelectedMember(member), 200);
-                }}
-              />
+              <GenMemberRow key={m.id} member={m} onSelect={(member) => { setGenSheet(null); setTimeout(() => setSelectedMember(member), 200); }} />
             ))}
           </div>
         </SheetContent>
@@ -485,22 +364,12 @@ function MobileBranchesView() {
 }
 
 // ══════════════════════════════════════════
-// DESKTOP: Recursive BranchNode (unchanged)
+// DESKTOP: Recursive BranchNode
 // ══════════════════════════════════════════
 const BranchNode = React.memo(function BranchNode({
-  member,
-  depth,
-  pillarId,
-  expandedIds,
-  onToggle,
-  onSelect,
+  member, depth, pillarId, expandedIds, onToggle, onSelect,
 }: {
-  member: FamilyMember;
-  depth: number;
-  pillarId: string;
-  expandedIds: Set<string>;
-  onToggle: (id: string) => void;
-  onSelect: (m: FamilyMember) => void;
+  member: FamilyMember; depth: number; pillarId: string; expandedIds: Set<string>; onToggle: (id: string) => void; onSelect: (m: FamilyMember) => void;
 }) {
   const children = useMemo(() => sortByBirth(getChildrenOf(member.id)), [member.id]);
   const isExpanded = expandedIds.has(member.id);
@@ -517,53 +386,28 @@ const BranchNode = React.memo(function BranchNode({
   const opacity = borderOpacity(depth);
   const isDashed = depth > 4;
   const childLabel = member.gender === "F" ? "لها" : "له";
-
   const genLabel = `الجيل ${generation.toLocaleString("ar-SA")}`;
 
   return (
     <div>
       <div
-        className={cn(
-          "flex items-center gap-2 py-2 px-3 border-b border-border/20 transition-colors hover:bg-muted/50 min-h-[44px]",
-          deceased && "opacity-70"
-        )}
+        className={cn("flex items-center gap-2 py-2 px-3 border-b border-border/20 transition-colors hover:bg-muted/50 min-h-[44px]", deceased && "opacity-70")}
         style={{
-          paddingRight: `${indent + 12}px`,
-          borderRightWidth: isDashed ? "2px" : "3px",
-          borderRightColor: style.text,
-          borderRightStyle: isDashed ? "dashed" : "solid",
-          opacity: deceased ? 0.7 : 1,
-          ["--branch-border-opacity" as any]: opacity,
+          paddingRight: `${indent + 12}px`, borderRightWidth: isDashed ? "2px" : "3px",
+          borderRightColor: style.text, borderRightStyle: isDashed ? "dashed" : "solid",
+          opacity: deceased ? 0.7 : 1, ["--branch-border-opacity" as any]: opacity,
         }}
         dir="rtl"
       >
         {hasChildren ? (
-          <button
-            onClick={() => onToggle(member.id)}
-            className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-muted shrink-0"
-            aria-label={isExpanded ? "طي" : "توسيع"}
-          >
-            <ChevronDown
-              className={cn(
-                "h-4 w-4 text-muted-foreground transition-transform duration-200",
-                isExpanded && "rotate-180"
-              )}
-            />
+          <button onClick={() => onToggle(member.id)} className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-muted shrink-0" aria-label={isExpanded ? "طي" : "توسيع"}>
+            <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform duration-200", isExpanded && "rotate-180")} />
           </button>
         ) : (
           <div className="w-[44px] shrink-0" />
         )}
-
-        <button
-          onClick={() => onSelect(member)}
-          className="flex-1 min-w-0 text-right flex items-center gap-2"
-        >
-          <div
-            className="w-2 h-2 rounded-full shrink-0"
-            style={{
-              backgroundColor: `hsl(var(--${member.gender === "M" ? "male" : "female"}))`,
-            }}
-          />
+        <button onClick={() => onSelect(member)} className="flex-1 min-w-0 text-right flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: `hsl(var(--${member.gender === "M" ? "male" : "female"}))` }} />
           <span className="font-bold text-sm text-foreground truncate">{member.name}</span>
           {verified && <BadgeCheck className="h-3.5 w-3.5 text-green-500 shrink-0" />}
           {isFounderMember && <HeritageBadge type="founder" />}
@@ -571,45 +415,29 @@ const BranchNode = React.memo(function BranchNode({
           {deceased && <HeritageBadge type="deceased" gender={member.gender as "M" | "F"} />}
           {isDoc && <HeritageBadge type="documenter" />}
         </button>
-
         <div className="flex items-center gap-1.5 shrink-0">
-          {motherName && (
-            <span className="text-[9px] px-1 py-0.5 rounded bg-muted text-muted-foreground truncate max-w-[60px]">
-              {motherName}
-            </span>
-          )}
-          <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-            {genLabel}
-          </Badge>
-          {member.birth_year && (
-            <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-              {formatAge(member.birth_year, member.death_year)}
-            </span>
-          )}
-          {hasChildren && (
-            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 gap-0.5">
-              <Users className="h-3 w-3" />
-              {childLabel} {children.length.toLocaleString("ar-SA")}
-            </Badge>
-          )}
+          {motherName && (<span className="text-[9px] px-1 py-0.5 rounded bg-muted text-muted-foreground truncate max-w-[60px]">{motherName}</span>)}
+          <Badge variant="outline" className="text-[10px] px-1.5 py-0">{genLabel}</Badge>
+          {member.birth_year && (<span className="text-[10px] text-muted-foreground whitespace-nowrap">{formatAge(member.birth_year, member.death_year)}</span>)}
+          {hasChildren && (<Badge variant="secondary" className="text-[10px] px-1.5 py-0 gap-0.5"><Users className="h-3 w-3" />{childLabel} {children.length.toLocaleString("ar-SA")}</Badge>)}
         </div>
       </div>
 
-      {isExpanded && hasChildren && (
-        <div className="animate-accordion-down">
-          {children.map((child) => (
-            <BranchNode
-              key={child.id}
-              member={child}
-              depth={depth + 1}
-              pillarId={pillarId}
-              expandedIds={expandedIds}
-              onToggle={onToggle}
-              onSelect={onSelect}
-            />
-          ))}
-        </div>
-      )}
+      <AnimatePresence>
+        {isExpanded && hasChildren && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            style={{ overflow: "hidden" }}
+          >
+            {children.map((child) => (
+              <BranchNode key={child.id} member={child} depth={depth + 1} pillarId={pillarId} expandedIds={expandedIds} onToggle={onToggle} onSelect={onSelect} />
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 });
@@ -624,91 +452,67 @@ export function BranchesView() {
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
 
   const toggleBranch = useCallback((pillarId: string) => {
-    setExpandedBranches((prev) => {
-      const next = new Set(prev);
-      if (next.has(pillarId)) next.delete(pillarId);
-      else next.add(pillarId);
-      return next;
-    });
+    setExpandedBranches((prev) => { const next = new Set(prev); if (next.has(pillarId)) next.delete(pillarId); else next.add(pillarId); return next; });
   }, []);
 
   const toggleNode = useCallback((id: string) => {
-    setExpandedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+    setExpandedIds((prev) => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
   }, []);
 
   const branchData = useMemo(
-    () =>
-      PILLARS.map((pillar) => ({
-        ...pillar,
-        count: getDescendantCount(pillar.id),
-        style: getBranchStyle(pillar.id),
-        children: sortByBirth(getChildrenOf(pillar.id)),
-      })),
+    () => PILLARS.map((pillar) => ({ ...pillar, count: getDescendantCount(pillar.id), style: getBranchStyle(pillar.id), children: sortByBirth(getChildrenOf(pillar.id)) })),
     []
   );
 
-  // Mobile: completely different layout
-  if (isMobile) {
-    return <MobileBranchesView />;
-  }
+  if (isMobile) return <MobileBranchesView />;
 
-  // Desktop: existing accordion tree (unchanged)
   return (
     <div className="w-full h-full overflow-y-auto bg-background" dir="rtl">
-      <div className="p-3 space-y-2">
+      <motion.div
+        className="p-3 space-y-2"
+        variants={staggerContainer}
+        initial="initial"
+        animate="animate"
+      >
         {branchData.map((branch) => {
           const isOpen = expandedBranches.has(branch.id);
           return (
-            <div key={branch.id} className="rounded-2xl border overflow-hidden bg-card shadow-sm">
+            <motion.div key={branch.id} variants={staggerItem} className="rounded-2xl border overflow-hidden bg-card shadow-sm">
               <button
                 onClick={() => toggleBranch(branch.id)}
                 className="w-full flex items-center gap-3 p-4 min-h-[56px] transition-colors hover:bg-muted/50"
                 style={{ borderRightWidth: "4px", borderRightColor: branch.style.text }}
               >
-                <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
-                  style={{ backgroundColor: branch.style.bg, color: branch.style.text }}
-                >
+                <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0" style={{ backgroundColor: branch.style.bg, color: branch.style.text }}>
                   {branch.name.charAt(0)}
                 </div>
                 <div className="flex-1 text-right">
                   <h3 className="font-extrabold text-foreground">{branch.label}</h3>
-                  <span className="text-xs text-muted-foreground">
-                    {branch.count.toLocaleString("ar-SA")} فرداً
-                  </span>
+                  <span className="text-xs text-muted-foreground">{branch.count.toLocaleString("ar-SA")} فرداً</span>
                 </div>
-                <ChevronLeft
-                  className={cn(
-                    "h-5 w-5 text-muted-foreground transition-transform duration-200",
-                    isOpen && "-rotate-90"
-                  )}
-                />
+                <ChevronLeft className={cn("h-5 w-5 text-muted-foreground transition-transform duration-200", isOpen && "-rotate-90")} />
               </button>
 
-              {isOpen && (
-                <div className="border-t border-border/30 animate-accordion-down">
-                  {branch.children.map((child) => (
-                    <BranchNode
-                      key={child.id}
-                      member={child}
-                      depth={0}
-                      pillarId={branch.id}
-                      expandedIds={expandedIds}
-                      onToggle={toggleNode}
-                      onSelect={setSelectedMember}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
+              <AnimatePresence>
+                {isOpen && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.25, ease: "easeInOut" }}
+                    style={{ overflow: "hidden" }}
+                    className="border-t border-border/30"
+                  >
+                    {branch.children.map((child) => (
+                      <BranchNode key={child.id} member={child} depth={0} pillarId={branch.id} expandedIds={expandedIds} onToggle={toggleNode} onSelect={setSelectedMember} />
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
           );
         })}
-      </div>
+      </motion.div>
 
       <PersonDetails member={selectedMember} onClose={() => setSelectedMember(null)} />
     </div>
