@@ -5,12 +5,12 @@ import { FamilyTree, type FamilyTreeRef } from "@/components/FamilyTree";
 import { LandingPage } from "@/components/LandingPage";
 import { KinshipCalculator } from "@/components/KinshipCalculator";
 import { TreeExplorer } from "@/components/tree/TreeExplorer";
-import { loadMembers, searchMembers } from "@/services/familyService";
+import { loadMembers, searchMembers, getMemberById } from "@/services/familyService";
 import { useAuth } from "@/contexts/AuthContext";
 import { getLineageLabel, getMemberSubtitle } from "@/utils/memberLabel";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Search, User, ChevronLeft } from "lucide-react";
 
 export type AppView = "landing" | ViewMode;
 
