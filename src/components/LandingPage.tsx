@@ -350,6 +350,16 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                 <div className="text-xs text-amber-600 bg-amber-50 dark:bg-amber-950/30 dark:text-amber-400 rounded-lg px-3 py-2 text-center">
                   ⚠️ تأكد من استخدام Safari وليس أي متصفح آخر
                 </div>
+                <Button
+                  variant="ghost"
+                  className="w-full mt-2 text-xs text-muted-foreground underline"
+                  onClick={() => {
+                    localStorage.setItem('khunaini-pwa-installed-ios', 'true');
+                    setShowInstallSection(false);
+                  }}
+                >
+                  ✓ ثبّتت التطبيق — إخفاء هذا القسم
+                </Button>
               </TabsContent>
             </Tabs>
           </div>
