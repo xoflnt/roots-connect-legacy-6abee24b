@@ -86,13 +86,24 @@ export function KinshipCardView({
     }
   }, [result, person1, person2, relationText, directional, pathChain, name1, name2, shareText]);
 
-  const handleDownloadPng = useCallback(() => {
-    if (!blobUrl) return;
+  const handleDownloadPng = useCallback(async () => {
+    let url = blobUrl;
+    if (!url) {
+      const canvas = await generateKinshipImage(
+        result, person1, person2, relationText, directional, pathChain
+      );
+      const blob = await new Promise<Blob | null>((resolve) =>
+        canvas.toBlob((b) => resolve(b), "image/png")
+      );
+      if (!blob) return;
+      url = URL.createObjectURL(blob);
+      setBlobUrl(url);
+    }
     const a = document.createElement("a");
-    a.href = blobUrl;
+    a.href = url;
     a.download = `قرابة-${name1}-${name2}.png`;
     a.click();
-  }, [blobUrl, name1, name2]);
+  }, [blobUrl, name1, name2, result, person1, person2, relationText, directional, pathChain]);
 
   const handleWhatsAppText = useCallback(() => {
     window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, "_blank");
