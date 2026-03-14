@@ -18,6 +18,7 @@ interface AppHeaderProps {
   activeView: ViewMode;
   onViewChange: (view: ViewMode) => void;
   onGoHome?: () => void;
+  isLineageActive?: boolean;
 }
 
 const navItems: { value: ViewMode; label: string; icon: typeof TreePine }[] = [
@@ -26,7 +27,7 @@ const navItems: { value: ViewMode; label: string; icon: typeof TreePine }[] = [
   { value: "kinship", label: "القرابة", icon: Users },
 ];
 
-export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHome }: AppHeaderProps) {
+export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHome, isLineageActive }: AppHeaderProps) {
   const isMobile = useIsMobile();
   const { currentUser, isLoggedIn } = useAuth();
   const navigate = useNavigate();
@@ -65,7 +66,7 @@ export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHom
           <div className="flex items-center gap-2 flex-1 justify-center">
             <ToggleGroup
               type="single"
-              value={activeView}
+              value={isLineageActive ? "lineage" : activeView}
               onValueChange={(v) => v && onViewChange(v as ViewMode)}
               className="border border-accent/20 rounded-xl p-0.5 bg-muted/40"
             >
@@ -146,7 +147,7 @@ export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHom
           aria-label="التنقل الرئيسي"
         >
           {navItems.map((item) => {
-            const isActive = activeView === item.value;
+            const isActive = item.value === "lineage" ? !!isLineageActive : activeView === item.value;
             return (
               <button
                 key={item.value}
