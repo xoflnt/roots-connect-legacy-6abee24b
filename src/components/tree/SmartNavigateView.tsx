@@ -67,7 +67,7 @@ const SonCard = React.memo(function SonCard({
           له {children.length.toLocaleString("ar-SA")} أبناء
         </div>
       )}
-      {deceased && <HeritageBadge type="deceased" size="sm" />}
+      {deceased && <HeritageBadge type="deceased" />}
     </button>
   );
 });
