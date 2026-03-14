@@ -9,10 +9,11 @@ import { getAllMembers, inferMotherName, sortByBirth } from "@/services/familySe
 import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
 import { HeritageBadge } from "./HeritageBadge";
 import { isFounder, isBranchHead, isDeceased } from "@/services/familyService";
-import { downloadLineageCard } from "./LineageShareCard";
+import { generateLineageImage } from "./LineageShareCard";
 import { formatAge } from "@/utils/ageCalculator";
 import { getBranch, getBranchStyle, DOCUMENTER_ID } from "@/utils/branchUtils";
 import { springConfig } from "@/lib/animations";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface LineageViewProps {
   memberId: string;
@@ -35,6 +36,7 @@ function toArabicNum(n: number): string {
 export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
   const [copied, setCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const isMobile = useIsMobile();
 
   const { chain, childrenMap } = useMemo(() => {
     const members = getAllMembers();
@@ -54,33 +56,52 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
         cMap.set(m.father_id, arr);
       }
     }
-    // Sort children in each group by birth
     cMap.forEach((children, key) => cMap.set(key, sortByBirth(children)));
 
     return { chain: result, childrenMap: cMap };
   }, [memberId]);
 
+  const shareUrl = `${window.location.origin}/person/${memberId}`;
+
   const handleShare = useCallback(() => {
-    const url = `${window.location.origin}/person/${memberId}`;
     if (navigator.share) {
-      navigator.share({ title: `نسب ${chain[0]?.name} — بوابة الخنيني`, url }).catch(() => {});
+      navigator.share({ title: `نسب ${chain[0]?.name} — بوابة الخنيني`, url: shareUrl }).catch(() => {});
     } else {
-      navigator.clipboard.writeText(url).then(() => {
+      navigator.clipboard.writeText(shareUrl).then(() => {
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       });
     }
-  }, [memberId, chain]);
+  }, [shareUrl, chain]);
 
   const handleDownloadCard = useCallback(async () => {
     if (chain.length === 0) return;
     setDownloading(true);
     try {
-      await downloadLineageCard(chain, memberId);
+      const blob = await generateLineageImage(chain, shareUrl);
+      const firstName = chain[0].name.split(" ")[0];
+      const file = new File([blob], `نسب-${firstName}.png`, { type: "image/png" });
+
+      if (navigator.share && navigator.canShare?.({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: `نسب ${firstName}`,
+          text: `سلسلة نسب ${chain[0].name} — بوابة تراث الخنيني`,
+        });
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `نسب-${firstName}.png`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch (err) {
+      console.error("Share error:", err);
     } finally {
       setDownloading(false);
     }
-  }, [chain, memberId]);
+  }, [chain, shareUrl]);
 
   if (chain.length === 0) {
     return (
@@ -131,8 +152,8 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
               disabled={downloading}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/15 text-accent hover:bg-accent/25 transition-colors text-sm font-medium min-h-[44px] disabled:opacity-50"
             >
-              <Download className="h-4 w-4" />
-              {downloading ? "جاري التحميل..." : "بطاقة واتساب"}
+              {isMobile ? <Share2 className="h-4 w-4" /> : <Download className="h-4 w-4" />}
+              {downloading ? "جاري التحميل..." : isMobile ? "شارك النسب" : "تحميل البطاقة"}
             </motion.button>
           </div>
         </div>
