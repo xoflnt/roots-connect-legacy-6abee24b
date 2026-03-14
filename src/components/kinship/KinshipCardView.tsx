@@ -1,5 +1,6 @@
-import { useRef, useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Users, ChevronLeft, Loader2, Link2, User, Download, ExternalLink } from "lucide-react";
+import { generateKinshipImage } from "./KinshipShareCard";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import type { FamilyMember } from "@/data/familyData";
@@ -22,7 +23,6 @@ export function KinshipCardView({
   relationText,
   directional,
 }: KinshipCardViewProps) {
-  const cardRef = useRef<HTMLDivElement>(null);
   const [sharing, setSharing] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showFallback, setShowFallback] = useState(false);
@@ -48,23 +48,15 @@ export function KinshipCardView({
   const shareUrl = `${window.location.origin}/?view=kinship&p1=${person1.id}&p2=${person2.id}`;
   const shareText = `${name1} و ${name2} — ${relationText}\nاكتشف قرابتك: ${shareUrl}`;
 
-  const captureCard = useCallback(async (): Promise<Blob | null> => {
-    if (!cardRef.current) return null;
-    const html2canvas = (await import("html2canvas")).default;
-    const canvas = await html2canvas(cardRef.current, {
-      backgroundColor: "#F7F3EE",
-      scale: 2,
-      useCORS: true,
-    });
-    return new Promise((resolve) => {
-      canvas.toBlob((blob) => resolve(blob), "image/png");
-    });
-  }, []);
-
   const handleShare = useCallback(async () => {
     setSharing(true);
     try {
-      const blob = await captureCard();
+      const canvas = await generateKinshipImage(
+        result, person1, person2, relationText, directional, pathChain
+      );
+      const blob = await new Promise<Blob | null>((resolve) =>
+        canvas.toBlob((b) => resolve(b), "image/png")
+      );
       if (!blob) { setSharing(false); return; }
 
       const file = new File([blob], "kinship-card.png", { type: "image/png" });
@@ -89,19 +81,29 @@ export function KinshipCardView({
       setSharing(false);
     } catch (err) {
       console.error("Share error:", err);
-      // Last resort: open WhatsApp with text
       window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, "_blank");
       setSharing(false);
     }
-  }, [name1, name2, relationText, captureCard, shareText]);
+  }, [result, person1, person2, relationText, directional, pathChain, name1, name2, shareText]);
 
-  const handleDownloadPng = useCallback(() => {
-    if (!blobUrl) return;
+  const handleDownloadPng = useCallback(async () => {
+    let url = blobUrl;
+    if (!url) {
+      const canvas = await generateKinshipImage(
+        result, person1, person2, relationText, directional, pathChain
+      );
+      const blob = await new Promise<Blob | null>((resolve) =>
+        canvas.toBlob((b) => resolve(b), "image/png")
+      );
+      if (!blob) return;
+      url = URL.createObjectURL(blob);
+      setBlobUrl(url);
+    }
     const a = document.createElement("a");
-    a.href = blobUrl;
+    a.href = url;
     a.download = `قرابة-${name1}-${name2}.png`;
     a.click();
-  }, [blobUrl, name1, name2]);
+  }, [blobUrl, name1, name2, result, person1, person2, relationText, directional, pathChain]);
 
   const handleWhatsAppText = useCallback(() => {
     window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, "_blank");
@@ -122,7 +124,6 @@ export function KinshipCardView({
     <div className="py-4 space-y-4">
       {/* ── Shareable card (captured by screenshot) ── */}
       <div
-        ref={cardRef}
         dir="rtl"
         className="rounded-2xl shadow-lg p-6 space-y-5 border border-[hsl(38,25%,82%)]"
         style={{
