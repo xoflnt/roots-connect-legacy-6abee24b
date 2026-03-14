@@ -124,7 +124,6 @@ export function KinshipCardView({
     <div className="py-4 space-y-4">
       {/* ── Shareable card (captured by screenshot) ── */}
       <div
-        ref={cardRef}
         dir="rtl"
         className="rounded-2xl shadow-lg p-6 space-y-5 border border-[hsl(38,25%,82%)]"
         style={{

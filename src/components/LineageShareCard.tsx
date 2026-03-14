@@ -1,9 +1,21 @@
 import type { FamilyMember } from "@/data/familyData";
 
+async function loadFont() {
+  try {
+    const font = new FontFace(
+      "Tajawal",
+      "url(https://fonts.gstatic.com/s/tajawal/v9/Iura6YBj_oCad4k1nzSBC45I.woff2)"
+    );
+    await font.load();
+    document.fonts.add(font);
+  } catch { /* fallback to system font */ }
+}
+
 export async function generateLineageImage(
   chain: FamilyMember[],
   url: string
 ): Promise<Blob> {
+  await loadFont();
   const W = 1080;
   const H = 1350;
   const canvas = document.createElement("canvas");
