@@ -328,7 +328,7 @@ function AdminContent() {
               </div>
             </div>
 
-            <div className="bg-card border border-border/50 rounded-2xl overflow-hidden" style={{ height: "calc(100vh - 400px)" }}>
+            <div className="bg-card border border-border/50 rounded-2xl overflow-hidden" style={{ height: "calc(100dvh - 400px)" }}>
               <DataTableView />
             </div>
           </TabsContent>
