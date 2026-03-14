@@ -273,7 +273,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
       )}
 
       {/* ─── PWA Install Section ─── */}
-      {!window.matchMedia('(display-mode: standalone)').matches && !(window.navigator as any).standalone && (
+      {showInstallSection && !window.matchMedia('(display-mode: standalone)').matches && !(window.navigator as any).standalone && (
         <section className="py-6 md:py-8 px-4">
           <div className="max-w-2xl mx-auto rounded-2xl border bg-card/80 backdrop-blur-sm p-5 space-y-4 opacity-0 animate-fade-in" style={{ animationDelay: "0.2s" }}>
             <div className="flex flex-col items-center text-center gap-2">
