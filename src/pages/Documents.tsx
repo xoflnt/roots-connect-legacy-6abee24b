@@ -185,7 +185,8 @@ export default function Documents() {
       </header>
 
       {/* Content */}
-      <main className="max-w-4xl mx-auto px-4 py-8 md:py-12">
+      <main className="flex-1 overflow-y-auto pb-[calc(2rem+env(safe-area-inset-bottom))]">
+      <div className="max-w-4xl mx-auto px-4 py-8 md:py-12">
         <div className="text-center mb-10 space-y-3 animate-fade-in">
           <p className="text-muted-foreground text-sm md:text-base max-w-xl mx-auto leading-relaxed">
             أرشيف للوثائق والمستندات التاريخية المتعلقة بعائلة الخنيني
