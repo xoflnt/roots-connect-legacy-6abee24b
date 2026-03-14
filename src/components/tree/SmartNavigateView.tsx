@@ -312,8 +312,8 @@ export function SmartNavigateView() {
             </div>
 
             <div className="flex flex-wrap gap-1 mt-2">
-              {deceased && <HeritageBadge type="deceased" size="sm" />}
-              {!member.father_id && <HeritageBadge type="founder" size="sm" />}
+              {deceased && <HeritageBadge type="deceased" />}
+              {!member.father_id && <HeritageBadge type="founder" />}
             </div>
           </button>
 

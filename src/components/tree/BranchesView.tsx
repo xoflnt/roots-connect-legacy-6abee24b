@@ -79,7 +79,7 @@ const BranchNode = React.memo(function BranchNode({
         >
           <span className="font-bold text-sm text-foreground truncate">{member.name}</span>
           {verified && <span className="text-green-500 text-xs">✅</span>}
-          {deceased && <HeritageBadge type="deceased" size="sm" />}
+          {deceased && <HeritageBadge type="deceased" />}
         </button>
 
         {/* Meta */}
