@@ -307,6 +307,11 @@ export function SmartNavigateView() {
 
   // Touch handlers with live feedback
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (sonsScrollRef.current?.contains(e.target as Node)) {
+      swipeLocked.current = 'vertical';
+      isSwiping.current = false;
+      return;
+    }
     touchStartX.current = e.touches[0].clientX;
     touchStartY.current = e.touches[0].clientY;
     isSwiping.current = false;
