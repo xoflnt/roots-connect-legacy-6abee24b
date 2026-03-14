@@ -210,39 +210,68 @@ export function kinshipToArabic(dist1: number, dist2: number, person1?: FamilyMe
   const f2 = person2?.gender === "F";
 
   if (dist1 === 0 && dist2 === 0) return "نفس الشخص";
-  if (dist1 === 0 && dist2 === 1) return f2 ? "أبوها" : "أبوه";
-  if (dist1 === 1 && dist2 === 0) return f1 ? "ابنته" : "ابنه";
-  if (dist1 === 0 && dist2 === 2) return f2 ? "جدها" : "جده";
-  if (dist1 === 2 && dist2 === 0) return f1 ? "حفيدته" : "حفيده";
-  if (dist1 === 0 && dist2 >= 3) return `${f2 ? "جدها" : "جده"} ${toOrdinal(dist2 - 1)}`;
-  if (dist1 >= 3 && dist2 === 0) return `${f1 ? "حفيدته" : "حفيده"} ${toOrdinal(dist1 - 1)}`;
 
-  // Siblings: differentiate full vs half
+  // Direct line down: person1 is ancestor of person2
+  if (dist1 === 0 && dist2 === 1) return f2 ? "أبوها" : "أبوه";
+  if (dist1 === 0 && dist2 === 2) return f2 ? "جدها" : "جده";
+  if (dist1 === 0 && dist2 === 3) return f2 ? "جد جدها" : "جد جده";
+  if (dist1 === 0 && dist2 === 4) return f2 ? "جد جد جدها" : "جد جد جده";
+  if (dist1 === 0 && dist2 === 5) return f2 ? "جد جد جد جدها" : "جد جد جد جده";
+  if (dist1 === 0 && dist2 >= 6) return f2 ? "جدها الأعلى" : "جده الأعلى";
+
+  // Direct line up: person1 is descendant of person2
+  if (dist1 === 1 && dist2 === 0) return f1 ? "ابنته" : "ابنه";
+  if (dist1 === 2 && dist2 === 0) return f1 ? "حفيدته" : "حفيده";
+  if (dist1 === 3 && dist2 === 0) return f1 ? "حفيدة ابنه" : "حفيد ابنه";
+  if (dist1 === 4 && dist2 === 0) return f1 ? "حفيدة حفيده" : "حفيد حفيده";
+  if (dist1 === 5 && dist2 === 0) return f1 ? "حفيدة حفيد حفيده" : "حفيد حفيد حفيده";
+  if (dist1 >= 6 && dist2 === 0) return f1 ? "حفيدته البعيدة" : "حفيده البعيد";
+
+  // Siblings (1,1)
   if (dist1 === 1 && dist2 === 1) {
     const mother1 = person1 ? extractMotherName(person1) : null;
     const mother2 = person2 ? extractMotherName(person2) : null;
     const isFull = mother1 && mother2 && mother1 === mother2;
-    if (f1) {
-      return isFull ? "أخته الشقيقة" : "أخته من الأب";
-    }
-    if (f2) {
-      return isFull ? "أخت شقيقة" : "أخت من الأب";
-    }
+    if (f1) return isFull ? "أخته الشقيقة" : "أخته من الأب";
+    if (f2) return isFull ? "أخت شقيقة" : "أخت من الأب";
     return isFull ? "أخوه الشقيق" : "أخوه من الأب";
   }
 
-  if (dist1 === 1 && dist2 === 2) return f1 ? "عمتها" : "عمه";
-  if (dist1 === 2 && dist2 === 1) return f1 ? "ابنة أخيه" : "ابن أخيه";
-  if (dist1 === 2 && dist2 === 2) return f1 ? "ابنة عمه" : "ابن عمه";
-  if (dist1 === 1 && dist2 === 3) return f1 ? "عمة أبيها" : "عم أبيه";
-  if (dist1 === 3 && dist2 === 1) return f1 ? "ابنة ابن أخيه" : "ابن ابن أخيه";
-  if (dist1 === 2 && dist2 === 3) return f1 ? "ابنة عم أبيه" : "ابن عم أبيه";
-  if (dist1 === 3 && dist2 === 2) return f1 ? "ابنة ابن عمه" : "ابن ابن عمه";
-  if (dist1 === 3 && dist2 === 3) return `${f1 ? "ابنة" : "ابن"} عم أبيه (الدرجة الثانية)`;
-  
-  if (dist1 === 1 && dist2 > 1) return `${f1 ? "عمتها" : "عمه"} من الدرجة ${toArabicNum(dist2 - 1)}`;
-  if (dist1 > 1 && dist2 === 1) return `${f1 ? "ابنة" : "ابن"} أخيه من الدرجة ${toArabicNum(dist1 - 1)}`;
-  return `${f1 ? "قريبته" : "قريبه"} (${toArabicNum(dist1)} أجيال / ${toArabicNum(dist2)} أجيال من الجد المشترك)`;
+  // Uncle line (1, n)
+  if (dist1 === 1 && dist2 === 2) return f1 ? "عمته" : "عمه";
+  if (dist1 === 1 && dist2 === 3) return f1 ? "عمة أبيه" : "عم أبيه";
+  if (dist1 === 1 && dist2 === 4) return f1 ? "عمة جده" : "عم جده";
+  if (dist1 === 1 && dist2 === 5) return f1 ? "عمة جد جده" : "عم جد جده";
+
+  // Nephew line (n, 1)
+  if (dist1 === 2 && dist2 === 1) return f1 ? "بنت أخيه" : "ابن أخيه";
+  if (dist1 === 3 && dist2 === 1) return f1 ? "بنت ابن أخيه" : "ابن ابن أخيه";
+  if (dist1 === 4 && dist2 === 1) return f1 ? "بنت ابن ابن أخيه" : "ابن ابن ابن أخيه";
+  if (dist1 === 5 && dist2 === 1) return f1 ? "حفيدة ابن أخيه" : "حفيد ابن أخيه";
+
+  // Cousins (n, n)
+  if (dist1 === 2 && dist2 === 2) return f1 ? "بنت عمه" : "ابن عمه";
+  if (dist1 === 3 && dist2 === 3) return f1 ? "بنت عم أبيه" : "ابن عم أبيه";
+  if (dist1 === 4 && dist2 === 4) return f1 ? "بنت عم جده" : "ابن عم جده";
+  if (dist1 === 5 && dist2 === 5) return f1 ? "بنت عم جد جده" : "ابن عم جد جده";
+
+  // Cross combinations
+  if (dist1 === 2 && dist2 === 3) return f1 ? "بنت عم أبيه" : "ابن عم أبيه";
+  if (dist1 === 3 && dist2 === 2) return f1 ? "بنت ابن عمه" : "ابن ابن عمه";
+  if (dist1 === 2 && dist2 === 4) return f1 ? "بنت عم جده" : "ابن عم جده";
+  if (dist1 === 4 && dist2 === 2) return f1 ? "بنت ابن عم أبيه" : "ابن ابن عم أبيه";
+  if (dist1 === 3 && dist2 === 4) return f1 ? "بنت عم جد أبيه" : "ابن عم جد أبيه";
+  if (dist1 === 4 && dist2 === 3) return f1 ? "بنت ابن عم جده" : "ابن ابن عم جده";
+  if (dist1 === 2 && dist2 === 5) return f1 ? "بنت عم جد جده" : "ابن عم جد جده";
+  if (dist1 === 5 && dist2 === 2) return f1 ? "قريبته" : "قريبه";
+  if (dist1 === 3 && dist2 === 5) return f1 ? "قريبته" : "قريبه";
+  if (dist1 === 5 && dist2 === 3) return f1 ? "قريبته" : "قريبه";
+  if (dist1 === 4 && dist2 === 5) return f1 ? "قريبته" : "قريبه";
+  if (dist1 === 5 && dist2 === 4) return f1 ? "قريبته" : "قريبه";
+
+  // Deep fallback
+  if (dist1 > 5 || dist2 > 5) return "قريب بعيد";
+  return f1 ? "قريبته" : "قريبه";
 }
 
 export interface DirectionalKinship {
@@ -270,6 +299,8 @@ export function kinshipDirectional(
     }
     if (d1 === 2) return { symmetric: true, symmetricTitle: "أبناء عم", title1to2: "", title2to1: "" };
     if (d1 === 3) return { symmetric: true, symmetricTitle: "أبناء عمومة من الدرجة الثانية", title1to2: "", title2to1: "" };
+    if (d1 === 4) return { symmetric: true, symmetricTitle: "أبناء عم الجد", title1to2: "", title2to1: "" };
+    if (d1 === 5) return { symmetric: true, symmetricTitle: "أبناء عم جد الأب", title1to2: "", title2to1: "" };
     return { symmetric: true, symmetricTitle: `أبناء عمومة من الدرجة ${toOrdinal(d1 - 1) || toArabicNum(d1 - 1)}`, title1to2: "", title2to1: "" };
   }
 
@@ -288,22 +319,48 @@ function asymTitle(myDist: number, otherDist: number, gender?: string): string {
   if (myDist === 1 && otherDist === 0) return f ? "ابنة" : "ابن";
   if (myDist === 0 && otherDist === 2) return "جد";
   if (myDist === 2 && otherDist === 0) return f ? "حفيدة" : "حفيد";
-  if (myDist === 0 && otherDist >= 3) return `جد ${toOrdinal(otherDist - 1) || toArabicNum(otherDist - 1)}`;
-  if (myDist >= 3 && otherDist === 0) return `${f ? "حفيدة" : "حفيد"} ${toOrdinal(myDist - 1) || toArabicNum(myDist - 1)}`;
+  if (myDist === 0 && otherDist === 3) return "جد الجد";
+  if (myDist === 3 && otherDist === 0) return f ? "حفيدة الابن" : "حفيد الابن";
+  if (myDist === 0 && otherDist === 4) return "جد جد الجد";
+  if (myDist === 4 && otherDist === 0) return f ? "حفيدة الحفيد" : "حفيد الحفيد";
+  if (myDist === 0 && otherDist === 5) return "جد جد جد الجد";
+  if (myDist === 5 && otherDist === 0) return f ? "حفيدة حفيد الحفيد" : "حفيد حفيد الحفيد";
+  if (myDist === 0 && otherDist >= 6) return "الجد الأعلى";
+  if (myDist >= 6 && otherDist === 0) return f ? "الحفيدة البعيدة" : "الحفيد البعيد";
 
   // Uncle / nephew
   if (myDist === 1 && otherDist === 2) return f ? "عمة" : "عم";
-  if (myDist === 2 && otherDist === 1) return f ? "ابنة أخ" : "ابن أخ";
+  if (myDist === 2 && otherDist === 1) return f ? "بنت أخ" : "ابن أخ";
   if (myDist === 1 && otherDist === 3) return f ? "عمة الأب" : "عم الأب";
-  if (myDist === 3 && otherDist === 1) return f ? "ابنة ابن أخ" : "ابن ابن أخ";
-  if (myDist === 1 && otherDist > 3) return `${f ? "عمة" : "عم"} من الدرجة ${toArabicNum(otherDist - 1)}`;
+  if (myDist === 3 && otherDist === 1) return f ? "بنت ابن أخ" : "ابن ابن أخ";
+  if (myDist === 1 && otherDist === 4) return f ? "عمة الجد" : "عم الجد";
+  if (myDist === 4 && otherDist === 1) return f ? "بنت ابن ابن أخ" : "ابن ابن ابن أخ";
+  if (myDist === 1 && otherDist === 5) return f ? "عمة جد الجد" : "عم جد الجد";
+  if (myDist === 5 && otherDist === 1) return f ? "حفيدة ابن أخ" : "حفيد ابن أخ";
 
-  // Cousin-based
-  if (myDist === 2 && otherDist === 3) return `${f ? "ابنة" : "ابن"} عم الأب`;
-  if (myDist === 3 && otherDist === 2) return `${f ? "ابنة" : "ابن"} ابن عم`;
+  // Cousins
+  if (myDist === 2 && otherDist === 2) return f ? "بنت عم" : "ابن عم";
+  if (myDist === 3 && otherDist === 3) return f ? "بنت عم الأب" : "ابن عم الأب";
+  if (myDist === 4 && otherDist === 4) return f ? "بنت عم الجد" : "ابن عم الجد";
+  if (myDist === 5 && otherDist === 5) return f ? "بنت عم جد الجد" : "ابن عم جد الجد";
 
-  // Deep fallback
-  return "";
+  // Cross combinations
+  if (myDist === 2 && otherDist === 3) return f ? "بنت عم الأب" : "ابن عم الأب";
+  if (myDist === 3 && otherDist === 2) return f ? "بنت ابن عم" : "ابن ابن عم";
+  if (myDist === 2 && otherDist === 4) return f ? "بنت عم الجد" : "ابن عم الجد";
+  if (myDist === 4 && otherDist === 2) return f ? "بنت ابن عم الأب" : "ابن ابن عم الأب";
+  if (myDist === 3 && otherDist === 4) return f ? "بنت عم جد الأب" : "ابن عم جد الأب";
+  if (myDist === 4 && otherDist === 3) return f ? "بنت ابن عم الجد" : "ابن ابن عم الجد";
+  if (myDist === 2 && otherDist === 5) return f ? "بنت عم جد الجد" : "ابن عم جد الجد";
+  if (myDist === 5 && otherDist === 2) return f ? "قريبة" : "قريب";
+  if (myDist === 3 && otherDist === 5) return f ? "قريبة" : "قريب";
+  if (myDist === 5 && otherDist === 3) return f ? "قريبة" : "قريب";
+  if (myDist === 4 && otherDist === 5) return f ? "قريبة" : "قريب";
+  if (myDist === 5 && otherDist === 4) return f ? "قريبة" : "قريب";
+
+  // Deep fallback — never empty
+  if (myDist > 5 || otherDist > 5) return "قريب بعيد";
+  return f ? "قريبة" : "قريب";
 }
 
 export function generationText(n: number): string {
