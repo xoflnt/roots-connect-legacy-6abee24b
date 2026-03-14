@@ -229,8 +229,8 @@ export function kinshipToArabic(dist1: number, dist2: number, person1?: FamilyMe
 
   // Siblings (1,1)
   if (dist1 === 1 && dist2 === 1) {
-    const mother1 = person1 ? extractMotherName(person1) : null;
-    const mother2 = person2 ? extractMotherName(person2) : null;
+    const mother1 = person1 ? inferMotherName(person1) : null;
+    const mother2 = person2 ? inferMotherName(person2) : null;
     const isFull = mother1 && mother2 && mother1 === mother2;
     if (f1) return isFull ? "أخته الشقيقة" : "أخته من الأب";
     if (f2) return isFull ? "أخت شقيقة" : "أخت من الأب";
@@ -291,8 +291,8 @@ export function kinshipDirectional(
   if (d1 === d2) {
     if (d1 === 0) return { symmetric: true, symmetricTitle: "نفس الشخص", title1to2: "", title2to1: "" };
     if (d1 === 1) {
-      const mother1 = person1 ? extractMotherName(person1) : null;
-      const mother2 = person2 ? extractMotherName(person2) : null;
+      const mother1 = person1 ? inferMotherName(person1) : null;
+      const mother2 = person2 ? inferMotherName(person2) : null;
       const isFull = mother1 && mother2 && mother1 === mother2;
       const title = isFull ? "أخوان شقيقان" : "أخوان من الأب";
       return { symmetric: true, symmetricTitle: title, title1to2: "", title2to1: "" };
