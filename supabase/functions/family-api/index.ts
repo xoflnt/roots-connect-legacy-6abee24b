@@ -43,7 +43,11 @@ serve(async (req) => {
 
   try {
     const url = new URL(req.url);
-    const path = url.pathname.split("/").pop();
+    const pathSegments = url.pathname.split("/").filter(Boolean);
+    // The path could be /family-api/action or /functions/v1/family-api/action
+    // Take the last segment as the action
+    const path = pathSegments[pathSegments.length - 1];
+    console.log("[family-api] URL:", req.url, "parsed path:", path, "segments:", pathSegments);
     const supabase = getSupabaseAdmin();
 
     // ─── VERIFY PASSCODE (public, no auth needed) ───
