@@ -285,6 +285,10 @@ function AdminContent() {
             <TabsTrigger value="registry" className="rounded-lg font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm">
               السجل الكامل
             </TabsTrigger>
+            <TabsTrigger value="tree-export" className="rounded-lg font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm gap-1.5">
+              <TreePine className="h-3.5 w-3.5" />
+              تصدير الشجرة
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="requests" className="space-y-6 mt-4">
