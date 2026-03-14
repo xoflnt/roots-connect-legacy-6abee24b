@@ -417,6 +417,7 @@ const Profile = () => {
             تسجيل خروج
           </Button>
         </div>
+      </div>
       </main>
 
       {/* Request Change Dialog */}

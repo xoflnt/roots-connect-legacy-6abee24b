@@ -334,6 +334,7 @@ function AdminContent() {
           </TabsContent>
         </Tabs>
       </div>
+      </div>
     </div>
   );
 }

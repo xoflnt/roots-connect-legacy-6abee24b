@@ -448,6 +448,7 @@ export default function Guide() {
             ابدأ تصفح الشجرة ←
           </Button>
         </motion.div>
+      </div>
       </main>
     </motion.div>
   );

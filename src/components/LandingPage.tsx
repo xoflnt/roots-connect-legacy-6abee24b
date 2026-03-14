@@ -159,18 +159,18 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
       <OnboardingModal forceOpen={forceOnboarding} />
 
       {/* ─── 1. Hero (compact) ─── */}
-      <section className="relative flex flex-col items-center justify-center px-4 text-center pt-12 pb-4">
+      <section className="relative flex flex-col items-center justify-center px-4 text-center pb-4" style={{ paddingTop: "max(3rem, calc(env(safe-area-inset-top) + 1rem))" }}>
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-accent to-transparent" />
 
         {/* Top-left: Theme + Font */}
-        <div className="absolute top-4 left-4 z-30 flex items-center gap-1.5">
+        <div className="absolute left-4 z-30 flex items-center gap-1.5" style={{ top: "max(1rem, env(safe-area-inset-top))" }}>
           <FontSizeToggle />
           <ThemeToggle />
         </div>
 
         {/* Top-right: Admin shield */}
         {isAdmin && (
-          <div className="absolute top-4 right-4 z-30">
+          <div className="absolute right-4 z-30" style={{ top: "max(1rem, env(safe-area-inset-top))" }}>
             <button
               onClick={() => navigate("/admin")}
               className="h-9 w-9 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 flex items-center justify-center transition-colors"

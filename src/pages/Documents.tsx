@@ -271,6 +271,7 @@ export default function Documents() {
             </div>
           ))}
         </div>
+      </div>
       </main>
 
       {/* Document Viewer */}
