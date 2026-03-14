@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo, useEffect, useCallback } from "react";
-import { Search, TreePine, ChevronDown, Users, Layers, Crown, User, UserRound, Heart, Quote, Send, BookOpen, UserCheck, Calculator, Shield, ScrollText, UserCircle } from "lucide-react";
+import { Search, TreePine, ChevronDown, Users, Layers, Crown, User, UserRound, Heart, Quote, Send, BookOpen, UserCheck, Calculator, Shield, ScrollText, UserCircle, Smartphone, Share } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { getLineageLabel, getMemberSubtitle } from "@/utils/memberLabel";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -14,7 +14,7 @@ import { getAllMembers, getDescendantCount, searchMembers, loadMembers } from "@
 import { PILLARS, DOCUMENTER_ID, ADMIN_MEMBER_IDS } from "@/utils/branchUtils";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
-import { Smartphone } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 interface LandingPageProps {
   onSearchSelect: (memberId: string) => void;
