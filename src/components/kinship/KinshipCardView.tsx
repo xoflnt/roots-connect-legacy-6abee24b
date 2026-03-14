@@ -31,7 +31,13 @@ export function KinshipCardView({
   const name1 = person1.name.split(" ")[0];
   const name2 = person2.name.split(" ")[0];
   const lcaName = result.lca?.name.split(" ")[0] ?? "";
-  const lcaLabel = result.lca?.gender === "F" ? "الجدة المشتركة" : "الجد المشترك";
+  const lcaLabel = (() => {
+    const isFemale = result.lca?.gender === "F";
+    if (result.dist1 === 1 && result.dist2 === 1) return isFemale ? "الأم المشتركة" : "الأب المشترك";
+    if (result.dist1 === 1 || result.dist2 === 1) return isFemale ? "الجدة/الأم المشتركة" : "الجد/الأب المشترك";
+    return isFemale ? "الجدة المشتركة" : "الجد المشترك";
+  })();
+  const genLabel = (d: number) => d === 1 ? "جيل" : d === 2 ? "جيلان" : "أجيال";
 
   const branch1 = getBranch(person1.id);
   const branch2 = getBranch(person2.id);
