@@ -212,7 +212,44 @@ function AdminContent() {
     downloadCSV(csv, `khunaini_descendants_of_${safeName}.csv`);
   };
 
-  return (
+  const handleTreeExport = async () => {
+    setExporting(true);
+    setExportProgress('جاري تحضير الشجرة...');
+    setShowHiddenTree(true);
+
+    await new Promise(r => setTimeout(r, 2500));
+    setExportProgress('جاري توسيع جميع الفروع...');
+
+    if (hiddenTreeRef.current) {
+      hiddenTreeRef.current.expandAll();
+    }
+    await new Promise(r => setTimeout(r, 2000));
+    setExportProgress('جاري التقاط الصورة...');
+
+    try {
+      const { exportTreeAsPDF } = await import('@/services/TreeExportService');
+      const rfInst = hiddenTreeRef.current?.getRfInstance();
+      await exportTreeAsPDF(
+        rfInst,
+        () => hiddenTreeRef.current?.expandAll(),
+        {
+          mode: exportMode,
+          branchId: exportBranchId || undefined,
+          branchLabel: exportBranchId
+            ? PILLARS.find(p => p.id === exportBranchId)?.label
+            : undefined,
+        }
+      );
+      setExportProgress('تم التصدير بنجاح ✓');
+    } catch (err) {
+      setExportProgress('حدث خطأ، حاول مرة أخرى');
+      console.error('Tree export error:', err);
+    } finally {
+      setExporting(false);
+      setShowHiddenTree(false);
+      setTimeout(() => setExportProgress(''), 3000);
+    }
+  };
     <div className="flex flex-col h-[100dvh] bg-background" dir="rtl">
       <header className="shrink-0 z-50 bg-card/90 backdrop-blur-sm border-b border-border/30 px-4 py-3" style={{ paddingTop: `max(0.75rem, env(safe-area-inset-top))` }}>
         <div className="max-w-6xl mx-auto flex items-center justify-between">
