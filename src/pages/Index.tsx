@@ -99,11 +99,17 @@ const Index = () => {
   useEffect(() => {
     const onKinship = () => { setActiveTab('kinship'); persistTab('kinship'); };
     const onList = () => { setActiveTab('list'); persistTab('list'); };
+    const onNavigate = () => { setActiveTab('navigate'); persistTab('navigate'); };
+    const onBranches = () => { setActiveTab('branches'); persistTab('branches'); };
     window.addEventListener('switch-to-kinship', onKinship);
     window.addEventListener('switch-to-list', onList);
+    window.addEventListener('switch-to-navigate', onNavigate);
+    window.addEventListener('switch-to-branches', onBranches);
     return () => {
       window.removeEventListener('switch-to-kinship', onKinship);
       window.removeEventListener('switch-to-list', onList);
+      window.removeEventListener('switch-to-navigate', onNavigate);
+      window.removeEventListener('switch-to-branches', onBranches);
     };
   }, [persistTab]);
 
