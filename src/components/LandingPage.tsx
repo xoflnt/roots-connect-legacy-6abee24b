@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo, useEffect, useCallback } from "react";
-import { Search, TreePine, ChevronDown, Users, Layers, Crown, User, UserRound, Heart, Quote, Send, BookOpen, Shield, ScrollText, Smartphone, Share, BadgeCheck, Scale, BookOpenText } from "lucide-react";
+import { Search, TreePine, ChevronDown, Users, Layers, Crown, User, UserRound, Heart, Quote, Send, BookOpen, Shield, ScrollText, Smartphone, Share, BadgeCheck, Scale, BookOpenText, Map as MapIcon, BookMarked } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { getLineageLabel, getMemberSubtitle } from "@/utils/memberLabel";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -324,6 +324,29 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
           </div>
         </section>
       )}
+
+      {/* ─── Quick Actions Grid (all users) ─── */}
+      <section className="py-3 px-4 animate-fade-in" style={{ animationDelay: "0.1s" }}>
+        <div className="max-w-lg mx-auto grid grid-cols-3 gap-2.5">
+          {[
+            { label: "الشجرة", icon: MapIcon, color: "text-primary", onClick: () => onBrowseTree() },
+            { label: "النسب", icon: ScrollText, color: "text-accent", onClick: () => currentUser ? navigate(`/person/${currentUser.memberId}`) : onBrowseTree() },
+            { label: "القرابة", icon: Scale, color: "text-primary", onClick: () => onBrowseTree() },
+            { label: "الوثائق", icon: BookOpen, color: "text-amber-600", onClick: () => navigate("/documents") },
+            { label: "الدليل", icon: BookMarked, color: "text-muted-foreground", onClick: () => navigate("/guide") },
+            { label: "طلب تعديل", icon: Send, color: "text-accent", onClick: () => setRequestOpen(true) },
+          ].map((action) => (
+            <button
+              key={action.label}
+              onClick={action.onClick}
+              className="flex flex-col items-center gap-1.5 rounded-xl border bg-card/60 p-3 min-h-[72px] text-center hover:bg-card hover:shadow-sm transition-all"
+            >
+              <action.icon className={`h-5 w-5 ${action.color}`} />
+              <span className="text-xs font-medium text-foreground">{action.label}</span>
+            </button>
+          ))}
+        </div>
+      </section>
 
       {/* ─── 3. Search (logged-in only, below dashboard) ─── */}
       {currentUser && (
