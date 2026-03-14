@@ -65,11 +65,7 @@ const Index = () => {
         isLineageActive={false}
         onViewChange={(v) => {
           if (v === "lineage") {
-            if (isLoggedIn && currentUser?.memberId) {
-              navigate(`/person/${currentUser.memberId}`);
-            } else {
-              setShowLineageSearch(true);
-            }
+            setShowLineageSearch(true);
             return;
           }
           setActiveView(v);
