@@ -411,7 +411,8 @@ export default function Guide() {
                     {/* Extra (PWA) */}
                     {card.extra}
 
-                    {/* Action button */}
+                    {/* Mockup preview */}
+                    {guideMockups[card.title] && guideMockups[card.title]}
                     {actions && actions.label !== "تعرّف على التثبيت ↑" && (
                       <motion.button
                         whileHover={{ scale: 1.02 }}
