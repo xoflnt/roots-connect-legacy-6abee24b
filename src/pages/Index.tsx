@@ -62,8 +62,16 @@ const Index = () => {
     <div className="flex flex-col h-[100dvh] bg-background overflow-x-hidden">
       <AppHeader
         activeView={activeView as ViewMode}
+        isLineageActive={false}
         onViewChange={(v) => {
-          if (v === "lineage") return;
+          if (v === "lineage") {
+            if (isLoggedIn && currentUser?.memberId) {
+              navigate(`/person/${currentUser.memberId}`);
+            } else {
+              setShowLineageSearch(true);
+            }
+            return;
+          }
           setActiveView(v);
         }}
         onSearch={(id) => {
