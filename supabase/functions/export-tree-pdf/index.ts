@@ -59,131 +59,131 @@ serve(async (req) => {
 
     const targetUrl = appUrl || "https://roots-connect-legacy.lovable.app";
 
-    // ── Build the automation script ──
-    // This script runs inside headless Chrome after page load.
-    // It sets the admin session, navigates to the tree, expands all nodes,
-    // fits the view, and signals readiness for screenshot capture.
-    const automationScript = `
-      (async function() {
-        function waitFor(ms) {
-          return new Promise(r => setTimeout(r, ms));
+    // ── Build the Puppeteer function code ──
+    const branchFilterCode = mode === "branch" && branchId ? `
+          // Step 5: Apply branch filter
+          await page.evaluate((label) => {
+            const filterBtn = document.querySelector('[aria-label="تصفية"]');
+            if (filterBtn) {
+              filterBtn.click();
+              setTimeout(() => {
+                const branchOption = Array.from(document.querySelectorAll('button'))
+                  .find(b => b.textContent?.includes(label));
+                if (branchOption) branchOption.click();
+              }, 500);
+            }
+          }, '${(branchLabel || "").replace(/'/g, "\\'")}');
+          await new Promise(r => setTimeout(r, 3000));
+    ` : "";
+
+    const functionCode = `
+      module.exports = async ({ page }) => {
+        try {
+          // Set viewport
+          await page.setViewport({ width: 3840, height: 2160, deviceScaleFactor: 2 });
+
+          // Step 1: Navigate to app
+          console.log('[export] Navigating to:', '${targetUrl}');
+          await page.goto('${targetUrl}', { waitUntil: 'networkidle2', timeout: 45000 });
+
+          // Step 2: Set admin session in sessionStorage
+          await page.evaluate(() => {
+            sessionStorage.setItem('khunaini-admin-token', '${adminToken}');
+            sessionStorage.setItem('khunaini-admin-expiry',
+              new Date(Date.now() + 3600000).toISOString());
+          });
+
+          // Step 3: Reload so React picks up the admin session
+          console.log('[export] Reloading with admin session...');
+          await page.reload({ waitUntil: 'networkidle2', timeout: 45000 });
+
+          // Step 4: Wait for React Flow to initialize
+          console.log('[export] Waiting for .react-flow__viewport...');
+          await page.waitForSelector('.react-flow__viewport', { timeout: 60000 });
+          console.log('[export] React Flow found!');
+          await new Promise(r => setTimeout(r, 5000));
+
+          // Expand all nodes
+          await page.evaluate(() => {
+            return new Promise((resolve) => {
+              const expandBtn = document.querySelector('[aria-label="توسيع الشجرة"]');
+              if (expandBtn) {
+                expandBtn.click();
+                setTimeout(() => {
+                  const allBtns = Array.from(document.querySelectorAll('button'));
+                  const expandAll = allBtns.find(b => b.textContent?.includes('توسيع الكل'));
+                  if (expandAll) {
+                    expandAll.click();
+                    setTimeout(() => {
+                      const confirm = allBtns.find(
+                        b => b.textContent?.includes('موافق') ||
+                             b.textContent?.includes('نعم') ||
+                             b.textContent?.includes('متابعة')
+                      );
+                      if (confirm) confirm.click();
+                      resolve();
+                    }, 500);
+                  } else { resolve(); }
+                }, 800);
+              } else { resolve(); }
+            });
+          });
+
+          // Wait for all nodes to render
+          await new Promise(r => setTimeout(r, 12000));
+
+          // Fit view
+          await page.evaluate(() => {
+            const fitBtn = document.querySelector('[title="ملائمة العرض"]');
+            if (fitBtn) fitBtn.click();
+          });
+          await new Promise(r => setTimeout(r, 3000));
+
+          ${branchFilterCode}
+
+          // Take screenshot
+          console.log('[export] Taking screenshot...');
+          const screenshot = await page.screenshot({
+            type: 'png',
+            clip: { x: 0, y: 0, width: 3840, height: 2160 }
+          });
+
+          return {
+            data: screenshot.toString('base64'),
+            type: 'image/png'
+          };
+        } catch (err) {
+          console.error('[export] Error in browser:', err.message);
+          throw err;
         }
-
-        // Step 1: Set admin session in sessionStorage
-        sessionStorage.setItem('khunaini-admin-token', '${adminToken}');
-        sessionStorage.setItem('khunaini-admin-expiry',
-          new Date(Date.now() + 3600000).toISOString());
-
-        // Step 2: Wait for React Flow to initialize
-        let attempts = 0;
-        while (!document.querySelector('.react-flow__viewport') && attempts < 30) {
-          await waitFor(1000);
-          attempts++;
-        }
-        await waitFor(3000);
-
-        // Step 3: Expand all nodes
-        const expandBtn = document.querySelector('[aria-label="توسيع الشجرة"]');
-        if (expandBtn) {
-          expandBtn.click();
-          await waitFor(800);
-          const allBtns = Array.from(document.querySelectorAll('button'));
-          const expandAll = allBtns.find(b => b.textContent?.includes('توسيع الكل'));
-          if (expandAll) {
-            expandAll.click();
-            await waitFor(500);
-            const confirm = allBtns.find(
-              b => b.textContent?.includes('موافق') ||
-                   b.textContent?.includes('نعم') ||
-                   b.textContent?.includes('متابعة')
-            );
-            if (confirm) confirm.click();
-          }
-        }
-
-        // Wait for all nodes to render after expansion
-        await waitFor(10000);
-
-        // Step 4: Fit view
-        const fitBtn = document.querySelector('[title="ملائمة العرض"]');
-        if (fitBtn) {
-          fitBtn.click();
-          await waitFor(3000);
-        }
-
-        ${mode === "branch" && branchId ? `
-        // Step 5: Apply branch filter
-        const filterBtn = document.querySelector('[aria-label="تصفية"]');
-        if (filterBtn) {
-          filterBtn.click();
-          await waitFor(500);
-          const branchOption = Array.from(document.querySelectorAll('button'))
-            .find(b => b.textContent?.includes('${branchLabel || ""}'));
-          if (branchOption) {
-            branchOption.click();
-            await waitFor(2000);
-          }
-        }
-        ` : ""}
-
-        // Signal ready
-        document.title = 'READY_FOR_EXPORT';
-        await waitFor(1000);
-      })();
+      };
     `;
 
-    // ── Call Browserless.io v2 screenshot endpoint ──
-    const screenshotResponse = await fetch(
-      `https://chrome.browserless.io/chromium/screenshot?token=${BROWSERLESS_KEY}`,
+    // ── Call Browserless.io v2 /function endpoint ──
+    console.log('[export-tree-pdf] Calling Browserless /chromium/function...');
+    const browserlessResponse = await fetch(
+      `https://chrome.browserless.io/chromium/function?token=${BROWSERLESS_KEY}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          url: targetUrl,
-          gotoOptions: {
-            waitUntil: "networkidle2",
-            timeout: 60000,
-          },
-          addScriptTag: [{ content: automationScript }],
-          waitForSelector: {
-            selector: ".react-flow__viewport",
-            timeout: 30000,
-          },
-          waitForTimeout: 25000,
-          viewport: {
-            width: 3840,
-            height: 2160,
-            deviceScaleFactor: 2,
-          },
-          options: {
-            type: "png",
-            encoding: "binary",
-            fullPage: false,
-            clip: {
-              x: 0,
-              y: 0,
-              width: 3840,
-              height: 2160,
-            },
-          },
-        }),
+        body: JSON.stringify({ code: functionCode }),
       }
     );
 
-    if (!screenshotResponse.ok) {
-      const err = await screenshotResponse.text();
+    console.log('[export-tree-pdf] Response status:', browserlessResponse.status);
+
+    if (!browserlessResponse.ok) {
+      const err = await browserlessResponse.text();
       console.error("[export-tree-pdf] Browserless error:", err);
       throw new Error(`Browserless error: ${err}`);
     }
 
-    const screenshotBuffer = await screenshotResponse.arrayBuffer();
-    const screenshotBase64 = btoa(
-      String.fromCharCode(...new Uint8Array(screenshotBuffer))
-    );
+    const result = await browserlessResponse.json();
+    console.log('[export-tree-pdf] Got result, data length:', result?.data?.length || 0);
 
     return json({
       success: true,
-      screenshot: screenshotBase64,
+      screenshot: result.data,
       mimeType: "image/png",
     });
   } catch (error) {
