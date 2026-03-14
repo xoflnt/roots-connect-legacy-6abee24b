@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo, useEffect, useCallback } from "react";
-import { Search, TreePine, ChevronDown, Users, Layers, Crown, User, UserRound, Heart, Quote, Send, BookOpen, Shield, ScrollText, Smartphone, Share, BadgeCheck, Scale, BookOpenText, Map as MapIcon, BookMarked } from "lucide-react";
+import { Search, TreePine, ChevronDown, Users, Layers, Crown, User, UserRound, Heart, Quote, Send, BookOpen, Shield, ScrollText, Smartphone, Share, BadgeCheck, Scale, BookOpenText, Map as MapIcon, BookMarked, AlignJustify, ChevronLeft } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { getLineageLabel, getMemberSubtitle } from "@/utils/memberLabel";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -16,6 +16,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { HeritageBadge } from "@/components/HeritageBadge";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Input as SheetInput } from "@/components/ui/input";
 
 interface LandingPageProps {
   onSearchSelect: (memberId: string) => void;
@@ -118,6 +120,8 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
   const [dataReady, setDataReady] = useState(false);
   const [showInstallSection, setShowInstallSection] = useState(() => localStorage.getItem('khunaini-pwa-installed-ios') !== 'true');
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [showNasabSheet, setShowNasabSheet] = useState(false);
+  const [nasabQuery, setNasabQuery] = useState("");
   const stats = useMemo(computeStats, [dataReady]);
   const navigate = useNavigate();
   const { currentUser } = useAuth();
@@ -330,11 +334,11 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         <div className="max-w-lg mx-auto grid grid-cols-3 gap-2.5">
           {[
             { label: "الشجرة", icon: MapIcon, color: "text-primary", onClick: () => onBrowseTree() },
-            { label: "النسب", icon: ScrollText, color: "text-accent", onClick: () => currentUser ? navigate(`/person/${currentUser.memberId}`) : onBrowseTree() },
-            { label: "القرابة", icon: Scale, color: "text-primary", onClick: () => onBrowseTree() },
+            { label: "النسب", icon: ScrollText, color: "text-accent", onClick: () => setShowNasabSheet(true) },
+            { label: "القرابة", icon: Scale, color: "text-primary", onClick: () => { onBrowseTree(); window.dispatchEvent(new CustomEvent('switch-to-kinship')); } },
             { label: "الوثائق", icon: BookOpen, color: "text-amber-600", onClick: () => navigate("/documents") },
             { label: "الدليل", icon: BookMarked, color: "text-muted-foreground", onClick: () => navigate("/guide") },
-            { label: "طلب تعديل", icon: Send, color: "text-accent", onClick: () => setRequestOpen(true) },
+            { label: "القائمة", icon: AlignJustify, color: "text-muted-foreground", onClick: () => { onBrowseTree(); window.dispatchEvent(new CustomEvent('switch-to-list')); } },
           ].map((action) => (
             <button
               key={action.label}
@@ -345,6 +349,17 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
               <span className="text-xs font-medium text-foreground">{action.label}</span>
             </button>
           ))}
+        </div>
+      </section>
+      <section className="px-4 animate-fade-in" style={{ animationDelay: "0.15s" }}>
+        <div className="max-w-lg mx-auto">
+          <button
+            onClick={() => setRequestOpen(true)}
+            className="w-full rounded-xl border border-dashed border-accent/40 bg-accent/5 hover:bg-accent/10 min-h-[44px] flex items-center justify-center gap-2 text-sm text-accent font-medium transition-colors"
+          >
+            <Send className="h-4 w-4" />
+            أرسل طلب تحديث البيانات
+          </button>
         </div>
       </section>
 
@@ -652,6 +667,75 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
           </Button>
         </div>
       </footer>
+
+      {/* ─── Nasab Search Sheet ─── */}
+      <Sheet open={showNasabSheet} onOpenChange={setShowNasabSheet}>
+        <SheetContent side="bottom" className="rounded-t-2xl max-h-[70dvh]" dir="rtl">
+          <SheetHeader>
+            <SheetTitle className="text-base font-bold text-right">نسب من؟</SheetTitle>
+          </SheetHeader>
+          <div className="mt-4 space-y-3">
+            {currentUser?.memberId && (() => {
+              const member = getMemberById(currentUser.memberId);
+              if (!member) return null;
+              const isMale = member.gender === "M";
+              return (
+                <>
+                  <button
+                    onClick={() => {
+                      setShowNasabSheet(false);
+                      setNasabQuery("");
+                      onSearchSelect(currentUser.memberId);
+                    }}
+                    className="w-full rounded-xl border bg-primary/5 border-primary/20 p-3 flex items-center gap-3"
+                  >
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${isMale ? 'bg-blue-100 text-blue-600 dark:bg-blue-950 dark:text-blue-400' : 'bg-pink-100 text-pink-600 dark:bg-pink-950 dark:text-pink-400'}`}>
+                      <User className="h-4 w-4" />
+                    </div>
+                    <div className="flex-1 text-right min-w-0">
+                      <div className="text-sm font-bold text-foreground truncate">{currentUser.memberName}</div>
+                      <div className="text-xs text-primary">عرض نسبي أنا</div>
+                    </div>
+                    <ChevronLeft className="h-4 w-4 text-muted-foreground shrink-0" />
+                  </button>
+                  <p className="text-xs text-muted-foreground text-center my-3">أو ابحث عن شخص آخر</p>
+                </>
+              );
+            })()}
+            <div className="relative">
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <SheetInput
+                placeholder="ابحث عن اسم..."
+                value={nasabQuery}
+                onChange={(e) => setNasabQuery(e.target.value)}
+                className="pr-10 h-12 rounded-xl text-base"
+                autoFocus
+              />
+            </div>
+            <div className="overflow-y-auto max-h-[45dvh] space-y-1">
+              {nasabQuery.trim().length > 0 && searchMembers(nasabQuery).map((m) => (
+                <button
+                  key={m.id}
+                  onClick={() => {
+                    setShowNasabSheet(false);
+                    setNasabQuery("");
+                    onSearchSelect(m.id);
+                  }}
+                  className="w-full text-right px-3 py-2.5 rounded-lg hover:bg-muted transition-colors"
+                >
+                  <div className="font-medium text-sm text-foreground">{getLineageLabel(m)}</div>
+                  {getMemberSubtitle(m) && (
+                    <div className="text-xs text-muted-foreground mt-0.5">{getMemberSubtitle(m)}</div>
+                  )}
+                </button>
+              ))}
+              {nasabQuery.trim().length > 0 && searchMembers(nasabQuery).length === 0 && (
+                <p className="text-center text-sm text-muted-foreground py-6">لا توجد نتائج</p>
+              )}
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
 
       <SubmitRequestForm open={requestOpen} onOpenChange={setRequestOpen} />
     </div>

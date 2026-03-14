@@ -95,6 +95,18 @@ const Index = () => {
     try { localStorage.setItem(TAB_STORAGE_KEY, tab); } catch {}
   }, []);
 
+  // Listen for tab-switch events from LandingPage quick actions
+  useEffect(() => {
+    const onKinship = () => { setActiveTab('kinship'); persistTab('kinship'); };
+    const onList = () => { setActiveTab('list'); persistTab('list'); };
+    window.addEventListener('switch-to-kinship', onKinship);
+    window.addEventListener('switch-to-list', onList);
+    return () => {
+      window.removeEventListener('switch-to-kinship', onKinship);
+      window.removeEventListener('switch-to-list', onList);
+    };
+  }, [persistTab]);
+
   const handleTabChange = useCallback((tab: AppTab) => {
     if (tab === "nasab") {
       setShowLineageSearch(true);
