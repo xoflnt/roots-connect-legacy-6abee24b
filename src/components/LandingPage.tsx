@@ -131,6 +131,18 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
 
   const isAdmin = currentUser && ADMIN_MEMBER_IDS.includes(currentUser.memberId);
 
+  // Listen for custom events from Guide page
+  useEffect(() => {
+    const handleOpenOnboarding = () => setForceOnboarding(true);
+    const handleOpenRequestForm = () => setRequestOpen(true);
+    window.addEventListener("open-onboarding", handleOpenOnboarding);
+    window.addEventListener("open-request-form", handleOpenRequestForm);
+    return () => {
+      window.removeEventListener("open-onboarding", handleOpenOnboarding);
+      window.removeEventListener("open-request-form", handleOpenRequestForm);
+    };
+  }, []);
+
   const pillarStats = useMemo(() => PILLARS.map((p) => ({ ...p, descendants: getDescendantCount(p.id) })), [dataReady]);
 
   // Dashboard data for logged-in user

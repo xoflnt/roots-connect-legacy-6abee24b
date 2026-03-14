@@ -82,7 +82,7 @@ export function AdminProtect({ children }: AdminProtectProps) {
   if (authed) return <>{children}</>;
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4" dir="rtl">
+    <div className="min-h-[100dvh] bg-background flex items-center justify-center p-4" dir="rtl">
       <div className="max-w-sm w-full bg-card border border-border/50 rounded-2xl p-8 text-center space-y-6 shadow-lg">
         <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
           <Shield className="h-8 w-8 text-primary" />

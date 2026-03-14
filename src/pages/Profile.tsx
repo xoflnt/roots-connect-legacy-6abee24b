@@ -111,7 +111,7 @@ const Profile = () => {
 
   if (!isLoggedIn || !currentUser) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 p-4" dir="rtl">
+      <div className="min-h-[100dvh] bg-background flex flex-col items-center justify-center gap-4 p-4" dir="rtl">
         <TreePine className="h-12 w-12 text-muted-foreground" />
         <p className="text-lg text-muted-foreground">يرجى تسجيل الدخول أولاً</p>
         <Button onClick={() => navigate("/")} className="rounded-xl">
