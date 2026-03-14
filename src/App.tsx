@@ -51,7 +51,7 @@ const App = () => (
               <Toaster />
               <Sonner />
               <SWUpdateBanner />
-              <PWAInstallBanner />
+              
               <BrowserRouter>
                 <Routes>
                   <Route path="/" element={<Suspense fallback={<LoadingSpinner />}><Index /></Suspense>} />

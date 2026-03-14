@@ -271,6 +271,90 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         </section>
       )}
 
+      {/* ─── PWA Install Section ─── */}
+      {!window.matchMedia('(display-mode: standalone)').matches && !(window.navigator as any).standalone && (
+        <section className="py-6 md:py-8 px-4">
+          <div className="max-w-2xl mx-auto rounded-2xl border bg-card/80 backdrop-blur-sm p-5 space-y-4 opacity-0 animate-fade-in" style={{ animationDelay: "0.2s" }}>
+            <div className="flex flex-col items-center text-center gap-2">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-bold">
+                <Smartphone className="h-4 w-4" />
+                حمّل التطبيق
+              </div>
+              <h3 className="text-lg font-bold text-foreground">أضفه لشاشتك الرئيسية</h3>
+              <p className="text-sm text-muted-foreground">تجربة أسرع وأجمل بدون شريط المتصفح</p>
+            </div>
+
+            <Tabs defaultValue={/iphone|ipad|ipod/i.test(navigator.userAgent) ? "ios" : "android"} dir="rtl">
+              <TabsList className="w-full rounded-xl">
+                <TabsTrigger value="android" className="flex-1 rounded-lg min-h-[44px] font-bold">أندرويد 🤖</TabsTrigger>
+                <TabsTrigger value="ios" className="flex-1 rounded-lg min-h-[44px] font-bold">آيفون 🍎</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="android" className="space-y-3 mt-4">
+                {pwa.canInstall && !pwa.isIOS ? (
+                  <>
+                    <Button
+                      onClick={pwa.triggerInstall}
+                      className="w-full min-h-[52px] rounded-2xl text-base font-bold"
+                    >
+                      ⬇️ تثبيت التطبيق الآن
+                    </Button>
+                    <div className="flex gap-4 justify-center text-xs text-muted-foreground flex-wrap">
+                      <span>✓ مجاني تماماً</span>
+                      <span>✓ بدون App Store</span>
+                      <span>✓ يعمل بدون إنترنت</span>
+                    </div>
+                  </>
+                ) : pwa.isInstalled ? (
+                  <div className="text-center py-4 text-sm font-bold text-primary">
+                    ✅ التطبيق مثبّت بالفعل على جهازك
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {[
+                      { num: "1️⃣", text: "افتح القائمة ⋮ في المتصفح" },
+                      { num: "2️⃣", text: 'اختر "إضافة إلى الشاشة الرئيسية"' },
+                      { num: "3️⃣", text: 'اضغط "إضافة"' },
+                    ].map((step, i) => (
+                      <div key={i} className="rounded-xl bg-muted/50 border border-border/40 p-3 flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary/15 text-primary font-bold text-sm flex items-center justify-center shrink-0">
+                          {step.num}
+                        </div>
+                        <span className="text-sm text-foreground">{step.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="ios" className="space-y-3 mt-4">
+                <div className="space-y-2">
+                  {[
+                    { num: "1️⃣", text: "افتح الصفحة في Safari", sub: "(مو Chrome أو غيره)" },
+                    { num: "2️⃣", text: "اضغط زر المشاركة ⬆️", sub: "في شريط المتصفح السفلي" },
+                    { num: "3️⃣", text: 'اختر "إضافة إلى الشاشة الرئيسية" 📲', sub: "" },
+                    { num: "4️⃣", text: 'اضغط "إضافة" ✓', sub: "" },
+                  ].map((step, i) => (
+                    <div key={i} className="rounded-xl bg-muted/50 border border-border/40 p-3 flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-primary/15 text-primary font-bold text-sm flex items-center justify-center shrink-0">
+                        {step.num}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-sm text-foreground">{step.text}</span>
+                        {step.sub && <span className="text-xs text-muted-foreground">{step.sub}</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="text-xs text-amber-600 bg-amber-50 dark:bg-amber-950/30 dark:text-amber-400 rounded-lg px-3 py-2 text-center">
+                  ⚠️ تأكد من استخدام Safari وليس أي متصفح آخر
+                </div>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </section>
+      )}
+
       {/* ─── 4. Three Pillars ─── */}
       <section className="py-12 md:py-20 px-4 border-t border-border/30">
         <div className="max-w-4xl mx-auto text-center space-y-6 md:space-y-8">
