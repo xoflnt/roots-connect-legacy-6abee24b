@@ -258,6 +258,7 @@ export function SmartNavigateView() {
   const [swipeOffset, setSwipeOffset] = useState(0);
   const isSwiping = useRef(false);
   const swipeLocked = useRef<"horizontal" | "vertical" | null>(null);
+  const sonsScrollRef = useRef<HTMLDivElement>(null);
 
   const member = getMemberById(currentId);
   const father = member?.father_id ? getMemberById(member.father_id) : null;
