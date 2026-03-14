@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo, useEffect, useCallback } from "react";
-import { Search, TreePine, ChevronDown, Users, Layers, Crown, User, UserRound, Heart, Quote, Send, BookOpen, UserCheck, Calculator, Shield, ScrollText, UserCircle, Smartphone, Share } from "lucide-react";
+import { Search, TreePine, ChevronDown, Users, Layers, Crown, User, UserRound, Heart, Quote, Send, BookOpen, Shield, ScrollText, Smartphone, Share, BadgeCheck, Scale, BookOpenText } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { getLineageLabel, getMemberSubtitle } from "@/utils/memberLabel";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -10,11 +10,12 @@ import type { FamilyMember } from "@/data/familyData";
 import { OnboardingModal } from "@/components/OnboardingModal";
 import { SubmitRequestForm } from "@/components/SubmitRequestForm";
 import { trackVisit } from "@/services/dataService";
-import { getAllMembers, getDescendantCount, searchMembers, loadMembers } from "@/services/familyService";
-import { PILLARS, DOCUMENTER_ID, ADMIN_MEMBER_IDS } from "@/utils/branchUtils";
+import { getAllMembers, getDescendantCount, searchMembers, loadMembers, getMemberById, getChildrenOf, getAncestorChain, getDepth } from "@/services/familyService";
+import { PILLARS, DOCUMENTER_ID, ADMIN_MEMBER_IDS, getBranch, getBranchStyle } from "@/utils/branchUtils";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { HeritageBadge } from "@/components/HeritageBadge";
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 
 interface LandingPageProps {
   onSearchSelect: (memberId: string) => void;
@@ -116,12 +117,31 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
   const [forceOnboarding, setForceOnboarding] = useState(false);
   const [dataReady, setDataReady] = useState(false);
   const [showInstallSection, setShowInstallSection] = useState(() => localStorage.getItem('khunaini-pwa-installed-ios') !== 'true');
+  const [aboutOpen, setAboutOpen] = useState(false);
   const stats = useMemo(computeStats, [dataReady]);
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const pwa = usePWAInstall();
 
+  const isAdmin = currentUser && ADMIN_MEMBER_IDS.includes(currentUser.memberId);
+
   const pillarStats = useMemo(() => PILLARS.map((p) => ({ ...p, descendants: getDescendantCount(p.id) })), [dataReady]);
+
+  // Dashboard data for logged-in user
+  const dashboardData = useMemo(() => {
+    if (!currentUser) return null;
+    const member = getMemberById(currentUser.memberId);
+    if (!member) return null;
+    const branch = getBranch(currentUser.memberId);
+    const branchStyle = branch ? getBranchStyle(branch.pillarId) : null;
+    const depth = getDepth(currentUser.memberId);
+    const children = getChildrenOf(currentUser.memberId);
+    const ancestors = getAncestorChain(currentUser.memberId);
+    const siblings = member.father_id
+      ? getChildrenOf(member.father_id).filter((s) => s.id !== member.id)
+      : [];
+    return { member, branch, branchStyle, depth, children, ancestors, siblings };
+  }, [currentUser, dataReady]);
 
   useEffect(() => { trackVisit(); }, []);
   useEffect(() => { loadMembers().finally(() => setDataReady(true)); }, []);
@@ -132,50 +152,230 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
     <div className="min-h-screen bg-background overflow-x-hidden" dir="rtl">
       <OnboardingModal forceOpen={forceOnboarding} />
 
-      {/* ─── 1. Hero Title (compact) ─── */}
-      <section className="relative flex flex-col items-center justify-center px-4 text-center pt-16 pb-10 md:pt-24 md:pb-14">
+      {/* ─── 1. Hero (compact) ─── */}
+      <section className="relative flex flex-col items-center justify-center px-4 text-center pt-12 pb-4">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-accent to-transparent" />
+
+        {/* Top-left: Theme + Font */}
         <div className="absolute top-4 left-4 z-30 flex items-center gap-1.5">
-          {pwa.canInstall && !pwa.isIOS && (
-            <button
-              onClick={pwa.triggerInstall}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium min-h-[44px] hover:bg-primary/20 transition-colors"
-            >
-              <Smartphone className="h-3.5 w-3.5" />
-              تثبيت التطبيق
-            </button>
-          )}
           <FontSizeToggle />
           <ThemeToggle />
         </div>
 
-        <div className="max-w-3xl mx-auto space-y-4 w-full">
-          <div className="mx-auto w-16 h-16 md:w-20 md:h-20 rounded-full bg-primary/10 flex items-center justify-center opacity-0 animate-fade-in" style={{ animationDelay: "0.1s" }}>
-            <TreePine className="h-8 w-8 md:h-10 md:w-10 text-primary" />
+        {/* Top-right: Admin shield */}
+        {isAdmin && (
+          <div className="absolute top-4 right-4 z-30">
+            <button
+              onClick={() => navigate("/admin")}
+              className="h-9 w-9 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 flex items-center justify-center transition-colors"
+              aria-label="لوحة الإدارة"
+            >
+              <Shield className="h-5 w-5" />
+            </button>
           </div>
-          <h1 className="text-3xl md:text-6xl font-extrabold text-primary leading-tight opacity-0 animate-fade-in" style={{ animationDelay: "0.2s" }}>
-            بوابة تراث الخنيني - فرع الزلفي
+        )}
+
+        <div className="max-w-lg mx-auto space-y-2 w-full">
+          <TreePine className="h-10 w-10 text-primary mx-auto opacity-0 animate-fade-in" style={{ animationDelay: "0.1s" }} />
+          <h1 className="text-2xl font-extrabold text-primary leading-tight opacity-0 animate-fade-in" style={{ animationDelay: "0.2s" }}>
+            بوابة تراث الخنيني
           </h1>
-          <p className="text-base md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed opacity-0 animate-fade-in px-2" style={{ animationDelay: "0.4s" }}>
-            توثيق للأصالة، وامتداد للجذور... منصة رقمية تجمع أجيال العائلة وتحفظ إرثها.
+          <p className="text-sm text-muted-foreground opacity-0 animate-fade-in" style={{ animationDelay: "0.3s" }}>
+            فرع الزلفي
           </p>
+          <div className="h-px bg-gradient-to-r from-transparent via-accent to-transparent max-w-xs mx-auto opacity-0 animate-fade-in" style={{ animationDelay: "0.4s" }} />
         </div>
       </section>
 
-      {/* ─── 2. كلمة الموثّق ─── */}
-      <section className="py-8 md:py-12 px-4">
-        <div className="max-w-3xl mx-auto text-center space-y-4">
+      {/* ─── 2A. Personal Dashboard (logged-in) ─── */}
+      {currentUser && dashboardData && (
+        <section className="py-4 px-4 animate-fade-in">
+          <div
+            className="max-w-lg mx-auto rounded-2xl border bg-card/80 backdrop-blur-sm p-4 space-y-4"
+            style={{ borderColor: dashboardData.branchStyle ? dashboardData.branchStyle.text + "40" : undefined }}
+          >
+            {/* Top row: avatar + name + badges */}
+            <div className="flex items-center gap-3">
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                style={{
+                  backgroundColor: dashboardData.member.gender === "F" ? "hsl(330, 50%, 92%)" : "hsl(210, 50%, 92%)",
+                  color: dashboardData.member.gender === "F" ? "hsl(330, 50%, 35%)" : "hsl(210, 50%, 35%)",
+                }}
+              >
+                {dashboardData.member.gender === "F" ? <UserRound className="h-5 w-5" /> : <User className="h-5 w-5" />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-base font-bold text-foreground truncate">{currentUser.memberName}</span>
+                  <BadgeCheck className="h-4 w-4 text-green-500 shrink-0" />
+                </div>
+                <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                  {dashboardData.branch && (
+                    <span
+                      className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                      style={{
+                        backgroundColor: dashboardData.branchStyle?.bg,
+                        color: dashboardData.branchStyle?.text,
+                      }}
+                    >
+                      {dashboardData.branch.label}
+                    </span>
+                  )}
+                  <HeritageBadge type="generation" generationNum={dashboardData.depth} />
+                </div>
+              </div>
+            </div>
+
+            {/* Stats row */}
+            <div className="grid grid-cols-3 gap-2 text-center">
+              {[
+                { label: "الأبناء", value: dashboardData.children.length },
+                { label: "الأجداد", value: dashboardData.ancestors.length - 1 },
+                { label: "الأشقاء", value: dashboardData.siblings.length },
+              ].map((s) => (
+                <div key={s.label} className="rounded-xl bg-muted/50 border border-border/40 py-2 px-1">
+                  <div className="text-lg font-extrabold text-primary">{s.value.toLocaleString("ar-SA")}</div>
+                  <div className="text-xs text-muted-foreground font-medium">{s.label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Action buttons */}
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { label: "نسبي", icon: ScrollText, onClick: () => navigate(`/person/${currentUser.memberId}`) },
+                { label: "قرابة", icon: Scale, onClick: () => onBrowseTree() },
+                { label: "ملفي", icon: User, onClick: () => navigate("/profile") },
+              ].map((action) => (
+                <button
+                  key={action.label}
+                  onClick={action.onClick}
+                  className="flex flex-col items-center gap-1 rounded-xl bg-muted/50 border border-border/40 p-2.5 min-h-[56px] text-xs font-medium text-foreground hover:bg-muted transition-colors"
+                >
+                  <action.icon className="h-5 w-5 text-primary" />
+                  {action.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ─── 2B. Guest CTA (guest only) ─── */}
+      {!currentUser && (
+        <section className="py-4 px-4">
+          <div className="max-w-lg mx-auto space-y-4 text-center">
+            <h2 className="text-lg font-bold text-foreground opacity-0 animate-fade-in" style={{ animationDelay: "0.3s" }}>
+              اكتشف موقعك في شجرة العائلة
+            </h2>
+
+            {/* Guest search */}
+            <div className="relative z-20">
+              <div className="relative">
+                <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
+                <Input
+                  placeholder="ابحث عن اسمك لمعرفة نسبك"
+                  value={query}
+                  onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
+                  onFocus={() => query.trim() && setOpen(true)}
+                  onBlur={() => setTimeout(() => setOpen(false), 200)}
+                  className="pr-12 pl-4 h-14 text-base rounded-2xl bg-card border-border shadow-lg focus:ring-2 focus:ring-accent placeholder:text-muted-foreground"
+                />
+              </div>
+              {showingResults && (
+                <div className="absolute top-full mt-2 w-full bg-card border border-border rounded-2xl shadow-xl z-50 overflow-hidden max-h-72 overflow-y-auto">
+                  {filtered.map((m) => {
+                    const subtitle = getMemberSubtitle(m);
+                    return (
+                      <button
+                        key={m.id}
+                        className="w-full text-right px-5 py-3 text-foreground hover:bg-muted transition-colors border-b border-border/30 last:border-b-0"
+                        style={{ minHeight: 48 }}
+                        onMouseDown={() => { onSearchSelect(m.id); setQuery(m.name); setOpen(false); }}
+                      >
+                        <span className="font-bold block">{getLineageLabel(m)}</span>
+                        {subtitle && <span className="text-xs text-muted-foreground">{subtitle}</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Guest action buttons */}
+            <div className="flex gap-3">
+              <Button
+                onClick={onBrowseTree}
+                className="flex-1 min-h-[48px] rounded-xl font-bold text-base gap-2"
+              >
+                <TreePine className="h-5 w-5" />
+                تصفح الشجرة
+              </Button>
+              <Button
+                onClick={() => setForceOnboarding(true)}
+                variant="outline"
+                className="flex-1 min-h-[48px] rounded-xl font-bold text-base gap-2 border-accent/30 text-accent hover:bg-accent/10"
+              >
+                <User className="h-5 w-5" />
+                سجّل دخولك
+              </Button>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ─── 3. Search (logged-in only, below dashboard) ─── */}
+      {currentUser && (
+        <section className="py-4 px-4">
+          <div className="max-w-lg mx-auto relative z-20">
+            <div className="relative">
+              <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
+              <Input
+                placeholder="ابحث عن أي فرد في العائلة..."
+                value={query}
+                onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
+                onFocus={() => query.trim() && setOpen(true)}
+                onBlur={() => setTimeout(() => setOpen(false), 200)}
+                className="pr-12 pl-4 h-12 text-base rounded-2xl bg-card border-border shadow-sm focus:ring-2 focus:ring-accent placeholder:text-muted-foreground"
+              />
+            </div>
+            {showingResults && (
+              <div className="absolute top-full mt-2 w-full bg-card border border-border rounded-2xl shadow-xl z-50 overflow-hidden max-h-72 overflow-y-auto">
+                {filtered.map((m) => {
+                  const subtitle = getMemberSubtitle(m);
+                  return (
+                    <button
+                      key={m.id}
+                      className="w-full text-right px-5 py-3 text-foreground hover:bg-muted transition-colors border-b border-border/30 last:border-b-0"
+                      style={{ minHeight: 48 }}
+                      onMouseDown={() => { onSearchSelect(m.id); setQuery(m.name); setOpen(false); }}
+                    >
+                      <span className="font-bold block">{getLineageLabel(m)}</span>
+                      {subtitle && <span className="text-xs text-muted-foreground">{subtitle}</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* ─── 4. كلمة الموثّق ─── */}
+      <section className="py-6 px-4">
+        <div className="max-w-lg mx-auto text-center space-y-4">
           <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[hsl(35,70%,92%)] text-[hsl(35,55%,30%)] font-bold text-sm">
             <ScrollText className="h-4 w-4" />
             كلمة الموثّق
           </div>
 
-          <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 md:p-10 text-right border-r-4 border-r-[hsl(35,60%,45%)]">
+          <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 text-right border-r-4 border-r-[hsl(35,60%,45%)]">
             <Quote className="absolute top-4 right-4 h-8 w-8 text-[hsl(35,60%,45%)]/20" />
-            <blockquote className="text-base md:text-lg text-muted-foreground leading-loose italic pr-8">
+            <blockquote className="text-base text-muted-foreground leading-loose italic pr-8">
               "الهدف من هذه الشجرة التوثيق مثل تواريخ الميلاد، الوفاة، المصاهرة وترتيب الاخوة نسأل الله سبحانه وتعالى لأبائنا وامهاتنا وابائهم وامهاتهم ومن له حق علينا بالرحمة والمغفرة وان يجمعنا جميعاً معهم بجنات النعيم"
             </blockquote>
-            <div className="mt-6 text-sm text-muted-foreground">
+            <div className="mt-4 text-sm text-muted-foreground">
               <span className="font-bold">— جمع وتوثيق </span>
               <Link
                 to={`/person/${DOCUMENTER_ID}`}
@@ -190,185 +390,9 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         </div>
       </section>
 
-      {/* ─── 3. Search Bar ─── */}
-      <section className="py-6 md:py-8 px-4">
-        <div className="max-w-lg mx-auto relative z-20">
-          <div className="relative">
-            <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
-            <Input
-              placeholder="ابحث عن اسمك لمعرفة نسبك"
-              value={query}
-              onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
-              onFocus={() => query.trim() && setOpen(true)}
-              onBlur={() => setTimeout(() => setOpen(false), 200)}
-              className="pr-12 pl-4 h-14 text-base md:text-lg rounded-2xl bg-card border-border shadow-lg focus:ring-2 focus:ring-accent placeholder:text-muted-foreground"
-            />
-          </div>
-          {showingResults && (
-            <div className="absolute top-full mt-2 w-full bg-card border border-border rounded-2xl shadow-xl z-50 overflow-hidden max-h-72 overflow-y-auto">
-              {filtered.map((m) => {
-                const subtitle = getMemberSubtitle(m);
-                return (
-                  <button
-                    key={m.id}
-                    className="w-full text-right px-5 py-3 text-foreground hover:bg-muted transition-colors border-b border-border/30 last:border-b-0"
-                    style={{ minHeight: 48 }}
-                    onMouseDown={() => { onSearchSelect(m.id); setQuery(m.name); setOpen(false); }}
-                  >
-                    <span className="font-bold block">{getLineageLabel(m)}</span>
-                    {subtitle && <span className="text-xs text-muted-foreground">{subtitle}</span>}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
-        {currentUser && (
-          <div className="max-w-lg mx-auto mt-4">
-            <Button onClick={() => navigate("/profile")} className="w-full min-h-[48px] rounded-xl font-bold text-base gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
-              <UserCircle className="h-5 w-5" />
-              الانتقال لملفي الشخصي
-            </Button>
-          </div>
-        )}
-      </section>
-
-      {/* ─── Admin Shortcut Banner ─── */}
-      {currentUser && ADMIN_MEMBER_IDS.includes(currentUser.memberId) && (
-        <section className="py-4 px-4">
-          <div className="max-w-lg mx-auto">
-            <Button
-              onClick={() => navigate("/admin")}
-              size="lg"
-              className="w-full min-h-[56px] rounded-2xl font-extrabold text-base gap-3 bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-xl"
-            >
-              <Shield className="h-6 w-6" />
-              لوحة تحكم المشرفين
-            </Button>
-          </div>
-        </section>
-      )}
-
-      {/* ─── Guest CTA Banner ─── */}
-      {!currentUser && (
-        <section className="py-6 md:py-8 px-4">
-          <div className="max-w-2xl mx-auto rounded-2xl border-2 border-accent/30 bg-gradient-to-br from-accent/10 via-primary/5 to-accent/10 p-6 md:p-8 text-center space-y-4">
-            <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-accent/20 text-accent font-bold text-sm">
-              <UserCheck className="h-4 w-4" />
-              دعوة لأبناء العائلة
-            </div>
-            <p className="text-base md:text-lg text-foreground leading-relaxed font-medium">
-              هل أنت من أبناء العائلة؟ سجل دخولك الآن باستخدام رمز العائلة لتوثيق بياناتك، تحديث تواريخ ميلاد أبنائك، والحصول على شارة التوثيق ✅.
-            </p>
-            <Button
-              onClick={() => setForceOnboarding(true)}
-              size="lg"
-              className="min-h-[48px] rounded-xl font-extrabold text-base gap-2 bg-accent text-accent-foreground hover:bg-accent/90 shadow-lg"
-            >
-              <UserCircle className="h-5 w-5" />
-              تسجيل الدخول
-            </Button>
-          </div>
-        </section>
-      )}
-
-      {/* ─── PWA Install Section ─── */}
-      {showInstallSection && !window.matchMedia('(display-mode: standalone)').matches && !(window.navigator as any).standalone && (
-        <section className="py-6 md:py-8 px-4">
-          <div className="max-w-2xl mx-auto rounded-2xl border bg-card/80 backdrop-blur-sm p-5 space-y-4 opacity-0 animate-fade-in" style={{ animationDelay: "0.2s" }}>
-            <div className="flex flex-col items-center text-center gap-2">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-bold">
-                <Smartphone className="h-4 w-4" />
-                حمّل التطبيق
-              </div>
-              <h3 className="text-lg font-bold text-foreground">أضفه لشاشتك الرئيسية</h3>
-              <p className="text-sm text-muted-foreground">تجربة أسرع وأجمل بدون شريط المتصفح</p>
-            </div>
-
-            <Tabs defaultValue={/iphone|ipad|ipod/i.test(navigator.userAgent) ? "ios" : "android"} dir="rtl">
-              <TabsList className="w-full rounded-xl">
-                <TabsTrigger value="android" className="flex-1 rounded-lg min-h-[44px] font-bold">أندرويد 🤖</TabsTrigger>
-                <TabsTrigger value="ios" className="flex-1 rounded-lg min-h-[44px] font-bold">آيفون 🍎</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="android" className="space-y-3 mt-4">
-                {pwa.canInstall && !pwa.isIOS ? (
-                  <>
-                    <Button
-                      onClick={pwa.triggerInstall}
-                      className="w-full min-h-[52px] rounded-2xl text-base font-bold"
-                    >
-                      ⬇️ تثبيت التطبيق الآن
-                    </Button>
-                    <div className="flex gap-4 justify-center text-xs text-muted-foreground flex-wrap">
-                      <span>✓ مجاني تماماً</span>
-                      <span>✓ بدون App Store</span>
-                      <span>✓ يعمل بدون إنترنت</span>
-                    </div>
-                  </>
-                ) : pwa.isInstalled ? (
-                  <div className="text-center py-4 text-sm font-bold text-primary">
-                    ✅ التطبيق مثبّت بالفعل على جهازك
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {[
-                      { num: "1️⃣", text: "افتح القائمة ⋮ في المتصفح" },
-                      { num: "2️⃣", text: 'اختر "إضافة إلى الشاشة الرئيسية"' },
-                      { num: "3️⃣", text: 'اضغط "إضافة"' },
-                    ].map((step, i) => (
-                      <div key={i} className="rounded-xl bg-muted/50 border border-border/40 p-3 flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-primary/15 text-primary font-bold text-sm flex items-center justify-center shrink-0">
-                          {step.num}
-                        </div>
-                        <span className="text-sm text-foreground">{step.text}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </TabsContent>
-
-              <TabsContent value="ios" className="space-y-3 mt-4">
-                <div className="space-y-2">
-                  {[
-                    { num: "1️⃣", text: "افتح الصفحة في Safari", sub: "(مو Chrome أو غيره)" },
-                    { num: "2️⃣", text: "اضغط زر المشاركة ⬆️", sub: "في شريط المتصفح السفلي" },
-                    { num: "3️⃣", text: 'اختر "إضافة إلى الشاشة الرئيسية" 📲', sub: "" },
-                    { num: "4️⃣", text: 'اضغط "إضافة" ✓', sub: "" },
-                  ].map((step, i) => (
-                    <div key={i} className="rounded-xl bg-muted/50 border border-border/40 p-3 flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-primary/15 text-primary font-bold text-sm flex items-center justify-center shrink-0">
-                        {step.num}
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-sm text-foreground">{step.text}</span>
-                        {step.sub && <span className="text-xs text-muted-foreground">{step.sub}</span>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="text-xs text-amber-600 bg-amber-50 dark:bg-amber-950/30 dark:text-amber-400 rounded-lg px-3 py-2 text-center">
-                  ⚠️ تأكد من استخدام Safari وليس أي متصفح آخر
-                </div>
-                <Button
-                  variant="ghost"
-                  className="w-full mt-2 text-xs text-muted-foreground underline"
-                  onClick={() => {
-                    localStorage.setItem('khunaini-pwa-installed-ios', 'true');
-                    setShowInstallSection(false);
-                  }}
-                >
-                  ✓ ثبّتت التطبيق — إخفاء هذا القسم
-                </Button>
-              </TabsContent>
-            </Tabs>
-          </div>
-        </section>
-      )}
-
-      {/* ─── 4. Three Pillars ─── */}
-      <section className="py-12 md:py-20 px-4 border-t border-border/30">
-        <div className="max-w-4xl mx-auto text-center space-y-6 md:space-y-8">
+      {/* ─── 5. Three Pillars ─── */}
+      <section className="py-8 px-4 border-t border-border/30">
+        <div className="max-w-4xl mx-auto text-center space-y-6">
           <div className="inline-block px-5 py-2 rounded-full bg-accent/15 text-accent font-bold text-sm">
             ركائز العائلة
           </div>
@@ -410,8 +434,8 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         </div>
       </section>
 
-      {/* ─── 5. Browse Full Tree CTA ─── */}
-      <section className="py-6 md:py-10 px-4">
+      {/* ─── 6. Browse Full Tree CTA ─── */}
+      <section className="py-4 px-4">
         <div className="max-w-lg mx-auto">
           <Button
             onClick={onBrowseTree}
@@ -424,8 +448,25 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         </div>
       </section>
 
-      {/* ─── مستندات تاريخية ─── */}
-      <section className="py-10 md:py-16 px-4 border-t border-border/30">
+      {/* ─── 7. Statistics ─── */}
+      <section className="py-8 px-4 border-t border-border/30">
+        <div className="max-w-3xl mx-auto text-center space-y-6">
+          <div className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary font-bold text-sm">
+            العائلة بالأرقام
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+            <StatCard icon={Users} label="إجمالي الأفراد" value={stats.total} />
+            <StatCard icon={Layers} label="عدد الأجيال" value={stats.generations} />
+            <StatCard icon={User} label="عدد الأبناء (ذكور)" value={stats.males} />
+            <StatCard icon={UserRound} label="عدد البنات (إناث)" value={stats.females} />
+            <StatCard icon={Crown} label={`أكثر اسم للذكور: ${stats.topMaleName}`} value={stats.topMaleCount} suffix=" مرة" />
+            <StatCard icon={Heart} label={`أكثر اسم للإناث: ${stats.topFemaleName}`} value={stats.topFemaleCount} suffix=" مرة" />
+          </div>
+        </div>
+      </section>
+
+      {/* ─── 8. Historical Documents ─── */}
+      <section className="py-8 px-4 border-t border-border/30">
         <div className="max-w-2xl mx-auto text-center space-y-5">
           <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-accent/15 text-accent font-bold text-sm">
             <ScrollText className="h-4 w-4" />
@@ -449,89 +490,114 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         </div>
       </section>
 
-      {/* ─── 6. Statistics ─── */}
-      <section className="py-12 md:py-20 px-4 border-t border-border/30">
-        <div className="max-w-3xl mx-auto text-center space-y-6 md:space-y-8">
-          <div className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary font-bold text-sm">
-            العائلة بالأرقام
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
-            <StatCard icon={Users} label="إجمالي الأفراد" value={stats.total} />
-            <StatCard icon={Layers} label="عدد الأجيال" value={stats.generations} />
-            <StatCard icon={User} label="عدد الأبناء (ذكور)" value={stats.males} />
-            <StatCard icon={UserRound} label="عدد البنات (إناث)" value={stats.females} />
-            <StatCard icon={Crown} label={`أكثر اسم للذكور: ${stats.topMaleName}`} value={stats.topMaleCount} suffix=" مرة" />
-            <StatCard icon={Heart} label={`أكثر اسم للإناث: ${stats.topFemaleName}`} value={stats.topFemaleCount} suffix=" مرة" />
-          </div>
-        </div>
-      </section>
-
-      {/* ─── 7. How to Use ─── */}
-      <section className="py-12 md:py-20 px-4 border-t border-border/30">
-        <div className="max-w-3xl mx-auto text-center space-y-6 md:space-y-8">
-          <div className="inline-block px-4 py-1.5 rounded-full bg-accent/15 text-accent font-bold text-sm">
-            كيف تستخدم المنصة
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-            {[
-              { icon: TreePine, title: "تصفح الشجرة", desc: "استكشف الفروع بالنقر والتوسّع" },
-              { icon: Search, title: "البحث السريع", desc: "ابحث عن أي فرد بالاسم" },
-              { icon: UserCheck, title: "سجّل بياناتك", desc: "طالب بملفك وحدّث معلوماتك" },
-              { icon: Calculator, title: "حاسبة القرابة", desc: "اكتشف صلتك بأي فرد" },
-            ].map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-card border border-border/50 shadow-sm">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Icon className="h-6 w-6 text-primary" />
-                </div>
-                <p className="font-bold text-sm text-foreground">{title}</p>
-                <p className="text-xs text-muted-foreground leading-snug text-center">{desc}</p>
+      {/* ─── 9. PWA Install (compact, no tabs) ─── */}
+      {showInstallSection && !window.matchMedia('(display-mode: standalone)').matches && !(window.navigator as any).standalone && (
+        <section className="py-4 px-4">
+          <div className="max-w-lg mx-auto rounded-2xl border bg-card/80 backdrop-blur-sm p-4 space-y-3">
+            <div className="flex flex-col items-center text-center gap-1">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold">
+                <Smartphone className="h-3.5 w-3.5" />
+                حمّل التطبيق
               </div>
-            ))}
-          </div>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button
-              variant="outline"
-              onClick={() => window.location.href = "/guide"}
-              className="rounded-2xl h-12 px-8 text-base font-bold border-primary/30 text-primary hover:bg-primary/10"
-            >
-              <BookOpen className="h-4 w-4 ml-2" />
-              دليل الاستخدام الكامل
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setRequestOpen(true)}
-              className="rounded-2xl h-12 px-8 text-base font-bold border-accent/30 text-accent hover:bg-accent/10"
-            >
-              <Send className="h-4 w-4 ml-2" />
-              أرسل طلب تعديل
-            </Button>
-          </div>
-        </div>
-      </section>
+              <p className="text-sm font-bold text-foreground">أضفه لشاشتك الرئيسية</p>
+            </div>
 
-      {/* ─── 8. About ─── */}
-      <section className="py-12 md:py-20 px-4 bg-card/50 border-t border-border/30">
-        <div className="max-w-3xl mx-auto text-center space-y-6 md:space-y-8">
+            {/* Android */}
+            <div className="space-y-2">
+              <p className="text-xs font-bold text-muted-foreground">أندرويد 🤖</p>
+              {pwa.canInstall && !pwa.isIOS ? (
+                <Button onClick={pwa.triggerInstall} className="w-full min-h-[44px] rounded-xl text-sm font-bold">
+                  ⬇️ تثبيت التطبيق الآن
+                </Button>
+              ) : pwa.isInstalled ? (
+                <div className="text-center py-2 text-xs font-bold text-primary">
+                  ✅ التطبيق مثبّت بالفعل
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  {[
+                    { num: "1️⃣", text: "افتح القائمة ⋮ في المتصفح" },
+                    { num: "2️⃣", text: 'اختر "إضافة إلى الشاشة الرئيسية"' },
+                    { num: "3️⃣", text: 'اضغط "إضافة"' },
+                  ].map((step, i) => (
+                    <div key={i} className="rounded-lg bg-muted/50 border border-border/40 p-2 flex items-center gap-2 text-xs">
+                      <span>{step.num}</span>
+                      <span className="text-foreground">{step.text}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Divider */}
+            <div className="h-px bg-border/50" />
+
+            {/* iOS */}
+            <div className="space-y-2">
+              <p className="text-xs font-bold text-muted-foreground">آيفون 🍎</p>
+              <div className="space-y-1.5">
+                {[
+                  { num: "1️⃣", text: "افتح الصفحة في Safari" },
+                  { num: "2️⃣", text: "اضغط زر المشاركة ⬆️" },
+                  { num: "3️⃣", text: 'اختر "إضافة إلى الشاشة الرئيسية" 📲' },
+                  { num: "4️⃣", text: 'اضغط "إضافة" ✓' },
+                ].map((step, i) => (
+                  <div key={i} className="rounded-lg bg-muted/50 border border-border/40 p-2 flex items-center gap-2 text-xs">
+                    <span>{step.num}</span>
+                    <span className="text-foreground">{step.text}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="text-xs text-amber-600 bg-amber-50 dark:bg-amber-950/30 dark:text-amber-400 rounded-lg px-3 py-1.5 text-center">
+                ⚠️ تأكد من استخدام Safari
+              </div>
+              <Button
+                variant="ghost"
+                className="w-full text-xs text-muted-foreground underline py-1"
+                onClick={() => {
+                  localStorage.setItem('khunaini-pwa-installed-ios', 'true');
+                  setShowInstallSection(false);
+                }}
+              >
+                ✓ ثبّتت التطبيق — إخفاء
+              </Button>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ─── 10. About (collapsible) ─── */}
+      <section className="py-4 px-4 bg-card/50 border-t border-border/30">
+        <div className="max-w-lg mx-auto text-center space-y-4">
           <div className="inline-block px-4 py-1.5 rounded-full bg-accent/15 text-accent font-bold text-sm">
             عن العائلة
           </div>
-          <h2 className="text-2xl md:text-4xl font-extrabold text-foreground">
+          <h2 className="text-xl md:text-2xl font-extrabold text-foreground">
             جذور ممتدة عبر الأجيال
           </h2>
-          <div className="space-y-6 text-base md:text-lg text-muted-foreground leading-loose text-right">
-            <p>
-              تنحدر عائلة <strong className="text-foreground">الخنيني</strong> من{" "}
-              <strong className="text-foreground">حميد</strong> من الحماضا من حماد من{" "}
-              <strong className="text-foreground">بني العنبر بن عمرو بن تميم</strong>، إحدى أعرق القبائل العربية.
-              ويُعدّ <strong className="text-foreground">محمد بن سلامة</strong> أول من حمل لقب
-              الخنيني، ليُصبح هذا الاسم رمزًا للعائلة عبر الأجيال.
-            </p>
-            <p>
-              تضرب جذور العائلة في نجد، وقد توارثت قيم الكرم والشجاعة والتماسك الأسري جيلاً بعد جيل.
-              هذه المنصة الرقمية هي خطوة لحفظ هذا الإرث العريق وتسهيل التواصل بين أبناء العائلة.
-            </p>
-          </div>
-          <div className="flex items-center justify-center gap-4 pt-4">
+          <Collapsible open={aboutOpen} onOpenChange={setAboutOpen}>
+            <div className="space-y-4 text-base text-muted-foreground leading-loose text-right">
+              <p>
+                تنحدر عائلة <strong className="text-foreground">الخنيني</strong> من{" "}
+                <strong className="text-foreground">حميد</strong> من الحماضا من حماد من{" "}
+                <strong className="text-foreground">بني العنبر بن عمرو بن تميم</strong>، إحدى أعرق القبائل العربية.
+                ويُعدّ <strong className="text-foreground">محمد بن سلامة</strong> أول من حمل لقب
+                الخنيني، ليُصبح هذا الاسم رمزًا للعائلة عبر الأجيال.
+              </p>
+              <CollapsibleContent>
+                <p>
+                  تضرب جذور العائلة في نجد، وقد توارثت قيم الكرم والشجاعة والتماسك الأسري جيلاً بعد جيل.
+                  هذه المنصة الرقمية هي خطوة لحفظ هذا الإرث العريق وتسهيل التواصل بين أبناء العائلة.
+                </p>
+              </CollapsibleContent>
+            </div>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" className="text-xs text-muted-foreground mt-2">
+                {aboutOpen ? "إخفاء ↑" : "اقرأ المزيد ↓"}
+              </Button>
+            </CollapsibleTrigger>
+          </Collapsible>
+          <div className="flex items-center justify-center gap-4 pt-2">
             <div className="h-px w-16 bg-accent/30" />
             <div className="w-2 h-2 rounded-full bg-accent/50" />
             <div className="h-px w-16 bg-accent/30" />
@@ -539,9 +605,29 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         </div>
       </section>
 
-      {/* ─── 9. Footer ─── */}
-      <footer className="py-8 text-center text-sm text-muted-foreground border-t border-border/30">
+      {/* ─── 11. Footer ─── */}
+      <footer className="py-6 text-center text-sm text-muted-foreground border-t border-border/30 space-y-3">
         <p>شجرة عائلة الخنيني — حفظ الإرث للأجيال القادمة</p>
+        <div className="flex justify-center gap-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setRequestOpen(true)}
+            className="text-xs text-accent hover:text-accent gap-1"
+          >
+            <Send className="h-3.5 w-3.5" />
+            أرسل طلب تعديل
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/guide")}
+            className="text-xs text-muted-foreground gap-1"
+          >
+            <BookOpen className="h-3.5 w-3.5" />
+            دليل الاستخدام
+          </Button>
+        </div>
       </footer>
 
       <SubmitRequestForm open={requestOpen} onOpenChange={setRequestOpen} />
