@@ -9,13 +9,14 @@ import {
 import "@xyflow/react/dist/style.css";
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { refreshMembers, getAllMembers } from "@/services/familyService";
-import { Plus, Minus, Maximize2, RotateCcw } from "lucide-react";
+import { Plus, Minus, Maximize2, RotateCcw, LocateFixed, Eye, EyeOff } from "lucide-react";
 import { useTreeLayout, getDefaultExpandedIds } from "@/hooks/useTreeLayout";
 import { FamilyCard } from "./FamilyCard";
 import { PersonDetails } from "./PersonDetails";
 import type { FamilyMember } from "@/data/familyData";
 import { getBranch } from "@/utils/branchUtils";
 import { getChildrenOf } from "@/services/familyService";
+import { useAuth } from "@/contexts/AuthContext";
 
 const nodeTypes = { familyCard: FamilyCard };
 
@@ -29,6 +30,9 @@ interface FamilyTreeProps {
 }
 
 export const FamilyTree = forwardRef<FamilyTreeRef, FamilyTreeProps>(function FamilyTree({ focusBranch }, ref) {
+  const { currentUser } = useAuth();
+  const myMemberId = currentUser?.memberId || "100";
+
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => {
     if (focusBranch) {
       return getBranchExpandedIds(focusBranch);
@@ -36,9 +40,10 @@ export const FamilyTree = forwardRef<FamilyTreeRef, FamilyTreeProps>(function Fa
     return getDefaultExpandedIds();
   });
   const [refreshKey, setRefreshKey] = useState(0);
+  const [showMiniMap, setShowMiniMap] = useState(true);
   const { nodes: layoutNodes, edges: layoutEdges } = useTreeLayout(expandedIds, refreshKey);
 
-  // Listen for data updates from Profile or other sources
+  // Listen for data updates
   useEffect(() => {
     const handler = async () => {
       await refreshMembers();
@@ -117,6 +122,27 @@ export const FamilyTree = forwardRef<FamilyTreeRef, FamilyTreeProps>(function Fa
     setTimeout(() => rfInstance.current?.fitView({ duration: 500, padding: 0.2 }), 100);
   }, []);
 
+  const handleLocateMe = useCallback(() => {
+    if (!rfInstance.current) return;
+    // Expand ancestors to make the node visible
+    const allMembers = getAllMembers();
+    const memberMap = new Map<string, FamilyMember>(allMembers.map((m) => [m.id, m]));
+    const ancestorIds = new Set<string>();
+    let current = memberMap.get(myMemberId);
+    while (current?.father_id) {
+      ancestorIds.add(current.father_id);
+      current = memberMap.get(current.father_id);
+    }
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      ancestorIds.forEach((id) => next.add(id));
+      return next;
+    });
+    setTimeout(() => {
+      rfInstance.current?.fitView({ nodes: [{ id: myMemberId }], duration: 600, padding: 0.5 });
+    }, 300);
+  }, [myMemberId]);
+
   useImperativeHandle(ref, () => ({ search: handleSearch, reset: handleReset }), [handleSearch, handleReset]);
 
   useEffect(() => {
@@ -143,22 +169,24 @@ export const FamilyTree = forwardRef<FamilyTreeRef, FamilyTreeProps>(function Fa
         proOptions={{ hideAttribution: true }}
         style={{ background: 'transparent' }}
       >
-        <MiniMap
-          nodeStrokeWidth={3}
-          pannable
-          zoomable
-          className="!bg-card/80 !border-border !rounded-xl !shadow-lg !backdrop-blur-sm"
-          maskColor="hsl(var(--muted) / 0.5)"
-          nodeColor={(node) => {
-            const data = node.data as any;
-            if (node.type === 'spouseCard') return 'hsl(var(--accent))';
-            return data?.gender === 'M' ? 'hsl(var(--male))' : 'hsl(var(--female))';
-          }}
-          style={{ width: 160, height: 100 }}
-        />
+        {showMiniMap && (
+          <MiniMap
+            nodeStrokeWidth={3}
+            pannable
+            zoomable
+            className="!bg-card/80 !border-border !rounded-xl !shadow-lg !backdrop-blur-sm"
+            maskColor="hsl(var(--muted) / 0.5)"
+            nodeColor={(node) => {
+              const data = node.data as any;
+              if (node.type === 'spouseCard') return 'hsl(var(--accent))';
+              return data?.gender === 'M' ? 'hsl(var(--male))' : 'hsl(var(--female))';
+            }}
+            style={{ width: 160, height: 100 }}
+          />
+        )}
       </ReactFlow>
 
-      {/* Zoom controls - pill design */}
+      {/* Zoom + utility controls */}
       <div className="absolute bottom-5 left-5 flex flex-col bg-card/90 backdrop-blur-md rounded-2xl border border-border shadow-xl overflow-hidden z-10">
         <button
           onClick={() => rfInstance.current?.zoomIn({ duration: 200 })}
@@ -182,6 +210,22 @@ export const FamilyTree = forwardRef<FamilyTreeRef, FamilyTreeProps>(function Fa
           title="ملائمة العرض"
         >
           <Maximize2 className="h-4 w-4" />
+        </button>
+        <div className="h-px bg-border mx-2" />
+        <button
+          onClick={handleLocateMe}
+          className="w-11 h-11 flex items-center justify-center text-foreground hover:bg-accent/15 hover:text-accent transition-colors"
+          title="أين أنا؟"
+        >
+          <LocateFixed className="h-4 w-4" />
+        </button>
+        <div className="h-px bg-border mx-2" />
+        <button
+          onClick={() => setShowMiniMap((v) => !v)}
+          className="w-11 h-11 flex items-center justify-center text-foreground hover:bg-accent/15 hover:text-accent transition-colors"
+          title={showMiniMap ? "إخفاء الخريطة المصغرة" : "إظهار الخريطة المصغرة"}
+        >
+          {showMiniMap ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
         </button>
         <div className="h-px bg-border mx-2" />
         <button
