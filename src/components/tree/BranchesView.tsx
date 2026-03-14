@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useRef } from "react";
 import {
   getChildrenOf,
   sortByBirth,
@@ -8,8 +8,9 @@ import {
   isFounder,
   isBranchHead,
   inferMotherName,
+  getAllMembers,
 } from "@/services/familyService";
-import { PILLARS, getBranchStyle, DOCUMENTER_ID } from "@/utils/branchUtils";
+import { PILLARS, getBranchStyle, getBranch, DOCUMENTER_ID } from "@/utils/branchUtils";
 import { formatAge } from "@/utils/ageCalculator";
 import { HeritageBadge } from "@/components/HeritageBadge";
 import { PersonDetails } from "@/components/PersonDetails";
@@ -17,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { ChevronDown, ChevronLeft, Users, BadgeCheck } from "lucide-react";
 import { getVerifiedMemberIds } from "@/services/dataService";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { FamilyMember } from "@/data/familyData";
 
 const FOUNDER_IDS = new Set(["100", "200", "300", "400"]);
@@ -28,7 +30,211 @@ function borderOpacity(depth: number): number {
   return 0.35;
 }
 
-// ── Recursive node ──
+// ══════════════════════════════════════════
+// MOBILE: MemberCard
+// ══════════════════════════════════════════
+const MemberCard = React.memo(function MemberCard({
+  member,
+  index,
+  branchStyle,
+  onSelect,
+}: {
+  member: FamilyMember;
+  index: number;
+  branchStyle: { bg: string; text: string };
+  onSelect: (m: FamilyMember) => void;
+}) {
+  const deceased = isDeceased(member);
+  const verified = getVerifiedMemberIds().has(member.id);
+  const children = getChildrenOf(member.id);
+  const childLabel = member.gender === "F" ? "لها" : "له";
+  const isMale = member.gender === "M";
+
+  return (
+    <button
+      onClick={() => onSelect(member)}
+      className={cn(
+        "w-[130px] flex-shrink-0 min-h-[80px] rounded-xl border bg-card p-3 text-right relative",
+        "hover:shadow-md hover:scale-[1.02] transition-all animate-fade-in",
+        deceased && "opacity-70"
+      )}
+      style={{
+        borderRightWidth: "3px",
+        borderRightColor: isMale ? "hsl(var(--male) / 0.3)" : "hsl(var(--female) / 0.3)",
+        animationDelay: `${Math.min(index, 6) * 0.04}s`,
+        animationFillMode: "backwards",
+      }}
+      dir="rtl"
+    >
+      {/* Branch dot */}
+      <div
+        className="absolute top-2 left-2 w-2 h-2 rounded-full"
+        style={{ backgroundColor: branchStyle.text }}
+      />
+
+      {/* Name */}
+      <p className="font-bold text-sm text-foreground line-clamp-2 leading-tight mb-1">
+        {member.name}
+      </p>
+
+      {/* Age */}
+      {member.birth_year && (
+        <span className="text-[10px] text-muted-foreground block mb-1">
+          {formatAge(member.birth_year, member.death_year)}
+        </span>
+      )}
+
+      {/* Bottom row: badges */}
+      <div className="flex items-center gap-1 flex-wrap">
+        {verified && <BadgeCheck className="h-3.5 w-3.5 text-green-500" />}
+        {children.length > 0 && (
+          <span className="text-[10px] text-muted-foreground">
+            {childLabel} {children.length.toLocaleString("ar-SA")}
+          </span>
+        )}
+        {deceased && <HeritageBadge type="deceased" gender={member.gender as "M" | "F"} />}
+      </div>
+    </button>
+  );
+});
+
+// ══════════════════════════════════════════
+// MOBILE: MobileBranchesView
+// ══════════════════════════════════════════
+function MobileBranchesView() {
+  const [selectedBranch, setSelectedBranch] = useState<string>("200");
+  const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
+  const generationsRef = useRef<HTMLDivElement>(null);
+
+  const branchMeta = useMemo(
+    () =>
+      PILLARS.map((p) => ({
+        ...p,
+        count: getDescendantCount(p.id),
+        style: getBranchStyle(p.id),
+      })),
+    []
+  );
+
+  // Group members of selected branch by generation
+  const generations = useMemo(() => {
+    const all = getAllMembers();
+    const branchMembers = all.filter((m) => {
+      const b = getBranch(m.id);
+      return b?.pillarId === selectedBranch;
+    });
+
+    const grouped = new Map<number, FamilyMember[]>();
+    for (const m of branchMembers) {
+      const d = getDepth(m.id);
+      if (!grouped.has(d)) grouped.set(d, []);
+      grouped.get(d)!.push(m);
+    }
+
+    // Sort each group by birth, then sort generations ascending
+    const sorted: { depth: number; members: FamilyMember[] }[] = [];
+    for (const [depth, members] of grouped) {
+      sorted.push({ depth, members: sortByBirth(members) });
+    }
+    sorted.sort((a, b) => a.depth - b.depth);
+    return sorted;
+  }, [selectedBranch]);
+
+  const handleSelectBranch = useCallback((id: string) => {
+    setSelectedBranch(id);
+    setTimeout(() => {
+      generationsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
+  }, []);
+
+  const activeStyle = getBranchStyle(selectedBranch);
+
+  return (
+    <div className="w-full h-full overflow-y-auto bg-background" dir="rtl">
+      {/* Branch selector cards */}
+      <div className="p-3 space-y-2">
+        {branchMeta.map((branch) => {
+          const isActive = selectedBranch === branch.id;
+          return (
+            <button
+              key={branch.id}
+              onClick={() => handleSelectBranch(branch.id)}
+              className={cn(
+                "w-full flex items-center gap-3 rounded-2xl bg-card/80 backdrop-blur-sm p-4 min-h-[64px] transition-all text-right",
+                isActive
+                  ? "shadow-md ring-1 ring-primary/20 border border-primary/50"
+                  : "border border-border/40 hover:bg-muted/50"
+              )}
+              style={{ borderRightWidth: "4px", borderRightColor: branch.style.text }}
+            >
+              <div
+                className="w-3 h-3 rounded-full shrink-0"
+                style={{ backgroundColor: branch.style.text }}
+              />
+              <div className="flex-1 min-w-0">
+                <h3 className="font-extrabold text-foreground text-sm">{branch.label}</h3>
+                <span className="text-xs text-muted-foreground">
+                  {branch.count.toLocaleString("ar-SA")} فرداً
+                </span>
+              </div>
+              <ChevronLeft
+                className={cn(
+                  "h-5 w-5 text-muted-foreground transition-transform",
+                  isActive && "-rotate-90"
+                )}
+              />
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Generations view */}
+      <div ref={generationsRef} className="px-3 pb-6 space-y-4">
+        {generations.map(({ depth, members }) => (
+          <div key={depth}>
+            {/* Section header */}
+            <div
+              className="bg-muted/30 rounded-xl px-3 py-2 mb-2 flex items-center gap-2"
+              style={{ borderRightWidth: "3px", borderRightColor: activeStyle.text }}
+            >
+              <span className="font-bold text-sm text-foreground">
+                الجيل {depth.toLocaleString("ar-SA")}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                • {members.length.toLocaleString("ar-SA")} شخصاً
+              </span>
+            </div>
+
+            {/* Horizontal scroll row */}
+            <div
+              className="flex flex-row-reverse gap-3 overflow-x-auto pb-2 pr-4"
+              style={{
+                scrollbarWidth: "none",
+                WebkitOverflowScrolling: "touch",
+              }}
+            >
+              {members.map((m, i) => (
+                <MemberCard
+                  key={m.id}
+                  member={m}
+                  index={i}
+                  branchStyle={activeStyle}
+                  onSelect={setSelectedMember}
+                />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <PersonDetails member={selectedMember} onClose={() => setSelectedMember(null)} />
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════
+// DESKTOP: Recursive BranchNode (unchanged)
+// ══════════════════════════════════════════
 const BranchNode = React.memo(function BranchNode({
   member,
   depth,
@@ -75,12 +281,10 @@ const BranchNode = React.memo(function BranchNode({
           borderRightColor: style.text,
           borderRightStyle: isDashed ? "dashed" : "solid",
           opacity: deceased ? 0.7 : 1,
-          // Apply graduated opacity to the border
           ["--branch-border-opacity" as any]: opacity,
         }}
         dir="rtl"
       >
-        {/* Expand/collapse */}
         {hasChildren ? (
           <button
             onClick={() => onToggle(member.id)}
@@ -98,7 +302,6 @@ const BranchNode = React.memo(function BranchNode({
           <div className="w-[44px] shrink-0" />
         )}
 
-        {/* Gender dot + person info */}
         <button
           onClick={() => onSelect(member)}
           className="flex-1 min-w-0 text-right flex items-center gap-2"
@@ -117,7 +320,6 @@ const BranchNode = React.memo(function BranchNode({
           {isDoc && <HeritageBadge type="documenter" />}
         </button>
 
-        {/* Meta */}
         <div className="flex items-center gap-1.5 shrink-0">
           {motherName && (
             <span className="text-[9px] px-1 py-0.5 rounded bg-muted text-muted-foreground truncate max-w-[60px]">
@@ -141,7 +343,6 @@ const BranchNode = React.memo(function BranchNode({
         </div>
       </div>
 
-      {/* Children (lazy) */}
       {isExpanded && hasChildren && (
         <div className="animate-accordion-down">
           {children.map((child) => (
@@ -161,8 +362,11 @@ const BranchNode = React.memo(function BranchNode({
   );
 });
 
-// ── Main Component ──
+// ══════════════════════════════════════════
+// MAIN: BranchesView (responsive switch)
+// ══════════════════════════════════════════
 export function BranchesView() {
+  const isMobile = useIsMobile();
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [expandedBranches, setExpandedBranches] = useState<Set<string>>(new Set());
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
@@ -196,15 +400,19 @@ export function BranchesView() {
     []
   );
 
+  // Mobile: completely different layout
+  if (isMobile) {
+    return <MobileBranchesView />;
+  }
+
+  // Desktop: existing accordion tree (unchanged)
   return (
     <div className="w-full h-full overflow-y-auto bg-background" dir="rtl">
-      {/* Branch header cards */}
       <div className="p-3 space-y-2">
         {branchData.map((branch) => {
           const isOpen = expandedBranches.has(branch.id);
           return (
             <div key={branch.id} className="rounded-2xl border overflow-hidden bg-card shadow-sm">
-              {/* Header */}
               <button
                 onClick={() => toggleBranch(branch.id)}
                 className="w-full flex items-center gap-3 p-4 min-h-[56px] transition-colors hover:bg-muted/50"
@@ -230,7 +438,6 @@ export function BranchesView() {
                 />
               </button>
 
-              {/* Expanded content */}
               {isOpen && (
                 <div className="border-t border-border/30 animate-accordion-down">
                   {branch.children.map((child) => (
