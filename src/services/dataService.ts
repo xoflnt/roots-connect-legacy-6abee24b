@@ -78,7 +78,7 @@ export async function addMember(member: FamilyMember, adminToken?: string): Prom
 // ─── Requests (via edge function for admin reads) ───
 
 export async function submitRequest(req: Omit<FamilyRequest, "id" | "status" | "createdAt">): Promise<FamilyRequest> {
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from("family_requests")
     .insert({
       type: req.type,
@@ -87,21 +87,20 @@ export async function submitRequest(req: Omit<FamilyRequest, "id" | "status" | "
       notes: req.notes || null,
       submitted_by: req.submittedBy || null,
       status: "pending",
-    })
-    .select()
-    .single();
+    });
 
   if (error) throw error;
 
+  // RLS blocks SELECT, so we return a synthetic object
   return {
-    id: data.id,
-    type: data.type as RequestType,
-    targetMemberId: data.target_member_id,
-    data: data.data as Record<string, string>,
-    notes: data.notes || undefined,
-    status: data.status as "pending" | "completed",
-    submittedBy: data.submitted_by || undefined,
-    createdAt: data.created_at,
+    id: crypto.randomUUID(),
+    type: req.type as RequestType,
+    targetMemberId: req.targetMemberId,
+    data: req.data as Record<string, string>,
+    notes: req.notes,
+    status: "pending",
+    submittedBy: req.submittedBy,
+    createdAt: new Date().toISOString(),
   };
 }
 
