@@ -13,6 +13,8 @@ import { trackVisit } from "@/services/dataService";
 import { getAllMembers, getDescendantCount, searchMembers, loadMembers } from "@/services/familyService";
 import { PILLARS, DOCUMENTER_ID, ADMIN_MEMBER_IDS } from "@/utils/branchUtils";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePWAInstall } from "@/hooks/usePWAInstall";
+import { Smartphone } from "lucide-react";
 
 interface LandingPageProps {
   onSearchSelect: (memberId: string) => void;
@@ -116,6 +118,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
   const stats = useMemo(computeStats, [dataReady]);
   const navigate = useNavigate();
   const { currentUser } = useAuth();
+  const pwa = usePWAInstall();
 
   const pillarStats = useMemo(() => PILLARS.map((p) => ({ ...p, descendants: getDescendantCount(p.id) })), [dataReady]);
 
@@ -132,6 +135,15 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
       <section className="relative flex flex-col items-center justify-center px-4 text-center pt-16 pb-10 md:pt-24 md:pb-14">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-accent to-transparent" />
         <div className="absolute top-4 left-4 z-30 flex items-center gap-1.5">
+          {pwa.canInstall && (
+            <button
+              onClick={pwa.isIOS ? undefined : pwa.triggerInstall}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium min-h-[44px] hover:bg-primary/20 transition-colors"
+            >
+              <Smartphone className="h-3.5 w-3.5" />
+              تثبيت التطبيق
+            </button>
+          )}
           <FontSizeToggle />
           <ThemeToggle />
         </div>
