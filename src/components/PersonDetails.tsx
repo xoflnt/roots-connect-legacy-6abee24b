@@ -294,11 +294,13 @@ export function PersonDetails({ member, onClose }: PersonDetailsProps) {
   if (isMobile) {
     return (
       <Drawer open={!!member} onOpenChange={(open) => !open && onClose()}>
-        <DrawerContent className="px-5 pb-[env(safe-area-inset-bottom,2rem)] pt-2 max-h-[92dvh] overflow-y-auto">
+        <DrawerContent className="px-5 pt-2 flex flex-col" style={{ maxHeight: '92dvh' }}>
           <DrawerHeader className="p-0 mb-2">
             <DrawerTitle className="sr-only">{member.name}</DrawerTitle>
           </DrawerHeader>
-          <DetailContent member={member} />
+          <div className="overflow-y-auto flex-1 pb-[calc(env(safe-area-inset-bottom)+24px)]">
+            <DetailContent member={member} />
+          </div>
         </DrawerContent>
       </Drawer>
     );
