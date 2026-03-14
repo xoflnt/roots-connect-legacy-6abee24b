@@ -20,6 +20,9 @@ const Index = () => {
   const treeRef = useRef<FamilyTreeRef>(null);
   const [searchParams] = useSearchParams();
   const [ready, setReady] = useState(false);
+  const { currentUser, isLoggedIn } = useAuth();
+  const [showLineageSearch, setShowLineageSearch] = useState(false);
+  const [lineageQuery, setLineageQuery] = useState("");
 
   useEffect(() => {
     loadMembers().finally(() => setReady(true));
