@@ -1,11 +1,13 @@
 import { useRef, useState, useMemo, useCallback } from "react";
-import { Users, ChevronLeft, Loader2, Link2, User } from "lucide-react";
+import { Users, ChevronLeft, Loader2, Link2, User, Download, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import type { FamilyMember } from "@/data/familyData";
 import type { KinshipViewProps } from "./types";
 import type { DirectionalKinship } from "@/services/familyService";
 import { getBranch, getBranchStyle } from "@/utils/branchUtils";
 import { toArabicNum } from "@/utils/ageCalculator";
+import { inferMotherName } from "@/services/familyService";
 
 interface KinshipCardViewProps extends KinshipViewProps {
   relationText: string;
@@ -23,10 +25,13 @@ export function KinshipCardView({
   const cardRef = useRef<HTMLDivElement>(null);
   const [sharing, setSharing] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showFallback, setShowFallback] = useState(false);
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
 
   const name1 = person1.name.split(" ")[0];
   const name2 = person2.name.split(" ")[0];
   const lcaName = result.lca?.name.split(" ")[0] ?? "";
+  const lcaLabel = result.lca?.gender === "F" ? "الجدة المشتركة" : "الجد المشترك";
 
   const branch1 = getBranch(person1.id);
   const branch2 = getBranch(person2.id);
@@ -41,49 +46,77 @@ export function KinshipCardView({
   }, [result]);
 
   const shareUrl = `${window.location.origin}/?view=kinship&p1=${person1.id}&p2=${person2.id}`;
+  const shareText = `${name1} و ${name2} — ${relationText}\nاكتشف قرابتك: ${shareUrl}`;
+
+  const captureCard = useCallback(async (): Promise<Blob | null> => {
+    if (!cardRef.current) return null;
+    const html2canvas = (await import("html2canvas")).default;
+    const canvas = await html2canvas(cardRef.current, {
+      backgroundColor: "#F7F3EE",
+      scale: 2,
+      useCORS: true,
+    });
+    return new Promise((resolve) => {
+      canvas.toBlob((blob) => resolve(blob), "image/png");
+    });
+  }, []);
 
   const handleShare = useCallback(async () => {
-    if (!cardRef.current) return;
     setSharing(true);
     try {
-      const html2canvas = (await import("html2canvas")).default;
-      const canvas = await html2canvas(cardRef.current, {
-        backgroundColor: null,
-        scale: 2,
-        useCORS: true,
-      });
-      canvas.toBlob(async (blob) => {
-        if (!blob) { setSharing(false); return; }
-        const file = new File([blob], "kinship-card.png", { type: "image/png" });
-        if (navigator.share && navigator.canShare?.({ files: [file] })) {
-          try {
-            await navigator.share({
-              files: [file],
-              title: "صلة القرابة",
-              text: `${name1} و ${name2} — ${relationText}`,
-            });
-          } catch { /* user cancelled */ }
-        } else {
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = `قرابة-${name1}-${name2}.png`;
-          a.click();
-          URL.revokeObjectURL(url);
-        }
-        setSharing(false);
-      }, "image/png");
+      const blob = await captureCard();
+      if (!blob) { setSharing(false); return; }
+
+      const file = new File([blob], "kinship-card.png", { type: "image/png" });
+
+      // Try native share with file
+      if (navigator.share && navigator.canShare?.({ files: [file] })) {
+        try {
+          await navigator.share({
+            files: [file],
+            title: "صلة القرابة",
+            text: `${name1} و ${name2} — ${relationText}`,
+          });
+          setSharing(false);
+          return;
+        } catch { /* user cancelled or failed */ }
+      }
+
+      // Fallback: show options sheet
+      const url = URL.createObjectURL(blob);
+      setBlobUrl(url);
+      setShowFallback(true);
+      setSharing(false);
     } catch (err) {
       console.error("Share error:", err);
+      // Last resort: open WhatsApp with text
+      window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, "_blank");
       setSharing(false);
     }
-  }, [name1, name2, relationText]);
+  }, [name1, name2, relationText, captureCard, shareText]);
+
+  const handleDownloadPng = useCallback(() => {
+    if (!blobUrl) return;
+    const a = document.createElement("a");
+    a.href = blobUrl;
+    a.download = `قرابة-${name1}-${name2}.png`;
+    a.click();
+  }, [blobUrl, name1, name2]);
+
+  const handleWhatsAppText = useCallback(() => {
+    window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, "_blank");
+  }, [shareText]);
 
   const handleCopyLink = useCallback(() => {
     navigator.clipboard.writeText(shareUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }, [shareUrl]);
+
+  const closeFallback = useCallback(() => {
+    setShowFallback(false);
+    if (blobUrl) { URL.revokeObjectURL(blobUrl); setBlobUrl(null); }
+  }, [blobUrl]);
 
   return (
     <div className="py-4 space-y-4">
@@ -110,12 +143,12 @@ export function KinshipCardView({
             <div className="space-y-1">
               {directional.title1to2 && (
                 <p className="text-sm text-muted-foreground">
-                  {name1} هو <strong className="text-foreground">{directional.title1to2}</strong> {name2}
+                  {name1} {person1.gender === "F" ? "هي" : "هو"} <strong className="text-foreground">{directional.title1to2}</strong> {name2}
                 </p>
               )}
               {directional.title2to1 && (
                 <p className="text-sm text-muted-foreground">
-                  {name2} هو <strong className="text-foreground">{directional.title2to1}</strong> {name1}
+                  {name2} {person2.gender === "F" ? "هي" : "هو"} <strong className="text-foreground">{directional.title2to1}</strong> {name1}
                 </p>
               )}
             </div>
@@ -149,7 +182,7 @@ export function KinshipCardView({
           >
             {lcaName}
           </button>
-          <p className="text-xs text-muted-foreground">الجد المشترك</p>
+          <p className="text-xs text-muted-foreground">{lcaLabel}</p>
         </div>
 
         {/* Distance badges */}
@@ -206,7 +239,7 @@ export function KinshipCardView({
       <Button
         onClick={handleShare}
         disabled={sharing}
-        className="w-full min-h-[52px] rounded-2xl font-bold text-base bg-[#25D366] hover:bg-[#22bf5c] text-white"
+        className="w-full min-h-[52px] rounded-2xl font-bold text-base bg-primary hover:bg-primary/90 text-primary-foreground"
       >
         {sharing ? (
           <>
@@ -214,7 +247,7 @@ export function KinshipCardView({
             جاري التحضير...
           </>
         ) : (
-          <>📤 شارك على واتساب</>
+          <>📤 شارك النتيجة</>
         )}
       </Button>
 
@@ -230,6 +263,29 @@ export function KinshipCardView({
           </>
         )}
       </Button>
+
+      {/* Fallback share options sheet */}
+      <Sheet open={showFallback} onOpenChange={(open) => !open && closeFallback()}>
+        <SheetContent side="bottom" className="rounded-t-2xl px-5 pb-8 pt-4" dir="rtl">
+          <SheetHeader className="pb-3">
+            <SheetTitle className="text-base font-bold text-center">شارك النتيجة</SheetTitle>
+          </SheetHeader>
+          <div className="space-y-3">
+            <Button onClick={handleDownloadPng} variant="outline" className="w-full min-h-[48px] rounded-xl gap-2">
+              <Download className="h-4 w-4" />
+              💾 حفظ الصورة
+            </Button>
+            <Button onClick={handleWhatsAppText} className="w-full min-h-[48px] rounded-xl gap-2 bg-[#25D366] hover:bg-[#22bf5c] text-white">
+              <ExternalLink className="h-4 w-4" />
+              📱 مشاركة الرابط عبر واتساب
+            </Button>
+            <Button onClick={() => { handleCopyLink(); closeFallback(); }} variant="outline" className="w-full min-h-[48px] rounded-xl gap-2">
+              <Link2 className="h-4 w-4" />
+              📋 نسخ الرابط
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
@@ -251,6 +307,7 @@ function PersonChip({
   const isMale = member.gender === "M";
   const genderBg = isMale ? "bg-[hsl(var(--male))]/15" : "bg-[hsl(var(--female))]/15";
   const genderText = isMale ? "text-[hsl(var(--male))]" : "text-[hsl(var(--female))]";
+  const motherName = inferMotherName(member);
 
   return (
     <button
@@ -267,6 +324,11 @@ function PersonChip({
           style={{ backgroundColor: branchStyle.bg, color: branchStyle.text }}
         >
           {branch.label}
+        </span>
+      )}
+      {motherName && (
+        <span className="inline-block text-[10px] text-muted-foreground bg-muted/40 rounded px-2 py-0.5">
+          {isMale ? "والدته" : "والدتها"}: {motherName}
         </span>
       )}
     </button>
