@@ -211,39 +211,25 @@ function AdminContent() {
 
   const handleTreeExport = async () => {
     setExporting(true);
-
-    const token = getAdminToken();
-    if (!token) {
-      setExportProgress('خطأ: انتهت صلاحية الجلسة');
-      setExporting(false);
-      return;
-    }
-
     try {
-      setExportProgress('جاري الاتصال بالخادم...');
+      setExportProgress('جاري حساب مواضع الأفراد...');
 
       const { exportTreeAsPDF } = await import('@/services/TreeExportService');
 
-      setExportProgress('جاري فتح الشجرة وتوسيعها... (قد يستغرق ١-٢ دقيقة)');
+      setExportProgress('جاري رسم الشجرة... (قد يستغرق دقيقة)');
 
-      await exportTreeAsPDF(
-        null,
-        () => {},
-        {
-          mode: exportMode,
-          branchId: exportBranchId || undefined,
-          branchLabel: exportBranchId
-            ? PILLARS.find(p => p.id === exportBranchId)?.label
-            : undefined,
-        },
-        token,
-        window.location.origin
-      );
+      await exportTreeAsPDF(null, () => {}, {
+        mode: exportMode,
+        branchId: exportBranchId || undefined,
+        branchLabel: exportBranchId
+          ? PILLARS.find(p => p.id === exportBranchId)?.label
+          : undefined,
+      });
 
       setExportProgress('تم التصدير بنجاح ✓');
     } catch (err) {
-      console.error('Tree export error:', err);
-      setExportProgress('حدث خطأ في التصدير، حاول مرة أخرى');
+      console.error('Export error:', err);
+      setExportProgress('حدث خطأ، حاول مرة أخرى');
     } finally {
       setExporting(false);
       setTimeout(() => setExportProgress(''), 4000);
