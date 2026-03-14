@@ -48,23 +48,15 @@ export function KinshipCardView({
   const shareUrl = `${window.location.origin}/?view=kinship&p1=${person1.id}&p2=${person2.id}`;
   const shareText = `${name1} و ${name2} — ${relationText}\nاكتشف قرابتك: ${shareUrl}`;
 
-  const captureCard = useCallback(async (): Promise<Blob | null> => {
-    if (!cardRef.current) return null;
-    const html2canvas = (await import("html2canvas")).default;
-    const canvas = await html2canvas(cardRef.current, {
-      backgroundColor: "#F7F3EE",
-      scale: 2,
-      useCORS: true,
-    });
-    return new Promise((resolve) => {
-      canvas.toBlob((blob) => resolve(blob), "image/png");
-    });
-  }, []);
-
   const handleShare = useCallback(async () => {
     setSharing(true);
     try {
-      const blob = await captureCard();
+      const canvas = await generateKinshipImage(
+        result, person1, person2, relationText, directional, pathChain
+      );
+      const blob = await new Promise<Blob | null>((resolve) =>
+        canvas.toBlob((b) => resolve(b), "image/png")
+      );
       if (!blob) { setSharing(false); return; }
 
       const file = new File([blob], "kinship-card.png", { type: "image/png" });
@@ -89,11 +81,10 @@ export function KinshipCardView({
       setSharing(false);
     } catch (err) {
       console.error("Share error:", err);
-      // Last resort: open WhatsApp with text
       window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, "_blank");
       setSharing(false);
     }
-  }, [name1, name2, relationText, captureCard, shareText]);
+  }, [result, person1, person2, relationText, directional, pathChain, name1, name2, shareText]);
 
   const handleDownloadPng = useCallback(() => {
     if (!blobUrl) return;
