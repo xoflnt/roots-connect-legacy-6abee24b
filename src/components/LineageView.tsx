@@ -9,10 +9,11 @@ import { getAllMembers, inferMotherName, sortByBirth } from "@/services/familySe
 import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
 import { HeritageBadge } from "./HeritageBadge";
 import { isFounder, isBranchHead, isDeceased } from "@/services/familyService";
-import { downloadLineageCard } from "./LineageShareCard";
+import { generateLineageImage } from "./LineageShareCard";
 import { formatAge } from "@/utils/ageCalculator";
 import { getBranch, getBranchStyle, DOCUMENTER_ID } from "@/utils/branchUtils";
 import { springConfig } from "@/lib/animations";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface LineageViewProps {
   memberId: string;
