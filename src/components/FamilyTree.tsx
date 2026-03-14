@@ -9,7 +9,7 @@ import {
 import "@xyflow/react/dist/style.css";
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { refreshMembers, getAllMembers } from "@/services/familyService";
-import { Plus, Minus, Maximize2, RotateCcw, LocateFixed, Eye, EyeOff } from "lucide-react";
+import { Plus, Minus, Maximize2, RotateCcw, LocateFixed, Eye, EyeOff, Layers } from "lucide-react";
 import { useTreeLayout, getDefaultExpandedIds } from "@/hooks/useTreeLayout";
 import { FamilyCard } from "./FamilyCard";
 import { PersonDetails } from "./PersonDetails";
@@ -41,6 +41,7 @@ export const FamilyTree = forwardRef<FamilyTreeRef, FamilyTreeProps>(function Fa
   });
   const [refreshKey, setRefreshKey] = useState(0);
   const [showMiniMap, setShowMiniMap] = useState(true);
+  const [showExpandMenu, setShowExpandMenu] = useState(false);
   const { nodes: layoutNodes, edges: layoutEdges } = useTreeLayout(expandedIds, refreshKey);
 
   // Listen for data updates
@@ -51,6 +52,13 @@ export const FamilyTree = forwardRef<FamilyTreeRef, FamilyTreeProps>(function Fa
     };
     window.addEventListener("family-data-updated", handler);
     return () => window.removeEventListener("family-data-updated", handler);
+  }, []);
+
+  // Recompute layout on resize (orientation change, etc.)
+  useEffect(() => {
+    const handleResize = () => setRefreshKey((k) => k + 1);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   // React to focusBranch changes
@@ -68,10 +76,10 @@ export const FamilyTree = forwardRef<FamilyTreeRef, FamilyTreeProps>(function Fa
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
   const rfInstance = useRef<ReactFlowInstance | null>(null);
 
+  // Sync layout — NO auto fitView
   useEffect(() => {
     setNodes(layoutNodes);
     setEdges(layoutEdges);
-    setTimeout(() => rfInstance.current?.fitView({ duration: 400, padding: 0.2 }), 50);
   }, [layoutNodes, layoutEdges, setNodes, setEdges]);
 
   const handleToggleExpand = useCallback((memberId: string) => {
@@ -124,7 +132,6 @@ export const FamilyTree = forwardRef<FamilyTreeRef, FamilyTreeProps>(function Fa
 
   const handleLocateMe = useCallback(() => {
     if (!rfInstance.current) return;
-    // Expand ancestors to make the node visible
     const allMembers = getAllMembers();
     const memberMap = new Map<string, FamilyMember>(allMembers.map((m) => [m.id, m]));
     const ancestorIds = new Set<string>();
@@ -142,6 +149,37 @@ export const FamilyTree = forwardRef<FamilyTreeRef, FamilyTreeProps>(function Fa
       rfInstance.current?.fitView({ nodes: [{ id: myMemberId }], duration: 600, padding: 0.5 });
     }, 300);
   }, [myMemberId]);
+
+  const expandLevels = useCallback((n: number) => {
+    if (n === 999) {
+      const confirmed = window.confirm(
+        'سيتم عرض جميع الأفراد. قد يبطؤ الجهاز. هل تريد المتابعة؟'
+      );
+      if (!confirmed) return;
+      const allIds = new Set(getAllMembers().map((m) => m.id));
+      setExpandedIds(allIds);
+    } else {
+      setExpandedIds((prev) => {
+        const next = new Set(prev);
+        let frontier = new Set(prev);
+        for (let i = 0; i < n; i++) {
+          const newFrontier = new Set<string>();
+          for (const id of frontier) {
+            const children = getChildrenOf(id);
+            children.forEach((c) => {
+              next.add(id);
+              newFrontier.add(c.id);
+            });
+          }
+          frontier = newFrontier;
+        }
+        return next;
+      });
+    }
+    setTimeout(() => {
+      rfInstance.current?.fitView({ duration: 600, padding: 0.15 });
+    }, 400);
+  }, []);
 
   useImperativeHandle(ref, () => ({ search: handleSearch, reset: handleReset }), [handleSearch, handleReset]);
 
@@ -187,7 +225,7 @@ export const FamilyTree = forwardRef<FamilyTreeRef, FamilyTreeProps>(function Fa
       </ReactFlow>
 
       {/* Zoom + utility controls */}
-      <div className="absolute bottom-5 left-5 flex flex-col bg-card/90 backdrop-blur-md rounded-2xl border border-border shadow-xl overflow-hidden z-10">
+      <div className="absolute bottom-5 left-5 flex flex-col bg-card/90 backdrop-blur-md rounded-2xl border border-border shadow-xl overflow-visible z-10">
         <button
           onClick={() => rfInstance.current?.zoomIn({ duration: 200 })}
           className="w-11 h-11 flex items-center justify-center text-foreground hover:bg-accent/15 hover:text-accent transition-colors"
@@ -219,6 +257,51 @@ export const FamilyTree = forwardRef<FamilyTreeRef, FamilyTreeProps>(function Fa
         >
           <LocateFixed className="h-4 w-4" />
         </button>
+        <div className="h-px bg-border mx-2" />
+
+        {/* Multi-level expand */}
+        <div className="relative">
+          <button
+            onClick={() => setShowExpandMenu((v) => !v)}
+            className="w-11 h-11 flex items-center justify-center text-foreground hover:bg-accent/15 hover:text-accent transition-colors"
+            title="توسيع الشجرة"
+          >
+            <Layers className="h-4 w-4" />
+          </button>
+          {showExpandMenu && (
+            <>
+              <div className="fixed inset-0 z-20" onClick={() => setShowExpandMenu(false)} />
+              <div className="absolute bottom-0 left-full ml-2 bg-card border border-border rounded-xl shadow-xl z-30 min-w-[160px] py-1" dir="rtl">
+                <button
+                  onClick={() => { expandLevels(1); setShowExpandMenu(false); }}
+                  className="w-full text-right px-3 py-2 text-sm text-foreground hover:bg-accent/15 transition-colors"
+                >
+                  توسيع جيل واحد
+                </button>
+                <button
+                  onClick={() => { expandLevels(2); setShowExpandMenu(false); }}
+                  className="w-full text-right px-3 py-2 text-sm text-foreground hover:bg-accent/15 transition-colors"
+                >
+                  توسيع جيلين
+                </button>
+                <button
+                  onClick={() => { expandLevels(3); setShowExpandMenu(false); }}
+                  className="w-full text-right px-3 py-2 text-sm text-foreground hover:bg-accent/15 transition-colors"
+                >
+                  توسيع ٣ أجيال
+                </button>
+                <div className="h-px bg-border mx-2 my-1" />
+                <button
+                  onClick={() => { expandLevels(999); setShowExpandMenu(false); }}
+                  className="w-full text-right px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
+                >
+                  توسيع الكل ⚠️
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+
         <div className="h-px bg-border mx-2" />
         <button
           onClick={() => setShowMiniMap((v) => !v)}

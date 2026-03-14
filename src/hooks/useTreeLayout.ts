@@ -4,11 +4,6 @@ import type { Node, Edge } from "@xyflow/react";
 import { getAllMembers, inferMotherName, sortByBirth } from "@/services/familyService";
 import { getVerifiedMemberIds } from "@/services/dataService";
 
-const NODE_WIDTH = 220;
-const NODE_HEIGHT = 100;
-const SPOUSE_WIDTH = 160;
-const SPOUSE_HEIGHT = 50;
-
 // Warm heritage-aligned branch colors
 export const BRANCH_COLORS = [
   { stroke: "hsl(25, 55%, 45%)",   bg: "hsl(25, 40%, 93%)",   bgDark: "hsl(25, 35%, 20%)" },
@@ -55,6 +50,12 @@ export function getDefaultExpandedIds(): Set<string> {
 
 export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number) {
   return useMemo(() => {
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    const CARD_WIDTH = isMobile ? 155 : 220;
+    const CARD_HEIGHT = isMobile ? 75 : 100;
+    const NODE_SEP = isMobile ? 55 : 100;
+    const RANK_SEP = isMobile ? 110 : 180;
+
     const currentMembers = getAllMembers();
     const memberById = new Map(currentMembers.map((m) => [m.id, m]));
     const childrenOfMap = buildChildrenOfMap(currentMembers);
@@ -81,7 +82,7 @@ export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number) {
     const visibleMembers = currentMembers.filter((m) => visibleIds.has(m.id));
 
     const g = new dagre.graphlib.Graph();
-    g.setGraph({ rankdir: "TB", nodesep: 100, ranksep: 180 });
+    g.setGraph({ rankdir: "TB", nodesep: NODE_SEP, ranksep: RANK_SEP });
     g.setDefaultEdgeLabel(() => ({}));
 
     // Group children by father AND mother
@@ -98,7 +99,7 @@ export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number) {
     });
 
     visibleMembers.forEach((member) => {
-      g.setNode(member.id, { width: NODE_WIDTH, height: NODE_HEIGHT });
+      g.setNode(member.id, { width: CARD_WIDTH, height: CARD_HEIGHT });
     });
 
     const childColorMap = new Map<string, number>();
@@ -151,7 +152,7 @@ export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number) {
       return {
         id: member.id,
         type: "familyCard",
-        position: { x: pos.x - NODE_WIDTH / 2, y: pos.y - NODE_HEIGHT / 2 },
+        position: { x: pos.x - CARD_WIDTH / 2, y: pos.y - CARD_HEIGHT / 2 },
         data: {
           ...member,
           branchColorIndex: childColorMap.get(member.id) ?? -1,
@@ -160,6 +161,7 @@ export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number) {
           hasChildren: hasChildrenInData(member.id),
           isExpanded: expandedIds.has(member.id),
           isVerified: verifiedIds.has(member.id),
+          isMobile,
         },
       };
     });
