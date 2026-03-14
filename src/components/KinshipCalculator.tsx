@@ -1,17 +1,30 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
-import { ArrowLeftRight, Search, User, Users, TreePine, FileText, Route, X } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
+import { ArrowLeftRight, Search, User, Users, TreePine, FileText, Share2, GitBranch, X } from "lucide-react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "./ui/tabs";
 import { Dialog, DialogContent, DialogTitle } from "./ui/dialog";
 import type { FamilyMember } from "@/data/familyData";
-import { getAllMembers, searchMembers, findKinship, kinshipToArabic, kinshipDirectional, inferMotherName } from "@/services/familyService";
+import {
+  getAllMembers,
+  searchMembers,
+  findKinship,
+  kinshipToArabic,
+  kinshipDirectional,
+  inferMotherName,
+  getMemberById,
+  getDepth,
+} from "@/services/familyService";
 import { getLineageLabel, getMemberSubtitle } from "@/utils/memberLabel";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { getBranch, getBranchStyle } from "@/utils/branchUtils";
+import { HeritageBadge } from "./HeritageBadge";
+import { PersonDetails } from "./PersonDetails";
 import { KinshipTreeView } from "./kinship/KinshipTreeView";
 import { KinshipDocumentView } from "./kinship/KinshipDocumentView";
-import { KinshipInteractiveView } from "./kinship/KinshipInteractiveView";
+import { KinshipCardView } from "./kinship/KinshipCardView";
 
 interface KinshipCalculatorProps {
   initialMemberId?: string;
@@ -42,6 +55,47 @@ function PersonResultRow({ m, onSelect }: { m: FamilyMember; onSelect: (m: Famil
       <span className="block font-medium leading-snug truncate">{getLineageLabel(m)}</span>
       {subtitle && <span className="block text-xs text-muted-foreground truncate">{subtitle}</span>}
     </button>
+  );
+}
+
+/* ── Selected person display ── */
+function SelectedPersonDisplay({ member, onClear }: { member: FamilyMember; onClear: () => void }) {
+  const isMale = member.gender === "M";
+  const branch = getBranch(member.id);
+  const branchStyle = branch ? getBranchStyle(branch.pillarId) : null;
+  const depth = getDepth(member.id);
+  const genderBg = isMale ? "bg-[hsl(var(--male))]/10" : "bg-[hsl(var(--female))]/10";
+  const genderIconBg = isMale ? "bg-[hsl(var(--male))]/15" : "bg-[hsl(var(--female))]/15";
+  const genderIconText = isMale ? "text-[hsl(var(--male))]" : "text-[hsl(var(--female))]";
+
+  return (
+    <div className={`rounded-xl p-3 ${genderBg} space-y-2`}>
+      <div className="flex items-start gap-3">
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${genderIconBg}`}>
+          <User className={`h-5 w-5 ${genderIconText}`} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-base font-bold text-foreground truncate">{member.name}</p>
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
+            {branch && branchStyle && (
+              <span
+                className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                style={{ backgroundColor: branchStyle.bg, color: branchStyle.text }}
+              >
+                {branch.label}
+              </span>
+            )}
+            {depth > 0 && <HeritageBadge type="generation" generationNum={depth} />}
+          </div>
+        </div>
+      </div>
+      <button
+        onClick={onClear}
+        className="text-xs text-primary hover:underline font-medium"
+      >
+        تغيير
+      </button>
+    </div>
   );
 }
 
@@ -79,30 +133,27 @@ function PersonPicker({
 
   return (
     <div className="flex-1 min-w-0">
-      <div className={`rounded-2xl border-2 transition-all duration-200 ${selected ? "border-primary/40 bg-primary/5" : "border-border bg-card"} p-4`}>
-        <div className="flex items-center gap-2 mb-3">
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${accentClass}`}>
-            <User className="h-4 w-4" />
+      <div className="rounded-2xl border bg-card/80 backdrop-blur-sm p-4 shadow-sm transition-all duration-200">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${accentClass}`}>
+              <User className="h-4 w-4" />
+            </div>
+            <span className="text-sm font-bold text-muted-foreground">{label}</span>
           </div>
-          <span className="text-xs font-bold text-muted-foreground">{label}</span>
         </div>
 
         {selected ? (
-          <button onClick={handleClear} className="w-full text-right group">
-            <p className="text-base font-extrabold text-foreground group-hover:text-primary transition-colors">
-              {selected.name}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">اضغط لتغيير الشخص</p>
-          </button>
+          <SelectedPersonDisplay member={selected} onClear={handleClear} />
         ) : isMobile ? (
           /* ── Mobile: tap to open fullscreen dialog ── */
           <>
             <button
               onClick={() => setDialogOpen(true)}
-              className="w-full flex items-center gap-2 h-11 px-3 rounded-xl border border-border/50 bg-background text-sm text-muted-foreground"
+              className="w-full flex items-center gap-2 h-11 px-3 rounded-xl border border-dashed border-border/50 bg-background text-sm text-muted-foreground"
             >
               <Search className="h-4 w-4 shrink-0" />
-              <span>ابحث باسم الشخص...</span>
+              <span>ابحث عن شخص...</span>
             </button>
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogContent
@@ -111,11 +162,9 @@ function PersonPicker({
               >
                 <DialogTitle className="sr-only">{label}</DialogTitle>
                 <div className="flex flex-col h-full" dir="rtl">
-                  {/* Drag handle */}
                   <div className="flex justify-center py-2">
                     <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
                   </div>
-                  {/* Search header */}
                   <div className="shrink-0 flex items-center gap-2 px-4 pb-3">
                     <div className="flex-1 relative">
                       <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -134,7 +183,6 @@ function PersonPicker({
                       <X className="h-5 w-5" />
                     </button>
                   </div>
-                  {/* Results */}
                   <div className="flex-1 overflow-y-auto overscroll-contain border-t border-border/20">
                     {filtered.length > 0 ? (
                       filtered.map((m) => (
@@ -155,12 +203,12 @@ function PersonPicker({
           <div className="relative">
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
             <Input
-              placeholder="ابحث باسم الشخص..."
+              placeholder="ابحث عن شخص..."
               value={query}
               onChange={(e) => { setQuery(e.target.value); setDesktopOpen(true); }}
               onFocus={() => query.trim() && setDesktopOpen(true)}
               onBlur={() => setTimeout(() => setDesktopOpen(false), 200)}
-              className="pr-10 h-11 rounded-xl text-sm border-border/50"
+              className="pr-10 h-11 rounded-xl text-sm border-dashed border-border/50"
             />
             {desktopOpen && filtered.length > 0 && (
               <div className="absolute top-full mt-1 w-full bg-card border border-border rounded-xl shadow-xl z-50 max-h-48 overflow-y-auto">
@@ -179,6 +227,8 @@ function PersonPicker({
 /* ── KinshipCalculator ── */
 export function KinshipCalculator({ initialMemberId }: KinshipCalculatorProps) {
   const { currentUser } = useAuth();
+  const [searchParams] = useSearchParams();
+  const [detailMember, setDetailMember] = useState<FamilyMember | null>(null);
 
   const resolveInitialPerson = (): FamilyMember | null => {
     if (initialMemberId) return getAllMembers().find((m) => m.id === initialMemberId) || null;
@@ -186,9 +236,36 @@ export function KinshipCalculator({ initialMemberId }: KinshipCalculatorProps) {
     return null;
   };
 
-  const [person1, setPerson1] = useState<FamilyMember | null>(resolveInitialPerson);
-  const [person2, setPerson2] = useState<FamilyMember | null>(null);
-  const [showResult, setShowResult] = useState(false);
+  // Deep linking: read p1/p2 from URL
+  const deepP1 = searchParams.get("p1");
+  const deepP2 = searchParams.get("p2");
+
+  const [person1, setPerson1] = useState<FamilyMember | null>(() => {
+    if (deepP1) {
+      const m = getMemberById(deepP1);
+      if (m) return m;
+    }
+    return resolveInitialPerson();
+  });
+  const [person2, setPerson2] = useState<FamilyMember | null>(() => {
+    if (deepP2) {
+      const m = getMemberById(deepP2);
+      if (m) return m ?? null;
+    }
+    return null;
+  });
+  const [showResult, setShowResult] = useState(() => !!(deepP1 && deepP2 && getMemberById(deepP1) && getMemberById(deepP2)));
+
+  // Update URL when result is shown
+  useEffect(() => {
+    if (showResult && person1 && person2) {
+      const url = new URL(window.location.href);
+      url.searchParams.set("view", "kinship");
+      url.searchParams.set("p1", person1.id);
+      url.searchParams.set("p2", person2.id);
+      window.history.replaceState(null, "", url.toString());
+    }
+  }, [showResult, person1, person2]);
 
   const result = useMemo(() => {
     if (!person1 || !person2) return null;
@@ -212,37 +289,50 @@ export function KinshipCalculator({ initialMemberId }: KinshipCalculatorProps) {
     setPerson1(resolveInitialPerson());
     setPerson2(null);
     setShowResult(false);
+    // Clean URL
+    const url = new URL(window.location.href);
+    url.searchParams.delete("p1");
+    url.searchParams.delete("p2");
+    window.history.replaceState(null, "", url.toString());
   };
+
+  const bothSelected = !!person1 && !!person2;
 
   return (
     <div className="py-6 md:py-10 px-4 md:px-6 overflow-auto" dir="rtl">
       <div className="max-w-lg mx-auto space-y-5">
-        {/* Header */}
-        <div className="text-center space-y-2">
+        {/* ── Page Header ── */}
+        <div className="text-center space-y-2 animate-fade-in">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary">
-            <Users className="h-4 w-4" />
+            <GitBranch className="h-4 w-4" />
             <span className="font-bold text-sm">حاسبة القرابة</span>
           </div>
-          <h2 className="text-xl md:text-2xl font-extrabold text-foreground">من أنا لك؟</h2>
+          <p className="text-sm text-muted-foreground">
+            اكتشف صلة القرابة بين أي فردين في العائلة
+          </p>
         </div>
 
-        {/* Pickers */}
-        <div className="space-y-3">
+        {/* ── Pickers ── */}
+        <div className="space-y-3 animate-fade-in" style={{ animationDelay: "100ms" }}>
           <PersonPicker
             label="الشخص الأول"
             selected={person1}
             onSelect={(m) => { setPerson1(m); setShowResult(false); }}
             accentClass="bg-primary/15 text-primary"
           />
+
+          {/* Swap button */}
           <div className="flex justify-center">
             <button
               onClick={handleSwap}
               disabled={!person1 && !person2}
-              className="w-10 h-10 rounded-full border-2 border-border bg-card flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/40 transition-all disabled:opacity-30"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted text-sm text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
             >
               <ArrowLeftRight className="h-4 w-4" />
+              <span>تبديل</span>
             </button>
           </div>
+
           <PersonPicker
             label="الشخص الثاني"
             selected={person2}
@@ -251,78 +341,105 @@ export function KinshipCalculator({ initialMemberId }: KinshipCalculatorProps) {
           />
         </div>
 
-        {/* Calculate button */}
-        {person1 && person2 && !showResult && (
-          <Button onClick={() => setShowResult(true)} className="w-full h-12 rounded-xl text-base font-bold" size="lg">
-            <Users className="h-5 w-5 ml-2" />
-            احسب القرابة
-          </Button>
+        {/* ── Calculate button ── */}
+        {!showResult && (
+          <div className="sticky bottom-4 z-10">
+            <Button
+              onClick={() => bothSelected && setShowResult(true)}
+              disabled={!bothSelected}
+              className={`w-full min-h-[52px] rounded-2xl text-base font-bold transition-all duration-300 ${
+                bothSelected
+                  ? "bg-primary text-primary-foreground shadow-md hover:shadow-lg"
+                  : "bg-muted text-muted-foreground cursor-not-allowed"
+              }`}
+              size="lg"
+            >
+              <GitBranch className="h-5 w-5 ml-2" />
+              احسب القرابة
+            </Button>
+          </div>
         )}
 
-        {/* Tabbed Result */}
+        {/* ── Result ── */}
         {showResult && result && relationText && (
           <div className="rounded-2xl border border-primary/20 bg-card shadow-lg overflow-hidden animate-fade-in">
+            {/* Gold top line */}
             <div className="h-1 bg-gradient-to-r from-transparent via-accent/50 to-transparent" />
-            <div className="bg-primary/10 p-5 text-center border-b border-primary/10 space-y-2">
-              <p className="text-xs text-muted-foreground mb-2">صلة القرابة</p>
-              {directional?.symmetric ? (
-                <p className="text-xl md:text-2xl font-extrabold text-primary leading-relaxed">
-                  <span className="text-foreground">{name1Short}</span> و <span className="text-foreground">{name2Short}</span> هما: {directional.symmetricTitle}
-                </p>
-              ) : directional && (directional.title1to2 || directional.title2to1) ? (
-                <div className="space-y-3">
-                  <div className="rounded-xl bg-primary/10 px-4 py-3">
-                    <p className="text-base md:text-lg font-extrabold text-primary leading-relaxed">
-                      <span className="text-foreground">{name1Short}</span> يعتبر: <span className="text-accent-foreground">{directional.title1to2}</span> لـ <span className="text-foreground">{name2Short}</span>
-                    </p>
-                  </div>
-                  <div className="rounded-xl bg-accent/10 px-4 py-3">
-                    <p className="text-base md:text-lg font-extrabold text-primary leading-relaxed">
-                      <span className="text-foreground">{name2Short}</span> يعتبر: <span className="text-accent-foreground">{directional.title2to1}</span> لـ <span className="text-foreground">{name1Short}</span>
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <p className="text-lg font-extrabold text-primary">{relationText}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {name1Short} يرتفع عن {name2Short} بـ {result!.dist1} أجيال في شجرة النسب
-                  </p>
-                </div>
-              )}
+
+            {/* Result header */}
+            <div className="p-5 text-center border-b border-border/30 space-y-2 animate-fade-in">
+              <p className="text-xl font-extrabold text-foreground">{relationText}</p>
+              <p className="text-sm text-muted-foreground">
+                <span className="text-primary font-bold">{name1Short}</span>
+                {" "}←→{" "}
+                <span className="text-accent-foreground font-bold">{name2Short}</span>
+              </p>
             </div>
 
-            <Tabs defaultValue="tree" className="w-full">
+            {/* Tabs */}
+            <Tabs defaultValue="card" className="w-full">
               <div className="px-4 pt-4">
-                <TabsList className="grid w-full grid-cols-3 h-auto p-1 bg-muted/60">
-                  <TabsTrigger value="tree" className="text-xs py-2 gap-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <TabsList className="grid w-full grid-cols-3 h-auto p-1 rounded-2xl bg-muted">
+                  <TabsTrigger
+                    value="tree"
+                    className="text-xs py-2 gap-1 rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-sm data-[state=active]:text-foreground data-[state=active]:font-bold"
+                  >
                     <TreePine className="h-3.5 w-3.5" />
                     المخطط
                   </TabsTrigger>
-                  <TabsTrigger value="document" className="text-xs py-2 gap-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  <TabsTrigger
+                    value="document"
+                    className="text-xs py-2 gap-1 rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-sm data-[state=active]:text-foreground data-[state=active]:font-bold"
+                  >
                     <FileText className="h-3.5 w-3.5" />
                     الوثيقة
                   </TabsTrigger>
-                  <TabsTrigger value="path" className="text-xs py-2 gap-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                    <Route className="h-3.5 w-3.5" />
-                    المسار
+                  <TabsTrigger
+                    value="card"
+                    className="text-xs py-2 gap-1 rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-sm data-[state=active]:text-foreground data-[state=active]:font-bold"
+                  >
+                    <Share2 className="h-3.5 w-3.5" />
+                    البطاقة
                   </TabsTrigger>
                 </TabsList>
               </div>
 
               <TabsContent value="tree" className="px-4 pb-2 mt-0">
-                <KinshipTreeView result={result} person1={person1!} person2={person2!} motherName1={motherName1} motherName2={motherName2} />
+                <KinshipTreeView
+                  result={result}
+                  person1={person1!}
+                  person2={person2!}
+                  motherName1={motherName1}
+                  motherName2={motherName2}
+                  onPersonTap={setDetailMember}
+                />
               </TabsContent>
               <TabsContent value="document" className="px-4 pb-2 mt-0">
-                <KinshipDocumentView result={result} person1={person1!} person2={person2!} motherName1={motherName1} motherName2={motherName2} />
+                <KinshipDocumentView
+                  result={result}
+                  person1={person1!}
+                  person2={person2!}
+                  motherName1={motherName1}
+                  motherName2={motherName2}
+                  onPersonTap={setDetailMember}
+                />
               </TabsContent>
-              <TabsContent value="path" className="px-4 pb-2 mt-0">
-                <KinshipInteractiveView result={result} person1={person1!} person2={person2!} motherName1={motherName1} motherName2={motherName2} />
+              <TabsContent value="card" className="px-4 pb-2 mt-0">
+                <KinshipCardView
+                  result={result}
+                  person1={person1!}
+                  person2={person2!}
+                  motherName1={motherName1}
+                  motherName2={motherName2}
+                  onPersonTap={setDetailMember}
+                  relationText={relationText}
+                  directional={directional}
+                />
               </TabsContent>
             </Tabs>
 
             <div className="px-5 pb-4">
-              <Button variant="outline" onClick={handleReset} className="w-full rounded-xl text-sm" size="sm">
+              <Button variant="outline" onClick={handleReset} className="w-full rounded-2xl text-sm" size="sm">
                 بحث جديد
               </Button>
             </div>
@@ -331,12 +448,15 @@ export function KinshipCalculator({ initialMemberId }: KinshipCalculatorProps) {
 
         {/* No relation found */}
         {showResult && person1 && person2 && !result && (
-          <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-5 text-center space-y-3">
+          <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-5 text-center space-y-3 animate-fade-in">
             <p className="text-destructive font-bold">لم يتم العثور على صلة قرابة</p>
-            <Button variant="outline" onClick={handleReset} size="sm" className="rounded-xl">بحث جديد</Button>
+            <Button variant="outline" onClick={handleReset} size="sm" className="rounded-2xl">بحث جديد</Button>
           </div>
         )}
       </div>
+
+      {/* PersonDetails drawer */}
+      <PersonDetails member={detailMember} onClose={() => setDetailMember(null)} />
     </div>
   );
 }

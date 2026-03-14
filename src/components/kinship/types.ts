@@ -14,4 +14,5 @@ export interface KinshipViewProps {
   person2: FamilyMember;
   motherName1?: string | null;
   motherName2?: string | null;
+  onPersonTap?: (member: FamilyMember) => void;
 }
