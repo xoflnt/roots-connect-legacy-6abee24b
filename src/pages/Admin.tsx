@@ -151,6 +151,14 @@ function AdminContent() {
   const [refreshing, setRefreshing] = useState(false);
   const navigate = useNavigate();
 
+  // Export state
+  const [exportMode, setExportMode] = useState<'full' | 'branch'>('full');
+  const [exportBranchId, setExportBranchId] = useState<string>('');
+  const [exporting, setExporting] = useState(false);
+  const [exportProgress, setExportProgress] = useState('');
+  const [showHiddenTree, setShowHiddenTree] = useState(false);
+  const hiddenTreeRef = useRef<FamilyTreeRef>(null);
+
   const loadData = async () => {
     const token = getAdminToken();
     if (!token) return;
