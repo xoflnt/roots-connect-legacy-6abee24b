@@ -142,13 +142,17 @@ export function KinshipCardView({
           {directional && !directional.symmetric && (directional.title1to2 || directional.title2to1) && (
             <div className="space-y-1">
               {directional.title1to2 && (
-                <p className="text-sm text-muted-foreground">
-                  {name1} {person1.gender === "F" ? "هي" : "هو"} <strong className="text-foreground">{directional.title1to2}</strong> {name2}
+                <p className="text-sm text-muted-foreground" style={{ direction: 'rtl', unicodeBidi: 'plaintext' }}>
+                  {name1 + " " + (person1.gender === "F" ? "هي" : "هو") + " "}
+                  <strong className="text-foreground">{directional.title1to2}</strong>
+                  {" " + name2}
                 </p>
               )}
               {directional.title2to1 && (
-                <p className="text-sm text-muted-foreground">
-                  {name2} {person2.gender === "F" ? "هي" : "هو"} <strong className="text-foreground">{directional.title2to1}</strong> {name1}
+                <p className="text-sm text-muted-foreground" style={{ direction: 'rtl', unicodeBidi: 'plaintext' }}>
+                  {name2 + " " + (person2.gender === "F" ? "هي" : "هو") + " "}
+                  <strong className="text-foreground">{directional.title2to1}</strong>
+                  {" " + name1}
                 </p>
               )}
             </div>
