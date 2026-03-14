@@ -91,6 +91,10 @@ const Index = () => {
     loadMembers().finally(() => setReady(true));
   }, []);
 
+  const persistTab = useCallback((tab: AppTab) => {
+    try { localStorage.setItem(TAB_STORAGE_KEY, tab); } catch {}
+  }, []);
+
   // Listen for tab-switch events from LandingPage quick actions
   useEffect(() => {
     const onKinship = () => { setActiveTab('kinship'); persistTab('kinship'); };
@@ -102,10 +106,6 @@ const Index = () => {
       window.removeEventListener('switch-to-list', onList);
     };
   }, [persistTab]);
-
-  const persistTab = useCallback((tab: AppTab) => {
-    try { localStorage.setItem(TAB_STORAGE_KEY, tab); } catch {}
-  }, []);
 
   const handleTabChange = useCallback((tab: AppTab) => {
     if (tab === "nasab") {
