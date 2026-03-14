@@ -43,7 +43,7 @@ serve(async (req) => {
 
   try {
     const url = new URL(req.url);
-    const path = url.pathname.split("/").pop();
+    const path = url.pathname.split("/").filter(Boolean).pop();
     const supabase = getSupabaseAdmin();
 
     // ─── VERIFY PASSCODE (public, no auth needed) ───
