@@ -115,6 +115,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
   const [requestOpen, setRequestOpen] = useState(false);
   const [forceOnboarding, setForceOnboarding] = useState(false);
   const [dataReady, setDataReady] = useState(false);
+  const [showInstallSection, setShowInstallSection] = useState(() => localStorage.getItem('khunaini-pwa-installed-ios') !== 'true');
   const stats = useMemo(computeStats, [dataReady]);
   const navigate = useNavigate();
   const { currentUser } = useAuth();
