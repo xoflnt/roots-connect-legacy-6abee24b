@@ -13,7 +13,7 @@ import { getAllMembers, searchMembers, getChildrenOf } from "@/services/familySe
 
 import { useAuth } from "@/contexts/AuthContext";
 import { HijriDatePicker } from "@/components/HijriDatePicker";
-import { registerVerifiedUser, submitRequest, getVerifiedMemberIds } from "@/services/dataService";
+import { registerVerifiedUser, submitRequest, getVerifiedMemberIds, verifyFamilyPasscode } from "@/services/dataService";
 import { getLineageLabel } from "@/utils/memberLabel";
 import { getBranch } from "@/utils/branchUtils";
 import { useNavigate } from "react-router-dom";
