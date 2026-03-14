@@ -4,16 +4,7 @@ import { Button } from "@/components/ui/button";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-const DISMISS_KEY = "khunaini-pwa-dismissed";
-const DISMISS_DAYS = 7;
 const AUTO_HIDE_MS = 15000;
-
-function wasDismissed(): boolean {
-  const ts = localStorage.getItem(DISMISS_KEY);
-  if (!ts) return false;
-  const daysSince = (Date.now() - parseInt(ts)) / (1000 * 60 * 60 * 24);
-  return daysSince < DISMISS_DAYS;
-}
 
 export function PWAInstallBanner() {
   const { canInstall, isIOS, triggerInstall } = usePWAInstall();
@@ -21,7 +12,7 @@ export function PWAInstallBanner() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (canInstall && isMobile && !wasDismissed()) {
+    if (canInstall && isMobile) {
       setVisible(true);
     }
   }, [canInstall, isMobile]);
@@ -32,10 +23,7 @@ export function PWAInstallBanner() {
     return () => clearTimeout(timer);
   }, [visible]);
 
-  const handleDismiss = () => {
-    localStorage.setItem(DISMISS_KEY, Date.now().toString());
-    setVisible(false);
-  };
+  const handleDismiss = () => setVisible(false);
 
   if (!visible) return null;
 
