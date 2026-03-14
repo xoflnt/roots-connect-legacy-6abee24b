@@ -258,6 +258,7 @@ export function SmartNavigateView() {
   const [swipeOffset, setSwipeOffset] = useState(0);
   const isSwiping = useRef(false);
   const swipeLocked = useRef<"horizontal" | "vertical" | null>(null);
+  const sonsScrollRef = useRef<HTMLDivElement>(null);
 
   const member = getMemberById(currentId);
   const father = member?.father_id ? getMemberById(member.father_id) : null;
@@ -306,6 +307,11 @@ export function SmartNavigateView() {
 
   // Touch handlers with live feedback
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (sonsScrollRef.current?.contains(e.target as Node)) {
+      swipeLocked.current = 'vertical';
+      isSwiping.current = false;
+      return;
+    }
     touchStartX.current = e.touches[0].clientX;
     touchStartY.current = e.touches[0].clientY;
     isSwiping.current = false;
@@ -565,7 +571,7 @@ export function SmartNavigateView() {
               لا يوجد أبناء مسجلون
             </div>
           ) : (
-            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+            <div ref={sonsScrollRef} className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide overscroll-x-contain" style={{ touchAction: 'pan-x', overscrollBehavior: 'contain' }}>
               {children.map((child, i) => (
                 <SonCard key={child.id} member={child} onTap={(id) => navigateTo(id, "up")} index={i} />
               ))}
