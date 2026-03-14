@@ -3,13 +3,16 @@ import { AdminProtect, getAdminToken } from "@/components/AdminProtect";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Users, Eye, ShieldCheck, TreePine, Check, Loader2, ArrowRight, Bell, Download, Search, X, RefreshCw } from "lucide-react";
+import { Users, Eye, ShieldCheck, TreePine, Check, Loader2, ArrowRight, Bell, Download, Search, X, RefreshCw, FileDown } from "lucide-react";
 import { getRequests, markRequestDone, getVerifiedUsers, getVisitCount, type FamilyRequest } from "@/services/dataService";
 import { getAllMembers, searchMembers } from "@/services/familyService";
 import type { FamilyMember } from "@/data/familyData";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DataTableView } from "@/components/DataTableView";
+import { FamilyTree, type FamilyTreeRef } from "@/components/FamilyTree";
+import { PILLARS } from "@/utils/branchUtils";
+import { Progress } from "@/components/ui/progress";
 
 // --- Smart Export Helpers ---
 
