@@ -26,6 +26,8 @@ const nodeTypes = { familyCard: FamilyCard, generationBand: GenerationBandNode }
 export interface FamilyTreeRef {
   search: (memberId: string) => void;
   reset: () => void;
+  expandAll: () => void;
+  getRfInstance: () => any;
 }
 
 interface FamilyTreeProps {
