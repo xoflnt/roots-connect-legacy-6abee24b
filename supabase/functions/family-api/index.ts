@@ -4,7 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+    "authorization, x-client-info, apikey, content-type, x-admin-token, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 function getSupabaseAdmin() {
@@ -21,6 +21,21 @@ function json(data: unknown, status = 200) {
   });
 }
 
+/** Validate admin session token */
+async function validateAdminToken(req: Request, supabase: ReturnType<typeof getSupabaseAdmin>): Promise<boolean> {
+  const token = req.headers.get("x-admin-token");
+  if (!token) return false;
+
+  const { data } = await supabase
+    .from("admin_sessions")
+    .select("expires_at")
+    .eq("token", token)
+    .single();
+
+  if (!data || new Date(data.expires_at) < new Date()) return false;
+  return true;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -31,8 +46,21 @@ serve(async (req) => {
     const path = url.pathname.split("/").pop();
     const supabase = getSupabaseAdmin();
 
-    // ─── MARK REQUEST AS DONE ───
+    // ─── VERIFY PASSCODE (public, no auth needed) ───
+    if (path === "verify-passcode" && req.method === "POST") {
+      const { passcode } = await req.json();
+      const correctPasscode = Deno.env.get("FAMILY_PASSCODE");
+      if (!correctPasscode || passcode !== correctPasscode) {
+        return json({ valid: false });
+      }
+      return json({ valid: true });
+    }
+
+    // ─── MARK REQUEST AS DONE (admin only) ───
     if (path === "mark-done" && req.method === "POST") {
+      if (!(await validateAdminToken(req, supabase))) {
+        return json({ error: "Unauthorized" }, 401);
+      }
       const { requestId } = await req.json();
       if (!requestId) return json({ error: "requestId required" }, 400);
 
@@ -44,7 +72,7 @@ serve(async (req) => {
       return json({ success: true });
     }
 
-    // ─── TRACK VISIT ───
+    // ─── TRACK VISIT (public) ───
     if (path === "track-visit" && req.method === "POST") {
       const { data: current } = await supabase
         .from("visit_stats")
@@ -61,7 +89,7 @@ serve(async (req) => {
       return json({ count: newCount });
     }
 
-    // ─── REGISTER VERIFIED USER ───
+    // ─── REGISTER VERIFIED USER (public — from onboarding) ───
     if (path === "register-user" && req.method === "POST") {
       const { memberId, memberName, phone, hijriBirthDate } = await req.json();
       if (!memberId || !memberName || !phone) {
@@ -82,7 +110,7 @@ serve(async (req) => {
       return json({ success: true });
     }
 
-    // ─── UPDATE MEMBER ───
+    // ─── UPDATE MEMBER (public — from onboarding/profile) ───
     if (path === "update-member" && req.method === "POST") {
       const { id, data: updates } = await req.json();
       if (!id) return json({ error: "id required" }, 400);
@@ -95,8 +123,11 @@ serve(async (req) => {
       return json({ success: true });
     }
 
-    // ─── ADD MEMBER ───
+    // ─── ADD MEMBER (admin only) ───
     if (path === "add-member" && req.method === "POST") {
+      if (!(await validateAdminToken(req, supabase))) {
+        return json({ error: "Unauthorized" }, 401);
+      }
       const { member } = await req.json();
       if (!member?.id || !member?.name || !member?.gender) {
         return json({ error: "member with id, name, gender required" }, 400);
@@ -115,6 +146,45 @@ serve(async (req) => {
       });
 
       return json({ success: true });
+    }
+
+    // ─── GET REQUESTS (admin only) ───
+    if (path === "get-requests" && req.method === "POST") {
+      if (!(await validateAdminToken(req, supabase))) {
+        return json({ error: "Unauthorized" }, 401);
+      }
+
+      const { data, error } = await supabase
+        .from("family_requests")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) return json({ error: error.message }, 500);
+      return json({ requests: data || [] });
+    }
+
+    // ─── GET VERIFIED USERS (admin only) ───
+    if (path === "get-verified-users" && req.method === "POST") {
+      if (!(await validateAdminToken(req, supabase))) {
+        return json({ error: "Unauthorized" }, 401);
+      }
+
+      const { data, error } = await supabase
+        .from("verified_users")
+        .select("*");
+
+      if (error) return json({ error: error.message }, 500);
+      return json({ users: data || [] });
+    }
+
+    // ─── GET VERIFIED MEMBER IDS (public — no PII) ───
+    if (path === "get-verified-ids" && req.method === "POST") {
+      const { data, error } = await supabase
+        .from("verified_users")
+        .select("member_id");
+
+      if (error) return json({ error: error.message }, 500);
+      return json({ ids: (data || []).map((r: any) => r.member_id) });
     }
 
     return json({ error: "Invalid endpoint" }, 400);

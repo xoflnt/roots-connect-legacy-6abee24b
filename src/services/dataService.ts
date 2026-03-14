@@ -31,20 +31,21 @@ export interface VerifiedUser {
 
 // ─── Edge function helper ───
 
-async function callFamilyApi(action: string, body: Record<string, unknown>) {
+async function callFamilyApi(action: string, body: Record<string, unknown>, headers?: Record<string, string>) {
   const { data, error } = await supabase.functions.invoke("family-api/" + action, {
     body,
+    headers,
   });
   if (error) throw error;
   return data;
 }
 
-// ─── Members (from cloud DB) ───
+// ─── Members (from cloud DB — phone excluded) ───
 
 export async function getMembers(): Promise<FamilyMember[]> {
   const { data, error } = await supabase
     .from("family_members")
-    .select("*")
+    .select("id, name, gender, father_id, birth_year, death_year, spouses, notes")
     .order("created_at", { ascending: true });
 
   if (error) {
@@ -60,7 +61,7 @@ export async function getMembers(): Promise<FamilyMember[]> {
     birth_year: row.birth_year,
     death_year: row.death_year,
     spouses: row.spouses,
-    phone: row.phone,
+    phone: null,
     notes: row.notes,
   }));
 }
@@ -69,11 +70,12 @@ export async function updateMember(id: string, data: Partial<FamilyMember>): Pro
   await callFamilyApi("update-member", { id, data });
 }
 
-export async function addMember(member: FamilyMember): Promise<void> {
-  await callFamilyApi("add-member", { member });
+export async function addMember(member: FamilyMember, adminToken?: string): Promise<void> {
+  const headers = adminToken ? { "x-admin-token": adminToken } : undefined;
+  await callFamilyApi("add-member", { member }, headers);
 }
 
-// ─── Requests (cloud DB) ───
+// ─── Requests (via edge function for admin reads) ───
 
 export async function submitRequest(req: Omit<FamilyRequest, "id" | "status" | "createdAt">): Promise<FamilyRequest> {
   const { data, error } = await supabase
@@ -103,39 +105,37 @@ export async function submitRequest(req: Omit<FamilyRequest, "id" | "status" | "
   };
 }
 
-export async function getRequests(): Promise<FamilyRequest[]> {
-  const { data, error } = await supabase
-    .from("family_requests")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    console.error("[dataService] getRequests error:", error);
+/** Admin-only: get all requests via edge function */
+export async function getRequests(adminToken: string): Promise<FamilyRequest[]> {
+  try {
+    const result = await callFamilyApi("get-requests", {}, { "x-admin-token": adminToken });
+    const rows = result?.requests || [];
+    return rows.map((row: any) => ({
+      id: row.id,
+      type: row.type as RequestType,
+      targetMemberId: row.target_member_id,
+      data: row.data as Record<string, string>,
+      notes: row.notes || undefined,
+      status: row.status as "pending" | "completed",
+      submittedBy: row.submitted_by || undefined,
+      createdAt: row.created_at,
+    }));
+  } catch (e) {
+    console.error("[dataService] getRequests error:", e);
     return [];
   }
-
-  return (data || []).map((row: any) => ({
-    id: row.id,
-    type: row.type as RequestType,
-    targetMemberId: row.target_member_id,
-    data: row.data as Record<string, string>,
-    notes: row.notes || undefined,
-    status: row.status as "pending" | "completed",
-    submittedBy: row.submitted_by || undefined,
-    createdAt: row.created_at,
-  }));
 }
 
-export async function markRequestDone(requestId: string): Promise<boolean> {
+export async function markRequestDone(requestId: string, adminToken: string): Promise<boolean> {
   try {
-    await callFamilyApi("mark-done", { requestId });
+    await callFamilyApi("mark-done", { requestId }, { "x-admin-token": adminToken });
     return true;
   } catch {
     return false;
   }
 }
 
-// ─── Verified Users (cloud DB) ───
+// ─── Verified Users (via edge function) ───
 
 export async function registerVerifiedUser(user: Omit<VerifiedUser, "verifiedAt">): Promise<void> {
   await callFamilyApi("register-user", {
@@ -151,41 +151,38 @@ export async function registerVerifiedUser(user: Omit<VerifiedUser, "verifiedAt"
   }
 }
 
-export async function getVerifiedUsers(): Promise<VerifiedUser[]> {
-  const { data, error } = await supabase
-    .from("verified_users")
-    .select("*");
-
-  if (error) {
-    console.error("[dataService] getVerifiedUsers error:", error);
+/** Admin-only: get all verified users via edge function */
+export async function getVerifiedUsers(adminToken: string): Promise<VerifiedUser[]> {
+  try {
+    const result = await callFamilyApi("get-verified-users", {}, { "x-admin-token": adminToken });
+    const rows = result?.users || [];
+    return rows.map((row: any) => ({
+      memberId: row.member_id,
+      memberName: row.member_name,
+      phone: row.phone,
+      hijriBirthDate: row.hijri_birth_date || undefined,
+      verifiedAt: row.verified_at,
+    }));
+  } catch (e) {
+    console.error("[dataService] getVerifiedUsers error:", e);
     return [];
   }
-
-  return (data || []).map((row: any) => ({
-    memberId: row.member_id,
-    memberName: row.member_name,
-    phone: row.phone,
-    hijriBirthDate: row.hijri_birth_date || undefined,
-    verifiedAt: row.verified_at,
-  }));
 }
 
-// ─── Verified Member IDs (cached) ───
+// ─── Verified Member IDs (public — no PII) ───
 
 let verifiedIdsCache: Set<string> | null = null;
 
 export async function loadVerifiedMemberIds(): Promise<Set<string>> {
-  const { data, error } = await supabase
-    .from("verified_users")
-    .select("member_id");
-
-  if (error) {
-    console.error("[dataService] loadVerifiedMemberIds error:", error);
+  try {
+    const result = await callFamilyApi("get-verified-ids", {});
+    const ids: string[] = result?.ids || [];
+    verifiedIdsCache = new Set(ids);
+    return verifiedIdsCache;
+  } catch (e) {
+    console.error("[dataService] loadVerifiedMemberIds error:", e);
     return verifiedIdsCache || new Set();
   }
-
-  verifiedIdsCache = new Set((data || []).map((row: any) => row.member_id));
-  return verifiedIdsCache;
 }
 
 export function getVerifiedMemberIds(): Set<string> {
@@ -195,6 +192,8 @@ export function getVerifiedMemberIds(): Set<string> {
 // ─── Visit Tracking (cloud DB) ───
 
 export async function trackVisit(): Promise<void> {
+  if (sessionStorage.getItem("khunaini-visit-tracked")) return;
+  sessionStorage.setItem("khunaini-visit-tracked", "true");
   try {
     await callFamilyApi("track-visit", {});
   } catch (e) {
@@ -215,4 +214,15 @@ export async function getVisitCount(): Promise<number> {
   }
 
   return data?.count || 0;
+}
+
+// ─── Passcode verification (server-side) ───
+
+export async function verifyFamilyPasscode(passcode: string): Promise<boolean> {
+  try {
+    const result = await callFamilyApi("verify-passcode", { passcode });
+    return result?.valid === true;
+  } catch {
+    return false;
+  }
 }
