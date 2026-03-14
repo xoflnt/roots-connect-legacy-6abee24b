@@ -18,6 +18,7 @@ interface AppHeaderProps {
   activeView: ViewMode;
   onViewChange: (view: ViewMode) => void;
   onGoHome?: () => void;
+  isLineageActive?: boolean;
 }
 
 const navItems: { value: ViewMode; label: string; icon: typeof TreePine }[] = [
