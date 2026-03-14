@@ -13,6 +13,8 @@ import { trackVisit } from "@/services/dataService";
 import { getAllMembers, getDescendantCount, searchMembers, loadMembers } from "@/services/familyService";
 import { PILLARS, DOCUMENTER_ID, ADMIN_MEMBER_IDS } from "@/utils/branchUtils";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePWAInstall } from "@/hooks/usePWAInstall";
+import { Smartphone } from "lucide-react";
 
 interface LandingPageProps {
   onSearchSelect: (memberId: string) => void;
