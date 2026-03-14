@@ -115,6 +115,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
   const [requestOpen, setRequestOpen] = useState(false);
   const [forceOnboarding, setForceOnboarding] = useState(false);
   const [dataReady, setDataReady] = useState(false);
+  const [showInstallSection, setShowInstallSection] = useState(() => localStorage.getItem('khunaini-pwa-installed-ios') !== 'true');
   const stats = useMemo(computeStats, [dataReady]);
   const navigate = useNavigate();
   const { currentUser } = useAuth();
@@ -272,7 +273,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
       )}
 
       {/* ─── PWA Install Section ─── */}
-      {!window.matchMedia('(display-mode: standalone)').matches && !(window.navigator as any).standalone && (
+      {showInstallSection && !window.matchMedia('(display-mode: standalone)').matches && !(window.navigator as any).standalone && (
         <section className="py-6 md:py-8 px-4">
           <div className="max-w-2xl mx-auto rounded-2xl border bg-card/80 backdrop-blur-sm p-5 space-y-4 opacity-0 animate-fade-in" style={{ animationDelay: "0.2s" }}>
             <div className="flex flex-col items-center text-center gap-2">
@@ -349,6 +350,16 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                 <div className="text-xs text-amber-600 bg-amber-50 dark:bg-amber-950/30 dark:text-amber-400 rounded-lg px-3 py-2 text-center">
                   ⚠️ تأكد من استخدام Safari وليس أي متصفح آخر
                 </div>
+                <Button
+                  variant="ghost"
+                  className="w-full mt-2 text-xs text-muted-foreground underline"
+                  onClick={() => {
+                    localStorage.setItem('khunaini-pwa-installed-ios', 'true');
+                    setShowInstallSection(false);
+                  }}
+                >
+                  ✓ ثبّتت التطبيق — إخفاء هذا القسم
+                </Button>
               </TabsContent>
             </Tabs>
           </div>
