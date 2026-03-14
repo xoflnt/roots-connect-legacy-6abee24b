@@ -7,7 +7,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { FontSizeProvider } from "@/contexts/FontSizeContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { SWUpdateBanner } from "@/components/SWUpdateBanner";
-import { PWAInstallBanner } from "@/components/PWAInstallBanner";
+
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { lazy, Suspense } from "react";
 
