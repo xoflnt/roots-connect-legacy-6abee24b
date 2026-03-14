@@ -7,18 +7,19 @@ import {
   MiniMap,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
-import { refreshMembers, getAllMembers } from "@/services/familyService";
-import { Plus, Minus, Maximize2, RotateCcw, LocateFixed, Eye, EyeOff, Layers } from "lucide-react";
-import { useTreeLayout, getDefaultExpandedIds } from "@/hooks/useTreeLayout";
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
+import { refreshMembers, getAllMembers, isDeceased as checkDeceased } from "@/services/familyService";
+import { Plus, Minus, Maximize2, RotateCcw, LocateFixed, Eye, EyeOff, Layers, Filter } from "lucide-react";
+import { useTreeLayout, getDefaultExpandedIds, type TreeFilters } from "@/hooks/useTreeLayout";
 import { FamilyCard } from "./FamilyCard";
+import { GenerationBandNode } from "./GenerationBandNode";
 import { PersonDetails } from "./PersonDetails";
 import type { FamilyMember } from "@/data/familyData";
-import { getBranch } from "@/utils/branchUtils";
+import { getBranch, PILLARS } from "@/utils/branchUtils";
 import { getChildrenOf } from "@/services/familyService";
 import { useAuth } from "@/contexts/AuthContext";
 
-const nodeTypes = { familyCard: FamilyCard };
+const nodeTypes = { familyCard: FamilyCard, generationBand: GenerationBandNode };
 
 export interface FamilyTreeRef {
   search: (memberId: string) => void;
@@ -42,7 +43,53 @@ export const FamilyTree = forwardRef<FamilyTreeRef, FamilyTreeProps>(function Fa
   const [refreshKey, setRefreshKey] = useState(0);
   const [showMiniMap, setShowMiniMap] = useState(true);
   const [showExpandMenu, setShowExpandMenu] = useState(false);
-  const { nodes: layoutNodes, edges: layoutEdges } = useTreeLayout(expandedIds, refreshKey);
+  const [showFilterMenu, setShowFilterMenu] = useState(false);
+  const [filters, setFilters] = useState<TreeFilters>({ branch: 'all', gender: 'all', living: 'all' });
+
+  const activeFilterCount = [
+    filters.branch !== 'all',
+    filters.gender !== 'all',
+    filters.living !== 'all',
+  ].filter(Boolean).length;
+
+  const { nodes: layoutNodes, edges: layoutEdges, totalCount, filteredCount } = useTreeLayout(expandedIds, refreshKey, filters);
+
+  // Compute generation band nodes
+  const allNodes = useMemo(() => {
+    if (!layoutNodes.length) return layoutNodes;
+
+    const genMap = new Map<number, { yMin: number; yMax: number; gen: number }>();
+    layoutNodes.forEach(node => {
+      const gen = (node.data as any)?.generation as number;
+      const y = node.position.y;
+      if (!gen && gen !== 0) return;
+
+      if (!genMap.has(gen)) {
+        genMap.set(gen, { yMin: y - 10, yMax: y + 110, gen });
+      } else {
+        const entry = genMap.get(gen)!;
+        entry.yMin = Math.min(entry.yMin, y - 10);
+        entry.yMax = Math.max(entry.yMax, y + 110);
+      }
+    });
+
+    const bands: Node[] = Array.from(genMap.values())
+      .sort((a, b) => a.gen - b.gen)
+      .map((band) => ({
+        id: `gen-band-${band.gen}`,
+        type: 'generationBand',
+        position: { x: -50000, y: band.yMin },
+        data: {
+          isEven: band.gen % 2 === 0,
+          genLabel: band.gen.toLocaleString("ar-SA"),
+        },
+        selectable: false,
+        draggable: false,
+        style: { width: 99999, height: band.yMax - band.yMin, zIndex: -1 },
+      }));
+
+    return [...bands, ...layoutNodes];
+  }, [layoutNodes]);
 
   // Listen for data updates
   useEffect(() => {
@@ -71,16 +118,16 @@ export const FamilyTree = forwardRef<FamilyTreeRef, FamilyTreeProps>(function Fa
     }
   }, [focusBranch]);
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(layoutNodes);
+  const [nodes, setNodes, onNodesChange] = useNodesState(allNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(layoutEdges);
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
   const rfInstance = useRef<ReactFlowInstance | null>(null);
 
   // Sync layout — NO auto fitView
   useEffect(() => {
-    setNodes(layoutNodes);
+    setNodes(allNodes);
     setEdges(layoutEdges);
-  }, [layoutNodes, layoutEdges, setNodes, setEdges]);
+  }, [allNodes, layoutEdges, setNodes, setEdges]);
 
   const handleToggleExpand = useCallback((memberId: string) => {
     setExpandedIds((prev) => {
@@ -92,6 +139,7 @@ export const FamilyTree = forwardRef<FamilyTreeRef, FamilyTreeProps>(function Fa
   }, []);
 
   const onNodeClick = useCallback((_: React.MouseEvent, node: Node) => {
+    if (node.type === 'generationBand') return;
     const data = node.data as any;
     if (data.gender) setSelectedMember(data as unknown as FamilyMember);
   }, []);
@@ -127,6 +175,7 @@ export const FamilyTree = forwardRef<FamilyTreeRef, FamilyTreeProps>(function Fa
   const handleReset = useCallback(() => {
     setExpandedIds(getDefaultExpandedIds());
     setSelectedMember(null);
+    setFilters({ branch: 'all', gender: 'all', living: 'all' });
     setTimeout(() => rfInstance.current?.fitView({ duration: 500, padding: 0.2 }), 100);
   }, []);
 
@@ -188,8 +237,17 @@ export const FamilyTree = forwardRef<FamilyTreeRef, FamilyTreeProps>(function Fa
     return () => { delete (window as any).__toggleExpandNode; };
   }, [handleToggleExpand]);
 
+  const filtersActive = activeFilterCount > 0;
+
   return (
     <div className="relative w-full h-full canvas-dots">
+      {/* Filter banner */}
+      {filtersActive && (
+        <div className="absolute top-0 left-0 right-0 z-10 text-xs text-center py-1 bg-muted/50 text-muted-foreground">
+          يتم عرض {filteredCount.toLocaleString("ar-SA")} من أصل {totalCount.toLocaleString("ar-SA")} فرد
+        </div>
+      )}
+
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -215,6 +273,7 @@ export const FamilyTree = forwardRef<FamilyTreeRef, FamilyTreeProps>(function Fa
             className="!bg-card/80 !border-border !rounded-xl !shadow-lg !backdrop-blur-sm"
             maskColor="hsl(var(--muted) / 0.5)"
             nodeColor={(node) => {
+              if (node.type === 'generationBand') return 'transparent';
               const data = node.data as any;
               if (node.type === 'spouseCard') return 'hsl(var(--accent))';
               return data?.gender === 'M' ? 'hsl(var(--male))' : 'hsl(var(--female))';
@@ -303,6 +362,81 @@ export const FamilyTree = forwardRef<FamilyTreeRef, FamilyTreeProps>(function Fa
         </div>
 
         <div className="h-px bg-border mx-2" />
+
+        {/* Filter button */}
+        <div className="relative">
+          <button
+            onClick={() => setShowFilterMenu((v) => !v)}
+            className="w-11 h-11 flex items-center justify-center text-foreground hover:bg-accent/15 hover:text-accent transition-colors relative"
+            title="تصفية"
+          >
+            <Filter className="h-4 w-4" />
+            {activeFilterCount > 0 && (
+              <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
+          {showFilterMenu && (
+            <>
+              <div className="fixed inset-0 z-20" onClick={() => setShowFilterMenu(false)} />
+              <div className="absolute bottom-0 left-full ml-2 bg-card border border-border rounded-2xl shadow-xl z-30 w-64 p-4" dir="rtl">
+                {/* Branch filter */}
+                <div className="mb-3">
+                  <p className="text-xs font-semibold text-foreground mb-1.5">الفرع:</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    <FilterPill active={filters.branch === 'all'} onClick={() => setFilters(f => ({ ...f, branch: 'all' }))}>الكل</FilterPill>
+                    {PILLARS.map(p => (
+                      <FilterPill
+                        key={p.id}
+                        active={filters.branch === p.id}
+                        onClick={() => setFilters(f => ({ ...f, branch: p.id }))}
+                        style={filters.branch === p.id ? {
+                          backgroundColor: p.id === '200' ? 'hsl(45 70% 92%)' : p.id === '300' ? 'hsl(155 40% 90%)' : 'hsl(25 50% 90%)',
+                          color: p.id === '200' ? 'hsl(45 60% 35%)' : p.id === '300' ? 'hsl(155 45% 30%)' : 'hsl(25 55% 35%)',
+                          borderColor: 'transparent',
+                        } : undefined}
+                      >
+                        {p.label}
+                      </FilterPill>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Gender filter */}
+                <div className="mb-3">
+                  <p className="text-xs font-semibold text-foreground mb-1.5">الجنس:</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    <FilterPill active={filters.gender === 'all'} onClick={() => setFilters(f => ({ ...f, gender: 'all' }))}>الكل</FilterPill>
+                    <FilterPill active={filters.gender === 'M'} onClick={() => setFilters(f => ({ ...f, gender: 'M' }))}>ذكور 🔵</FilterPill>
+                    <FilterPill active={filters.gender === 'F'} onClick={() => setFilters(f => ({ ...f, gender: 'F' }))}>إناث 🩷</FilterPill>
+                  </div>
+                </div>
+
+                {/* Living filter */}
+                <div className="mb-3">
+                  <p className="text-xs font-semibold text-foreground mb-1.5">الحالة:</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    <FilterPill active={filters.living === 'all'} onClick={() => setFilters(f => ({ ...f, living: 'all' }))}>الكل</FilterPill>
+                    <FilterPill active={filters.living === 'living'} onClick={() => setFilters(f => ({ ...f, living: 'living' }))}>أحياء</FilterPill>
+                    <FilterPill active={filters.living === 'deceased'} onClick={() => setFilters(f => ({ ...f, living: 'deceased' }))}>متوفون</FilterPill>
+                  </div>
+                </div>
+
+                {activeFilterCount > 0 && (
+                  <button
+                    onClick={() => setFilters({ branch: 'all', gender: 'all', living: 'all' })}
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    إعادة تعيين
+                  </button>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+
+        <div className="h-px bg-border mx-2" />
         <button
           onClick={() => setShowMiniMap((v) => !v)}
           className="w-11 h-11 flex items-center justify-center text-foreground hover:bg-accent/15 hover:text-accent transition-colors"
@@ -315,6 +449,7 @@ export const FamilyTree = forwardRef<FamilyTreeRef, FamilyTreeProps>(function Fa
           onClick={() => {
             setExpandedIds(getDefaultExpandedIds());
             setSelectedMember(null);
+            setFilters({ branch: 'all', gender: 'all', living: 'all' });
             setTimeout(() => rfInstance.current?.fitView({ duration: 500, padding: 0.2 }), 100);
           }}
           className="w-11 h-11 flex items-center justify-center text-foreground hover:bg-accent/15 hover:text-accent transition-colors"
@@ -331,6 +466,22 @@ export const FamilyTree = forwardRef<FamilyTreeRef, FamilyTreeProps>(function Fa
     </div>
   );
 });
+
+function FilterPill({ active, onClick, children, style }: { active: boolean; onClick: () => void; children: React.ReactNode; style?: React.CSSProperties }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`text-[11px] px-2.5 py-1 rounded-full border transition-colors font-medium ${
+        active
+          ? 'bg-primary text-primary-foreground border-primary'
+          : 'bg-transparent text-muted-foreground border-border hover:bg-accent/10'
+      }`}
+      style={active ? style : undefined}
+    >
+      {children}
+    </button>
+  );
+}
 
 function getBranchExpandedIds(pillarId: string): Set<string> {
   const ids = new Set<string>();

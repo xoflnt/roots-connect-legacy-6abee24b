@@ -1,8 +1,9 @@
 import { useMemo } from "react";
 import dagre from "dagre";
 import type { Node, Edge } from "@xyflow/react";
-import { getAllMembers, inferMotherName, sortByBirth } from "@/services/familyService";
+import { getAllMembers, getDepth, inferMotherName, isDeceased, sortByBirth } from "@/services/familyService";
 import { getVerifiedMemberIds } from "@/services/dataService";
+import { getBranch } from "@/utils/branchUtils";
 
 // Warm heritage-aligned branch colors
 export const BRANCH_COLORS = [
@@ -48,7 +49,13 @@ export function getDefaultExpandedIds(): Set<string> {
   return expanded;
 }
 
-export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number) {
+export interface TreeFilters {
+  branch: string;
+  gender: string;
+  living: string;
+}
+
+export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number, filters?: TreeFilters) {
   return useMemo(() => {
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
     const CARD_WIDTH = isMobile ? 155 : 220;
@@ -57,6 +64,7 @@ export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number) {
     const RANK_SEP = isMobile ? 110 : 180;
 
     const currentMembers = getAllMembers();
+    const totalCount = currentMembers.length;
     const memberById = new Map(currentMembers.map((m) => [m.id, m]));
     const childrenOfMap = buildChildrenOfMap(currentMembers);
     const verifiedIds = getVerifiedMemberIds();
@@ -79,7 +87,42 @@ export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number) {
       });
     }
 
+    // Apply filters — keep ancestors to maintain connected tree
+    if (filters && (filters.branch !== 'all' || filters.gender !== 'all' || filters.living !== 'all')) {
+      const matchingIds = new Set<string>();
+      for (const id of visibleIds) {
+        const member = memberById.get(id);
+        if (!member) continue;
+        let matches = true;
+        if (filters.branch !== 'all') {
+          const b = getBranch(member.id);
+          if (!b || b.pillarId !== filters.branch) matches = false;
+        }
+        if (filters.gender !== 'all' && member.gender !== filters.gender) matches = false;
+        if (filters.living !== 'all') {
+          const dead = isDeceased(member);
+          if (filters.living === 'living' && dead) matches = false;
+          if (filters.living === 'deceased' && !dead) matches = false;
+        }
+        if (matches) matchingIds.add(id);
+      }
+      // Add ancestors of matching nodes to keep tree connected
+      const withAncestors = new Set(matchingIds);
+      for (const id of matchingIds) {
+        let current = memberById.get(id);
+        while (current?.father_id) {
+          withAncestors.add(current.father_id);
+          current = memberById.get(current.father_id);
+        }
+      }
+      // Intersect with visibleIds
+      for (const id of visibleIds) {
+        if (!withAncestors.has(id)) visibleIds.delete(id);
+      }
+    }
+
     const visibleMembers = currentMembers.filter((m) => visibleIds.has(m.id));
+    const filteredCount = visibleMembers.length;
 
     const g = new dagre.graphlib.Graph();
     g.setGraph({ rankdir: "TB", nodesep: NODE_SEP, ranksep: RANK_SEP });
@@ -162,6 +205,7 @@ export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number) {
           isExpanded: expandedIds.has(member.id),
           isVerified: verifiedIds.has(member.id),
           isMobile,
+          generation: getDepth(member.id),
         },
       };
     });
@@ -175,15 +219,15 @@ export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number) {
         id: edgeKey,
         source: e.v,
         target: e.w,
-        type: "smoothstep",
+        type: "default",
         style: {
           stroke: color,
-          strokeWidth: 2.5,
+          strokeWidth: 2,
         },
         animated: false,
       };
     });
 
-    return { nodes, edges };
-  }, [expandedIds, _refreshKey]);
+    return { nodes, edges, totalCount, filteredCount };
+  }, [expandedIds, _refreshKey, filters]);
 }
