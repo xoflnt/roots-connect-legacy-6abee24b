@@ -5,16 +5,28 @@ import {
   getDescendantCount,
   getDepth,
   isDeceased,
+  isFounder,
+  isBranchHead,
+  inferMotherName,
 } from "@/services/familyService";
-import { PILLARS, getBranchStyle } from "@/utils/branchUtils";
+import { PILLARS, getBranchStyle, DOCUMENTER_ID } from "@/utils/branchUtils";
 import { formatAge } from "@/utils/ageCalculator";
 import { HeritageBadge } from "@/components/HeritageBadge";
 import { PersonDetails } from "@/components/PersonDetails";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, ChevronLeft, Users } from "lucide-react";
+import { ChevronDown, ChevronLeft, Users, BadgeCheck } from "lucide-react";
 import { getVerifiedMemberIds } from "@/services/dataService";
 import { cn } from "@/lib/utils";
 import type { FamilyMember } from "@/data/familyData";
+
+const FOUNDER_IDS = new Set(["100", "200", "300", "400"]);
+
+function borderOpacity(depth: number): number {
+  if (depth <= 1) return 0.8;
+  if (depth === 2) return 0.65;
+  if (depth === 3) return 0.5;
+  return 0.35;
+}
 
 // ── Recursive node ──
 const BranchNode = React.memo(function BranchNode({
@@ -40,8 +52,14 @@ const BranchNode = React.memo(function BranchNode({
   const verified = getVerifiedMemberIds().has(member.id);
   const generation = getDepth(member.id);
   const indent = Math.min(depth, 4) * 16;
+  const motherName = inferMotherName(member);
+  const isFounderMember = FOUNDER_IDS.has(member.id) || isFounder(member);
+  const isBH = isBranchHead(member.id);
+  const isDoc = member.id === DOCUMENTER_ID;
+  const opacity = borderOpacity(depth);
+  const isDashed = depth > 4;
+  const childLabel = member.gender === "F" ? "لها" : "له";
 
-  // Convert generation to Arabic ordinal
   const genLabel = `الجيل ${generation.toLocaleString("ar-SA")}`;
 
   return (
@@ -51,7 +69,15 @@ const BranchNode = React.memo(function BranchNode({
           "flex items-center gap-2 py-2 px-3 border-b border-border/20 transition-colors hover:bg-muted/50 min-h-[44px]",
           deceased && "opacity-70"
         )}
-        style={{ paddingRight: `${indent + 12}px`, borderRightWidth: "3px", borderRightColor: style.text + "55" }}
+        style={{
+          paddingRight: `${indent + 12}px`,
+          borderRightWidth: isDashed ? "2px" : "3px",
+          borderRightColor: style.text,
+          borderRightStyle: isDashed ? "dashed" : "solid",
+          opacity: deceased ? 0.7 : 1,
+          // Apply graduated opacity to the border
+          ["--branch-border-opacity" as any]: opacity,
+        }}
         dir="rtl"
       >
         {/* Expand/collapse */}
@@ -72,18 +98,32 @@ const BranchNode = React.memo(function BranchNode({
           <div className="w-[44px] shrink-0" />
         )}
 
-        {/* Person info */}
+        {/* Gender dot + person info */}
         <button
           onClick={() => onSelect(member)}
           className="flex-1 min-w-0 text-right flex items-center gap-2"
         >
+          <div
+            className="w-2 h-2 rounded-full shrink-0"
+            style={{
+              backgroundColor: `hsl(var(--${member.gender === "M" ? "male" : "female"}))`,
+            }}
+          />
           <span className="font-bold text-sm text-foreground truncate">{member.name}</span>
-          {verified && <span className="text-green-500 text-xs">✅</span>}
-          {deceased && <HeritageBadge type="deceased" />}
+          {verified && <BadgeCheck className="h-3.5 w-3.5 text-green-500 shrink-0" />}
+          {isFounderMember && <HeritageBadge type="founder" />}
+          {isBH && <HeritageBadge type="branchHead" />}
+          {deceased && <HeritageBadge type="deceased" gender={member.gender as "M" | "F"} />}
+          {isDoc && <HeritageBadge type="documenter" />}
         </button>
 
         {/* Meta */}
         <div className="flex items-center gap-1.5 shrink-0">
+          {motherName && (
+            <span className="text-[9px] px-1 py-0.5 rounded bg-muted text-muted-foreground truncate max-w-[60px]">
+              {motherName}
+            </span>
+          )}
           <Badge variant="outline" className="text-[10px] px-1.5 py-0">
             {genLabel}
           </Badge>
@@ -95,7 +135,7 @@ const BranchNode = React.memo(function BranchNode({
           {hasChildren && (
             <Badge variant="secondary" className="text-[10px] px-1.5 py-0 gap-0.5">
               <Users className="h-3 w-3" />
-              {children.length.toLocaleString("ar-SA")}
+              {childLabel} {children.length.toLocaleString("ar-SA")}
             </Badge>
           )}
         </div>
