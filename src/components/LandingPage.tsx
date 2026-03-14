@@ -1,4 +1,5 @@
 import { useState, useRef, useMemo, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Search, TreePine, ChevronDown, Users, Layers, Crown, User, UserRound, Heart, Quote, Send, BookOpen, Shield, ScrollText, Smartphone, Share, BadgeCheck, Scale, BookOpenText, Map as MapIcon, BookMarked, AlignJustify, ChevronLeft, Compass, GitBranch } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { getLineageLabel, getMemberSubtitle } from "@/utils/memberLabel";
@@ -18,6 +19,7 @@ import { HeritageBadge } from "@/components/HeritageBadge";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Input as SheetInput } from "@/components/ui/input";
+import { staggerContainer, staggerItem, gentleSpring, springConfig } from "@/lib/animations";
 
 interface LandingPageProps {
   onSearchSelect: (memberId: string) => void;
@@ -179,24 +181,32 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
           </div>
         )}
 
-        <div className="max-w-lg mx-auto space-y-2 w-full">
-          <TreePine className="h-10 w-10 text-primary mx-auto opacity-0 animate-fade-in" style={{ animationDelay: "0.1s" }} />
-          <h1 className="text-2xl font-extrabold text-primary leading-tight opacity-0 animate-fade-in" style={{ animationDelay: "0.2s" }}>
+        <motion.div
+          className="max-w-lg mx-auto space-y-2 w-full"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        >
+          <TreePine className="h-10 w-10 text-primary mx-auto" />
+          <h1 className="text-2xl font-extrabold text-primary leading-tight">
             بوابة تراث الخنيني
           </h1>
-          <p className="text-sm text-muted-foreground opacity-0 animate-fade-in" style={{ animationDelay: "0.3s" }}>
+          <p className="text-sm text-muted-foreground">
             فرع الزلفي
           </p>
-          <div className="h-px bg-gradient-to-r from-transparent via-accent to-transparent max-w-xs mx-auto opacity-0 animate-fade-in" style={{ animationDelay: "0.4s" }} />
-        </div>
+          <div className="h-px bg-gradient-to-r from-transparent via-accent to-transparent max-w-xs mx-auto" />
+        </motion.div>
       </section>
 
       {/* ─── 2A. Personal Dashboard (logged-in) ─── */}
       {currentUser && dashboardData && (
-        <section className="py-4 px-4 animate-fade-in">
-          <div
+        <section className="py-4 px-4">
+          <motion.div
             className="max-w-lg mx-auto rounded-2xl border bg-card/80 backdrop-blur-sm p-4 space-y-4"
             style={{ borderColor: dashboardData.branchStyle ? dashboardData.branchStyle.text + "40" : undefined }}
+            initial={{ opacity: 0, scale: 0.97, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ ...gentleSpring, delay: 0.1 }}
           >
             {/* Top row: avatar + name + badges */}
             <div className="flex items-center gap-3">
@@ -232,45 +242,63 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
             </div>
 
             {/* Stats row */}
-            <div className="grid grid-cols-3 gap-2 text-center">
+            <motion.div
+              className="grid grid-cols-3 gap-2 text-center"
+              variants={staggerContainer}
+              initial="initial"
+              animate="animate"
+            >
               {[
                 { label: "الأبناء", value: dashboardData.children.length },
                 { label: "الأجداد", value: dashboardData.ancestors.length - 1 },
                 { label: "الأشقاء", value: dashboardData.siblings.length },
               ].map((s) => (
-                <div key={s.label} className="rounded-xl bg-muted/50 border border-border/40 py-2 px-1">
+                <motion.div key={s.label} variants={staggerItem} className="rounded-xl bg-muted/50 border border-border/40 py-2 px-1">
                   <div className="text-lg font-extrabold text-primary">{s.value.toLocaleString("ar-SA")}</div>
                   <div className="text-xs text-muted-foreground font-medium">{s.label}</div>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
 
             {/* Action buttons */}
-            <div className="grid grid-cols-3 gap-2">
+            <motion.div
+              className="grid grid-cols-3 gap-2"
+              variants={staggerContainer}
+              initial="initial"
+              animate="animate"
+            >
               {[
                 { label: "نسبي", icon: ScrollText, onClick: () => navigate(`/person/${currentUser.memberId}`) },
                 { label: "قرابة", icon: Scale, onClick: () => onBrowseTree() },
                 { label: "ملفي", icon: User, onClick: () => navigate("/profile") },
               ].map((action) => (
-                <button
+                <motion.button
                   key={action.label}
+                  variants={staggerItem}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
                   onClick={action.onClick}
                   className="flex flex-col items-center gap-1 rounded-xl bg-muted/50 border border-border/40 p-2.5 min-h-[56px] text-xs font-medium text-foreground hover:bg-muted transition-colors"
                 >
                   <action.icon className="h-5 w-5 text-primary" />
                   {action.label}
-                </button>
+                </motion.button>
               ))}
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </section>
       )}
 
       {/* ─── 2B. Guest CTA (guest only) ─── */}
       {!currentUser && (
         <section className="py-4 px-4">
-          <div className="max-w-lg mx-auto space-y-4 text-center">
-            <h2 className="text-lg font-bold text-foreground opacity-0 animate-fade-in" style={{ animationDelay: "0.3s" }}>
+          <motion.div
+            className="max-w-lg mx-auto space-y-4 text-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: "easeOut", delay: 0.15 }}
+          >
+            <h2 className="text-lg font-bold text-foreground">
               اكتشف موقعك في شجرة العائلة
             </h2>
 
@@ -325,13 +353,18 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                 سجّل دخولك
               </Button>
             </div>
-          </div>
+          </motion.div>
         </section>
       )}
 
       {/* ─── Quick Actions Grid (all users) ─── */}
-      <section className="py-3 px-4 animate-fade-in" style={{ animationDelay: "0.1s" }}>
-        <div className="max-w-lg mx-auto grid grid-cols-3 gap-2.5">
+      <section className="py-3 px-4">
+        <motion.div
+          className="max-w-lg mx-auto grid grid-cols-3 gap-2.5"
+          variants={staggerContainer}
+          initial="initial"
+          animate="animate"
+        >
           {[
             { label: "الشجرة", icon: MapIcon, color: "text-primary", onClick: () => onBrowseTree() },
             { label: "النسب", icon: ScrollText, color: "text-accent", onClick: () => setShowNasabSheet(true) },
@@ -340,18 +373,21 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
             { label: "فروع", icon: GitBranch, color: "text-primary", onClick: () => { onBrowseTree(); window.dispatchEvent(new CustomEvent('switch-to-branches')); } },
             { label: "القائمة", icon: AlignJustify, color: "text-muted-foreground", onClick: () => { onBrowseTree(); window.dispatchEvent(new CustomEvent('switch-to-list')); } },
           ].map((action) => (
-            <button
+            <motion.button
               key={action.label}
+              variants={staggerItem}
+              whileHover={{ scale: 1.03, transition: springConfig }}
+              whileTap={{ scale: 0.97 }}
               onClick={action.onClick}
               className="flex flex-col items-center gap-1.5 rounded-xl border bg-card/60 p-3 min-h-[72px] text-center hover:bg-card hover:shadow-sm transition-all"
             >
               <action.icon className={`h-5 w-5 ${action.color}`} />
               <span className="text-xs font-medium text-foreground">{action.label}</span>
-            </button>
+            </motion.button>
           ))}
-        </div>
+        </motion.div>
       </section>
-      <section className="px-4 animate-fade-in" style={{ animationDelay: "0.15s" }}>
+      <section className="px-4">
         <div className="max-w-lg mx-auto">
           <button
             onClick={() => setRequestOpen(true)}
@@ -440,13 +476,21 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
           <p className="text-muted-foreground text-sm md:text-base max-w-xl mx-auto">
             يقوم فرع الزلفي على ثلاثة أعمام هم أبناء زيد، ومنهم تفرّعت جميع عائلات الخنيني في الزلفي
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-4">
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-4"
+            variants={staggerContainer}
+            initial="initial"
+            animate="animate"
+          >
             {pillarStats.map((pillar, i) => {
               const colors = PILLAR_COLORS[i];
               return (
-                <div
+                <motion.div
                   key={pillar.id}
-                  className={`relative rounded-2xl border-2 ${colors.border} ${colors.bg} p-6 md:p-8 flex flex-col items-center gap-4 transition-all hover:shadow-lg hover:-translate-y-1 cursor-pointer group`}
+                  variants={staggerItem}
+                  whileHover={{ y: -4, transition: springConfig }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`relative rounded-2xl border-2 ${colors.border} ${colors.bg} p-6 md:p-8 flex flex-col items-center gap-4 transition-all cursor-pointer group`}
                   onClick={() => onBrowseBranch?.(pillar.id)}
                 >
                   <div className={`w-14 h-14 rounded-2xl bg-background/60 flex items-center justify-center ${colors.icon}`}>
@@ -465,10 +509,10 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                     <TreePine className="h-4 w-4 ml-1.5" />
                     تصفح الفرع
                   </Button>
-                </div>
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
         </div>
       </section>
 

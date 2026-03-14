@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { AppHeader, type ViewMode } from "@/components/AppHeader";
 import { FamilyTree, type FamilyTreeRef } from "@/components/FamilyTree";
 import { LandingPage } from "@/components/LandingPage";
@@ -14,6 +15,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Search, User, ChevronLeft, Map, Compass, GitFork, BookOpen, Users, AlignJustify } from "lucide-react";
+import { springConfig } from "@/lib/animations";
 
 export type AppTab = "map" | "navigate" | "branches" | "nasab" | "kinship" | "list";
 
@@ -194,26 +196,56 @@ const Index = () => {
           <FamilyTree ref={treeRef} focusBranch={focusBranch} />
         </div>
 
-        {activeTab === "navigate" && (
-          <div className="w-full h-full animate-fade-in">
-            <SmartNavigateView />
-          </div>
-        )}
-        {activeTab === "branches" && (
-          <div className="w-full h-full animate-fade-in">
-            <BranchesView />
-          </div>
-        )}
-        {activeTab === "kinship" && (
-          <div className="w-full h-full rounded-2xl md:rounded-3xl shadow-xl overflow-auto border border-border/50 bg-card animate-fade-in">
-            <KinshipCalculator />
-          </div>
-        )}
-        {activeTab === "list" && (
-          <div className="w-full h-full rounded-2xl md:rounded-3xl shadow-xl overflow-auto border border-border/50 bg-card animate-fade-in">
-            <ListView onSelectMember={(id) => navigate(`/person/${id}`)} />
-          </div>
-        )}
+        <AnimatePresence mode="wait">
+          {activeTab === "navigate" && (
+            <motion.div
+              key="navigate"
+              className="w-full h-full"
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={{ duration: 0.18, ease: "easeInOut" }}
+            >
+              <SmartNavigateView />
+            </motion.div>
+          )}
+          {activeTab === "branches" && (
+            <motion.div
+              key="branches"
+              className="w-full h-full"
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={{ duration: 0.18, ease: "easeInOut" }}
+            >
+              <BranchesView />
+            </motion.div>
+          )}
+          {activeTab === "kinship" && (
+            <motion.div
+              key="kinship"
+              className="w-full h-full rounded-2xl md:rounded-3xl shadow-xl overflow-auto border border-border/50 bg-card"
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={{ duration: 0.18, ease: "easeInOut" }}
+            >
+              <KinshipCalculator />
+            </motion.div>
+          )}
+          {activeTab === "list" && (
+            <motion.div
+              key="list"
+              className="w-full h-full rounded-2xl md:rounded-3xl shadow-xl overflow-auto border border-border/50 bg-card"
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={{ duration: 0.18, ease: "easeInOut" }}
+            >
+              <ListView onSelectMember={(id) => navigate(`/person/${id}`)} />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
 
       {/* Mobile bottom navigation — 6 items */}
@@ -238,14 +270,23 @@ const Index = () => {
                   isActive ? "text-primary" : "text-muted-foreground"
                 }`}
               >
-                <Icon className={`h-5 w-5 transition-transform ${isActive ? "text-primary scale-110" : ""}`} />
+                <motion.div
+                  animate={{ scale: isActive ? 1.15 : 1 }}
+                  transition={springConfig}
+                >
+                  <Icon className={`h-5 w-5 ${isActive ? "text-primary" : ""}`} />
+                </motion.div>
                 {!isNarrow && (
                   <span className={`text-[10px] font-medium ${isActive ? "font-bold" : ""}`}>
                     {item.label}
                   </span>
                 )}
                 {isActive && (
-                  <div className="absolute top-0 h-0.5 w-8 bg-accent rounded-b-full" />
+                  <motion.div
+                    layoutId="activeTabIndicator"
+                    className="absolute top-0 h-0.5 w-8 bg-accent rounded-b-full"
+                    transition={springConfig}
+                  />
                 )}
               </button>
             );
