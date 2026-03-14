@@ -1,5 +1,4 @@
 import jsPDF from 'jspdf';
-import { supabase } from '@/integrations/supabase/client';
 import { getAllMembers } from './familyService';
 import { getBranch } from '../utils/branchUtils';
 
@@ -12,36 +11,19 @@ export interface ExportOptions {
 export async function exportTreeAsPDF(
   _rfInstance: any,
   _expandAllFn: () => void,
-  options: ExportOptions,
-  adminToken: string,
-  appUrl: string
+  options: ExportOptions
 ): Promise<void> {
-  // Call the edge function to get a high-res screenshot via Browserless
-  const { data, error } = await supabase.functions.invoke(
-    'export-tree-pdf',
-    {
-      body: {
-        mode: options.mode,
-        branchId: options.branchId,
-        branchLabel: options.branchLabel,
-        appUrl,
-      },
-      headers: {
-        'x-admin-token': adminToken,
-      },
-    }
-  );
+  const { generateTreeCanvas } = await import('./TreeCanvasExport');
 
-  if (error || !data?.screenshot) {
-    throw new Error(error?.message || 'Failed to get screenshot from server');
-  }
+  const treeBlob = await generateTreeCanvas(options.branchId);
 
-  const treeImageDataUrl = `data:image/png;base64,${data.screenshot}`;
-  await buildPDF(treeImageDataUrl, options);
-}
+  const treeDataUrl = await new Promise<string>((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.readAsDataURL(treeBlob);
+  });
 
-function sleep(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  await buildPDF(treeDataUrl, options);
 }
 
 async function loadTajawal(): Promise<void> {

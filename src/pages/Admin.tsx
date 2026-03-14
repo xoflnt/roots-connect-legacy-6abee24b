@@ -424,7 +424,7 @@ function AdminContent() {
               </div>
 
               <div className="bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 rounded-xl p-3 text-sm">
-                ⚠️ قد يستغرق التصدير ١٠-٣٠ ثانية حسب حجم الشجرة. يرجى الانتظار.
+                ⚠️ قد يستغرق التصدير ٣٠-٦٠ ثانية حسب حجم الشجرة. يرجى الانتظار.
               </div>
 
               {exportProgress && (
