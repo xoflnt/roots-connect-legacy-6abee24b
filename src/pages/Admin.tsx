@@ -464,18 +464,6 @@ function AdminContent() {
           </TabsContent>
         </Tabs>
 
-        {/* Hidden tree for PDF export */}
-        {showHiddenTree && (
-          <div
-            style={{ position: 'absolute', left: '-99999px', top: 0, width: '4096px', height: '2160px', pointerEvents: 'none', userSelect: 'none' as const, overflow: 'hidden', zIndex: -1 }}
-            aria-hidden="true"
-          >
-            <FamilyTree
-              ref={hiddenTreeRef}
-              focusBranch={exportBranchId || undefined}
-            />
-          </div>
-        )}
       </div>
       </div>
     </div>
