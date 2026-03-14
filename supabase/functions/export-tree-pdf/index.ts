@@ -64,80 +64,97 @@ serve(async (req) => {
     // It sets the admin session, navigates to the tree, expands all nodes,
     // fits the view, and signals readiness for screenshot capture.
     const automationScript = `
-      async function waitFor(ms) {
-        return new Promise(r => setTimeout(r, ms));
-      }
-
-      async function waitForElement(selector, timeout = 30000) {
-        const start = Date.now();
-        while (Date.now() - start < timeout) {
-          const el = document.querySelector(selector);
-          if (el) return el;
-          await waitFor(200);
+      (async function() {
+        function waitFor(ms) {
+          return new Promise(r => setTimeout(r, ms));
         }
-        throw new Error('Element not found: ' + selector);
-      }
 
-      // Step 1: Set admin session in sessionStorage
-      sessionStorage.setItem('khunaini-admin-token', '${adminToken}');
-      sessionStorage.setItem('khunaini-admin-expiry',
-        new Date(Date.now() + 3600000).toISOString());
+        // Step 1: Set admin session in sessionStorage
+        sessionStorage.setItem('khunaini-admin-token', '${adminToken}');
+        sessionStorage.setItem('khunaini-admin-expiry',
+          new Date(Date.now() + 3600000).toISOString());
 
-      // Step 2: Wait for React Flow to initialize
-      await waitForElement('.react-flow__viewport');
-      await waitFor(3000);
+        // Step 2: Wait for React Flow to initialize
+        let attempts = 0;
+        while (!document.querySelector('.react-flow__viewport') && attempts < 30) {
+          await waitFor(1000);
+          attempts++;
+        }
+        await waitFor(3000);
 
-      // Step 3: Expand all nodes
-      const expandBtn = document.querySelector('[aria-label="توسيع الشجرة"]');
-      if (expandBtn) {
-        expandBtn.click();
-        await waitFor(500);
-        const expandAll = Array.from(document.querySelectorAll('button'))
-          .find(b => b.textContent?.includes('توسيع الكل'));
-        if (expandAll) {
-          expandAll.click();
+        // Step 3: Expand all nodes
+        const expandBtn = document.querySelector('[aria-label="توسيع الشجرة"]');
+        if (expandBtn) {
+          expandBtn.click();
+          await waitFor(800);
+          const allBtns = Array.from(document.querySelectorAll('button'));
+          const expandAll = allBtns.find(b => b.textContent?.includes('توسيع الكل'));
+          if (expandAll) {
+            expandAll.click();
+            await waitFor(500);
+            const confirm = allBtns.find(
+              b => b.textContent?.includes('موافق') ||
+                   b.textContent?.includes('نعم') ||
+                   b.textContent?.includes('متابعة')
+            );
+            if (confirm) confirm.click();
+          }
+        }
+
+        // Wait for all nodes to render after expansion
+        await waitFor(10000);
+
+        // Step 4: Fit view
+        const fitBtn = document.querySelector('[title="ملائمة العرض"]');
+        if (fitBtn) {
+          fitBtn.click();
+          await waitFor(3000);
+        }
+
+        ${mode === "branch" && branchId ? `
+        // Step 5: Apply branch filter
+        const filterBtn = document.querySelector('[aria-label="تصفية"]');
+        if (filterBtn) {
+          filterBtn.click();
           await waitFor(500);
+          const branchOption = Array.from(document.querySelectorAll('button'))
+            .find(b => b.textContent?.includes('${branchLabel || ""}'));
+          if (branchOption) {
+            branchOption.click();
+            await waitFor(2000);
+          }
         }
-      }
+        ` : ""}
 
-      // Wait for all nodes to render after expansion
-      await waitFor(8000);
-
-      // Step 4: Fit view
-      const fitBtn = document.querySelector('[title="ملائمة العرض"]');
-      if (fitBtn) {
-        fitBtn.click();
-        await waitFor(2000);
-      }
-
-      ${mode === "branch" && branchId ? `
-      // Step 5: Apply branch filter
-      const filterBtn = document.querySelector('[aria-label="تصفية"]');
-      if (filterBtn) {
-        filterBtn.click();
-        await waitFor(500);
-        const branchOption = Array.from(document.querySelectorAll('button'))
-          .find(b => b.textContent?.includes('${branchLabel || ""}'));
-        if (branchOption) {
-          branchOption.click();
-          await waitFor(2000);
-        }
-      }
-      ` : ""}
-
-      // Signal ready for screenshot
-      document.title = 'READY_FOR_EXPORT';
-      await waitFor(1000);
+        // Signal ready
+        document.title = 'READY_FOR_EXPORT';
+        await waitFor(1000);
+      })();
     `;
 
-    // ── Call Browserless.io screenshot endpoint ──
+    // ── Call Browserless.io v2 screenshot endpoint ──
     const screenshotResponse = await fetch(
-      `https://chrome.browserless.io/screenshot?token=${BROWSERLESS_KEY}`,
+      `https://chrome.browserless.io/chromium/screenshot?token=${BROWSERLESS_KEY}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           url: targetUrl,
+          gotoOptions: {
+            waitUntil: "networkidle2",
+            timeout: 60000,
+          },
+          addScriptTag: [{ content: automationScript }],
+          waitForSelector: {
+            selector: ".react-flow__viewport",
+            timeout: 30000,
+          },
+          waitForTimeout: 25000,
+          viewport: {
+            width: 3840,
+            height: 2160,
+            deviceScaleFactor: 2,
+          },
           options: {
             type: "png",
             encoding: "binary",
@@ -148,21 +165,6 @@ serve(async (req) => {
               width: 3840,
               height: 2160,
             },
-          },
-          viewport: {
-            width: 3840,
-            height: 2160,
-            deviceScaleFactor: 2,
-          },
-          waitFor: 2000,
-          evaluate: automationScript,
-          waitForFunction: {
-            fn: "() => document.title === 'READY_FOR_EXPORT'",
-            timeout: 120000,
-          },
-          gotoOptions: {
-            waitUntil: "networkidle2",
-            timeout: 30000,
           },
         }),
       }
