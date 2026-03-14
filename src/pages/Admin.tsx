@@ -479,7 +479,7 @@ function AdminContent() {
         {/* Hidden tree for PDF export */}
         {showHiddenTree && (
           <div
-            style={{ position: 'absolute', left: '-9999px', width: '1920px', height: '1080px' }}
+            style={{ position: 'absolute', left: '-99999px', top: 0, width: '4096px', height: '2160px', pointerEvents: 'none', userSelect: 'none' as const, overflow: 'hidden', zIndex: -1 }}
             aria-hidden="true"
           >
             <FamilyTree
