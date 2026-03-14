@@ -419,7 +419,7 @@ export default function Guide() {
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={actions.action}
-                        className={`mt-4 rounded-xl min-h-[44px] text-sm font-medium px-4 py-2 transition-colors ${group.btnClass}`}
+                        className={`mt-4 w-full rounded-xl min-h-[44px] text-sm font-medium px-4 py-2 transition-colors ${group.btnClass}`}
                       >
                         {actions.label}
                       </motion.button>
