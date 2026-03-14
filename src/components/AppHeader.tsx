@@ -27,7 +27,7 @@ const navItems: { value: ViewMode; label: string; icon: typeof TreePine }[] = [
   { value: "kinship", label: "القرابة", icon: Users },
 ];
 
-export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHome }: AppHeaderProps) {
+export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHome, isLineageActive }: AppHeaderProps) {
   const isMobile = useIsMobile();
   const { currentUser, isLoggedIn } = useAuth();
   const navigate = useNavigate();
