@@ -10,7 +10,6 @@ import type { FamilyMember } from "@/data/familyData";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DataTableView } from "@/components/DataTableView";
-import { FamilyTree, type FamilyTreeRef } from "@/components/FamilyTree";
 import { PILLARS } from "@/utils/branchUtils";
 import { Progress } from "@/components/ui/progress";
 

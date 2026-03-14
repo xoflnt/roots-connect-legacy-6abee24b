@@ -1,5 +1,5 @@
-import { toPng } from 'html-to-image';
 import jsPDF from 'jspdf';
+import { supabase } from '@/integrations/supabase/client';
 import { getAllMembers } from './familyService';
 import { getBranch } from '../utils/branchUtils';
 
@@ -10,51 +10,34 @@ export interface ExportOptions {
 }
 
 export async function exportTreeAsPDF(
-  rfInstance: any,
-  expandAllFn: () => void,
-  options: ExportOptions
+  _rfInstance: any,
+  _expandAllFn: () => void,
+  options: ExportOptions,
+  adminToken: string,
+  appUrl: string
 ): Promise<void> {
-  // Phase 1: Expand all nodes
-  expandAllFn();
-  await sleep(5000);
-
-  // Phase 2: Fit view for full coverage
-  rfInstance?.fitView({ duration: 0, padding: 0.05 });
-  await sleep(2000);
-
-  // Phase 3: Capture the tree viewport
-  const viewport = document.querySelector('.react-flow__viewport') as HTMLElement;
-  if (!viewport) throw new Error('React Flow viewport not found');
-
-  // Extra settle time before capture
-  await sleep(2000);
-
-  let png: string;
-  try {
-    png = await toPng(viewport, {
-      pixelRatio: 3,
-      backgroundColor: '#F6F4F0',
-      skipFonts: true,
-      filter: (node: Element) => {
-        if (node.tagName === 'LINK') return false;
-        if (node.tagName === 'STYLE' &&
-            node.textContent?.includes('fonts.googleapis')) {
-          return false;
-        }
-        return true;
+  // Call the edge function to get a high-res screenshot via Browserless
+  const { data, error } = await supabase.functions.invoke(
+    'export-tree-pdf',
+    {
+      body: {
+        mode: options.mode,
+        branchId: options.branchId,
+        branchLabel: options.branchLabel,
+        appUrl,
       },
-    });
-  } catch (err) {
-    console.warn('toPng attempt 1 failed, retrying with lower quality:', err);
-    png = await toPng(viewport, {
-      pixelRatio: 2,
-      backgroundColor: '#F6F4F0',
-      skipFonts: true,
-    });
+      headers: {
+        'x-admin-token': adminToken,
+      },
+    }
+  );
+
+  if (error || !data?.screenshot) {
+    throw new Error(error?.message || 'Failed to get screenshot from server');
   }
 
-  // Phase 4: Build PDF
-  await buildPDF(png, options);
+  const treeImageDataUrl = `data:image/png;base64,${data.screenshot}`;
+  await buildPDF(treeImageDataUrl, options);
 }
 
 function sleep(ms: number) {
@@ -90,7 +73,7 @@ async function buildPDF(
   const W = pdf.internal.pageSize.getWidth();
   const H = pdf.internal.pageSize.getHeight();
 
-  // Page 1: Cover (Canvas image — Arabic renders correctly)
+  // Page 1: Cover
   pdf.addImage(coverDataUrl, 'PNG', 0, 0, W, H, undefined, 'SLOW');
 
   // Page 2: Tree image
@@ -143,7 +126,7 @@ async function drawCoverCanvas(
   ctx.lineWidth = 2;
   ctx.strokeRect(18, 18, W - 36, H - 36);
 
-  // Inner border frame (double border effect)
+  // Inner border frame
   ctx.strokeStyle = 'rgba(201,168,76,0.25)';
   ctx.lineWidth = 1;
   ctx.strokeRect(26, 26, W - 52, H - 52);
@@ -158,7 +141,7 @@ async function drawCoverCanvas(
     }
   }
 
-  // Simple tree icon (top center)
+  // Simple tree icon
   ctx.fillStyle = 'rgba(26,58,42,0.12)';
   ctx.beginPath();
   ctx.moveTo(W / 2, H * 0.07);
@@ -192,7 +175,7 @@ async function drawCoverCanvas(
   ctx.fillStyle = '#C9A84C';
   ctx.fillText('فرع الزلفي', W / 2, H * 0.47);
 
-  // Branch label (if specific branch export)
+  // Branch label
   if (options.mode === 'branch' && options.branchLabel) {
     const branchColor =
       options.branchId === '300' ? '#16a34a' :
