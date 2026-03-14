@@ -16,6 +16,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { HeritageBadge } from "@/components/HeritageBadge";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Input as SheetInput } from "@/components/ui/input";
 
 interface LandingPageProps {
   onSearchSelect: (memberId: string) => void;
