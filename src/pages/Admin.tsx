@@ -211,51 +211,42 @@ function AdminContent() {
 
   const handleTreeExport = async () => {
     setExporting(true);
-    setExportProgress('جاري تحضير الشجرة...');
-    setShowHiddenTree(true);
 
-    // Wait for tree to fully mount and load data
-    await new Promise(r => setTimeout(r, 5000));
-    setExportProgress('جاري توسيع جميع الفروع...');
-
-    if (hiddenTreeRef.current) {
-      hiddenTreeRef.current.expandAll();
+    const token = getAdminToken();
+    if (!token) {
+      setExportProgress('خطأ: انتهت صلاحية الجلسة');
+      setExporting(false);
+      return;
     }
-    // Wait for all nodes to render after expansion
-    await new Promise(r => setTimeout(r, 5000));
-
-    setExportProgress('جاري ضبط العرض...');
-    const rfInst = hiddenTreeRef.current?.getRfInstance();
-    if (rfInst) {
-      rfInst.fitView({ duration: 0, padding: 0.08 });
-    }
-    // Wait for fitView to settle
-    await new Promise(r => setTimeout(r, 3000));
-
-    setExportProgress('جاري التقاط الصورة (قد يستغرق دقيقة)...');
 
     try {
+      setExportProgress('جاري الاتصال بالخادم...');
+
       const { exportTreeAsPDF } = await import('@/services/TreeExportService');
-      const rfInst = hiddenTreeRef.current?.getRfInstance();
+
+      setExportProgress('جاري فتح الشجرة وتوسيعها... (قد يستغرق ١-٢ دقيقة)');
+
       await exportTreeAsPDF(
-        rfInst,
-        () => hiddenTreeRef.current?.expandAll(),
+        null,
+        () => {},
         {
           mode: exportMode,
           branchId: exportBranchId || undefined,
           branchLabel: exportBranchId
             ? PILLARS.find(p => p.id === exportBranchId)?.label
             : undefined,
-        }
+        },
+        token,
+        window.location.origin
       );
+
       setExportProgress('تم التصدير بنجاح ✓');
     } catch (err) {
-      setExportProgress('حدث خطأ، حاول مرة أخرى');
       console.error('Tree export error:', err);
+      setExportProgress('حدث خطأ في التصدير، حاول مرة أخرى');
     } finally {
       setExporting(false);
-      setShowHiddenTree(false);
-      setTimeout(() => setExportProgress(''), 3000);
+      setTimeout(() => setExportProgress(''), 4000);
     }
   };
   return (
