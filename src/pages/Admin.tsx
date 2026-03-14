@@ -1,14 +1,13 @@
 import { useState, useEffect, useRef } from "react";
-import { AdminProtect } from "@/components/AdminProtect";
+import { AdminProtect, getAdminToken } from "@/components/AdminProtect";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Users, Eye, ShieldCheck, TreePine, Check, Loader2, ArrowRight, Bell, Download, Search, X } from "lucide-react";
+import { Users, Eye, ShieldCheck, TreePine, Check, Loader2, ArrowRight, Bell, Download, Search, X, RefreshCw } from "lucide-react";
 import { getRequests, markRequestDone, getVerifiedUsers, getVisitCount, type FamilyRequest } from "@/services/dataService";
-import { getAllMembers, searchMembers, getMemberById } from "@/services/familyService";
+import { getAllMembers, searchMembers } from "@/services/familyService";
 import type { FamilyMember } from "@/data/familyData";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DataTableView } from "@/components/DataTableView";
 
@@ -80,14 +79,16 @@ function RequestCard({ req, onAction }: { req: FamilyRequest; onAction: () => vo
   const member = members.find((m) => m.id === req.targetMemberId);
 
   const textContent = req.data?.text_content || req.notes || "";
-  // Legacy support: show old structured data if no text_content
   const legacyDetails = !req.data?.text_content
     ? Object.entries(req.data || {}).map(([k, v]) => `${k}: ${v}`).join("، ")
     : "";
 
   const handleMarkDone = async () => {
     setLoading(true);
-    await markRequestDone(req.id);
+    const token = getAdminToken();
+    if (token) {
+      await markRequestDone(req.id, token);
+    }
     onAction();
   };
 
@@ -144,13 +145,16 @@ function AdminContent() {
   const [verifiedCount, setVerifiedCount] = useState(0);
   const [visitCount, setVisitCount] = useState(0);
   const [memberCount, setMemberCount] = useState(0);
-  const [hasNew, setHasNew] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const navigate = useNavigate();
 
   const loadData = async () => {
-    const reqs = await getRequests();
+    const token = getAdminToken();
+    if (!token) return;
+    
+    const reqs = await getRequests(token);
     setRequests(reqs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
-    const users = await getVerifiedUsers();
+    const users = await getVerifiedUsers(token);
     setVerifiedCount(users.length);
     const vc = await getVisitCount();
     setVisitCount(vc);
@@ -159,22 +163,16 @@ function AdminContent() {
 
   useEffect(() => {
     loadData();
-
-    const channel = supabase
-      .channel('admin-requests')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'family_requests' },
-        () => {
-          setHasNew(true);
-          loadData();
-          setTimeout(() => setHasNew(false), 3000);
-        }
-      )
-      .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
+    // Poll every 30s instead of realtime (RLS blocks SELECT for realtime)
+    const interval = setInterval(loadData, 30000);
+    return () => clearInterval(interval);
   }, []);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await loadData();
+    setRefreshing(false);
+  };
 
   const pending = requests.filter((r) => r.status === "pending");
   const handled = requests.filter((r) => r.status !== "pending");
@@ -210,12 +208,9 @@ function AdminContent() {
           <div className="flex items-center gap-2">
             <ShieldCheck className="h-5 w-5 text-primary" />
             <h1 className="text-lg font-bold text-foreground">لوحة الإدارة</h1>
-            {hasNew && (
-              <span className="flex items-center gap-1 text-xs font-bold text-accent animate-pulse">
-                <Bell className="h-3.5 w-3.5" />
-                طلب جديد
-              </span>
-            )}
+            <Button variant="ghost" size="icon" onClick={handleRefresh} disabled={refreshing} className="h-8 w-8">
+              <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+            </Button>
           </div>
           <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="gap-1">
             <ArrowRight className="h-4 w-4" />
@@ -243,7 +238,6 @@ function AdminContent() {
           </TabsList>
 
           <TabsContent value="requests" className="space-y-6 mt-4">
-            {/* Pending Requests */}
             <section className="space-y-4">
               <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
@@ -262,7 +256,6 @@ function AdminContent() {
               )}
             </section>
 
-            {/* Handled Requests */}
             {handled.length > 0 && (
               <section className="space-y-4">
                 <h2 className="text-lg font-bold text-foreground">الطلبات المنجزة ({handled.length})</h2>
@@ -276,15 +269,12 @@ function AdminContent() {
           </TabsContent>
 
           <TabsContent value="registry" className="mt-4 space-y-4">
-            {/* Export toolbar */}
             <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between bg-card border border-border/50 rounded-2xl p-4">
-              {/* Full export */}
               <Button onClick={handleExportFull} className="rounded-xl font-bold gap-2 shrink-0">
                 <Download className="h-4 w-4" />
                 تصدير السجل الكامل
               </Button>
 
-              {/* Sub-tree export */}
               <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center flex-1 sm:justify-end">
                 {selectedExportMember ? (
                   <Badge className="gap-1.5 py-1.5 px-3 text-sm">
