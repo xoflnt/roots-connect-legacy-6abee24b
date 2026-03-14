@@ -201,7 +201,7 @@ export function SmartNavigateView() {
     );
   }
 
-  const verified = isVerifiedMember(member.id);
+  const verified = getVerifiedMemberIds().has(member.id);
   const deceased = isDeceased(member);
   const motherName = inferMotherName(member);
 
