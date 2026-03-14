@@ -334,11 +334,11 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         <div className="max-w-lg mx-auto grid grid-cols-3 gap-2.5">
           {[
             { label: "الشجرة", icon: MapIcon, color: "text-primary", onClick: () => onBrowseTree() },
-            { label: "النسب", icon: ScrollText, color: "text-accent", onClick: () => currentUser ? navigate(`/person/${currentUser.memberId}`) : onBrowseTree() },
-            { label: "القرابة", icon: Scale, color: "text-primary", onClick: () => onBrowseTree() },
+            { label: "النسب", icon: ScrollText, color: "text-accent", onClick: () => setShowNasabSheet(true) },
+            { label: "القرابة", icon: Scale, color: "text-primary", onClick: () => { onBrowseTree(); window.dispatchEvent(new CustomEvent('switch-to-kinship')); } },
             { label: "الوثائق", icon: BookOpen, color: "text-amber-600", onClick: () => navigate("/documents") },
             { label: "الدليل", icon: BookMarked, color: "text-muted-foreground", onClick: () => navigate("/guide") },
-            { label: "طلب تعديل", icon: Send, color: "text-accent", onClick: () => setRequestOpen(true) },
+            { label: "القائمة", icon: AlignJustify, color: "text-muted-foreground", onClick: () => { onBrowseTree(); window.dispatchEvent(new CustomEvent('switch-to-list')); } },
           ].map((action) => (
             <button
               key={action.label}
@@ -349,6 +349,17 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
               <span className="text-xs font-medium text-foreground">{action.label}</span>
             </button>
           ))}
+        </div>
+      </section>
+      <section className="px-4 animate-fade-in" style={{ animationDelay: "0.15s" }}>
+        <div className="max-w-lg mx-auto">
+          <button
+            onClick={() => setRequestOpen(true)}
+            className="w-full rounded-xl border border-dashed border-accent/40 bg-accent/5 hover:bg-accent/10 min-h-[44px] flex items-center justify-center gap-2 text-sm text-accent font-medium transition-colors"
+          >
+            <Send className="h-4 w-4" />
+            أرسل طلب تحديث البيانات
+          </button>
         </div>
       </section>
 
