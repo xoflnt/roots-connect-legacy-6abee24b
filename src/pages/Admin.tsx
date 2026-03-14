@@ -385,7 +385,98 @@ function AdminContent() {
               <DataTableView />
             </div>
           </TabsContent>
+
+          <TabsContent value="tree-export" className="mt-4">
+            <div className="bg-card border border-border/50 rounded-2xl p-6 space-y-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <TreePine className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-foreground">تصدير شجرة العائلة</h2>
+                  <p className="text-sm text-muted-foreground">صدّر الشجرة كملف PDF احترافي</p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <p className="text-sm font-bold text-foreground">اختر نطاق التصدير:</p>
+                <div className="grid gap-2">
+                  <button
+                    onClick={() => { setExportMode('full'); setExportBranchId(''); }}
+                    className={`flex items-center gap-3 rounded-xl border p-3 text-sm font-medium transition-colors text-right ${
+                      exportMode === 'full' ? 'border-primary bg-primary/10 text-foreground' : 'border-border bg-card text-muted-foreground hover:bg-muted/50'
+                    }`}
+                  >
+                    <span className="w-3 h-3 rounded-full border-2 border-current flex items-center justify-center">
+                      {exportMode === 'full' && <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
+                    </span>
+                    الشجرة كاملة
+                  </button>
+                  {PILLARS.map(p => {
+                    const dotColors: Record<string, string> = {
+                      '300': 'bg-green-500',
+                      '200': 'bg-yellow-500',
+                      '400': 'bg-orange-500',
+                    };
+                    const isSelected = exportMode === 'branch' && exportBranchId === p.id;
+                    return (
+                      <button
+                        key={p.id}
+                        onClick={() => { setExportMode('branch'); setExportBranchId(p.id); }}
+                        className={`flex items-center gap-3 rounded-xl border p-3 text-sm font-medium transition-colors text-right ${
+                          isSelected ? 'border-primary bg-primary/10 text-foreground' : 'border-border bg-card text-muted-foreground hover:bg-muted/50'
+                        }`}
+                      >
+                        <span className="w-3 h-3 rounded-full border-2 border-current flex items-center justify-center">
+                          {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
+                        </span>
+                        <span className={`w-2.5 h-2.5 rounded-full ${dotColors[p.id] || ''}`} />
+                        {p.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 rounded-xl p-3 text-sm">
+                ⚠️ قد يستغرق التصدير ١٠-٣٠ ثانية حسب حجم الشجرة. يرجى الانتظار.
+              </div>
+
+              {exportProgress && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-foreground">{exportProgress}</p>
+                  {exporting && <Progress value={undefined} className="h-1.5" />}
+                </div>
+              )}
+
+              <Button
+                onClick={handleTreeExport}
+                disabled={exporting}
+                className="w-full min-h-[52px] rounded-2xl font-bold gap-2 text-base"
+              >
+                {exporting ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <FileDown className="h-5 w-5" />
+                )}
+                {exporting ? exportProgress || 'جاري التصدير...' : 'تصدير PDF'}
+              </Button>
+            </div>
+          </TabsContent>
         </Tabs>
+
+        {/* Hidden tree for PDF export */}
+        {showHiddenTree && (
+          <div
+            style={{ position: 'absolute', left: '-9999px', width: '1920px', height: '1080px' }}
+            aria-hidden="true"
+          >
+            <FamilyTree
+              ref={hiddenTreeRef}
+              focusBranch={exportBranchId || undefined}
+            />
+          </div>
+        )}
       </div>
       </div>
     </div>
