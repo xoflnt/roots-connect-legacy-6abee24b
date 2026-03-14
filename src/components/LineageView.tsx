@@ -152,8 +152,8 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
               disabled={downloading}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/15 text-accent hover:bg-accent/25 transition-colors text-sm font-medium min-h-[44px] disabled:opacity-50"
             >
-              <Download className="h-4 w-4" />
-              {downloading ? "جاري التحميل..." : "بطاقة واتساب"}
+              {isMobile ? <Share2 className="h-4 w-4" /> : <Download className="h-4 w-4" />}
+              {downloading ? "جاري التحميل..." : isMobile ? "شارك النسب" : "تحميل البطاقة"}
             </motion.button>
           </div>
         </div>
