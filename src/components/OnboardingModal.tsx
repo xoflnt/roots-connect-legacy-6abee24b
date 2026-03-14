@@ -13,7 +13,7 @@ import { getAllMembers, searchMembers, getChildrenOf } from "@/services/familySe
 
 import { useAuth } from "@/contexts/AuthContext";
 import { HijriDatePicker } from "@/components/HijriDatePicker";
-import { registerVerifiedUser, submitRequest, getVerifiedMemberIds } from "@/services/dataService";
+import { registerVerifiedUser, submitRequest, getVerifiedMemberIds, verifyFamilyPasscode } from "@/services/dataService";
 import { getLineageLabel } from "@/utils/memberLabel";
 import { getBranch } from "@/utils/branchUtils";
 import { useNavigate } from "react-router-dom";
@@ -21,7 +21,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 
 const TOTAL_STEPS = 6;
-const FAMILY_PASSCODE = import.meta.env.VITE_FAMILY_PASSCODE || "339921";
 
 function getMemberMap() {
   return new Map(getAllMembers().map((m) => [m.id, m]));
@@ -56,6 +55,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
   // Phone number
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
+  const [passcodeVerifying, setPasscodeVerifying] = useState(false);
 
   // Phase D — Hijri Date + Quick Update
   const [familyPasscode, setFamilyPasscode] = useState("");
@@ -425,16 +425,20 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                 </InputOTP>
               </div>
               <Button
-                onClick={() => {
-                  if (familyPasscode === FAMILY_PASSCODE) {
+                onClick={async () => {
+                  setPasscodeVerifying(true);
+                  const valid = await verifyFamilyPasscode(familyPasscode);
+                  setPasscodeVerifying(false);
+                  if (valid) {
                     setStep(5);
                   } else {
                     toast.error("الرمز السري غير صحيح. الرجاء التأكد من الرمز الخاص بالعائلة.");
                   }
                 }}
-                disabled={familyPasscode.length < 6}
+                disabled={familyPasscode.length < 6 || passcodeVerifying}
                 className="min-h-[52px] w-full text-base font-semibold rounded-xl"
               >
+                {passcodeVerifying ? <Loader2 className="h-4 w-4 animate-spin ml-2" /> : null}
                 متابعة
               </Button>
               <Button variant="outline" onClick={() => { setStep(3); setFamilyPasscode(""); }} className="min-h-[52px] w-full rounded-xl">
