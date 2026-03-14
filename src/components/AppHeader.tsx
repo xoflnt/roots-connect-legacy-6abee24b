@@ -66,7 +66,7 @@ export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHom
           <div className="flex items-center gap-2 flex-1 justify-center">
             <ToggleGroup
               type="single"
-              value={activeView}
+              value={isLineageActive ? "lineage" : activeView}
               onValueChange={(v) => v && onViewChange(v as ViewMode)}
               className="border border-accent/20 rounded-xl p-0.5 bg-muted/40"
             >

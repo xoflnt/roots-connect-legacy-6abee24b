@@ -28,6 +28,7 @@ const PersonPage = () => {
     return (
       <div className="flex flex-col h-[100dvh] bg-background" dir="rtl">
         <AppHeader
+          isLineageActive={true}
           activeView="lineage"
           onViewChange={() => navigate("/")}
           onSearch={handleSearchSelect}
