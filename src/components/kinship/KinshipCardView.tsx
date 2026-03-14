@@ -23,7 +23,6 @@ export function KinshipCardView({
   relationText,
   directional,
 }: KinshipCardViewProps) {
-  const cardRef = useRef<HTMLDivElement>(null);
   const [sharing, setSharing] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showFallback, setShowFallback] = useState(false);
