@@ -571,7 +571,7 @@ export function SmartNavigateView() {
               لا يوجد أبناء مسجلون
             </div>
           ) : (
-            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+            <div ref={sonsScrollRef} className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide overscroll-x-contain" style={{ touchAction: 'pan-x', overscrollBehavior: 'contain' }}>
               {children.map((child, i) => (
                 <SonCard key={child.id} member={child} onTap={(id) => navigateTo(id, "up")} index={i} />
               ))}
