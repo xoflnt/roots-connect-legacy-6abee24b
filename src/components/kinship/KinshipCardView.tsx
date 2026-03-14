@@ -206,7 +206,7 @@ export function KinshipCardView({
           <div className="flex-1 rounded-xl bg-muted/50 border border-border/50 p-3 text-center">
             <p className="text-xs text-muted-foreground">{name2}</p>
             <p className="text-3xl font-extrabold text-primary">{toArabicNum(result.dist2)}</p>
-            <p className="text-xs text-muted-foreground">أجيال</p>
+            <p className="text-xs text-muted-foreground">{genLabel(result.dist2)}</p>
           </div>
         </div>
 
