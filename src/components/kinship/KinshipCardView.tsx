@@ -31,7 +31,13 @@ export function KinshipCardView({
   const name1 = person1.name.split(" ")[0];
   const name2 = person2.name.split(" ")[0];
   const lcaName = result.lca?.name.split(" ")[0] ?? "";
-  const lcaLabel = result.lca?.gender === "F" ? "الجدة المشتركة" : "الجد المشترك";
+  const lcaLabel = (() => {
+    const isFemale = result.lca?.gender === "F";
+    if (result.dist1 === 1 && result.dist2 === 1) return isFemale ? "الأم المشتركة" : "الأب المشترك";
+    if (result.dist1 === 1 || result.dist2 === 1) return isFemale ? "الجدة/الأم المشتركة" : "الجد/الأب المشترك";
+    return isFemale ? "الجدة المشتركة" : "الجد المشترك";
+  })();
+  const genLabel = (d: number) => d === 1 ? "جيل" : d === 2 ? "جيلان" : "أجيال";
 
   const branch1 = getBranch(person1.id);
   const branch2 = getBranch(person2.id);
@@ -195,12 +201,12 @@ export function KinshipCardView({
           <div className="flex-1 rounded-xl bg-muted/50 border border-border/50 p-3 text-center">
             <p className="text-xs text-muted-foreground">{name1}</p>
             <p className="text-3xl font-extrabold text-primary">{toArabicNum(result.dist1)}</p>
-            <p className="text-xs text-muted-foreground">أجيال</p>
+            <p className="text-xs text-muted-foreground">{genLabel(result.dist1)}</p>
           </div>
           <div className="flex-1 rounded-xl bg-muted/50 border border-border/50 p-3 text-center">
             <p className="text-xs text-muted-foreground">{name2}</p>
             <p className="text-3xl font-extrabold text-primary">{toArabicNum(result.dist2)}</p>
-            <p className="text-xs text-muted-foreground">أجيال</p>
+            <p className="text-xs text-muted-foreground">{genLabel(result.dist2)}</p>
           </div>
         </div>
 
