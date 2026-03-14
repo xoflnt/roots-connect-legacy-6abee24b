@@ -274,30 +274,33 @@ export function kinshipDirectional(
   }
 
   // Asymmetric — compute both directions
-  const t1 = asymTitle(d1, d2);
-  const t2 = asymTitle(d2, d1);
+  const g1 = person1?.gender;
+  const g2 = person2?.gender;
+  const t1 = asymTitle(d1, d2, g1);
+  const t2 = asymTitle(d2, d1, g2);
   return { symmetric: false, symmetricTitle: "", title1to2: t1, title2to1: t2 };
 }
 
-function asymTitle(myDist: number, otherDist: number): string {
+function asymTitle(myDist: number, otherDist: number, gender?: string): string {
+  const f = gender === "F";
   // Direct lineage
   if (myDist === 0 && otherDist === 1) return "أب";
-  if (myDist === 1 && otherDist === 0) return "ابن";
+  if (myDist === 1 && otherDist === 0) return f ? "ابنة" : "ابن";
   if (myDist === 0 && otherDist === 2) return "جد";
-  if (myDist === 2 && otherDist === 0) return "حفيد";
+  if (myDist === 2 && otherDist === 0) return f ? "حفيدة" : "حفيد";
   if (myDist === 0 && otherDist >= 3) return `جد ${toOrdinal(otherDist - 1) || toArabicNum(otherDist - 1)}`;
-  if (myDist >= 3 && otherDist === 0) return `حفيد ${toOrdinal(myDist - 1) || toArabicNum(myDist - 1)}`;
+  if (myDist >= 3 && otherDist === 0) return `${f ? "حفيدة" : "حفيد"} ${toOrdinal(myDist - 1) || toArabicNum(myDist - 1)}`;
 
   // Uncle / nephew
-  if (myDist === 1 && otherDist === 2) return "عم";
-  if (myDist === 2 && otherDist === 1) return "ابن أخ";
-  if (myDist === 1 && otherDist === 3) return "عم الأب";
-  if (myDist === 3 && otherDist === 1) return "ابن ابن أخ";
-  if (myDist === 1 && otherDist > 3) return `عم من الدرجة ${toArabicNum(otherDist - 1)}`;
+  if (myDist === 1 && otherDist === 2) return f ? "عمة" : "عم";
+  if (myDist === 2 && otherDist === 1) return f ? "ابنة أخ" : "ابن أخ";
+  if (myDist === 1 && otherDist === 3) return f ? "عمة الأب" : "عم الأب";
+  if (myDist === 3 && otherDist === 1) return f ? "ابنة ابن أخ" : "ابن ابن أخ";
+  if (myDist === 1 && otherDist > 3) return `${f ? "عمة" : "عم"} من الدرجة ${toArabicNum(otherDist - 1)}`;
 
   // Cousin-based
-  if (myDist === 2 && otherDist === 3) return "ابن عم الأب";
-  if (myDist === 3 && otherDist === 2) return "ابن ابن عم";
+  if (myDist === 2 && otherDist === 3) return `${f ? "ابنة" : "ابن"} عم الأب`;
+  if (myDist === 3 && otherDist === 2) return `${f ? "ابنة" : "ابن"} ابن عم`;
 
   // Deep fallback
   return "";
