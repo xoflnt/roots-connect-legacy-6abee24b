@@ -153,14 +153,17 @@ export default function Documents() {
   };
 
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
+    <div className="flex flex-col h-[100dvh] bg-background" dir="rtl">
       {/* Header */}
-      <header className="sticky top-0 z-40 flex items-center justify-between gap-2 px-4 md:px-6 py-3 border-b border-border/40 bg-card/80 backdrop-blur-xl shadow-sm">
+      <header
+        className="shrink-0 z-50 flex items-center justify-between gap-2 px-4 md:px-6 py-3 border-b border-border/40 bg-card/80 backdrop-blur-xl shadow-sm"
+        style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }}
+      >
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate("/")}
+            onClick={() => window.history.length > 1 ? navigate(-1) : navigate("/")}
             className="h-11 w-11 min-w-[44px] min-h-[44px] rounded-xl text-muted-foreground hover:text-foreground"
             aria-label="رجوع"
           >
