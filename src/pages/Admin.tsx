@@ -208,7 +208,7 @@ function AdminContent() {
           <div className="flex items-center gap-2">
             <ShieldCheck className="h-5 w-5 text-primary" />
             <h1 className="text-lg font-bold text-foreground">لوحة الإدارة</h1>
-            <Button variant="ghost" size="icon" onClick={handleRefresh} disabled={refreshing} className="h-8 w-8">
+            <Button variant="ghost" size="icon" onClick={handleRefresh} disabled={refreshing} className="h-11 w-11 min-w-[44px] min-h-[44px]">
               <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
             </Button>
           </div>
