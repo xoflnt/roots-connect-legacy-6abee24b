@@ -10,7 +10,6 @@ import type { FamilyMember } from "@/data/familyData";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DataTableView } from "@/components/DataTableView";
-import { FamilyTree, type FamilyTreeRef } from "@/components/FamilyTree";
 import { PILLARS } from "@/utils/branchUtils";
 import { Progress } from "@/components/ui/progress";
 
@@ -156,8 +155,6 @@ function AdminContent() {
   const [exportBranchId, setExportBranchId] = useState<string>('');
   const [exporting, setExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState('');
-  const [showHiddenTree, setShowHiddenTree] = useState(false);
-  const hiddenTreeRef = useRef<FamilyTreeRef>(null);
 
   const loadData = async () => {
     const token = getAdminToken();
@@ -214,51 +211,42 @@ function AdminContent() {
 
   const handleTreeExport = async () => {
     setExporting(true);
-    setExportProgress('جاري تحضير الشجرة...');
-    setShowHiddenTree(true);
 
-    // Wait for tree to fully mount and load data
-    await new Promise(r => setTimeout(r, 5000));
-    setExportProgress('جاري توسيع جميع الفروع...');
-
-    if (hiddenTreeRef.current) {
-      hiddenTreeRef.current.expandAll();
+    const token = getAdminToken();
+    if (!token) {
+      setExportProgress('خطأ: انتهت صلاحية الجلسة');
+      setExporting(false);
+      return;
     }
-    // Wait for all nodes to render after expansion
-    await new Promise(r => setTimeout(r, 5000));
-
-    setExportProgress('جاري ضبط العرض...');
-    const rfInst = hiddenTreeRef.current?.getRfInstance();
-    if (rfInst) {
-      rfInst.fitView({ duration: 0, padding: 0.08 });
-    }
-    // Wait for fitView to settle
-    await new Promise(r => setTimeout(r, 3000));
-
-    setExportProgress('جاري التقاط الصورة (قد يستغرق دقيقة)...');
 
     try {
+      setExportProgress('جاري الاتصال بالخادم...');
+
       const { exportTreeAsPDF } = await import('@/services/TreeExportService');
-      const rfInst = hiddenTreeRef.current?.getRfInstance();
+
+      setExportProgress('جاري فتح الشجرة وتوسيعها... (قد يستغرق ١-٢ دقيقة)');
+
       await exportTreeAsPDF(
-        rfInst,
-        () => hiddenTreeRef.current?.expandAll(),
+        null,
+        () => {},
         {
           mode: exportMode,
           branchId: exportBranchId || undefined,
           branchLabel: exportBranchId
             ? PILLARS.find(p => p.id === exportBranchId)?.label
             : undefined,
-        }
+        },
+        token,
+        window.location.origin
       );
+
       setExportProgress('تم التصدير بنجاح ✓');
     } catch (err) {
-      setExportProgress('حدث خطأ، حاول مرة أخرى');
       console.error('Tree export error:', err);
+      setExportProgress('حدث خطأ في التصدير، حاول مرة أخرى');
     } finally {
       setExporting(false);
-      setShowHiddenTree(false);
-      setTimeout(() => setExportProgress(''), 3000);
+      setTimeout(() => setExportProgress(''), 4000);
     }
   };
   return (
@@ -476,18 +464,6 @@ function AdminContent() {
           </TabsContent>
         </Tabs>
 
-        {/* Hidden tree for PDF export */}
-        {showHiddenTree && (
-          <div
-            style={{ position: 'absolute', left: '-99999px', top: 0, width: '4096px', height: '2160px', pointerEvents: 'none', userSelect: 'none' as const, overflow: 'hidden', zIndex: -1 }}
-            aria-hidden="true"
-          >
-            <FamilyTree
-              ref={hiddenTreeRef}
-              focusBranch={exportBranchId || undefined}
-            />
-          </div>
-        )}
       </div>
       </div>
     </div>
