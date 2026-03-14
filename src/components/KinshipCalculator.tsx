@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeftRight, Search, User, Users, TreePine, FileText, Share2, GitBranch, X } from "lucide-react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
@@ -25,6 +26,7 @@ import { PersonDetails } from "./PersonDetails";
 import { KinshipTreeView } from "./kinship/KinshipTreeView";
 import { KinshipDocumentView } from "./kinship/KinshipDocumentView";
 import { KinshipCardView } from "./kinship/KinshipCardView";
+import { scaleIn, gentleSpring } from "@/lib/animations";
 
 interface KinshipCalculatorProps {
   initialMemberId?: string;
@@ -143,82 +145,90 @@ function PersonPicker({
           </div>
         </div>
 
-        {selected ? (
-          <SelectedPersonDisplay member={selected} onClear={handleClear} />
-        ) : isMobile ? (
-          /* ── Mobile: tap to open fullscreen dialog ── */
-          <>
-            <button
-              onClick={() => setDialogOpen(true)}
-              className="w-full flex items-center gap-2 h-11 px-3 rounded-xl border border-dashed border-border/50 bg-background text-sm text-muted-foreground"
+        <AnimatePresence mode="wait">
+          {selected ? (
+            <motion.div
+              key={selected.id}
+              initial={scaleIn.initial}
+              animate={scaleIn.animate}
+              exit={scaleIn.exit}
+              transition={scaleIn.transition}
             >
-              <Search className="h-4 w-4 shrink-0" />
-              <span>ابحث عن شخص...</span>
-            </button>
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-              <DialogContent
-                className="p-0 gap-0 fixed bottom-0 top-auto translate-y-0 max-w-full w-full rounded-t-2xl rounded-b-none border-0 border-t border-border/40 shadow-2xl [&>button]:hidden data-[state=open]:slide-in-from-bottom data-[state=closed]:slide-out-to-bottom"
-                style={{ maxHeight: vpHeight ? vpHeight * 0.7 : '70dvh' }}
+              <SelectedPersonDisplay member={selected} onClear={handleClear} />
+            </motion.div>
+          ) : isMobile ? (
+            <motion.div key="mobile-search" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              <button
+                onClick={() => setDialogOpen(true)}
+                className="w-full flex items-center gap-2 h-11 px-3 rounded-xl border border-dashed border-border/50 bg-background text-sm text-muted-foreground"
               >
-                <DialogTitle className="sr-only">{label}</DialogTitle>
-                <div className="flex flex-col h-full" dir="rtl">
-                  <div className="flex justify-center py-2">
-                    <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
-                  </div>
-                  <div className="shrink-0 flex items-center gap-2 px-4 pb-3">
-                    <div className="flex-1 relative">
-                      <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                      <Input
-                        autoFocus
-                        placeholder="ابحث باسم الشخص..."
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        className="pr-10 h-12 rounded-xl text-sm border-border/50"
-                      />
+                <Search className="h-4 w-4 shrink-0" />
+                <span>ابحث عن شخص...</span>
+              </button>
+              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <DialogContent
+                  className="p-0 gap-0 fixed bottom-0 top-auto translate-y-0 max-w-full w-full rounded-t-2xl rounded-b-none border-0 border-t border-border/40 shadow-2xl [&>button]:hidden data-[state=open]:slide-in-from-bottom data-[state=closed]:slide-out-to-bottom"
+                  style={{ maxHeight: vpHeight ? vpHeight * 0.7 : '70dvh' }}
+                >
+                  <DialogTitle className="sr-only">{label}</DialogTitle>
+                  <div className="flex flex-col h-full" dir="rtl">
+                    <div className="flex justify-center py-2">
+                      <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
                     </div>
-                    <button
-                      onClick={() => setDialogOpen(false)}
-                      className="w-10 h-10 flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground shrink-0"
-                    >
-                      <X className="h-5 w-5" />
-                    </button>
+                    <div className="shrink-0 flex items-center gap-2 px-4 pb-3">
+                      <div className="flex-1 relative">
+                        <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                        <Input
+                          autoFocus
+                          placeholder="ابحث باسم الشخص..."
+                          value={query}
+                          onChange={(e) => setQuery(e.target.value)}
+                          className="pr-10 h-12 rounded-xl text-sm border-border/50"
+                        />
+                      </div>
+                      <button
+                        onClick={() => setDialogOpen(false)}
+                        className="w-10 h-10 flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground shrink-0"
+                      >
+                        <X className="h-5 w-5" />
+                      </button>
+                    </div>
+                    <div className="flex-1 overflow-y-auto overscroll-contain border-t border-border/20">
+                      {filtered.length > 0 ? (
+                        filtered.map((m) => (
+                          <PersonResultRow key={m.id} m={m} onSelect={handleSelect} />
+                        ))
+                      ) : query.trim() ? (
+                        <p className="text-center text-muted-foreground text-sm py-8">لا توجد نتائج</p>
+                      ) : (
+                        <p className="text-center text-muted-foreground text-sm py-8">اكتب اسم الشخص للبحث</p>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex-1 overflow-y-auto overscroll-contain border-t border-border/20">
-                    {filtered.length > 0 ? (
-                      filtered.map((m) => (
-                        <PersonResultRow key={m.id} m={m} onSelect={handleSelect} />
-                      ))
-                    ) : query.trim() ? (
-                      <p className="text-center text-muted-foreground text-sm py-8">لا توجد نتائج</p>
-                    ) : (
-                      <p className="text-center text-muted-foreground text-sm py-8">اكتب اسم الشخص للبحث</p>
-                    )}
-                  </div>
+                </DialogContent>
+              </Dialog>
+            </motion.div>
+          ) : (
+            <motion.div key="desktop-search" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="relative">
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <Input
+                placeholder="ابحث عن شخص..."
+                value={query}
+                onChange={(e) => { setQuery(e.target.value); setDesktopOpen(true); }}
+                onFocus={() => query.trim() && setDesktopOpen(true)}
+                onBlur={() => setTimeout(() => setDesktopOpen(false), 200)}
+                className="pr-10 h-11 rounded-xl text-sm border-dashed border-border/50"
+              />
+              {desktopOpen && filtered.length > 0 && (
+                <div className="absolute top-full mt-1 w-full bg-card border border-border rounded-xl shadow-xl z-50 max-h-48 overflow-y-auto">
+                  {filtered.map((m) => (
+                    <PersonResultRow key={m.id} m={m} onSelect={handleSelect} />
+                  ))}
                 </div>
-              </DialogContent>
-            </Dialog>
-          </>
-        ) : (
-          /* ── Desktop: inline dropdown ── */
-          <div className="relative">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-            <Input
-              placeholder="ابحث عن شخص..."
-              value={query}
-              onChange={(e) => { setQuery(e.target.value); setDesktopOpen(true); }}
-              onFocus={() => query.trim() && setDesktopOpen(true)}
-              onBlur={() => setTimeout(() => setDesktopOpen(false), 200)}
-              className="pr-10 h-11 rounded-xl text-sm border-dashed border-border/50"
-            />
-            {desktopOpen && filtered.length > 0 && (
-              <div className="absolute top-full mt-1 w-full bg-card border border-border rounded-xl shadow-xl z-50 max-h-48 overflow-y-auto">
-                {filtered.map((m) => (
-                  <PersonResultRow key={m.id} m={m} onSelect={handleSelect} />
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
@@ -302,7 +312,12 @@ export function KinshipCalculator({ initialMemberId }: KinshipCalculatorProps) {
     <div className="py-6 md:py-10 px-4 md:px-6 overflow-auto" dir="rtl">
       <div className="max-w-lg mx-auto space-y-5">
         {/* ── Page Header ── */}
-        <div className="text-center space-y-2 animate-fade-in">
+        <motion.div
+          className="text-center space-y-2"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary">
             <GitBranch className="h-4 w-4" />
             <span className="font-bold text-sm">حاسبة القرابة</span>
@@ -310,10 +325,10 @@ export function KinshipCalculator({ initialMemberId }: KinshipCalculatorProps) {
           <p className="text-sm text-muted-foreground">
             اكتشف صلة القرابة بين أي فردين في العائلة
           </p>
-        </div>
+        </motion.div>
 
         {/* ── Pickers ── */}
-        <div className="space-y-3 animate-fade-in" style={{ animationDelay: "100ms" }}>
+        <div className="space-y-3">
           <PersonPicker
             label="الشخص الأول"
             selected={person1}
@@ -362,17 +377,43 @@ export function KinshipCalculator({ initialMemberId }: KinshipCalculatorProps) {
 
         {/* ── Result ── */}
         {showResult && result && relationText && (
-          <div className="rounded-2xl border border-primary/20 bg-card shadow-lg overflow-hidden animate-fade-in">
+          <motion.div
+            className="rounded-2xl border border-primary/20 bg-card shadow-lg overflow-hidden"
+            initial={{ opacity: 0, y: 30, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={gentleSpring}
+          >
             {/* Gold top line */}
             <div className="h-1 bg-gradient-to-r from-transparent via-accent/50 to-transparent" />
 
             {/* Result header */}
-            <div className="p-5 text-center border-b border-border/30 space-y-2 animate-fade-in">
-              <p className="text-xl font-extrabold text-foreground">{relationText}</p>
+            <div className="p-5 text-center border-b border-border/30 space-y-2">
+              <motion.p
+                className="text-xl font-extrabold text-foreground"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ ...gentleSpring, delay: 0.1 }}
+              >
+                {relationText}
+              </motion.p>
               <p className="text-sm text-muted-foreground">
-                <span className="text-primary font-bold">{name1Short}</span>
+                <motion.span
+                  className="text-primary font-bold"
+                  initial={{ x: 30, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ ...gentleSpring, delay: 0.15 }}
+                >
+                  {name1Short}
+                </motion.span>
                 {" "}←→{" "}
-                <span className="text-accent-foreground font-bold">{name2Short}</span>
+                <motion.span
+                  className="text-accent-foreground font-bold"
+                  initial={{ x: -30, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ ...gentleSpring, delay: 0.15 }}
+                >
+                  {name2Short}
+                </motion.span>
               </p>
             </div>
 
@@ -443,15 +484,19 @@ export function KinshipCalculator({ initialMemberId }: KinshipCalculatorProps) {
                 بحث جديد
               </Button>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* No relation found */}
         {showResult && person1 && person2 && !result && (
-          <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-5 text-center space-y-3 animate-fade-in">
+          <motion.div
+            className="rounded-2xl border border-destructive/30 bg-destructive/5 p-5 text-center space-y-3"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+          >
             <p className="text-destructive font-bold">لم يتم العثور على صلة قرابة</p>
             <Button variant="outline" onClick={handleReset} size="sm" className="rounded-2xl">بحث جديد</Button>
-          </div>
+          </motion.div>
         )}
       </div>
 

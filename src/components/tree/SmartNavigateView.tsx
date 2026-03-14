@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef, useMemo, useEffect } from "react";
+import { motion, useAnimation } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   getMemberById,
@@ -36,16 +37,7 @@ import {
 import { getVerifiedMemberIds } from "@/services/dataService";
 import { cn } from "@/lib/utils";
 import type { FamilyMember } from "@/data/familyData";
-
-type SlideDirection = "up" | "down" | "left" | "right" | "none";
-
-const directionClass: Record<SlideDirection, string> = {
-  up: "animate-slide-up",
-  down: "animate-slide-down",
-  left: "animate-slide-left",
-  right: "animate-slide-right",
-  none: "",
-};
+import { staggerContainer, staggerItem, gentleSpring, springConfig } from "@/lib/animations";
 
 const PILLAR_IDS = new Set(["200", "300", "400"]);
 const FOUNDER_IDS = new Set(["100", "200", "300", "400"]);
@@ -75,16 +67,17 @@ const SonCard = React.memo(function SonCard({
   const childLabel = member.gender === "F" ? "لها" : "له";
 
   return (
-    <button
+    <motion.button
+      variants={staggerItem}
+      whileHover={{ scale: 1.03 }}
+      whileTap={{ scale: 0.97 }}
       onClick={() => onTap(member.id)}
       className={cn(
-        "flex-shrink-0 w-[160px] rounded-xl border bg-card p-3 text-right transition-all hover:shadow-md hover:scale-[1.02] min-h-[44px] relative animate-fade-in",
+        "flex-shrink-0 w-[160px] rounded-xl border bg-card p-3 text-right transition-all hover:shadow-md min-h-[44px] relative",
         deceased && "opacity-70"
       )}
       style={{
         borderColor: `hsl(var(--${member.gender === "M" ? "male" : "female"}) / 0.3)`,
-        animationDelay: `${Math.min(index * 0.05, 0.3)}s`,
-        animationFillMode: "both",
       }}
       dir="rtl"
     >
@@ -116,7 +109,7 @@ const SonCard = React.memo(function SonCard({
         </div>
       )}
       {deceased && <HeritageBadge type="deceased" gender={member.gender as "M" | "F"} />}
-    </button>
+    </motion.button>
   );
 });
 
@@ -134,9 +127,12 @@ const FatherCard = React.memo(function FatherCard({
   const gc = genderColor(member.gender);
 
   return (
-    <button
+    <motion.button
+      initial={{ opacity: 0, y: -15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={gentleSpring}
       onClick={() => onTap(member.id)}
-      className="w-full rounded-xl border bg-card/80 backdrop-blur-sm p-3 text-right transition-all hover:shadow-md min-h-[44px] flex items-center gap-3 relative overflow-hidden animate-fade-in"
+      className="w-full rounded-xl border bg-card/80 backdrop-blur-sm p-3 text-right transition-all hover:shadow-md min-h-[44px] flex items-center gap-3 relative overflow-hidden"
       style={style ? { borderColor: style.text + "33" } : undefined}
       dir="rtl"
     >
@@ -179,7 +175,7 @@ const FatherCard = React.memo(function FatherCard({
           الأب
         </span>
       </div>
-    </button>
+    </motion.button>
   );
 });
 
@@ -197,14 +193,12 @@ function TruncatedBreadcrumb({
 
   const items = useMemo(() => {
     if (isNarrow) {
-      // Show only current + father
       return ancestors.filter((a) => a.id === currentId || a.id === ancestors[ancestors.length - 2]?.id);
     }
     if (ancestors.length <= 4) return ancestors;
-    // root + ... + last 2 before current + current
     const root = ancestors[0];
-    const tail = ancestors.slice(-3); // last 2 + current
-    return [root, null as any, ...tail]; // null = ellipsis
+    const tail = ancestors.slice(-3);
+    return [root, null as any, ...tail];
   }, [ancestors, currentId, isNarrow]);
 
   return (
@@ -223,7 +217,10 @@ function TruncatedBreadcrumb({
             {i > 0 && items[i - 1] !== null && (
               <ChevronLeft className="h-3 w-3 text-muted-foreground shrink-0" />
             )}
-            <button
+            <motion.button
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.04, duration: 0.2 }}
               onClick={() => anc.id !== currentId && onNavigate(anc.id)}
               className={cn(
                 "shrink-0 px-2 py-1 rounded-md text-xs whitespace-nowrap min-h-[32px] transition-colors",
@@ -233,7 +230,7 @@ function TruncatedBreadcrumb({
               )}
             >
               {anc.name}
-            </button>
+            </motion.button>
           </React.Fragment>
         );
       })}
@@ -248,16 +245,10 @@ export function SmartNavigateView() {
 
   const [currentId, setCurrentId] = useState<string>(startId);
   const [history, setHistory] = useState<string[]>([]);
-  const [slideDir, setSlideDir] = useState<SlideDirection>("none");
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
   const [showSearch, setShowSearch] = useState(false);
 
-  // Swipe state
-  const touchStartX = useRef(0);
-  const touchStartY = useRef(0);
-  const [swipeOffset, setSwipeOffset] = useState(0);
-  const isSwiping = useRef(false);
-  const swipeLocked = useRef<"horizontal" | "vertical" | null>(null);
+  const controls = useAnimation();
   const sonsScrollRef = useRef<HTMLDivElement>(null);
 
   const member = getMemberById(currentId);
@@ -273,21 +264,38 @@ export function SmartNavigateView() {
   const branchStyle = branch ? getBranchStyle(branch.pillarId) : null;
 
   const navigateTo = useCallback(
-    (id: string, direction: SlideDirection) => {
+    async (id: string, direction: "up" | "down" | "left" | "right" | "none") => {
+      // Animate out
+      const outX = direction === "left" ? -30 : direction === "right" ? 30 : 0;
+      const outY = direction === "up" ? -20 : direction === "down" ? 20 : 0;
+      await controls.start({
+        opacity: 0,
+        x: outX,
+        y: outY,
+        transition: { duration: 0.15 },
+      });
+      // Update state
       setHistory((prev) => [...prev, currentId]);
-      setSlideDir(direction);
       setCurrentId(id);
+      // Animate in
+      controls.start({
+        opacity: 1,
+        x: 0,
+        y: 0,
+        transition: gentleSpring,
+      });
     },
-    [currentId]
+    [currentId, controls]
   );
 
-  const goBack = useCallback(() => {
+  const goBack = useCallback(async () => {
     if (history.length === 0) return;
     const prev = history[history.length - 1];
+    await controls.start({ opacity: 0, transition: { duration: 0.1 } });
     setHistory((h) => h.slice(0, -1));
-    setSlideDir("none");
     setCurrentId(prev);
-  }, [history]);
+    controls.start({ opacity: 1, x: 0, y: 0, transition: gentleSpring });
+  }, [history, controls]);
 
   const goToSibling = useCallback(
     (delta: number) => {
@@ -296,67 +304,6 @@ export function SmartNavigateView() {
       navigateTo(siblings[newIndex].id, delta > 0 ? "left" : "right");
     },
     [siblingIndex, siblings, navigateTo]
-  );
-
-  // Reset animation class after it plays
-  useEffect(() => {
-    if (slideDir === "none") return;
-    const timer = setTimeout(() => setSlideDir("none"), 350);
-    return () => clearTimeout(timer);
-  }, [currentId, slideDir]);
-
-  // Touch handlers with live feedback
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    if (sonsScrollRef.current?.contains(e.target as Node)) {
-      swipeLocked.current = 'vertical';
-      isSwiping.current = false;
-      return;
-    }
-    touchStartX.current = e.touches[0].clientX;
-    touchStartY.current = e.touches[0].clientY;
-    isSwiping.current = false;
-    swipeLocked.current = null;
-    setSwipeOffset(0);
-  }, []);
-
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    const dx = e.touches[0].clientX - touchStartX.current;
-    const dy = e.touches[0].clientY - touchStartY.current;
-
-    // Lock direction after 10px movement
-    if (!swipeLocked.current && (Math.abs(dx) > 10 || Math.abs(dy) > 10)) {
-      if (Math.abs(dy) > Math.abs(dx) * 1.5) {
-        swipeLocked.current = "vertical";
-        return;
-      }
-      swipeLocked.current = "horizontal";
-    }
-
-    if (swipeLocked.current === "vertical") return;
-    if (swipeLocked.current === "horizontal") {
-      isSwiping.current = true;
-      // Dampen the offset slightly for a natural feel
-      setSwipeOffset(dx * 0.6);
-    }
-  }, []);
-
-  const handleTouchEnd = useCallback(
-    (e: React.TouchEvent) => {
-      if (!isSwiping.current || swipeLocked.current !== "horizontal") {
-        setSwipeOffset(0);
-        return;
-      }
-      const dx = e.changedTouches[0].clientX - touchStartX.current;
-      // Snap back first
-      setSwipeOffset(0);
-      isSwiping.current = false;
-
-      if (Math.abs(dx) < 30) return;
-      // RTL: swipe right = previous, swipe left = next
-      if (dx > 0) goToSibling(-1);
-      else goToSibling(1);
-    },
-    [goToSibling]
   );
 
   const handleSearchSelect = useCallback(
@@ -405,28 +352,28 @@ export function SmartNavigateView() {
         />
       </div>
 
-      {/* Main content with slide animation */}
-      <div
+      {/* Main content with Framer Motion animation */}
+      <motion.div
         key={currentId}
-        className={cn(
-          "flex-1 overflow-y-auto px-3 py-4 space-y-4",
-          !isSwiping.current && directionClass[slideDir]
-        )}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        style={{
-          willChange: "transform, opacity",
-          transform: swipeOffset !== 0 ? `translateX(${swipeOffset}px)` : undefined,
-          transition: swipeOffset !== 0 ? "none" : "transform 0.3s ease",
+        animate={controls}
+        initial={{ opacity: 1, x: 0, y: 0 }}
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.2}
+        onDragEnd={(_e, info) => {
+          if (sonsScrollRef.current?.contains(document.activeElement)) return;
+          if (info.offset.x < -50) goToSibling(1);
+          else if (info.offset.x > 50) goToSibling(-1);
         }}
+        className="flex-1 overflow-y-auto px-3 py-4 space-y-4"
+        style={{ willChange: "transform, opacity" }}
       >
         {/* Father card */}
         {father && <FatherCard member={father} onTap={(id) => navigateTo(id, "down")} />}
 
         {/* Center card */}
         <div
-          className="rounded-2xl border-2 bg-card/95 backdrop-blur-sm p-4 shadow-xl relative overflow-hidden transition-all hover:shadow-2xl hover:-translate-y-0.5 animate-fade-in"
+          className="rounded-2xl border-2 bg-card/95 backdrop-blur-sm p-4 shadow-xl relative overflow-hidden transition-all hover:shadow-2xl hover:-translate-y-0.5"
           style={{
             borderColor: `hsl(var(--${member.gender === "M" ? "male" : "female"}) / 0.35)`,
           }}
@@ -571,14 +518,21 @@ export function SmartNavigateView() {
               لا يوجد أبناء مسجلون
             </div>
           ) : (
-            <div ref={sonsScrollRef} className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide overscroll-x-contain" style={{ touchAction: 'pan-x', overscrollBehavior: 'contain' }}>
+            <motion.div
+              ref={sonsScrollRef}
+              className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide overscroll-x-contain"
+              style={{ touchAction: 'pan-x', overscrollBehavior: 'contain' }}
+              variants={staggerContainer}
+              initial="initial"
+              animate="animate"
+            >
               {children.map((child, i) => (
                 <SonCard key={child.id} member={child} onTap={(id) => navigateTo(id, "up")} index={i} />
               ))}
-            </div>
+            </motion.div>
           )}
         </div>
-      </div>
+      </motion.div>
 
       {/* Floating search button — opens bottom Sheet */}
       <button

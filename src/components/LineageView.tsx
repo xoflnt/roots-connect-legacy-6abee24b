@@ -1,4 +1,5 @@
 import { useMemo, useCallback } from "react";
+import { motion } from "framer-motion";
 import { User, Calendar, Heart, ArrowUp, Users, Share2, Check, Download, UserPlus } from "lucide-react";
 import { WhatsAppIcon } from "./WhatsAppIcon";
 import { downloadVCard } from "@/utils/vcard";
@@ -11,6 +12,7 @@ import { isFounder, isBranchHead, isDeceased } from "@/services/familyService";
 import { downloadLineageCard } from "./LineageShareCard";
 import { formatAge } from "@/utils/ageCalculator";
 import { getBranch, getBranchStyle, DOCUMENTER_ID } from "@/utils/branchUtils";
+import { springConfig } from "@/lib/animations";
 
 interface LineageViewProps {
   memberId: string;
@@ -104,7 +106,9 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
           </p>
           {/* Action buttons */}
           <div className="flex items-center justify-center gap-2 flex-wrap mt-2">
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
               onClick={handleShare}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-sm font-medium min-h-[44px]"
             >
@@ -119,15 +123,17 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                   شارك النسب
                 </>
               )}
-            </button>
-            <button
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
               onClick={handleDownloadCard}
               disabled={downloading}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/15 text-accent hover:bg-accent/25 transition-colors text-sm font-medium min-h-[44px] disabled:opacity-50"
             >
               <Download className="h-4 w-4" />
               {downloading ? "جاري التحميل..." : "بطاقة واتساب"}
-            </button>
+            </motion.button>
           </div>
         </div>
 
@@ -160,23 +166,35 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
             }
 
             return (
-              <div key={member.id} className="relative flex gap-4 md:gap-5 items-stretch">
+              <motion.div
+                key={member.id}
+                className="relative flex gap-4 md:gap-5 items-stretch"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.08, duration: 0.3, ease: "easeOut" }}
+              >
                 {/* Timeline rail */}
                 <div className="flex flex-col items-center shrink-0 w-8 md:w-10">
-                  <div
+                  <motion.div
                     className="w-5 h-5 md:w-6 md:h-6 rounded-full z-10 flex items-center justify-center shadow-lg ring-4 ring-background"
                     style={{ backgroundColor: dotColor }}
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ ...springConfig, delay: index * 0.08 }}
                   >
                     {isFirst && (
                       <div className="w-2 h-2 rounded-full bg-background" />
                     )}
-                  </div>
+                  </motion.div>
                   {!isLast && (
-                    <div
+                    <motion.div
                       className="w-0.5 flex-1 min-h-[1.5rem]"
                       style={{
                         background: `linear-gradient(to bottom, ${dotColor}, ${DEPTH_COLORS[(index + 1) % DEPTH_COLORS.length]})`,
                       }}
+                      initial={{ scaleY: 0, originY: 0 }}
+                      animate={{ scaleY: 1 }}
+                      transition={{ duration: 0.3, delay: index * 0.08 + 0.1 }}
                     />
                   )}
                 </div>
@@ -193,8 +211,6 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                   `}
                   onClick={() => onSelectMember?.(member.id)}
                   style={{
-                    opacity: 0,
-                    animation: `fade-in 0.5s ease-out ${index * 0.08}s forwards`,
                     borderRightWidth: isFirst ? "3px" : undefined,
                     borderRightColor: isFirst ? dotColor : undefined,
                   }}
@@ -396,7 +412,7 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                     </div>
                   )}
                 </div>
-              </div>
+              </motion.div>
             );
           })}
         </div>
