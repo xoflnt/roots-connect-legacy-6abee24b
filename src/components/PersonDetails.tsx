@@ -294,7 +294,7 @@ export function PersonDetails({ member, onClose }: PersonDetailsProps) {
   if (isMobile) {
     return (
       <Drawer open={!!member} onOpenChange={(open) => !open && onClose()}>
-        <DrawerContent className="px-5 pb-8 pt-2 max-h-[85vh]">
+        <DrawerContent className="px-5 pb-[env(safe-area-inset-bottom,2rem)] pt-2 max-h-[92dvh] overflow-y-auto">
           <DrawerHeader className="p-0 mb-2">
             <DrawerTitle className="sr-only">{member.name}</DrawerTitle>
           </DrawerHeader>
@@ -306,8 +306,8 @@ export function PersonDetails({ member, onClose }: PersonDetailsProps) {
 
   return (
     <Sheet open={!!member} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent side="left" className="w-[360px] sm:w-[400px] overflow-y-auto border-r-0 shadow-2xl">
-        <SheetHeader className="pb-0">
+      <SheetContent side="left" className="w-[360px] sm:w-[400px] h-[92dvh] max-h-[92dvh] border-r-0 shadow-2xl flex flex-col p-0">
+        <SheetHeader className="sticky top-0 bg-background/95 backdrop-blur-sm z-10 px-6 pt-4 pb-2">
           <SheetTitle className="sr-only">{member.name}</SheetTitle>
           <Button
             variant="ghost"
@@ -318,7 +318,7 @@ export function PersonDetails({ member, onClose }: PersonDetailsProps) {
             <X className="h-4 w-4" />
           </Button>
         </SheetHeader>
-        <div className="mt-4">
+        <div className="flex-1 overflow-y-auto px-6 pb-[env(safe-area-inset-bottom,1rem)]">
           <DetailContent member={member} />
         </div>
       </SheetContent>

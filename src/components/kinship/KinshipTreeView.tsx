@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
-import { isDeceased } from "@/services/familyService";
+import { isDeceased, inferMotherName } from "@/services/familyService";
 import { HeritageBadge } from "@/components/HeritageBadge";
 import type { KinshipViewProps } from "./types";
 
@@ -23,6 +23,7 @@ export function KinshipTreeView({ result, person1, person2, onPersonTap }: Kinsh
   }, [result]);
 
   const lcaName = result.lca?.name.split(" ")[0] ?? "";
+  const lcaLabel = result.lca?.gender === "F" ? "الجدة المشتركة" : "الجد المشترك";
   const maxLen = Math.max(rightCol.length, leftCol.length);
 
   const nodeClass = (m: typeof person1, isPerson1End: boolean, isPerson2End: boolean) => {
@@ -44,7 +45,7 @@ export function KinshipTreeView({ result, person1, person2, onPersonTap }: Kinsh
           onClick={() => result.lca && onPersonTap?.(result.lca)}
           className={`px-5 py-2.5 rounded-xl bg-accent/15 ring-2 ring-accent/40 text-center transition-all ${showPulse ? "animate-pulse" : ""}`}
         >
-          <p className="text-[10px] text-muted-foreground mb-0.5">الجد المشترك</p>
+          <p className="text-[10px] text-muted-foreground mb-0.5">{lcaLabel}</p>
           <p className="text-sm font-extrabold text-accent-foreground">{lcaName}</p>
           {result.lca && isDeceased(result.lca) && (
             <div className="mt-1 flex justify-center">
@@ -71,6 +72,7 @@ export function KinshipTreeView({ result, person1, person2, onPersonTap }: Kinsh
         <div className="flex flex-col items-center gap-0">
           {rightCol.map((m, i) => {
             const isEnd = i === rightCol.length - 1;
+            const motherName = isEnd ? inferMotherName(m) : null;
             return (
               <div key={m.id} className="flex flex-col items-center">
                 {i > 0 && <div className="w-px h-3 bg-border" />}
@@ -86,6 +88,11 @@ export function KinshipTreeView({ result, person1, person2, onPersonTap }: Kinsh
                   {isDeceased(m) && (
                     <span className="block mt-0.5">
                       <HeritageBadge type="deceased" gender={m.gender} />
+                    </span>
+                  )}
+                  {isEnd && motherName && (
+                    <span className="block text-[10px] text-muted-foreground italic mt-0.5">
+                      {m.gender === "M" ? "والدته" : "والدتها"}: {motherName}
                     </span>
                   )}
                 </button>
@@ -106,6 +113,7 @@ export function KinshipTreeView({ result, person1, person2, onPersonTap }: Kinsh
         <div className="flex flex-col items-center gap-0">
           {leftCol.map((m, i) => {
             const isEnd = i === leftCol.length - 1;
+            const motherName = isEnd ? inferMotherName(m) : null;
             return (
               <div key={m.id} className="flex flex-col items-center">
                 {i > 0 && <div className="w-px h-3 bg-border" />}
@@ -121,6 +129,11 @@ export function KinshipTreeView({ result, person1, person2, onPersonTap }: Kinsh
                   {isDeceased(m) && (
                     <span className="block mt-0.5">
                       <HeritageBadge type="deceased" gender={m.gender} />
+                    </span>
+                  )}
+                  {isEnd && motherName && (
+                    <span className="block text-[10px] text-muted-foreground italic mt-0.5">
+                      {m.gender === "M" ? "والدته" : "والدتها"}: {motherName}
                     </span>
                   )}
                 </button>
