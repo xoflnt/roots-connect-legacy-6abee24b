@@ -202,8 +202,8 @@ function AdminContent() {
   };
 
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
-      <header className="sticky top-0 z-30 bg-card/90 backdrop-blur-sm border-b border-border/30 px-4 py-3" style={{ paddingTop: `max(0.75rem, env(safe-area-inset-top))` }}>
+    <div className="flex flex-col h-[100dvh] bg-background" dir="rtl">
+      <header className="shrink-0 z-50 bg-card/90 backdrop-blur-sm border-b border-border/30 px-4 py-3" style={{ paddingTop: `max(0.75rem, env(safe-area-inset-top))` }}>
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ShieldCheck className="h-5 w-5 text-primary" />
@@ -212,13 +212,14 @@ function AdminContent() {
               <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
             </Button>
           </div>
-          <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="gap-1">
+          <Button variant="ghost" size="sm" onClick={() => window.history.length > 1 ? navigate(-1) : navigate("/")} className="gap-1">
             <ArrowRight className="h-4 w-4" />
             الرئيسية
           </Button>
         </div>
       </header>
 
+      <div className="flex-1 overflow-y-auto pb-[calc(2rem+env(safe-area-inset-bottom))]">
       <div className="max-w-6xl mx-auto p-4 space-y-6">
         {/* Stats */}
         <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
