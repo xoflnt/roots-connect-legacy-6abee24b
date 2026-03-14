@@ -3,8 +3,8 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { AppHeader, type ViewMode } from "@/components/AppHeader";
 import { FamilyTree, type FamilyTreeRef } from "@/components/FamilyTree";
 import { LandingPage } from "@/components/LandingPage";
-import { ListView } from "@/components/ListView";
 import { KinshipCalculator } from "@/components/KinshipCalculator";
+import { TreeExplorer } from "@/components/tree/TreeExplorer";
 import { loadMembers } from "@/services/familyService";
 
 export type AppView = "landing" | ViewMode;
@@ -70,19 +70,12 @@ const Index = () => {
       />
       <main className="flex-1 overflow-hidden p-2 md:p-5 pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-5">
         <div key={activeView} className="w-full h-full animate-slide-up">
-          {activeView === "tree" && (
-            <div className="w-full h-full rounded-2xl md:rounded-3xl shadow-xl overflow-hidden border border-border/50 bg-[hsl(var(--canvas-bg))] relative">
-              <FamilyTree ref={treeRef} focusBranch={focusBranch} />
-            </div>
+          {(activeView === "tree" || activeView === "list") && (
+            <TreeExplorer focusBranch={focusBranch} treeRef={treeRef} />
           )}
           {activeView === "kinship" && (
             <div className="w-full h-full rounded-2xl md:rounded-3xl shadow-xl overflow-auto border border-border/50 bg-card">
               <KinshipCalculator />
-            </div>
-          )}
-          {activeView === "list" && (
-            <div className="w-full h-full rounded-2xl md:rounded-3xl shadow-xl overflow-auto border border-border/50 bg-card">
-              <ListView onSelectMember={handleSearchSelect} />
             </div>
           )}
         </div>
