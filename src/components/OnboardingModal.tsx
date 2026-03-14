@@ -55,6 +55,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
   // Phone number
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
+  const [passcodeVerifying, setPasscodeVerifying] = useState(false);
 
   // Phase D — Hijri Date + Quick Update
   const [familyPasscode, setFamilyPasscode] = useState("");
