@@ -2,11 +2,7 @@ import { useMemo } from "react";
 import { generationText, lcaContextWord } from "@/services/familyService";
 import type { KinshipViewProps } from "./types";
 
-function toArabicNum(n: number): string {
-  return n.toString().replace(/\d/g, (d) => "٠١٢٣٤٥٦٧٨٩"[+d]);
-}
-
-export function KinshipDocumentView({ result, person1, person2, motherName1, motherName2 }: KinshipViewProps) {
+export function KinshipDocumentView({ result, person1, person2, motherName1, motherName2, onPersonTap }: KinshipViewProps) {
   const name1 = person1.name.split(" ")[0];
   const name2 = person2.name.split(" ")[0];
   const lcaName = result.lca?.name.split(" ")[0] ?? "";
@@ -27,9 +23,12 @@ export function KinshipDocumentView({ result, person1, person2, motherName1, mot
       {/* Document card */}
       <div className="rounded-xl border-2 border-dashed border-accent/30 bg-accent/5 p-5 space-y-3 text-center">
         <p className="text-sm leading-relaxed text-foreground">
-          يجتمع <strong className="text-primary">{name1}</strong> و{" "}
-          <strong className="text-primary">{name2}</strong> في {contextWord}{" "}
-          <strong className="text-accent-foreground">{lcaName}</strong>.
+          يجتمع{" "}
+          <button onClick={() => onPersonTap?.(person1)} className="font-bold text-primary hover:underline">{name1}</button>
+          {" "}و{" "}
+          <button onClick={() => onPersonTap?.(person2)} className="font-bold text-primary hover:underline">{name2}</button>
+          {" "}في {contextWord}{" "}
+          <button onClick={() => result.lca && onPersonTap?.(result.lca)} className="font-bold text-accent-foreground hover:underline">{lcaName}</button>.
         </p>
         <p className="text-xs text-muted-foreground leading-relaxed">
           حيث يبعد <strong>{name1}</strong> عنه {generationText(result.dist1)}، ويبعد{" "}
