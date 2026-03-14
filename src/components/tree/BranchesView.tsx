@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useRef } from "react";
+import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import {
   getChildrenOf,
   sortByBirth,
@@ -9,13 +9,15 @@ import {
   isBranchHead,
   inferMotherName,
   getAllMembers,
+  getMemberById,
 } from "@/services/familyService";
 import { PILLARS, getBranchStyle, getBranch, DOCUMENTER_ID } from "@/utils/branchUtils";
-import { formatAge } from "@/utils/ageCalculator";
+import { formatAge, parseArabicYear } from "@/utils/ageCalculator";
 import { HeritageBadge } from "@/components/HeritageBadge";
 import { PersonDetails } from "@/components/PersonDetails";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, ChevronLeft, Users, BadgeCheck } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { ChevronDown, ChevronLeft, Users, BadgeCheck, GitBranch as GitBranchIcon, Layers, Crown, Baby, Trophy, Star } from "lucide-react";
 import { getVerifiedMemberIds } from "@/services/dataService";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -31,201 +33,451 @@ function borderOpacity(depth: number): number {
 }
 
 // ══════════════════════════════════════════
-// MOBILE: MemberCard
+// MOBILE: Dashboard Components
 // ══════════════════════════════════════════
-const MemberCard = React.memo(function MemberCard({
+
+interface BranchStats {
+  members: FamilyMember[];
+  totalCount: number;
+  generationCount: number;
+  subBranchCount: number;
+  maleCount: number;
+  femaleCount: number;
+  generations: { depth: number; members: FamilyMember[] }[];
+  notableMembers: {
+    founder: FamilyMember | undefined;
+    oldest: FamilyMember | undefined;
+    mostChildren: FamilyMember | undefined;
+    youngest: FamilyMember | undefined;
+  };
+  commonNames: { name: string; count: number }[];
+}
+
+function useBranchStats(selectedBranch: string): BranchStats {
+  return useMemo(() => {
+    const all = getAllMembers();
+    const members = all.filter((m) => getBranch(m.id)?.pillarId === selectedBranch);
+
+    const maleCount = members.filter((m) => m.gender === "M").length;
+    const femaleCount = members.filter((m) => m.gender === "F").length;
+
+    // Generations
+    const grouped = new Map<number, FamilyMember[]>();
+    for (const m of members) {
+      const d = getDepth(m.id);
+      if (!grouped.has(d)) grouped.set(d, []);
+      grouped.get(d)!.push(m);
+    }
+    const generations: { depth: number; members: FamilyMember[] }[] = [];
+    for (const [depth, g] of grouped) {
+      generations.push({ depth, members: sortByBirth(g) });
+    }
+    generations.sort((a, b) => a.depth - b.depth);
+
+    // Sub-branch count
+    let subBranchCount = 0;
+    for (const m of members) {
+      if (isBranchHead(m.id)) subBranchCount++;
+    }
+
+    // Notable members
+    const founder = getMemberById(selectedBranch);
+    let oldest: FamilyMember | undefined;
+    let youngest: FamilyMember | undefined;
+    let mostChildren: FamilyMember | undefined;
+    let mostChildrenCount = 0;
+    let oldestYear = Infinity;
+    let youngestYear = -Infinity;
+
+    for (const m of members) {
+      const y = parseArabicYear(m.birth_year);
+      if (y !== null) {
+        if (!m.death_year && y < oldestYear) {
+          oldestYear = y;
+          oldest = m;
+        }
+        if (y > youngestYear) {
+          youngestYear = y;
+          youngest = m;
+        }
+      }
+      const cc = getChildrenOf(m.id).length;
+      if (cc > mostChildrenCount) {
+        mostChildrenCount = cc;
+        mostChildren = m;
+      }
+    }
+
+    // Common names
+    const nameFreq = new Map<string, number>();
+    for (const m of members) {
+      const firstName = m.name.split(" ")[0];
+      if (firstName) nameFreq.set(firstName, (nameFreq.get(firstName) || 0) + 1);
+    }
+    const commonNames = [...nameFreq.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([name, count]) => ({ name, count }));
+
+    return {
+      members,
+      totalCount: members.length,
+      generationCount: generations.length,
+      subBranchCount: Math.max(subBranchCount, 1),
+      maleCount,
+      femaleCount,
+      generations,
+      notableMembers: { founder, oldest, mostChildren, youngest },
+      commonNames,
+    };
+  }, [selectedBranch]);
+}
+
+// Generation members sheet row
+const GenMemberRow = React.memo(function GenMemberRow({
   member,
-  index,
-  branchStyle,
   onSelect,
 }: {
   member: FamilyMember;
-  index: number;
-  branchStyle: { bg: string; text: string };
   onSelect: (m: FamilyMember) => void;
 }) {
-  const deceased = isDeceased(member);
   const verified = getVerifiedMemberIds().has(member.id);
-  const children = getChildrenOf(member.id);
-  const childLabel = member.gender === "F" ? "لها" : "له";
-  const isMale = member.gender === "M";
+  const deceased = isDeceased(member);
 
   return (
     <button
       onClick={() => onSelect(member)}
       className={cn(
-        "w-[130px] flex-shrink-0 min-h-[80px] rounded-xl border bg-card p-3 text-right relative",
-        "hover:shadow-md hover:scale-[1.02] transition-all animate-fade-in",
+        "w-full flex items-center gap-2 px-3 py-2.5 rounded-xl hover:bg-muted/50 transition-colors min-h-[44px] text-right",
         deceased && "opacity-70"
       )}
-      style={{
-        borderRightWidth: "3px",
-        borderRightColor: isMale ? "hsl(var(--male) / 0.3)" : "hsl(var(--female) / 0.3)",
-        animationDelay: `${Math.min(index, 6) * 0.04}s`,
-        animationFillMode: "backwards",
-      }}
       dir="rtl"
     >
-      {/* Branch dot */}
       <div
-        className="absolute top-2 left-2 w-2 h-2 rounded-full"
-        style={{ backgroundColor: branchStyle.text }}
+        className="w-2 h-2 rounded-full shrink-0"
+        style={{ backgroundColor: `hsl(var(--${member.gender === "M" ? "male" : "female"}))` }}
       />
-
-      {/* Name */}
-      <p className="font-bold text-sm text-foreground line-clamp-2 leading-tight mb-1">
-        {member.name}
-      </p>
-
-      {/* Age */}
+      <span className="font-bold text-sm text-foreground truncate flex-1">{member.name}</span>
+      {verified && <BadgeCheck className="h-3.5 w-3.5 text-green-500 shrink-0" />}
       {member.birth_year && (
-        <span className="text-[10px] text-muted-foreground block mb-1">
+        <span className="text-xs text-muted-foreground shrink-0">
           {formatAge(member.birth_year, member.death_year)}
         </span>
       )}
-
-      {/* Bottom row: badges */}
-      <div className="flex items-center gap-1 flex-wrap">
-        {verified && <BadgeCheck className="h-3.5 w-3.5 text-green-500" />}
-        {children.length > 0 && (
-          <span className="text-[10px] text-muted-foreground">
-            {childLabel} {children.length.toLocaleString("ar-SA")}
-          </span>
-        )}
-        {deceased && <HeritageBadge type="deceased" gender={member.gender as "M" | "F"} />}
-      </div>
     </button>
   );
 });
 
-// ══════════════════════════════════════════
-// MOBILE: MobileBranchesView
-// ══════════════════════════════════════════
+// Notable member card
+const NotableCard = React.memo(function NotableCard({
+  label,
+  icon: Icon,
+  member,
+  detail,
+  branchStyle,
+  index,
+  onSelect,
+}: {
+  label: string;
+  icon: React.ElementType;
+  member: FamilyMember | undefined;
+  detail: string;
+  branchStyle: { bg: string; text: string };
+  index: number;
+  onSelect: (m: FamilyMember) => void;
+}) {
+  if (!member) return null;
+  return (
+    <button
+      onClick={() => onSelect(member)}
+      className="w-[140px] flex-shrink-0 rounded-2xl border bg-card p-3 text-right animate-fade-in hover:shadow-md transition-all min-h-[44px]"
+      style={{
+        borderColor: branchStyle.text,
+        borderWidth: "1px",
+        borderRightWidth: "3px",
+        animationDelay: `${index * 0.08}s`,
+        animationFillMode: "backwards",
+      }}
+      dir="rtl"
+    >
+      <div className="flex items-center gap-1.5 mb-2">
+        <Icon className="h-3.5 w-3.5" style={{ color: branchStyle.text }} />
+        <span className="text-[10px] font-bold" style={{ color: branchStyle.text }}>{label}</span>
+      </div>
+      <p className="font-bold text-sm text-foreground line-clamp-2 leading-tight mb-1">{member.name}</p>
+      <span className="text-[10px] text-muted-foreground">{detail}</span>
+    </button>
+  );
+});
+
 function MobileBranchesView() {
   const [selectedBranch, setSelectedBranch] = useState<string>("200");
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
-  const generationsRef = useRef<HTMLDivElement>(null);
+  const [genSheet, setGenSheet] = useState<{ depth: number; members: FamilyMember[] } | null>(null);
+  const [animKey, setAnimKey] = useState(0);
 
-  const branchMeta = useMemo(
-    () =>
-      PILLARS.map((p) => ({
-        ...p,
-        count: getDescendantCount(p.id),
-        style: getBranchStyle(p.id),
-      })),
-    []
-  );
+  const stats = useBranchStats(selectedBranch);
+  const branchStyle = getBranchStyle(selectedBranch);
+  const pillar = PILLARS.find((p) => p.id === selectedBranch);
 
-  // Group members of selected branch by generation
-  const generations = useMemo(() => {
-    const all = getAllMembers();
-    const branchMembers = all.filter((m) => {
-      const b = getBranch(m.id);
-      return b?.pillarId === selectedBranch;
-    });
-
-    const grouped = new Map<number, FamilyMember[]>();
-    for (const m of branchMembers) {
-      const d = getDepth(m.id);
-      if (!grouped.has(d)) grouped.set(d, []);
-      grouped.get(d)!.push(m);
-    }
-
-    // Sort each group by birth, then sort generations ascending
-    const sorted: { depth: number; members: FamilyMember[] }[] = [];
-    for (const [depth, members] of grouped) {
-      sorted.push({ depth, members: sortByBirth(members) });
-    }
-    sorted.sort((a, b) => a.depth - b.depth);
-    return sorted;
-  }, [selectedBranch]);
-
-  const handleSelectBranch = useCallback((id: string) => {
+  const handleBranchSwitch = useCallback((id: string) => {
     setSelectedBranch(id);
-    setTimeout(() => {
-      generationsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 50);
+    setAnimKey((k) => k + 1);
   }, []);
 
-  const activeStyle = getBranchStyle(selectedBranch);
+  const maxGenCount = useMemo(
+    () => Math.max(...stats.generations.map((g) => g.members.length), 1),
+    [stats.generations]
+  );
+
+  const maxNameCount = useMemo(
+    () => Math.max(...stats.commonNames.map((n) => n.count), 1),
+    [stats.commonNames]
+  );
+
+  const malePercent = stats.totalCount > 0 ? Math.round((stats.maleCount / stats.totalCount) * 100) : 0;
+  const femalePercent = 100 - malePercent;
 
   return (
     <div className="w-full h-full overflow-y-auto bg-background" dir="rtl">
-      {/* Branch selector cards */}
-      <div className="p-3 space-y-2">
-        {branchMeta.map((branch) => {
-          const isActive = selectedBranch === branch.id;
-          return (
-            <button
-              key={branch.id}
-              onClick={() => handleSelectBranch(branch.id)}
-              className={cn(
-                "w-full flex items-center gap-3 rounded-2xl bg-card/80 backdrop-blur-sm p-4 min-h-[64px] transition-all text-right",
-                isActive
-                  ? "shadow-md ring-1 ring-primary/20 border border-primary/50"
-                  : "border border-border/40 hover:bg-muted/50"
-              )}
-              style={{ borderRightWidth: "4px", borderRightColor: branch.style.text }}
-            >
-              <div
-                className="w-3 h-3 rounded-full shrink-0"
-                style={{ backgroundColor: branch.style.text }}
-              />
-              <div className="flex-1 min-w-0">
-                <h3 className="font-extrabold text-foreground text-sm">{branch.label}</h3>
-                <span className="text-xs text-muted-foreground">
-                  {branch.count.toLocaleString("ar-SA")} فرداً
-                </span>
-              </div>
-              <ChevronLeft
+      {/* ── BRANCH TABS ── */}
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border/30 p-2">
+        <div className="flex gap-1.5">
+          {PILLARS.map((p) => {
+            const style = getBranchStyle(p.id);
+            const isActive = selectedBranch === p.id;
+            return (
+              <button
+                key={p.id}
+                onClick={() => handleBranchSwitch(p.id)}
                 className={cn(
-                  "h-5 w-5 text-muted-foreground transition-transform",
-                  isActive && "-rotate-90"
+                  "flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2.5 px-2 min-h-[44px] text-sm font-bold transition-all duration-200",
+                  isActive ? "text-white shadow-md" : "hover:bg-muted/50"
                 )}
-              />
-            </button>
-          );
-        })}
+                style={
+                  isActive
+                    ? { backgroundColor: style.text, color: "white" }
+                    : { color: style.text }
+                }
+              >
+                <div
+                  className="w-2 h-2 rounded-full shrink-0"
+                  style={{ backgroundColor: isActive ? "white" : style.text }}
+                />
+                <span>{p.name.split(" ")[0]}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Generations view */}
-      <div ref={generationsRef} className="px-3 pb-6 space-y-4">
-        {generations.map(({ depth, members }) => (
-          <div key={depth}>
-            {/* Section header */}
-            <div
-              className="bg-muted/30 rounded-xl px-3 py-2 mb-2 flex items-center gap-2"
-              style={{ borderRightWidth: "3px", borderRightColor: activeStyle.text }}
-            >
-              <span className="font-bold text-sm text-foreground">
-                الجيل {depth.toLocaleString("ar-SA")}
-              </span>
-              <span className="text-xs text-muted-foreground">
-                • {members.length.toLocaleString("ar-SA")} شخصاً
-              </span>
-            </div>
+      <div key={animKey} className="p-3 space-y-4 animate-fade-in">
+        {/* ── HERO CARD ── */}
+        <div
+          className="rounded-2xl p-4"
+          style={{
+            borderRightWidth: "4px",
+            borderRightColor: branchStyle.text,
+            background: `linear-gradient(135deg, ${branchStyle.text}12 0%, transparent 60%)`,
+          }}
+        >
+          <h2 className="font-extrabold text-lg text-foreground mb-1">{pillar?.label}</h2>
+          <button
+            onClick={() => stats.notableMembers.founder && setSelectedMember(stats.notableMembers.founder)}
+            className="text-sm text-muted-foreground hover:underline min-h-[44px] flex items-center"
+          >
+            المؤسس: {pillar?.name}
+          </button>
+          <div className="grid grid-cols-3 gap-2 mt-3">
+            {[
+              { icon: Users, value: stats.totalCount, label: "فرداً" },
+              { icon: Layers, value: stats.generationCount, label: "أجيال" },
+              { icon: GitBranchIcon, value: stats.subBranchCount, label: "أفرع" },
+            ].map((s, i) => (
+              <div key={i} className="flex flex-col items-center gap-1 bg-muted/30 rounded-xl py-2.5 px-1">
+                <s.icon className="h-4 w-4 text-muted-foreground" />
+                <span className="text-lg font-extrabold text-foreground">{s.value.toLocaleString("ar-SA")}</span>
+                <span className="text-[10px] text-muted-foreground">{s.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
 
-            {/* Horizontal scroll row */}
-            <div
-              className="flex flex-row-reverse gap-3 overflow-x-auto pb-2 pr-4"
-              style={{
-                scrollbarWidth: "none",
-                WebkitOverflowScrolling: "touch",
-              }}
-            >
-              {members.map((m, i) => (
-                <MemberCard
-                  key={m.id}
-                  member={m}
-                  index={i}
-                  branchStyle={activeStyle}
-                  onSelect={setSelectedMember}
+        {/* ── GENDER DISTRIBUTION ── */}
+        <div className="rounded-2xl border border-border/40 bg-card p-4">
+          <h3 className="font-bold text-sm text-foreground mb-3">توزيع الجنس</h3>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground w-12 shrink-0">ذكور</span>
+              <div className="flex-1 h-5 rounded-full bg-muted/40 overflow-hidden">
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${malePercent}%`,
+                    backgroundColor: "hsl(var(--male))",
+                    transition: "width 600ms ease",
+                  }}
                 />
-              ))}
+              </div>
+              <span className="text-xs font-bold text-foreground w-10 text-left">{malePercent.toLocaleString("ar-SA")}%</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground w-12 shrink-0">إناث</span>
+              <div className="flex-1 h-5 rounded-full bg-muted/40 overflow-hidden">
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${femalePercent}%`,
+                    backgroundColor: "hsl(var(--female))",
+                    transition: "width 600ms ease",
+                  }}
+                />
+              </div>
+              <span className="text-xs font-bold text-foreground w-10 text-left">{femalePercent.toLocaleString("ar-SA")}%</span>
             </div>
           </div>
-        ))}
+          <p className="text-[10px] text-muted-foreground mt-2 text-center">
+            {stats.maleCount.toLocaleString("ar-SA")} ذكراً • {stats.femaleCount.toLocaleString("ar-SA")} أنثى
+          </p>
+        </div>
+
+        {/* ── GENERATION PYRAMID ── */}
+        <div className="rounded-2xl border border-border/40 bg-card p-4">
+          <h3 className="font-bold text-sm text-foreground mb-3">الأجيال</h3>
+          <div className="space-y-2">
+            {stats.generations.map((gen, i) => (
+              <button
+                key={gen.depth}
+                onClick={() => setGenSheet(gen)}
+                className="w-full flex items-center gap-2 rounded-xl px-2 py-1.5 hover:bg-muted/40 transition-colors min-h-[36px]"
+                dir="rtl"
+              >
+                <span className="text-[11px] text-muted-foreground w-14 shrink-0 font-medium">
+                  الجيل {gen.depth.toLocaleString("ar-SA")}
+                </span>
+                <div className="flex-1 h-4 rounded-full bg-muted/30 overflow-hidden">
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: `${(gen.members.length / maxGenCount) * 100}%`,
+                      backgroundColor: branchStyle.text,
+                      opacity: 0.5 + (i / (stats.generations.length || 1)) * 0.4,
+                      transition: "width 500ms ease",
+                      transitionDelay: `${i * 80}ms`,
+                    }}
+                  />
+                </div>
+                <span className="text-xs font-bold text-foreground w-8 text-left">
+                  {gen.members.length.toLocaleString("ar-SA")}
+                </span>
+                <ChevronLeft className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ── NOTABLE MEMBERS ── */}
+        <div>
+          <h3 className="font-bold text-sm text-foreground mb-2 px-1">أبرز الأفراد</h3>
+          <div
+            className="flex flex-row-reverse gap-3 overflow-x-auto pb-2 pr-1"
+            style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}
+          >
+            <NotableCard
+              label="المؤسس"
+              icon={Crown}
+              member={stats.notableMembers.founder}
+              detail={pillar?.name || ""}
+              branchStyle={branchStyle}
+              index={0}
+              onSelect={setSelectedMember}
+            />
+            <NotableCard
+              label="أكبر عمراً"
+              icon={Star}
+              member={stats.notableMembers.oldest}
+              detail={stats.notableMembers.oldest?.birth_year ? formatAge(stats.notableMembers.oldest.birth_year, stats.notableMembers.oldest.death_year) : ""}
+              branchStyle={branchStyle}
+              index={1}
+              onSelect={setSelectedMember}
+            />
+            <NotableCard
+              label="أكثر أبناء"
+              icon={Trophy}
+              member={stats.notableMembers.mostChildren}
+              detail={stats.notableMembers.mostChildren ? `${getChildrenOf(stats.notableMembers.mostChildren.id).length.toLocaleString("ar-SA")} أبناء` : ""}
+              branchStyle={branchStyle}
+              index={2}
+              onSelect={setSelectedMember}
+            />
+            <NotableCard
+              label="أحدث مولود"
+              icon={Baby}
+              member={stats.notableMembers.youngest}
+              detail={stats.notableMembers.youngest?.birth_year || ""}
+              branchStyle={branchStyle}
+              index={3}
+              onSelect={setSelectedMember}
+            />
+          </div>
+        </div>
+
+        {/* ── COMMON NAMES ── */}
+        <div className="rounded-2xl border border-border/40 bg-card p-4">
+          <h3 className="font-bold text-sm text-foreground mb-3">أكثر الأسماء شيوعاً</h3>
+          <div className="space-y-2">
+            {stats.commonNames.map((n, i) => (
+              <div key={n.name} className="flex items-center gap-2" dir="rtl">
+                <span className="text-xs font-bold text-muted-foreground w-5 shrink-0">
+                  {(i + 1).toLocaleString("ar-SA")}.
+                </span>
+                <span className="text-sm font-bold text-foreground w-16 shrink-0 truncate">{n.name}</span>
+                <div className="flex-1 h-3.5 rounded-full bg-muted/30 overflow-hidden">
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: `${(n.count / maxNameCount) * 100}%`,
+                      backgroundColor: branchStyle.text,
+                      opacity: 0.7,
+                      transition: "width 500ms ease",
+                      transitionDelay: `${i * 60}ms`,
+                    }}
+                  />
+                </div>
+                <span className="text-xs font-bold text-foreground w-6 text-left">
+                  {n.count.toLocaleString("ar-SA")}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Bottom padding for mobile nav */}
+        <div className="h-16" />
       </div>
+
+      {/* Generation members sheet */}
+      <Sheet open={!!genSheet} onOpenChange={(open) => !open && setGenSheet(null)}>
+        <SheetContent side="bottom" className="max-h-[70vh] rounded-t-2xl" dir="rtl">
+          <SheetHeader className="text-right">
+            <SheetTitle>
+              الجيل {genSheet?.depth.toLocaleString("ar-SA")} • {genSheet?.members.length.toLocaleString("ar-SA")} شخصاً
+            </SheetTitle>
+          </SheetHeader>
+          <div className="overflow-y-auto mt-2 space-y-0.5 max-h-[50vh]">
+            {genSheet?.members.map((m) => (
+              <GenMemberRow
+                key={m.id}
+                member={m}
+                onSelect={(member) => {
+                  setGenSheet(null);
+                  setTimeout(() => setSelectedMember(member), 200);
+                }}
+              />
+            ))}
+          </div>
+        </SheetContent>
+      </Sheet>
 
       <PersonDetails member={selectedMember} onClose={() => setSelectedMember(null)} />
     </div>
