@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { staggerContainer, staggerItem } from "@/lib/animations";
+import { guideMockups } from "@/components/guide/GuideMockups";
 import {
   TreePine, Search, UserCheck, UserCog, Map, Compass, GitBranch,
   AlignJustify, ScrollText, Scale, BookOpen, Smartphone, Send,
@@ -410,7 +411,8 @@ export default function Guide() {
                     {/* Extra (PWA) */}
                     {card.extra}
 
-                    {/* Action button */}
+                    {/* Mockup preview */}
+                    {guideMockups[card.title] && guideMockups[card.title]}
                     {actions && actions.label !== "تعرّف على التثبيت ↑" && (
                       <motion.button
                         whileHover={{ scale: 1.02 }}
