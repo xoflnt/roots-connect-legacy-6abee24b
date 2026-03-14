@@ -306,7 +306,7 @@ export function PersonDetails({ member, onClose }: PersonDetailsProps) {
 
   return (
     <Sheet open={!!member} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent side="left" className="w-[360px] sm:w-[400px] max-h-[92dvh] border-r-0 shadow-2xl overflow-y-auto px-6 pb-[calc(env(safe-area-inset-bottom)+24px)]">
+      <SheetContent side="left" className="w-[360px] sm:w-[400px] !h-auto !inset-y-auto top-0 max-h-[92dvh] border-r-0 shadow-2xl overflow-y-auto px-6 pb-[calc(env(safe-area-inset-bottom)+24px)]">
         <SheetHeader className="sticky top-0 bg-background/95 backdrop-blur-sm z-10 pt-4 pb-2 -mx-6 px-6">
           <SheetTitle className="sr-only">{member.name}</SheetTitle>
           <Button
