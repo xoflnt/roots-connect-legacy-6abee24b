@@ -19,7 +19,12 @@ type FamilyCardData = FamilyMember & {
   isExpanded: boolean;
   isVerified: boolean;
   isMobile: boolean;
+  generation: number;
 };
+
+function toArabicDigit(n: number): string {
+  return n.toLocaleString("ar-SA");
+}
 
 function FamilyCardComponent({ data, selected }: NodeProps) {
   const member = data as unknown as FamilyCardData;
@@ -54,6 +59,12 @@ function FamilyCardComponent({ data, selected }: NodeProps) {
     downloadVCard(member.name, phone);
   };
 
+  const generationBadge = member.generation > 0 && (
+    <span className="absolute top-1.5 left-1.5 text-[9px] font-bold" style={{ color: 'hsl(var(--muted-foreground) / 0.6)' }}>
+      ج{toArabicDigit(member.generation)}
+    </span>
+  );
+
   // ── MOBILE COMPACT CARD ──
   if (mobile) {
     return (
@@ -74,6 +85,8 @@ function FamilyCardComponent({ data, selected }: NodeProps) {
         `}
         style={{ fontFamily: "'Tajawal', sans-serif" }}
       >
+        {generationBadge}
+
         {/* Branch color indicator */}
         {branchColor && (
           <div
@@ -159,6 +172,8 @@ function FamilyCardComponent({ data, selected }: NodeProps) {
       `}
       style={{ fontFamily: "'Tajawal', sans-serif" }}
     >
+      {generationBadge}
+
       {/* Branch color indicator */}
       {branchColor && (
         <div
@@ -317,6 +332,7 @@ export const FamilyCard = React.memo(FamilyCardComponent, (prev, next) => {
     p.hasChildren === n.hasChildren &&
     prev.selected === next.selected &&
     p.isMobile === n.isMobile &&
-    p.isVerified === n.isVerified
+    p.isVerified === n.isVerified &&
+    p.generation === n.generation
   );
 });
