@@ -155,8 +155,6 @@ function AdminContent() {
   const [exportBranchId, setExportBranchId] = useState<string>('');
   const [exporting, setExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState('');
-  const [showHiddenTree, setShowHiddenTree] = useState(false);
-  const hiddenTreeRef = useRef<FamilyTreeRef>(null);
 
   const loadData = async () => {
     const token = getAdminToken();
