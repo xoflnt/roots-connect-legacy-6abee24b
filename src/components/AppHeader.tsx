@@ -147,7 +147,7 @@ export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHom
           aria-label="التنقل الرئيسي"
         >
           {navItems.map((item) => {
-            const isActive = activeView === item.value;
+            const isActive = item.value === "lineage" ? !!isLineageActive : activeView === item.value;
             return (
               <button
                 key={item.value}

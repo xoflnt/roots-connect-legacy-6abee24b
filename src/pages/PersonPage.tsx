@@ -45,6 +45,7 @@ const PersonPage = () => {
     <div className="flex flex-col h-[100dvh] bg-background overflow-x-hidden">
       <AppHeader
         activeView="lineage"
+        isLineageActive={true}
         onViewChange={(v) => {
           if (v === "lineage") return;
           navigate(`/?view=${v}`);
