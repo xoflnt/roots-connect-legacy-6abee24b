@@ -37,7 +37,7 @@ const BranchNode = React.memo(function BranchNode({
   const hasChildren = children.length > 0;
   const style = getBranchStyle(pillarId);
   const deceased = isDeceased(member);
-  const verified = isVerifiedMember(member.id);
+  const verified = getVerifiedMemberIds().has(member.id);
   const generation = getDepth(member.id);
   const indent = Math.min(depth, 4) * 16;
 
