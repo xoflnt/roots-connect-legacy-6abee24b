@@ -217,14 +217,25 @@ function AdminContent() {
     setExportProgress('جاري تحضير الشجرة...');
     setShowHiddenTree(true);
 
-    await new Promise(r => setTimeout(r, 2500));
+    // Wait for tree to fully mount and load data
+    await new Promise(r => setTimeout(r, 5000));
     setExportProgress('جاري توسيع جميع الفروع...');
 
     if (hiddenTreeRef.current) {
       hiddenTreeRef.current.expandAll();
     }
-    await new Promise(r => setTimeout(r, 2000));
-    setExportProgress('جاري التقاط الصورة...');
+    // Wait for all nodes to render after expansion
+    await new Promise(r => setTimeout(r, 5000));
+
+    setExportProgress('جاري ضبط العرض...');
+    const rfInst = hiddenTreeRef.current?.getRfInstance();
+    if (rfInst) {
+      rfInst.fitView({ duration: 0, padding: 0.08 });
+    }
+    // Wait for fitView to settle
+    await new Promise(r => setTimeout(r, 3000));
+
+    setExportProgress('جاري التقاط الصورة (قد يستغرق دقيقة)...');
 
     try {
       const { exportTreeAsPDF } = await import('@/services/TreeExportService');
