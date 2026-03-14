@@ -3,13 +3,16 @@ import { AdminProtect, getAdminToken } from "@/components/AdminProtect";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Users, Eye, ShieldCheck, TreePine, Check, Loader2, ArrowRight, Bell, Download, Search, X, RefreshCw } from "lucide-react";
+import { Users, Eye, ShieldCheck, TreePine, Check, Loader2, ArrowRight, Bell, Download, Search, X, RefreshCw, FileDown } from "lucide-react";
 import { getRequests, markRequestDone, getVerifiedUsers, getVisitCount, type FamilyRequest } from "@/services/dataService";
 import { getAllMembers, searchMembers } from "@/services/familyService";
 import type { FamilyMember } from "@/data/familyData";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DataTableView } from "@/components/DataTableView";
+import { FamilyTree, type FamilyTreeRef } from "@/components/FamilyTree";
+import { PILLARS } from "@/utils/branchUtils";
+import { Progress } from "@/components/ui/progress";
 
 // --- Smart Export Helpers ---
 
@@ -148,6 +151,14 @@ function AdminContent() {
   const [refreshing, setRefreshing] = useState(false);
   const navigate = useNavigate();
 
+  // Export state
+  const [exportMode, setExportMode] = useState<'full' | 'branch'>('full');
+  const [exportBranchId, setExportBranchId] = useState<string>('');
+  const [exporting, setExporting] = useState(false);
+  const [exportProgress, setExportProgress] = useState('');
+  const [showHiddenTree, setShowHiddenTree] = useState(false);
+  const hiddenTreeRef = useRef<FamilyTreeRef>(null);
+
   const loadData = async () => {
     const token = getAdminToken();
     if (!token) return;
@@ -201,6 +212,44 @@ function AdminContent() {
     downloadCSV(csv, `khunaini_descendants_of_${safeName}.csv`);
   };
 
+  const handleTreeExport = async () => {
+    setExporting(true);
+    setExportProgress('جاري تحضير الشجرة...');
+    setShowHiddenTree(true);
+
+    await new Promise(r => setTimeout(r, 2500));
+    setExportProgress('جاري توسيع جميع الفروع...');
+
+    if (hiddenTreeRef.current) {
+      hiddenTreeRef.current.expandAll();
+    }
+    await new Promise(r => setTimeout(r, 2000));
+    setExportProgress('جاري التقاط الصورة...');
+
+    try {
+      const { exportTreeAsPDF } = await import('@/services/TreeExportService');
+      const rfInst = hiddenTreeRef.current?.getRfInstance();
+      await exportTreeAsPDF(
+        rfInst,
+        () => hiddenTreeRef.current?.expandAll(),
+        {
+          mode: exportMode,
+          branchId: exportBranchId || undefined,
+          branchLabel: exportBranchId
+            ? PILLARS.find(p => p.id === exportBranchId)?.label
+            : undefined,
+        }
+      );
+      setExportProgress('تم التصدير بنجاح ✓');
+    } catch (err) {
+      setExportProgress('حدث خطأ، حاول مرة أخرى');
+      console.error('Tree export error:', err);
+    } finally {
+      setExporting(false);
+      setShowHiddenTree(false);
+      setTimeout(() => setExportProgress(''), 3000);
+    }
+  };
   return (
     <div className="flex flex-col h-[100dvh] bg-background" dir="rtl">
       <header className="shrink-0 z-50 bg-card/90 backdrop-blur-sm border-b border-border/30 px-4 py-3" style={{ paddingTop: `max(0.75rem, env(safe-area-inset-top))` }}>
@@ -235,6 +284,10 @@ function AdminContent() {
             </TabsTrigger>
             <TabsTrigger value="registry" className="rounded-lg font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm">
               السجل الكامل
+            </TabsTrigger>
+            <TabsTrigger value="tree-export" className="rounded-lg font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm gap-1.5">
+              <TreePine className="h-3.5 w-3.5" />
+              تصدير الشجرة
             </TabsTrigger>
           </TabsList>
 
@@ -332,7 +385,98 @@ function AdminContent() {
               <DataTableView />
             </div>
           </TabsContent>
+
+          <TabsContent value="tree-export" className="mt-4">
+            <div className="bg-card border border-border/50 rounded-2xl p-6 space-y-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <TreePine className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-foreground">تصدير شجرة العائلة</h2>
+                  <p className="text-sm text-muted-foreground">صدّر الشجرة كملف PDF احترافي</p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <p className="text-sm font-bold text-foreground">اختر نطاق التصدير:</p>
+                <div className="grid gap-2">
+                  <button
+                    onClick={() => { setExportMode('full'); setExportBranchId(''); }}
+                    className={`flex items-center gap-3 rounded-xl border p-3 text-sm font-medium transition-colors text-right ${
+                      exportMode === 'full' ? 'border-primary bg-primary/10 text-foreground' : 'border-border bg-card text-muted-foreground hover:bg-muted/50'
+                    }`}
+                  >
+                    <span className="w-3 h-3 rounded-full border-2 border-current flex items-center justify-center">
+                      {exportMode === 'full' && <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
+                    </span>
+                    الشجرة كاملة
+                  </button>
+                  {PILLARS.map(p => {
+                    const dotColors: Record<string, string> = {
+                      '300': 'bg-green-500',
+                      '200': 'bg-yellow-500',
+                      '400': 'bg-orange-500',
+                    };
+                    const isSelected = exportMode === 'branch' && exportBranchId === p.id;
+                    return (
+                      <button
+                        key={p.id}
+                        onClick={() => { setExportMode('branch'); setExportBranchId(p.id); }}
+                        className={`flex items-center gap-3 rounded-xl border p-3 text-sm font-medium transition-colors text-right ${
+                          isSelected ? 'border-primary bg-primary/10 text-foreground' : 'border-border bg-card text-muted-foreground hover:bg-muted/50'
+                        }`}
+                      >
+                        <span className="w-3 h-3 rounded-full border-2 border-current flex items-center justify-center">
+                          {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
+                        </span>
+                        <span className={`w-2.5 h-2.5 rounded-full ${dotColors[p.id] || ''}`} />
+                        {p.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 rounded-xl p-3 text-sm">
+                ⚠️ قد يستغرق التصدير ١٠-٣٠ ثانية حسب حجم الشجرة. يرجى الانتظار.
+              </div>
+
+              {exportProgress && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-foreground">{exportProgress}</p>
+                  {exporting && <Progress value={undefined} className="h-1.5" />}
+                </div>
+              )}
+
+              <Button
+                onClick={handleTreeExport}
+                disabled={exporting}
+                className="w-full min-h-[52px] rounded-2xl font-bold gap-2 text-base"
+              >
+                {exporting ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <FileDown className="h-5 w-5" />
+                )}
+                {exporting ? exportProgress || 'جاري التصدير...' : 'تصدير PDF'}
+              </Button>
+            </div>
+          </TabsContent>
         </Tabs>
+
+        {/* Hidden tree for PDF export */}
+        {showHiddenTree && (
+          <div
+            style={{ position: 'absolute', left: '-9999px', width: '1920px', height: '1080px' }}
+            aria-hidden="true"
+          >
+            <FamilyTree
+              ref={hiddenTreeRef}
+              focusBranch={exportBranchId || undefined}
+            />
+          </div>
+        )}
       </div>
       </div>
     </div>

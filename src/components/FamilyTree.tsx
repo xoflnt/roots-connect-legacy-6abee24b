@@ -26,6 +26,8 @@ const nodeTypes = { familyCard: FamilyCard, generationBand: GenerationBandNode }
 export interface FamilyTreeRef {
   search: (memberId: string) => void;
   reset: () => void;
+  expandAll: () => void;
+  getRfInstance: () => any;
 }
 
 interface FamilyTreeProps {
@@ -232,7 +234,17 @@ export const FamilyTree = forwardRef<FamilyTreeRef, FamilyTreeProps>(function Fa
     }, 400);
   }, []);
 
-  useImperativeHandle(ref, () => ({ search: handleSearch, reset: handleReset }), [handleSearch, handleReset]);
+  const expandAll = useCallback(() => {
+    const allIds = new Set(getAllMembers().map(m => m.id));
+    setExpandedIds(allIds);
+  }, []);
+
+  useImperativeHandle(ref, () => ({
+    search: handleSearch,
+    reset: handleReset,
+    expandAll,
+    getRfInstance: () => rfInstance.current,
+  }), [handleSearch, handleReset, expandAll]);
 
   useEffect(() => {
     (window as any).__toggleExpandNode = handleToggleExpand;
