@@ -306,8 +306,8 @@ export function PersonDetails({ member, onClose }: PersonDetailsProps) {
 
   return (
     <Sheet open={!!member} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent side="left" className="w-[360px] sm:w-[400px] h-[92dvh] max-h-[92dvh] border-r-0 shadow-2xl flex flex-col p-0">
-        <SheetHeader className="sticky top-0 bg-background/95 backdrop-blur-sm z-10 px-6 pt-4 pb-2">
+      <SheetContent side="left" className="w-[360px] sm:w-[400px] max-h-[92dvh] border-r-0 shadow-2xl overflow-y-auto px-6 pb-[calc(env(safe-area-inset-bottom)+24px)]">
+        <SheetHeader className="sticky top-0 bg-background/95 backdrop-blur-sm z-10 pt-4 pb-2 -mx-6 px-6">
           <SheetTitle className="sr-only">{member.name}</SheetTitle>
           <Button
             variant="ghost"
@@ -318,9 +318,7 @@ export function PersonDetails({ member, onClose }: PersonDetailsProps) {
             <X className="h-4 w-4" />
           </Button>
         </SheetHeader>
-        <div className="flex-1 overflow-y-auto px-6 pb-[env(safe-area-inset-bottom,1rem)]">
-          <DetailContent member={member} />
-        </div>
+        <DetailContent member={member} />
       </SheetContent>
     </Sheet>
   );
