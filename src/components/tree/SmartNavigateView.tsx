@@ -17,7 +17,7 @@ import { SearchBar } from "@/components/SearchBar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ChevronRight, ChevronLeft, ChevronUp, ChevronDown, ArrowRight, Search, User } from "lucide-react";
-import { isVerifiedMember } from "@/services/dataService";
+import { getVerifiedMemberIds } from "@/services/dataService";
 import { cn } from "@/lib/utils";
 import type { FamilyMember } from "@/data/familyData";
 

@@ -12,7 +12,7 @@ import { HeritageBadge } from "@/components/HeritageBadge";
 import { PersonDetails } from "@/components/PersonDetails";
 import { Badge } from "@/components/ui/badge";
 import { ChevronDown, ChevronLeft, Users } from "lucide-react";
-import { isVerifiedMember } from "@/services/dataService";
+import { getVerifiedMemberIds } from "@/services/dataService";
 import { cn } from "@/lib/utils";
 import type { FamilyMember } from "@/data/familyData";
 
