@@ -99,15 +99,18 @@ const Index = () => {
 
   // Listen for tab-switch events from LandingPage quick actions
   useEffect(() => {
-    const onKinship = () => { setActiveTab('kinship'); persistTab('kinship'); };
-    const onList = () => { setActiveTab('list'); persistTab('list'); };
-    const onNavigate = () => { setActiveTab('navigate'); persistTab('navigate'); };
-    const onBranches = () => { setActiveTab('branches'); persistTab('branches'); };
+    const onMap = () => { setActiveTab('map'); persistTab('map'); setShowLanding(false); };
+    const onKinship = () => { setActiveTab('kinship'); persistTab('kinship'); setShowLanding(false); };
+    const onList = () => { setActiveTab('list'); persistTab('list'); setShowLanding(false); };
+    const onNavigate = () => { setActiveTab('navigate'); persistTab('navigate'); setShowLanding(false); };
+    const onBranches = () => { setActiveTab('branches'); persistTab('branches'); setShowLanding(false); };
+    window.addEventListener('switch-to-map', onMap);
     window.addEventListener('switch-to-kinship', onKinship);
     window.addEventListener('switch-to-list', onList);
     window.addEventListener('switch-to-navigate', onNavigate);
     window.addEventListener('switch-to-branches', onBranches);
     return () => {
+      window.removeEventListener('switch-to-map', onMap);
       window.removeEventListener('switch-to-kinship', onKinship);
       window.removeEventListener('switch-to-list', onList);
       window.removeEventListener('switch-to-navigate', onNavigate);
