@@ -250,6 +250,7 @@ function AdminContent() {
       setTimeout(() => setExportProgress(''), 3000);
     }
   };
+  return (
     <div className="flex flex-col h-[100dvh] bg-background" dir="rtl">
       <header className="shrink-0 z-50 bg-card/90 backdrop-blur-sm border-b border-border/30 px-4 py-3" style={{ paddingTop: `max(0.75rem, env(safe-area-inset-top))` }}>
         <div className="max-w-6xl mx-auto flex items-center justify-between">
