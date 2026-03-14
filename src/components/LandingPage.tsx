@@ -336,8 +336,8 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
             { label: "الشجرة", icon: MapIcon, color: "text-primary", onClick: () => onBrowseTree() },
             { label: "النسب", icon: ScrollText, color: "text-accent", onClick: () => setShowNasabSheet(true) },
             { label: "القرابة", icon: Scale, color: "text-primary", onClick: () => { onBrowseTree(); window.dispatchEvent(new CustomEvent('switch-to-kinship')); } },
-            { label: "الوثائق", icon: BookOpen, color: "text-amber-600", onClick: () => navigate("/documents") },
-            { label: "الدليل", icon: BookMarked, color: "text-muted-foreground", onClick: () => navigate("/guide") },
+            { label: "تنقل", icon: Compass, color: "text-primary", onClick: () => { onBrowseTree(); window.dispatchEvent(new CustomEvent('switch-to-navigate')); } },
+            { label: "فروع", icon: GitBranch, color: "text-primary", onClick: () => { onBrowseTree(); window.dispatchEvent(new CustomEvent('switch-to-branches')); } },
             { label: "القائمة", icon: AlignJustify, color: "text-muted-foreground", onClick: () => { onBrowseTree(); window.dispatchEvent(new CustomEvent('switch-to-list')); } },
           ].map((action) => (
             <button
