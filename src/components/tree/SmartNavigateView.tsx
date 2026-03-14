@@ -43,7 +43,7 @@ const SonCard = React.memo(function SonCard({
   const branch = getBranch(member.id);
   const style = branch ? getBranchStyle(branch.pillarId) : null;
   const deceased = isDeceased(member);
-  const verified = isVerifiedMember(member.id);
+  const verified = getVerifiedMemberIds().has(member.id);
 
   return (
     <button
