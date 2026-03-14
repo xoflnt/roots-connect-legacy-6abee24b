@@ -155,7 +155,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
   const showingResults = open && filtered.length > 0;
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden" dir="rtl">
+    <div className="min-h-[100dvh] bg-background overflow-x-hidden" dir="rtl" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
       <OnboardingModal forceOpen={forceOnboarding} />
 
       {/* ─── 1. Hero (compact) ─── */}
