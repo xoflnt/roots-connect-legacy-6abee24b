@@ -1,5 +1,6 @@
-import { useRef, useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Users, ChevronLeft, Loader2, Link2, User, Download, ExternalLink } from "lucide-react";
+import { generateKinshipImage } from "./KinshipShareCard";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import type { FamilyMember } from "@/data/familyData";
