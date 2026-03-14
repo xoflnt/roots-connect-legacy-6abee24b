@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { AppHeader, type ViewMode } from "@/components/AppHeader";
 import { LineageView } from "@/components/LineageView";
-import { getAllMembers, getMemberById } from "@/services/familyService";
+import { getMemberById } from "@/services/familyService";
 
 const PersonPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -29,7 +29,7 @@ const PersonPage = () => {
       <div className="flex flex-col h-[100dvh] bg-background" dir="rtl">
         <AppHeader
           isLineageActive={true}
-          activeView="lineage"
+          activeView="map"
           onViewChange={() => navigate("/")}
           onSearch={handleSearchSelect}
           onReset={() => {}}
@@ -45,17 +45,16 @@ const PersonPage = () => {
   return (
     <div className="flex flex-col h-[100dvh] bg-background overflow-x-hidden">
       <AppHeader
-        activeView="lineage"
+        activeView="map"
         isLineageActive={true}
         onViewChange={(v) => {
-          if (v === "lineage") return;
           navigate(`/?view=${v}`);
         }}
         onSearch={handleSearchSelect}
         onReset={() => {}}
         onGoHome={handleGoHome}
       />
-      <main className="flex-1 overflow-hidden p-2 md:p-5 pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-5">
+      <main className="flex-1 overflow-hidden p-2 md:p-5 pb-5">
         <div className="w-full h-full rounded-2xl md:rounded-3xl shadow-xl overflow-auto border border-border/50 bg-card animate-fade-in">
           <LineageView memberId={memberId} onSelectMember={handleSearchSelect} />
         </div>
