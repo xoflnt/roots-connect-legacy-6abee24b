@@ -425,16 +425,20 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                 </InputOTP>
               </div>
               <Button
-                onClick={() => {
-                  if (familyPasscode === FAMILY_PASSCODE) {
+                onClick={async () => {
+                  setPasscodeVerifying(true);
+                  const valid = await verifyFamilyPasscode(familyPasscode);
+                  setPasscodeVerifying(false);
+                  if (valid) {
                     setStep(5);
                   } else {
                     toast.error("الرمز السري غير صحيح. الرجاء التأكد من الرمز الخاص بالعائلة.");
                   }
                 }}
-                disabled={familyPasscode.length < 6}
+                disabled={familyPasscode.length < 6 || passcodeVerifying}
                 className="min-h-[52px] w-full text-base font-semibold rounded-xl"
               >
+                {passcodeVerifying ? <Loader2 className="h-4 w-4 animate-spin ml-2" /> : null}
                 متابعة
               </Button>
               <Button variant="outline" onClick={() => { setStep(3); setFamilyPasscode(""); }} className="min-h-[52px] w-full rounded-xl">
