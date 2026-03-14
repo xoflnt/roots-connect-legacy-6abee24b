@@ -308,7 +308,7 @@ export default function Guide() {
 
   return (
     <motion.div
-      className="min-h-screen bg-background"
+      className="flex flex-col h-[100dvh] bg-background"
       dir="rtl"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -316,7 +316,7 @@ export default function Guide() {
     >
       {/* Header */}
       <header
-        className="sticky top-0 z-50 flex items-center justify-between gap-2 px-4 md:px-6 py-3 border-b border-border/40 bg-card/60 backdrop-blur-xl"
+        className="shrink-0 z-50 flex items-center justify-between gap-2 px-4 md:px-6 py-3 border-b border-border/40 bg-card/60 backdrop-blur-xl"
         style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }}
       >
         <div className="flex items-center gap-2">
@@ -325,13 +325,14 @@ export default function Guide() {
           </div>
           <h1 className="text-base md:text-lg font-extrabold text-foreground">دليل الاستخدام</h1>
         </div>
-        <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="h-11 w-11 rounded-xl">
+        <Button variant="ghost" size="icon" onClick={() => window.history.length > 1 ? navigate(-1) : navigate("/")} className="h-11 w-11 rounded-xl">
           <Home className="h-5 w-5" />
         </Button>
       </header>
 
       {/* Main */}
-      <main className="max-w-3xl mx-auto p-4 md:p-8 space-y-2">
+      <main className="flex-1 overflow-y-auto pb-[calc(2rem+env(safe-area-inset-bottom))]">
+      <div className="max-w-3xl mx-auto p-4 md:p-8 space-y-2">
         {/* Hero */}
         <div className="text-center space-y-3 mb-6">
           <div className="inline-block px-5 py-2 rounded-full bg-primary/10 text-primary font-bold text-sm">
@@ -418,7 +419,7 @@ export default function Guide() {
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={actions.action}
-                        className={`mt-4 rounded-xl min-h-[44px] text-sm font-medium px-4 py-2 transition-colors ${group.btnClass}`}
+                        className={`mt-4 w-full rounded-xl min-h-[44px] text-sm font-medium px-4 py-2 transition-colors ${group.btnClass}`}
                       >
                         {actions.label}
                       </motion.button>
@@ -447,6 +448,7 @@ export default function Guide() {
             ابدأ تصفح الشجرة ←
           </Button>
         </motion.div>
+      </div>
       </main>
     </motion.div>
   );
