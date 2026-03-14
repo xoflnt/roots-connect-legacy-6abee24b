@@ -299,6 +299,8 @@ export function kinshipDirectional(
     }
     if (d1 === 2) return { symmetric: true, symmetricTitle: "أبناء عم", title1to2: "", title2to1: "" };
     if (d1 === 3) return { symmetric: true, symmetricTitle: "أبناء عمومة من الدرجة الثانية", title1to2: "", title2to1: "" };
+    if (d1 === 4) return { symmetric: true, symmetricTitle: "أبناء عم الجد", title1to2: "", title2to1: "" };
+    if (d1 === 5) return { symmetric: true, symmetricTitle: "أبناء عم جد الأب", title1to2: "", title2to1: "" };
     return { symmetric: true, symmetricTitle: `أبناء عمومة من الدرجة ${toOrdinal(d1 - 1) || toArabicNum(d1 - 1)}`, title1to2: "", title2to1: "" };
   }
 
