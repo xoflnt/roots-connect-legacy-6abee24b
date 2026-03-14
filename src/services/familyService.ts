@@ -313,9 +313,9 @@ export function generationText(n: number): string {
   return `بـ ${toArabicNum(n)} جيلاً`;
 }
 
-export function lcaContextWord(dist1: number, dist2: number): string {
+export function lcaContextWord(dist1: number, dist2: number, lcaGender?: string): string {
   if (dist1 === 1 && dist2 === 1) return "والدهما";
-  return "جدهما المشترك";
+  return lcaGender === "F" ? "جدتهما المشتركة" : "جدهما المشترك";
 }
 
 function toArabicNum(n: number): string {
