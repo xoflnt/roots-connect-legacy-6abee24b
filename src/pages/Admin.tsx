@@ -189,7 +189,7 @@ function AdminContent() {
     setSyncing(true);
     setSyncResult('');
     try {
-      const members = getAllMembers();
+      const members = familyMembers;
       const { data, error } = await supabase.functions.invoke('seed-family-data', {
         body: { members }
       });
