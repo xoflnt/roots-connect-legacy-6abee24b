@@ -357,6 +357,12 @@ export const familyMembers: FamilyMember[] = [
   { id: "N9_4_19", name: "ياسر بن أحمد", gender: "M", father_id: "N9_4", notes: "والدته: نورة الحلافي" },
   { id: "N9_4_19_1", name: "أحمد بن ياسر", gender: "M", father_id: "N9_4_19" },
   { id: "N9_4_19_2", name: "إياد بن ياسر", gender: "M", father_id: "N9_4_19" },
+  { id: "N9_4_19_3", name: "الهنوف بنت ياسر", gender: "F", father_id: "N9_4_19" },
+  { id: "N9_4_19_4", name: "عبدالعزيز بن ياسر", gender: "M", father_id: "N9_4_19" },
+  { id: "N9_4_19_5", name: "صالح بن ياسر", gender: "M", father_id: "N9_4_19" },
+  { id: "N9_4_19_6", name: "أمجاد بنت ياسر", gender: "F", father_id: "N9_4_19" },
+  { id: "N9_4_19_7", name: "معاذ بن ياسر", gender: "M", father_id: "N9_4_19" },
+  { id: "N9_4_19_8", name: "لجين بنت ياسر", gender: "F", father_id: "N9_4_19" },
 
   { id: "N9_5", name: "عبدالرحمن بن صالح", gender: "M", father_id: "N9", spouses: "حصة خالد المريخي", notes: "والدته: نورة العامر" },
   { id: "N9_5_1", name: "خلود بنت عبدالرحمن", gender: "F", father_id: "N9_5" },
