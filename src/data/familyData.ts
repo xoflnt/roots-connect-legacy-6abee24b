@@ -336,6 +336,7 @@ export const familyMembers: FamilyMember[] = [
   { id: "N9_4_10", name: "عمر بن أحمد", gender: "M", father_id: "N9_4", notes: "والدته: الجوهرة الوشيل" },
   { id: "N9_4_10_1", name: "أحمد بن عمر", gender: "M", father_id: "N9_4_10" },
   { id: "N9_4_10_2", name: "لينه بنت عمر", gender: "F", father_id: "N9_4_10" },
+  { id: "N9_4_10_3", name: "أروى بنت عمر", gender: "F", father_id: "N9_4_10" },
   { id: "N9_4_11", name: "أسامة بن أحمد", gender: "M", father_id: "N9_4", notes: "والدته: الجوهرة الوشيل" },
   { id: "N9_4_11_1", name: "باسم بن أسامة", gender: "M", father_id: "N9_4_11" },
   { id: "N9_4_12", name: "الهنوف بنت أحمد", gender: "F", father_id: "N9_4", notes: "والدتها: نورة الحلافي" },
