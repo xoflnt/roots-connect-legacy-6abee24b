@@ -7,7 +7,7 @@ import { Users, Eye, ShieldCheck, TreePine, Check, Loader2, ArrowRight, Bell, Do
 import { supabase } from "@/integrations/supabase/client";
 import { getRequests, markRequestDone, getVerifiedUsers, getVisitCount, type FamilyRequest } from "@/services/dataService";
 import { getAllMembers, searchMembers } from "@/services/familyService";
-import type { FamilyMember } from "@/data/familyData";
+import { familyMembers, type FamilyMember } from "@/data/familyData";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DataTableView } from "@/components/DataTableView";
@@ -189,7 +189,7 @@ function AdminContent() {
     setSyncing(true);
     setSyncResult('');
     try {
-      const members = getAllMembers();
+      const members = familyMembers;
       const { data, error } = await supabase.functions.invoke('seed-family-data', {
         body: { members }
       });
