@@ -276,6 +276,21 @@ function AdminContent() {
 
       <div className="flex-1 overflow-y-auto pb-[calc(2rem+env(safe-area-inset-bottom))]">
       <div className="max-w-6xl mx-auto p-4 space-y-6">
+        {/* Sync Button */}
+        <div className="bg-blue-600 hover:bg-blue-700 text-white rounded-2xl p-4 flex flex-col sm:flex-row items-center gap-3">
+          <Button
+            onClick={handleSync}
+            disabled={syncing}
+            className="bg-white text-blue-700 hover:bg-blue-50 font-bold rounded-xl gap-2 min-h-[44px]"
+          >
+            {syncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Database className="h-4 w-4" />}
+            {syncing ? 'جاري المزامنة...' : 'مزامنة البيانات'}
+          </Button>
+          <span className="text-sm font-medium">
+            {syncResult || 'مزامنة جميع الأفراد من الملف المحلي إلى قاعدة البيانات'}
+          </span>
+        </div>
+
         {/* Stats */}
         <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <StatCard icon={Eye} label="عدد الزيارات" value={visitCount} />
