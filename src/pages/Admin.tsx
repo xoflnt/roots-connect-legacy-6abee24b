@@ -149,6 +149,8 @@ function AdminContent() {
   const [visitCount, setVisitCount] = useState(0);
   const [memberCount, setMemberCount] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState('');
   const navigate = useNavigate();
 
   // Export state
