@@ -24,7 +24,7 @@ function buildMaps(members: FamilyMember[]) {
 // Initial build with static data (synchronous fallback)
 buildMaps([...staticMembers]);
 
-/** Load members from cloud and rebuild maps */
+/** Load members from cloud and rebuild maps (static = source of truth) */
 export async function loadMembers(): Promise<void> {
   try {
     const [cloudMembers] = await Promise.all([
@@ -32,7 +32,15 @@ export async function loadMembers(): Promise<void> {
       loadVerifiedMemberIds(),
     ]);
     if (cloudMembers.length > 0) {
-      buildMaps(cloudMembers);
+      const staticMap = new Map(staticMembers.map(m => [m.id, m]));
+      const cloudMap = new Map(cloudMembers.map(m => [m.id, m]));
+      const merged: FamilyMember[] = staticMembers.map(m =>
+        cloudMap.has(m.id) ? { ...m, ...cloudMap.get(m.id)! } : m
+      );
+      cloudMembers.forEach(m => {
+        if (!staticMap.has(m.id)) merged.push(m);
+      });
+      buildMaps(merged);
       initialized = true;
     } else if (!initialized) {
       buildMaps([...staticMembers]);
