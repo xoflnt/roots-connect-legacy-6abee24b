@@ -3,7 +3,8 @@ import { AdminProtect, getAdminToken } from "@/components/AdminProtect";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Users, Eye, ShieldCheck, TreePine, Check, Loader2, ArrowRight, Bell, Download, Search, X, RefreshCw, FileDown } from "lucide-react";
+import { Users, Eye, ShieldCheck, TreePine, Check, Loader2, ArrowRight, Bell, Download, Search, X, RefreshCw, FileDown, Database } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { getRequests, markRequestDone, getVerifiedUsers, getVisitCount, type FamilyRequest } from "@/services/dataService";
 import { getAllMembers, searchMembers } from "@/services/familyService";
 import type { FamilyMember } from "@/data/familyData";
@@ -148,6 +149,8 @@ function AdminContent() {
   const [visitCount, setVisitCount] = useState(0);
   const [memberCount, setMemberCount] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState('');
   const navigate = useNavigate();
 
   // Export state
@@ -180,6 +183,24 @@ function AdminContent() {
     setRefreshing(true);
     await loadData();
     setRefreshing(false);
+  };
+
+  const handleSync = async () => {
+    setSyncing(true);
+    setSyncResult('');
+    try {
+      const members = getAllMembers();
+      const { data, error } = await supabase.functions.invoke('seed-family-data', {
+        body: { members }
+      });
+      if (error) throw error;
+      setSyncResult(`تمت المزامنة: ${(data as any)?.inserted ?? members.length} فرد`);
+      await loadData();
+    } catch (err: any) {
+      setSyncResult('فشلت المزامنة: ' + (err.message || 'خطأ غير معروف'));
+    } finally {
+      setSyncing(false);
+    }
   };
 
   const pending = requests.filter((r) => r.status === "pending");
@@ -255,6 +276,21 @@ function AdminContent() {
 
       <div className="flex-1 overflow-y-auto pb-[calc(2rem+env(safe-area-inset-bottom))]">
       <div className="max-w-6xl mx-auto p-4 space-y-6">
+        {/* Sync Button */}
+        <div className="bg-blue-600 hover:bg-blue-700 text-white rounded-2xl p-4 flex flex-col sm:flex-row items-center gap-3">
+          <Button
+            onClick={handleSync}
+            disabled={syncing}
+            className="bg-white text-blue-700 hover:bg-blue-50 font-bold rounded-xl gap-2 min-h-[44px]"
+          >
+            {syncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Database className="h-4 w-4" />}
+            {syncing ? 'جاري المزامنة...' : 'مزامنة البيانات'}
+          </Button>
+          <span className="text-sm font-medium">
+            {syncResult || 'مزامنة جميع الأفراد من الملف المحلي إلى قاعدة البيانات'}
+          </span>
+        </div>
+
         {/* Stats */}
         <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <StatCard icon={Eye} label="عدد الزيارات" value={visitCount} />
