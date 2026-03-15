@@ -185,6 +185,24 @@ function AdminContent() {
     setRefreshing(false);
   };
 
+  const handleSync = async () => {
+    setSyncing(true);
+    setSyncResult('');
+    try {
+      const members = getAllMembers();
+      const { data, error } = await supabase.functions.invoke('seed-family-data', {
+        body: { members }
+      });
+      if (error) throw error;
+      setSyncResult(`تمت المزامنة: ${(data as any)?.inserted ?? members.length} فرد`);
+      await loadData();
+    } catch (err: any) {
+      setSyncResult('فشلت المزامنة: ' + (err.message || 'خطأ غير معروف'));
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   const pending = requests.filter((r) => r.status === "pending");
   const handled = requests.filter((r) => r.status !== "pending");
 
