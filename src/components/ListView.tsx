@@ -26,6 +26,7 @@ const DEPTH_ACCENTS = [
 ];
 
 export function ListView({ onSelectMember }: ListViewProps) {
+  const { isLoggedIn } = useAuth();
   const members = useMemo(() => getAllMembers(), []);
   const [activeBranch, setActiveBranch] = useState("all");
 
