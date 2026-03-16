@@ -14,6 +14,8 @@ import { formatAge } from "@/utils/ageCalculator";
 import { getBranch, getBranchStyle, DOCUMENTER_ID } from "@/utils/branchUtils";
 import { springConfig } from "@/lib/animations";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/contexts/AuthContext";
+import { canSeeAge, canSeeSpouses, getSpouseLabel, PRIVATE_LABEL } from "@/utils/privacyUtils";
 
 interface LineageViewProps {
   memberId: string;
