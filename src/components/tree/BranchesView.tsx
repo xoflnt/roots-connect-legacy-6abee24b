@@ -134,7 +134,7 @@ const GenMemberRow = React.memo(function GenMemberRow({
         showAge ? (
           <span className="text-xs text-muted-foreground shrink-0">{formatAge(member.birth_year, member.death_year)}</span>
         ) : (
-          <span className="text-[10px] italic text-muted-foreground shrink-0">{PRIVATE_LABEL}</span>
+          <span className="text-[10px] italic text-muted-foreground shrink-0">{privateLabel('العمر')}</span>
         )
       )}
     </button>
