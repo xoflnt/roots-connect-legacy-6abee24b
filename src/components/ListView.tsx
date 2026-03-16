@@ -9,6 +9,8 @@ import { formatAge } from "@/utils/ageCalculator";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PILLARS, getBranch, getBranchStyle, DOCUMENTER_ID } from "@/utils/branchUtils";
 import { HeritageBadge } from "./HeritageBadge";
+import { useAuth } from "@/contexts/AuthContext";
+import { canSeeAge, canSeeMotherName, privateLabel, getSpouseLabel } from "@/utils/privacyUtils";
 
 interface ListViewProps {
   onSelectMember?: (memberId: string) => void;
