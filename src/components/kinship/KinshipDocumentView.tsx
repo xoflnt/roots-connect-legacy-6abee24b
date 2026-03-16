@@ -50,9 +50,9 @@ export function KinshipDocumentView({ result, person1, person2, motherName1, mot
         </p>
         {hasMothers && (
           <p className="text-xs text-muted-foreground leading-relaxed mt-2" style={{ direction: 'rtl', unicodeBidi: 'plaintext' }}>
-            {motherName1 && motherName2
+            {showMother1 && showMother2
               ? `(${motherLabel1} ${name1} هي ${motherName1}، و${motherLabel2} ${name2} هي ${motherName2})\u200F.`
-              : motherName1
+              : showMother1
                 ? `(${motherLabel1} ${name1} هي ${motherName1})\u200F.`
                 : `(${motherLabel2} ${name2} هي ${motherName2})\u200F.`
             }
