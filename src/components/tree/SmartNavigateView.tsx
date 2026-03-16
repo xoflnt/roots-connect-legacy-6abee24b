@@ -125,14 +125,17 @@ const SonCard = React.memo(function SonCard({
 const FatherCard = React.memo(function FatherCard({
   member,
   onTap,
+  isLoggedIn,
 }: {
   member: FamilyMember;
   onTap: (id: string) => void;
+  isLoggedIn: boolean;
 }) {
   const branch = getBranch(member.id);
   const style = branch ? getBranchStyle(branch.pillarId) : null;
   const deceased = isDeceased(member);
   const gc = genderColor(member.gender);
+  const showAge = canSeeAge(member.id, isLoggedIn);
 
   return (
     <motion.button
@@ -170,9 +173,13 @@ const FatherCard = React.memo(function FatherCard({
             </span>
           )}
           {member.birth_year && (
-            <span className="text-[10px] text-muted-foreground">
-              {formatAge(member.birth_year, member.death_year)}
-            </span>
+            showAge ? (
+              <span className="text-[10px] text-muted-foreground">
+                {formatAge(member.birth_year, member.death_year)}
+              </span>
+            ) : (
+              <span className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
+            )
           )}
         </div>
       </div>
