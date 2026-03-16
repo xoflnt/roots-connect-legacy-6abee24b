@@ -91,7 +91,8 @@ export async function generateKinshipImage(
   person2: FamilyMember,
   relationText: string,
   directional: DirectionalKinship | null,
-  pathChain: FamilyMember[]
+  pathChain: FamilyMember[],
+  isLoggedIn: boolean = false
 ): Promise<HTMLCanvasElement> {
   await loadFont();
 
