@@ -173,6 +173,8 @@ function MobileBranchesView() {
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
   const [genSheet, setGenSheet] = useState<{ depth: number; members: FamilyMember[] } | null>(null);
   const [animKey, setAnimKey] = useState(0);
+  const { currentUser } = useAuth();
+  const isLoggedIn = !!currentUser;
 
   const stats = useBranchStats(selectedBranch);
   const branchStyle = getBranchStyle(selectedBranch);
