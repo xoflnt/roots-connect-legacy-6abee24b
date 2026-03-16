@@ -1,6 +1,6 @@
 import { useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
-import { User, Calendar, Heart, ArrowUp, Users, Share2, Check, Download, UserPlus } from "lucide-react";
+import { User, Calendar, Heart, ArrowUp, Users, Share2, Check, Download, UserPlus, Link as LinkIcon, ImageIcon, Loader2 } from "lucide-react";
 import { WhatsAppIcon } from "./WhatsAppIcon";
 import { downloadVCard } from "@/utils/vcard";
 import { useState } from "react";
@@ -16,6 +16,7 @@ import { springConfig } from "@/lib/animations";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
 import { canSeeAge, canSeeSpouses, canSeeMotherName, getSpouseLabel, PRIVATE_LABEL } from "@/utils/privacyUtils";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 interface LineageViewProps {
   memberId: string;
@@ -38,6 +39,7 @@ function toArabicNum(n: number): string {
 export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
   const [copied, setCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [showShareOptions, setShowShareOptions] = useState(false);
   const isMobile = useIsMobile();
   const { currentUser } = useAuth();
   const isLoggedIn = !!currentUser;
@@ -129,37 +131,89 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
           <p className="text-muted-foreground text-sm">
             من {chain[0].name} إلى الجد الأعلى — {toArabicNum(chain.length)} أجيال
           </p>
-          {/* Action buttons */}
-          <div className="flex items-center justify-center gap-2 flex-wrap mt-2">
+          {/* Share button */}
+          <div className="relative flex items-center justify-center mt-2">
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
-              onClick={handleShare}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-sm font-medium min-h-[44px]"
+              onClick={() => setShowShareOptions(true)}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-sm font-bold min-h-[44px]"
             >
-              {copied ? (
-                <>
-                  <Check className="h-4 w-4" />
-                  تم النسخ!
-                </>
-              ) : (
-                <>
-                  <Share2 className="h-4 w-4" />
-                  شارك النسب
-                </>
-              )}
+              <Share2 className="h-4 w-4" />
+              شارك النسب
             </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={handleDownloadCard}
-              disabled={downloading}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/15 text-accent hover:bg-accent/25 transition-colors text-sm font-medium min-h-[44px] disabled:opacity-50"
-            >
-              {isMobile ? <Share2 className="h-4 w-4" /> : <Download className="h-4 w-4" />}
-              {downloading ? "جاري التحميل..." : isMobile ? "شارك النسب" : "تحميل البطاقة"}
-            </motion.button>
+
+            {/* Desktop dropdown */}
+            {!isMobile && showShareOptions && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setShowShareOptions(false)} />
+                <div className="absolute top-full mt-2 z-50 w-72 rounded-2xl border border-border bg-popover shadow-xl p-3 space-y-2" dir="rtl">
+                  <p className="text-xs text-muted-foreground font-medium px-1">كيف تبي تشارك؟</p>
+                  <button
+                    onClick={() => { handleShare(); setShowShareOptions(false); }}
+                    className="flex items-center gap-3 p-4 rounded-xl bg-card hover:bg-muted transition-colors text-right w-full"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                      <LinkIcon className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-foreground">شارك كرابط 🔗</p>
+                      <p className="text-xs text-muted-foreground">انسخ الرابط أو شاركه مباشرة</p>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => { handleDownloadCard(); setShowShareOptions(false); }}
+                    disabled={downloading}
+                    className="flex items-center gap-3 p-4 rounded-xl bg-card hover:bg-muted transition-colors text-right w-full disabled:opacity-50"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
+                      {downloading ? <Loader2 className="h-5 w-5 text-accent animate-spin" /> : <ImageIcon className="h-5 w-5 text-accent" />}
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-foreground">شارك كصورة 🖼️</p>
+                      <p className="text-xs text-muted-foreground">ولّد بطاقة جميلة وشاركها</p>
+                    </div>
+                  </button>
+                </div>
+              </>
+            )}
           </div>
+
+          {/* Mobile bottom sheet */}
+          <Sheet open={isMobile && showShareOptions} onOpenChange={setShowShareOptions}>
+            <SheetContent side="bottom" className="rounded-t-2xl" dir="rtl">
+              <SheetHeader>
+                <SheetTitle className="text-sm text-muted-foreground font-medium">كيف تبي تشارك؟</SheetTitle>
+              </SheetHeader>
+              <div className="space-y-2 py-4">
+                <button
+                  onClick={() => { handleShare(); setShowShareOptions(false); }}
+                  className="flex items-center gap-3 p-4 rounded-xl bg-card hover:bg-muted transition-colors text-right w-full"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                    <LinkIcon className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-foreground">شارك كرابط 🔗</p>
+                    <p className="text-xs text-muted-foreground">انسخ الرابط أو شاركه مباشرة</p>
+                  </div>
+                </button>
+                <button
+                  onClick={() => { handleDownloadCard(); setShowShareOptions(false); }}
+                  disabled={downloading}
+                  className="flex items-center gap-3 p-4 rounded-xl bg-card hover:bg-muted transition-colors text-right w-full disabled:opacity-50"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
+                    {downloading ? <Loader2 className="h-5 w-5 text-accent animate-spin" /> : <ImageIcon className="h-5 w-5 text-accent" />}
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-foreground">شارك كصورة 🖼️</p>
+                    <p className="text-xs text-muted-foreground">ولّد بطاقة جميلة وشاركها</p>
+                  </div>
+                </button>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
 
         {/* Timeline */}

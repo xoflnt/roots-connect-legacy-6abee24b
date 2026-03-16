@@ -400,13 +400,20 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         </motion.div>
       </section>
       <section className="px-4">
-        <div className="max-w-lg mx-auto">
+        <div className="max-w-lg mx-auto flex gap-2">
           <button
             onClick={() => setRequestOpen(true)}
-            className="w-full rounded-xl border border-dashed border-accent/40 bg-accent/5 hover:bg-accent/10 min-h-[44px] flex items-center justify-center gap-2 text-sm text-accent font-medium transition-colors"
+            className="flex-1 rounded-xl border border-dashed border-accent/40 bg-accent/5 hover:bg-accent/10 min-h-[48px] flex items-center justify-center gap-2 text-sm text-accent font-medium transition-colors"
           >
             <Send className="h-4 w-4" />
-            أرسل طلب تحديث البيانات
+            أرسل طلب تعديل
+          </button>
+          <button
+            onClick={() => navigate('/guide')}
+            className="flex-1 rounded-xl border border-dashed border-border bg-card hover:bg-muted min-h-[48px] flex items-center justify-center gap-2 text-sm text-muted-foreground font-medium transition-colors"
+          >
+            <BookOpen className="h-4 w-4" />
+            دليل الاستخدام
           </button>
         </div>
       </section>
