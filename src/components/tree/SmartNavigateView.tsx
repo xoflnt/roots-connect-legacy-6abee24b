@@ -178,7 +178,7 @@ const FatherCard = React.memo(function FatherCard({
                 {formatAge(member.birth_year, member.death_year)}
               </span>
             ) : (
-              <span className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
+              <span className="text-[10px] italic text-muted-foreground">{privateLabel('العمر')}</span>
             )
           )}
         </div>
