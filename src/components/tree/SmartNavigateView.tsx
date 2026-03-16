@@ -479,7 +479,7 @@ export function SmartNavigateView() {
                     والدته: {motherName}
                   </span>
                 ) : (
-                  <span className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
+                  <span className="text-[10px] italic text-muted-foreground">{privateLabel('الوالدة')}</span>
                 )
               )}
               {!motherName && motherName === null && member.birth_year === null && null}
