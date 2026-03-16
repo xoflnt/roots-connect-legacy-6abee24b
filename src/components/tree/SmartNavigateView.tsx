@@ -385,7 +385,7 @@ export function SmartNavigateView() {
         style={{ willChange: "transform, opacity" }}
       >
         {/* Father card */}
-        {father && <FatherCard member={father} onTap={(id) => navigateTo(id, "down")} />}
+        {father && <FatherCard member={father} onTap={(id) => navigateTo(id, "down")} isLoggedIn={isLoggedIn} />}
 
         {/* Center card */}
         <div
