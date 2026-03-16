@@ -206,6 +206,7 @@ export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number, fi
           isVerified: verifiedIds.has(member.id),
           isMobile,
           generation: getDepth(member.id),
+          isLoggedIn,
         },
       };
     });
