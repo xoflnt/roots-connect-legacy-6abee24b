@@ -55,7 +55,7 @@ export interface TreeFilters {
   living: string;
 }
 
-export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number, filters?: TreeFilters) {
+export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number, filters?: TreeFilters, isLoggedIn: boolean = false) {
   return useMemo(() => {
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
     const CARD_WIDTH = isMobile ? 155 : 220;
@@ -206,6 +206,7 @@ export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number, fi
           isVerified: verifiedIds.has(member.id),
           isMobile,
           generation: getDepth(member.id),
+          isLoggedIn,
         },
       };
     });
@@ -229,5 +230,5 @@ export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number, fi
     });
 
     return { nodes, edges, totalCount, filteredCount };
-  }, [expandedIds, _refreshKey, filters]);
+  }, [expandedIds, _refreshKey, filters, isLoggedIn]);
 }

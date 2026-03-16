@@ -14,6 +14,8 @@ import { formatAge } from "@/utils/ageCalculator";
 import { getBranch, getBranchStyle, DOCUMENTER_ID } from "@/utils/branchUtils";
 import { springConfig } from "@/lib/animations";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/contexts/AuthContext";
+import { canSeeAge, canSeeSpouses, getSpouseLabel, PRIVATE_LABEL } from "@/utils/privacyUtils";
 
 interface LineageViewProps {
   memberId: string;
@@ -37,6 +39,8 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
   const [copied, setCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const isMobile = useIsMobile();
+  const { currentUser } = useAuth();
+  const isLoggedIn = !!currentUser;
 
   const { chain, childrenMap } = useMemo(() => {
     const members = getAllMembers();
@@ -78,7 +82,7 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
     if (chain.length === 0) return;
     setDownloading(true);
     try {
-      const blob = await generateLineageImage(chain, shareUrl);
+      const blob = await generateLineageImage(chain, shareUrl, isLoggedIn);
       const firstName = chain[0].name.split(" ")[0];
       const file = new File([blob], `نسب-${firstName}.png`, { type: "image/png" });
 
@@ -322,7 +326,11 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                         الجيل {toArabicNum(genNum)}
                       </div>
                       {ageText && (
-                        <span className="text-xs text-accent font-semibold">{ageText}</span>
+                        canSeeAge(member.id, isLoggedIn) ? (
+                          <span className="text-xs text-accent font-semibold">{ageText}</span>
+                        ) : (
+                          <span className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
+                        )
                       )}
                     </div>
                   </div>
@@ -343,13 +351,17 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                     {member.spouses && (
                       <div className="flex items-start gap-2 text-sm text-muted-foreground">
                         <Heart className="h-3.5 w-3.5 shrink-0 mt-0.5 text-female fill-female/30" />
-                        <span className="break-words line-clamp-2">
-                          {isMale
-                            ? (member.spouses!.includes("،") ? "الزوجات: " : "الزوجة: ")
-                            : "الزوج: "
-                          }
-                          {member.spouses}
-                        </span>
+                        {canSeeSpouses(member.id, isLoggedIn) ? (
+                          <span className="break-words line-clamp-2">
+                            {isMale
+                              ? (member.spouses!.includes("،") ? "الزوجات: " : "الزوجة: ")
+                              : "الزوج: "
+                            }
+                            {member.spouses}
+                          </span>
+                        ) : (
+                          <span className="text-xs italic text-muted-foreground">{PRIVATE_LABEL}</span>
+                        )}
                       </div>
                     )}
 
@@ -377,11 +389,11 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                               const color = group.colorIndex >= 0 ? BRANCH_COLORS[group.colorIndex % BRANCH_COLORS.length] : null;
                               return (
                                 <div key={motherKey}>
-                                  {motherKey !== "__unknown__" && color && (
+                                {motherKey !== "__unknown__" && color && (
                                     <div className="flex items-center gap-1.5 mb-0.5">
                                       <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color.stroke }} />
                                       <span className="text-[10px] font-semibold" style={{ color: color.stroke }}>
-                                        أبناء {motherKey}
+                                        أبناء {isLoggedIn ? motherKey : getSpouseLabel(motherKey, Array.from(groups.keys()).filter(k => k !== "__unknown__").indexOf(motherKey), isLoggedIn)}
                                       </span>
                                     </div>
                                   )}

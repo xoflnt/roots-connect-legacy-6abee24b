@@ -18,6 +18,8 @@ import { HeritageBadge } from "@/components/HeritageBadge";
 import { getVerifiedMemberIds } from "@/services/dataService";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { staggerContainer, staggerItem, springConfig } from "@/lib/animations";
+import { useAuth } from "@/contexts/AuthContext";
+import { canSeeAge, canSeeSpouses, getSpouseLabel, PRIVATE_LABEL } from "@/utils/privacyUtils";
 
 interface PersonDetailsProps {
   member: FamilyMember | null;
@@ -28,8 +30,12 @@ function DetailContent({ member }: { member: FamilyMember }) {
   const navigate = useNavigate();
   const isMale = member.gender === "M";
   const [requestOpen, setRequestOpen] = useState(false);
+  const { currentUser } = useAuth();
+  const isLoggedIn = !!currentUser;
 
   const ageText = formatAge(member.birth_year, member.death_year);
+  const showAge = canSeeAge(member.id, isLoggedIn);
+  const showSpouses = canSeeSpouses(member.id, isLoggedIn);
   const motherName = inferMotherName(member);
   const phone = member.phone as string | undefined;
   const isVerified = getVerifiedMemberIds().has(member.id);
@@ -55,6 +61,10 @@ function DetailContent({ member }: { member: FamilyMember }) {
     if (!member.spouses) return [];
     return member.spouses.split("،").map((s) => s.trim()).filter(Boolean);
   }, [member.spouses]);
+
+  const privateLabelEl = (
+    <span className="text-xs italic text-muted-foreground">{PRIVATE_LABEL}</span>
+  );
 
   return (
     <div className="space-y-5 p-1" dir="rtl">
@@ -121,7 +131,11 @@ function DetailContent({ member }: { member: FamilyMember }) {
             </div>
             <div>
               <p className="text-[11px] text-muted-foreground font-medium">العمر</p>
-              <p className="text-sm font-bold text-foreground">{ageText}</p>
+              {showAge ? (
+                <p className="text-sm font-bold text-foreground">{ageText}</p>
+              ) : (
+                privateLabelEl
+              )}
             </div>
           </motion.div>
         )}
@@ -207,20 +221,24 @@ function DetailContent({ member }: { member: FamilyMember }) {
                 {isMale ? (spouseList.length > 1 ? "الزوجات" : "الزوجة") : "الزوج"}
               </p>
             </div>
-            <div className="flex flex-wrap gap-1.5">
-              {spouseList.map((spouse, i) => {
-                const color = BRANCH_COLORS[i % BRANCH_COLORS.length];
-                return (
-                  <span
-                    key={i}
-                    className="text-xs font-semibold px-2.5 py-1 rounded-full"
-                    style={{ color: color.stroke, backgroundColor: `${color.stroke}15` }}
-                  >
-                    {spouse}
-                  </span>
-                );
-              })}
-            </div>
+            {showSpouses ? (
+              <div className="flex flex-wrap gap-1.5">
+                {spouseList.map((spouse, i) => {
+                  const color = BRANCH_COLORS[i % BRANCH_COLORS.length];
+                  return (
+                    <span
+                      key={i}
+                      className="text-xs font-semibold px-2.5 py-1 rounded-full"
+                      style={{ color: color.stroke, backgroundColor: `${color.stroke}15` }}
+                    >
+                      {spouse}
+                    </span>
+                  );
+                })}
+              </div>
+            ) : (
+              privateLabelEl
+            )}
           </motion.div>
         )}
 
@@ -228,15 +246,27 @@ function DetailContent({ member }: { member: FamilyMember }) {
         {groupedChildren.length > 0 && (
           <motion.div variants={staggerItem} className="px-4 py-3 rounded-xl bg-muted/50 border border-border/30 space-y-2">
             <p className="text-[11px] text-muted-foreground font-medium">الأبناء ({children.length})</p>
-            {groupedChildren.map(([motherKey, group]) => {
+            {groupedChildren.map(([motherKey, group], groupIndex) => {
               const color = group.colorIndex >= 0 ? BRANCH_COLORS[group.colorIndex % BRANCH_COLORS.length] : null;
+              const showMotherName = motherKey !== "__unknown__" && color;
+              // Determine the header label
+              let headerLabel: string | null = null;
+              if (showMotherName) {
+                if (groupedChildren.length === 1 && !isLoggedIn) {
+                  // Single wife, guest → just "الأبناء" (already shown above)
+                  headerLabel = null;
+                } else {
+                  const displayName = isLoggedIn ? motherKey : getSpouseLabel(motherKey, groupIndex, isLoggedIn);
+                  headerLabel = `أبناء ${displayName}`;
+                }
+              }
               return (
                 <div key={motherKey}>
-                  {motherKey !== "__unknown__" && color && (
+                  {headerLabel && color && (
                     <div className="flex items-center gap-1.5 mb-1">
                       <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color.stroke }} />
                       <span className="text-[10px] font-semibold" style={{ color: color.stroke }}>
-                        أبناء {motherKey}
+                        {headerLabel}
                       </span>
                     </div>
                   )}

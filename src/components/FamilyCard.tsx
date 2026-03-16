@@ -10,6 +10,7 @@ import { isFounder, isDeceased, getChildrenOf } from "@/services/familyService";
 import { formatAge } from "@/utils/ageCalculator";
 import { getBranch, getBranchStyle, DOCUMENTER_ID } from "@/utils/branchUtils";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
+import { canSeeAge, canSeeSpouses, PRIVATE_LABEL } from "@/utils/privacyUtils";
 
 type FamilyCardData = FamilyMember & {
   branchColorIndex: number;
@@ -20,6 +21,7 @@ type FamilyCardData = FamilyMember & {
   isVerified: boolean;
   isMobile: boolean;
   generation: number;
+  isLoggedIn: boolean;
 };
 
 function toArabicDigit(n: number): string {
@@ -30,6 +32,7 @@ function FamilyCardComponent({ data, selected }: NodeProps) {
   const member = data as unknown as FamilyCardData;
   const isMale = member.gender === "M";
   const mobile = member.isMobile;
+  const isLoggedIn = member.isLoggedIn ?? false;
   const branchColor = member.branchColorIndex >= 0 ? BRANCH_COLORS[member.branchColorIndex % BRANCH_COLORS.length] : null;
 
   const handleToggle = (e: React.MouseEvent) => {
@@ -40,6 +43,8 @@ function FamilyCardComponent({ data, selected }: NodeProps) {
   const founder = isFounder(member);
   const deceased = isDeceased(member);
   const ageText = formatAge(member.birth_year, member.death_year);
+  const showAge = canSeeAge(member.id, isLoggedIn);
+  const showSpouses = canSeeSpouses(member.id, isLoggedIn);
   const childrenCount = getChildrenOf(member.id).length;
   const phone = member.phone as string | undefined;
   const branch = getBranch(member.id);
@@ -63,6 +68,10 @@ function FamilyCardComponent({ data, selected }: NodeProps) {
     <span className="absolute top-1.5 left-1.5 text-[9px] font-bold" style={{ color: 'hsl(var(--muted-foreground) / 0.6)' }}>
       ج{toArabicDigit(member.generation)}
     </span>
+  );
+
+  const privateLabelEl = (
+    <span className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
   );
 
   // ── MOBILE COMPACT CARD ──
@@ -107,9 +116,11 @@ function FamilyCardComponent({ data, selected }: NodeProps) {
         </div>
 
         {/* Age */}
-        {ageText && (
+        {ageText && showAge ? (
           <p className="text-[9px] text-accent font-semibold mt-0.5">{ageText}</p>
-        )}
+        ) : ageText && !showAge ? (
+          <div className="mt-0.5">{privateLabelEl}</div>
+        ) : null}
 
         {/* Children count */}
         <div className="flex items-center gap-1 mt-0.5 px-2">
@@ -207,17 +218,21 @@ function FamilyCardComponent({ data, selected }: NodeProps) {
 
       {/* Spouse names inside card */}
       {spouseNames.length > 0 && (
-        <div className="flex flex-wrap gap-1 justify-center mt-0.5 px-2" dir="rtl">
-          {spouseNames.map((name, i) => (
-            <span
-              key={i}
-              className="flex items-center gap-0.5 text-[10px] text-muted-foreground"
-            >
-              <Heart className="h-2 w-2 shrink-0 fill-accent/50 text-accent/50" />
-              {name}
-            </span>
-          ))}
-        </div>
+        showSpouses ? (
+          <div className="flex flex-wrap gap-1 justify-center mt-0.5 px-2" dir="rtl">
+            {spouseNames.map((name, i) => (
+              <span
+                key={i}
+                className="flex items-center gap-0.5 text-[10px] text-muted-foreground"
+              >
+                <Heart className="h-2 w-2 shrink-0 fill-accent/50 text-accent/50" />
+                {name}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <div className="mt-0.5 px-2">{privateLabelEl}</div>
+        )
       )}
 
       {/* Mother name — always show if available */}
@@ -250,9 +265,11 @@ function FamilyCardComponent({ data, selected }: NodeProps) {
       )}
 
       {/* Age */}
-      {ageText && (
+      {ageText && showAge ? (
         <p className="text-[10px] text-accent font-semibold mt-0.5">{ageText}</p>
-      )}
+      ) : ageText && !showAge ? (
+        <div className="mt-0.5">{privateLabelEl}</div>
+      ) : null}
 
       {/* Children count + WhatsApp row */}
       <div className="flex items-center gap-1.5 mt-1 px-2">
@@ -333,6 +350,7 @@ export const FamilyCard = React.memo(FamilyCardComponent, (prev, next) => {
     prev.selected === next.selected &&
     p.isMobile === n.isMobile &&
     p.isVerified === n.isVerified &&
-    p.generation === n.generation
+    p.generation === n.generation &&
+    p.isLoggedIn === n.isLoggedIn
   );
 });

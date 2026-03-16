@@ -9,6 +9,8 @@ import type { DirectionalKinship } from "@/services/familyService";
 import { getBranch, getBranchStyle } from "@/utils/branchUtils";
 import { toArabicNum } from "@/utils/ageCalculator";
 import { inferMotherName } from "@/services/familyService";
+import { useAuth } from "@/contexts/AuthContext";
+import { canSeeSpouses, PRIVATE_LABEL } from "@/utils/privacyUtils";
 
 interface KinshipCardViewProps extends KinshipViewProps {
   relationText: string;
@@ -27,6 +29,8 @@ export function KinshipCardView({
   const [copied, setCopied] = useState(false);
   const [showFallback, setShowFallback] = useState(false);
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const { currentUser } = useAuth();
+  const isLoggedIn = !!currentUser;
 
   const name1 = person1.name.split(" ")[0];
   const name2 = person2.name.split(" ")[0];
@@ -174,6 +178,7 @@ export function KinshipCardView({
             branchStyle={branchStyle1}
             borderClass="border-primary/30"
             onTap={onPersonTap}
+            isLoggedIn={isLoggedIn}
           />
           <PersonChip
             member={person2}
@@ -181,6 +186,7 @@ export function KinshipCardView({
             branchStyle={branchStyle2}
             borderClass="border-accent/50"
             onTap={onPersonTap}
+            isLoggedIn={isLoggedIn}
           />
         </div>
 
@@ -308,17 +314,20 @@ function PersonChip({
   branchStyle,
   borderClass,
   onTap,
+  isLoggedIn,
 }: {
   member: FamilyMember;
   branch: { pillarId: string; label: string } | null;
   branchStyle: { bg: string; text: string } | null;
   borderClass: string;
   onTap?: (m: FamilyMember) => void;
+  isLoggedIn: boolean;
 }) {
   const isMale = member.gender === "M";
   const genderBg = isMale ? "bg-[hsl(var(--male))]/15" : "bg-[hsl(var(--female))]/15";
   const genderText = isMale ? "text-[hsl(var(--male))]" : "text-[hsl(var(--female))]";
   const motherName = inferMotherName(member);
+  const showMother = canSeeSpouses(member.id, isLoggedIn);
 
   return (
     <button
@@ -338,9 +347,13 @@ function PersonChip({
         </span>
       )}
       {motherName && (
-        <span className="inline-block text-[10px] text-muted-foreground bg-muted/40 rounded px-2 py-0.5">
-          {isMale ? "والدته" : "والدتها"}: {motherName}
-        </span>
+        showMother ? (
+          <span className="inline-block text-[10px] text-muted-foreground bg-muted/40 rounded px-2 py-0.5">
+            {isMale ? "والدته" : "والدتها"}: {motherName}
+          </span>
+        ) : (
+          <span className="inline-block text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
+        )
       )}
     </button>
   );

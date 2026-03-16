@@ -24,6 +24,8 @@ import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { FamilyMember } from "@/data/familyData";
 import { staggerContainer, staggerItem, gentleSpring } from "@/lib/animations";
+import { useAuth } from "@/contexts/AuthContext";
+import { canSeeAge, PRIVATE_LABEL } from "@/utils/privacyUtils";
 
 const FOUNDER_IDS = new Set(["100", "200", "300", "400"]);
 
@@ -111,10 +113,11 @@ function useBranchStats(selectedBranch: string): BranchStats {
 
 // Generation members sheet row
 const GenMemberRow = React.memo(function GenMemberRow({
-  member, onSelect,
-}: { member: FamilyMember; onSelect: (m: FamilyMember) => void; }) {
+  member, onSelect, isLoggedIn,
+}: { member: FamilyMember; onSelect: (m: FamilyMember) => void; isLoggedIn: boolean; }) {
   const verified = getVerifiedMemberIds().has(member.id);
   const deceased = isDeceased(member);
+  const showAge = canSeeAge(member.id, isLoggedIn);
   return (
     <button
       onClick={() => onSelect(member)}
@@ -128,7 +131,11 @@ const GenMemberRow = React.memo(function GenMemberRow({
       <span className="font-bold text-sm text-foreground truncate flex-1">{member.name}</span>
       {verified && <BadgeCheck className="h-3.5 w-3.5 text-green-500 shrink-0" />}
       {member.birth_year && (
-        <span className="text-xs text-muted-foreground shrink-0">{formatAge(member.birth_year, member.death_year)}</span>
+        showAge ? (
+          <span className="text-xs text-muted-foreground shrink-0">{formatAge(member.birth_year, member.death_year)}</span>
+        ) : (
+          <span className="text-[10px] italic text-muted-foreground shrink-0">{PRIVATE_LABEL}</span>
+        )
       )}
     </button>
   );
@@ -166,6 +173,8 @@ function MobileBranchesView() {
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
   const [genSheet, setGenSheet] = useState<{ depth: number; members: FamilyMember[] } | null>(null);
   const [animKey, setAnimKey] = useState(0);
+  const { currentUser } = useAuth();
+  const isLoggedIn = !!currentUser;
 
   const stats = useBranchStats(selectedBranch);
   const branchStyle = getBranchStyle(selectedBranch);
@@ -352,7 +361,7 @@ function MobileBranchesView() {
           </SheetHeader>
           <div className="overflow-y-auto mt-2 space-y-0.5 max-h-[50vh]">
             {genSheet?.members.map((m) => (
-              <GenMemberRow key={m.id} member={m} onSelect={(member) => { setGenSheet(null); setTimeout(() => setSelectedMember(member), 200); }} />
+              <GenMemberRow key={m.id} member={m} isLoggedIn={isLoggedIn} onSelect={(member) => { setGenSheet(null); setTimeout(() => setSelectedMember(member), 200); }} />
             ))}
           </div>
         </SheetContent>
@@ -367,9 +376,9 @@ function MobileBranchesView() {
 // DESKTOP: Recursive BranchNode
 // ══════════════════════════════════════════
 const BranchNode = React.memo(function BranchNode({
-  member, depth, pillarId, expandedIds, onToggle, onSelect,
+  member, depth, pillarId, expandedIds, onToggle, onSelect, isLoggedIn,
 }: {
-  member: FamilyMember; depth: number; pillarId: string; expandedIds: Set<string>; onToggle: (id: string) => void; onSelect: (m: FamilyMember) => void;
+  member: FamilyMember; depth: number; pillarId: string; expandedIds: Set<string>; onToggle: (id: string) => void; onSelect: (m: FamilyMember) => void; isLoggedIn: boolean;
 }) {
   const children = useMemo(() => sortByBirth(getChildrenOf(member.id)), [member.id]);
   const isExpanded = expandedIds.has(member.id);
@@ -418,7 +427,13 @@ const BranchNode = React.memo(function BranchNode({
         <div className="flex items-center gap-1.5 shrink-0">
           {motherName && (<span className="text-[9px] px-1 py-0.5 rounded bg-muted text-muted-foreground truncate max-w-[60px]">{motherName}</span>)}
           <Badge variant="outline" className="text-[10px] px-1.5 py-0">{genLabel}</Badge>
-          {member.birth_year && (<span className="text-[10px] text-muted-foreground whitespace-nowrap">{formatAge(member.birth_year, member.death_year)}</span>)}
+          {member.birth_year && (
+            canSeeAge(member.id, isLoggedIn) ? (
+              <span className="text-[10px] text-muted-foreground whitespace-nowrap">{formatAge(member.birth_year, member.death_year)}</span>
+            ) : (
+              <span className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
+            )
+          )}
           {hasChildren && (<Badge variant="secondary" className="text-[10px] px-1.5 py-0 gap-0.5"><Users className="h-3 w-3" />{childLabel} {children.length.toLocaleString("ar-SA")}</Badge>)}
         </div>
       </div>
@@ -433,7 +448,7 @@ const BranchNode = React.memo(function BranchNode({
             style={{ overflow: "hidden" }}
           >
             {children.map((child) => (
-              <BranchNode key={child.id} member={child} depth={depth + 1} pillarId={pillarId} expandedIds={expandedIds} onToggle={onToggle} onSelect={onSelect} />
+              <BranchNode key={child.id} member={child} depth={depth + 1} pillarId={pillarId} expandedIds={expandedIds} onToggle={onToggle} onSelect={onSelect} isLoggedIn={isLoggedIn} />
             ))}
           </motion.div>
         )}
@@ -450,6 +465,8 @@ export function BranchesView() {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [expandedBranches, setExpandedBranches] = useState<Set<string>>(new Set());
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
+  const { currentUser } = useAuth();
+  const isLoggedIn = !!currentUser;
 
   const toggleBranch = useCallback((pillarId: string) => {
     setExpandedBranches((prev) => { const next = new Set(prev); if (next.has(pillarId)) next.delete(pillarId); else next.add(pillarId); return next; });
@@ -504,7 +521,7 @@ export function BranchesView() {
                     className="border-t border-border/30"
                   >
                     {branch.children.map((child) => (
-                      <BranchNode key={child.id} member={child} depth={0} pillarId={branch.id} expandedIds={expandedIds} onToggle={toggleNode} onSelect={setSelectedMember} />
+                      <BranchNode key={child.id} member={child} depth={0} pillarId={branch.id} expandedIds={expandedIds} onToggle={toggleNode} onSelect={setSelectedMember} isLoggedIn={isLoggedIn} />
                     ))}
                   </motion.div>
                 )}

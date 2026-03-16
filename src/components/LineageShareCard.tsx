@@ -1,5 +1,6 @@
 import type { FamilyMember } from "@/data/familyData";
 import { getBranch } from "@/utils/branchUtils";
+import { canSeeAge, canSeeSpouses } from "@/utils/privacyUtils";
 
 const COLORS = {
   background: "#F7F3EE",
@@ -60,7 +61,8 @@ function drawDiamond(ctx: CanvasRenderingContext2D, cx: number, cy: number, size
 
 export async function generateLineageImage(
   chain: FamilyMember[],
-  _url: string
+  _url: string,
+  isLoggedIn: boolean = false
 ): Promise<Blob> {
   await loadFont();
 

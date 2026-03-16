@@ -26,8 +26,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useAuth } from "@/contexts/AuthContext";
+import { canSeeAge, canSeeSpouses, PRIVATE_LABEL } from "@/utils/privacyUtils";
 
 export function DataTableView() {
+  const { currentUser } = useAuth();
+  const isLoggedIn = !!currentUser;
   const [search, setSearch] = useState("");
   const [gender, setGender] = useState("all");
   const [ancestorId, setAncestorId] = useState("all");
@@ -262,13 +266,25 @@ export function DataTableView() {
                     <TableCell className="text-sm">{m.death_year || "—"}</TableCell>
                     <TableCell className="text-sm">
                       {age ? (
-                        <span className="font-semibold text-accent">{toArabicNum(age)}</span>
+                        canSeeAge(m.id, isLoggedIn) ? (
+                          <span className="font-semibold text-accent">{toArabicNum(age)}</span>
+                        ) : (
+                          <span className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
+                        )
                       ) : (
                         <span className="text-muted-foreground text-xs">—</span>
                       )}
                     </TableCell>
                     <TableCell className="text-sm">
-                      {m.spouses || <span className="text-muted-foreground text-xs">—</span>}
+                      {m.spouses ? (
+                        canSeeSpouses(m.id, isLoggedIn) ? (
+                          m.spouses
+                        ) : (
+                          <span className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
+                        )
+                      ) : (
+                        <span className="text-muted-foreground text-xs">—</span>
+                      )}
                     </TableCell>
                     <TableCell className="text-sm" dir="ltr">
                       {phone ? (

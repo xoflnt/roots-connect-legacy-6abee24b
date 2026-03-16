@@ -38,6 +38,7 @@ import { getVerifiedMemberIds } from "@/services/dataService";
 import { cn } from "@/lib/utils";
 import type { FamilyMember } from "@/data/familyData";
 import { staggerContainer, staggerItem, gentleSpring, springConfig } from "@/lib/animations";
+import { canSeeAge, canSeeSpouses, PRIVATE_LABEL } from "@/utils/privacyUtils";
 
 const PILLAR_IDS = new Set(["200", "300", "400"]);
 const FOUNDER_IDS = new Set(["100", "200", "300", "400"]);
@@ -53,10 +54,12 @@ const SonCard = React.memo(function SonCard({
   member,
   onTap,
   index,
+  isLoggedIn,
 }: {
   member: FamilyMember;
   onTap: (id: string) => void;
   index: number;
+  isLoggedIn: boolean;
 }) {
   const children = getChildrenOf(member.id);
   const branch = getBranch(member.id);
@@ -65,6 +68,7 @@ const SonCard = React.memo(function SonCard({
   const verified = getVerifiedMemberIds().has(member.id);
   const gc = genderColor(member.gender);
   const childLabel = member.gender === "F" ? "لها" : "له";
+  const showAge = canSeeAge(member.id, isLoggedIn);
 
   return (
     <motion.button
@@ -101,7 +105,11 @@ const SonCard = React.memo(function SonCard({
       </div>
 
       {member.birth_year && (
-        <div className="text-xs text-muted-foreground">{formatAge(member.birth_year, member.death_year)}</div>
+        showAge ? (
+          <div className="text-xs text-muted-foreground">{formatAge(member.birth_year, member.death_year)}</div>
+        ) : (
+          <div className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</div>
+        )
       )}
       {children.length > 0 && (
         <div className="text-xs text-muted-foreground mt-1">
@@ -117,14 +125,17 @@ const SonCard = React.memo(function SonCard({
 const FatherCard = React.memo(function FatherCard({
   member,
   onTap,
+  isLoggedIn,
 }: {
   member: FamilyMember;
   onTap: (id: string) => void;
+  isLoggedIn: boolean;
 }) {
   const branch = getBranch(member.id);
   const style = branch ? getBranchStyle(branch.pillarId) : null;
   const deceased = isDeceased(member);
   const gc = genderColor(member.gender);
+  const showAge = canSeeAge(member.id, isLoggedIn);
 
   return (
     <motion.button
@@ -162,9 +173,13 @@ const FatherCard = React.memo(function FatherCard({
             </span>
           )}
           {member.birth_year && (
-            <span className="text-[10px] text-muted-foreground">
-              {formatAge(member.birth_year, member.death_year)}
-            </span>
+            showAge ? (
+              <span className="text-[10px] text-muted-foreground">
+                {formatAge(member.birth_year, member.death_year)}
+              </span>
+            ) : (
+              <span className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
+            )
           )}
         </div>
       </div>
@@ -241,6 +256,7 @@ function TruncatedBreadcrumb({
 // ── Main Component ──
 export function SmartNavigateView() {
   const { currentUser } = useAuth();
+  const isLoggedIn = !!currentUser;
   const startId = currentUser?.memberId || "100";
 
   const [currentId, setCurrentId] = useState<string>(startId);
@@ -369,7 +385,7 @@ export function SmartNavigateView() {
         style={{ willChange: "transform, opacity" }}
       >
         {/* Father card */}
-        {father && <FatherCard member={father} onTap={(id) => navigateTo(id, "down")} />}
+        {father && <FatherCard member={father} onTap={(id) => navigateTo(id, "down")} isLoggedIn={isLoggedIn} />}
 
         {/* Center card */}
         <div
@@ -444,7 +460,13 @@ export function SmartNavigateView() {
             </div>
 
             <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-              {member.birth_year && <span>{formatAge(member.birth_year, member.death_year)}</span>}
+              {member.birth_year && (
+                canSeeAge(member.id, isLoggedIn) ? (
+                  <span>{formatAge(member.birth_year, member.death_year)}</span>
+                ) : (
+                  <span className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
+                )
+              )}
               {motherName && branchStyle && (
                 <span
                   className="px-1.5 py-0.5 rounded-md"
@@ -461,14 +483,20 @@ export function SmartNavigateView() {
 
             {/* Spouses */}
             {spouseList.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-1.5 text-xs text-muted-foreground">
-                {spouseList.map((sp, i) => (
-                  <span key={i} className="flex items-center gap-0.5">
-                    <Heart className="h-3 w-3 text-pink-400" />
-                    {sp}
-                  </span>
-                ))}
-              </div>
+              canSeeSpouses(member.id, isLoggedIn) ? (
+                <div className="flex flex-wrap gap-1.5 mt-1.5 text-xs text-muted-foreground">
+                  {spouseList.map((sp, i) => (
+                    <span key={i} className="flex items-center gap-0.5">
+                      <Heart className="h-3 w-3 text-pink-400" />
+                      {sp}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <div className="mt-1.5">
+                  <span className="text-xs italic text-muted-foreground">{PRIVATE_LABEL}</span>
+                </div>
+              )
             )}
 
             {/* Heritage badges */}
@@ -527,7 +555,7 @@ export function SmartNavigateView() {
               animate="animate"
             >
               {children.map((child, i) => (
-                <SonCard key={child.id} member={child} onTap={(id) => navigateTo(id, "up")} index={i} />
+                <SonCard key={child.id} member={child} onTap={(id) => navigateTo(id, "up")} index={i} isLoggedIn={isLoggedIn} />
               ))}
             </motion.div>
           )}

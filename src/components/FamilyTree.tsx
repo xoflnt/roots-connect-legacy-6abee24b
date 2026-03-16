@@ -56,7 +56,8 @@ export const FamilyTree = forwardRef<FamilyTreeRef, FamilyTreeProps>(function Fa
     filters.living !== 'all',
   ].filter(Boolean).length;
 
-  const { nodes: layoutNodes, edges: layoutEdges, totalCount, filteredCount } = useTreeLayout(expandedIds, refreshKey, filters);
+  const isLoggedIn = !!currentUser;
+  const { nodes: layoutNodes, edges: layoutEdges, totalCount, filteredCount } = useTreeLayout(expandedIds, refreshKey, filters, isLoggedIn);
 
   // Compute generation band nodes
   const allNodes = useMemo(() => {
