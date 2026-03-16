@@ -24,6 +24,8 @@ import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { FamilyMember } from "@/data/familyData";
 import { staggerContainer, staggerItem, gentleSpring } from "@/lib/animations";
+import { useAuth } from "@/contexts/AuthContext";
+import { canSeeAge, PRIVATE_LABEL } from "@/utils/privacyUtils";
 
 const FOUNDER_IDS = new Set(["100", "200", "300", "400"]);
 
