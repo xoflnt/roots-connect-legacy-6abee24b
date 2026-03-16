@@ -521,7 +521,7 @@ export function BranchesView() {
                     className="border-t border-border/30"
                   >
                     {branch.children.map((child) => (
-                      <BranchNode key={child.id} member={child} depth={0} pillarId={branch.id} expandedIds={expandedIds} onToggle={toggleNode} onSelect={setSelectedMember} />
+                      <BranchNode key={child.id} member={child} depth={0} pillarId={branch.id} expandedIds={expandedIds} onToggle={toggleNode} onSelect={setSelectedMember} isLoggedIn={isLoggedIn} />
                     ))}
                   </motion.div>
                 )}
