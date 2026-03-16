@@ -448,7 +448,7 @@ const BranchNode = React.memo(function BranchNode({
             style={{ overflow: "hidden" }}
           >
             {children.map((child) => (
-              <BranchNode key={child.id} member={child} depth={depth + 1} pillarId={pillarId} expandedIds={expandedIds} onToggle={onToggle} onSelect={onSelect} />
+              <BranchNode key={child.id} member={child} depth={depth + 1} pillarId={pillarId} expandedIds={expandedIds} onToggle={onToggle} onSelect={onSelect} isLoggedIn={isLoggedIn} />
             ))}
           </motion.div>
         )}
