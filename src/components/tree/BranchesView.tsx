@@ -465,6 +465,8 @@ export function BranchesView() {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [expandedBranches, setExpandedBranches] = useState<Set<string>>(new Set());
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
+  const { currentUser } = useAuth();
+  const isLoggedIn = !!currentUser;
 
   const toggleBranch = useCallback((pillarId: string) => {
     setExpandedBranches((prev) => { const next = new Set(prev); if (next.has(pillarId)) next.delete(pillarId); else next.add(pillarId); return next; });
