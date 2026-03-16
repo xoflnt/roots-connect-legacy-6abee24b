@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { generationText, lcaContextWord } from "@/services/familyService";
 import type { KinshipViewProps } from "./types";
 import { useAuth } from "@/contexts/AuthContext";
-import { canSeeSpouses, PRIVATE_LABEL } from "@/utils/privacyUtils";
+import { canSeeMotherName, PRIVATE_LABEL } from "@/utils/privacyUtils";
 
 export function KinshipDocumentView({ result, person1, person2, motherName1, motherName2, onPersonTap }: KinshipViewProps) {
   const { currentUser } = useAuth();
