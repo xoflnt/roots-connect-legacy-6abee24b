@@ -39,6 +39,8 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
   const [copied, setCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const isMobile = useIsMobile();
+  const { currentUser } = useAuth();
+  const isLoggedIn = !!currentUser;
 
   const { chain, childrenMap } = useMemo(() => {
     const members = getAllMembers();
