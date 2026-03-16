@@ -3,7 +3,7 @@ import type { KinshipResult } from "./types";
 import type { DirectionalKinship } from "@/services/familyService";
 import { getBranch } from "@/utils/branchUtils";
 import { inferMotherName } from "@/services/familyService";
-import { canSeeMotherName, PRIVATE_LABEL } from "@/utils/privacyUtils";
+import { canSeeMotherName, privateLabel } from "@/utils/privacyUtils";
 
 /* ── Hardcoded palette (always light, no CSS vars) ── */
 const C = {
