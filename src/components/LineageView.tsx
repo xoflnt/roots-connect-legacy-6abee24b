@@ -15,7 +15,7 @@ import { getBranch, getBranchStyle, DOCUMENTER_ID } from "@/utils/branchUtils";
 import { springConfig } from "@/lib/animations";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
-import { canSeeAge, canSeeSpouses, canSeeMotherName, getSpouseLabel, PRIVATE_LABEL } from "@/utils/privacyUtils";
+import { canSeeAge, canSeeSpouses, canSeeMotherName, getSpouseLabel, privateLabel } from "@/utils/privacyUtils";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 interface LineageViewProps {
