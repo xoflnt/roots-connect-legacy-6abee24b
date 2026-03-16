@@ -368,6 +368,7 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect,
                   expandedIds={expandedIds}
                   onToggle={onToggle}
                   onSelect={onSelect}
+                  isLoggedIn={isLoggedIn}
                 />
               ))}
             </div>
