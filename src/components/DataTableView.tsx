@@ -265,13 +265,25 @@ import { canSeeAge, canSeeSpouses, PRIVATE_LABEL } from "@/utils/privacyUtils";
                     <TableCell className="text-sm">{m.death_year || "—"}</TableCell>
                     <TableCell className="text-sm">
                       {age ? (
-                        <span className="font-semibold text-accent">{toArabicNum(age)}</span>
+                        canSeeAge(m.id, isLoggedIn) ? (
+                          <span className="font-semibold text-accent">{toArabicNum(age)}</span>
+                        ) : (
+                          <span className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
+                        )
                       ) : (
                         <span className="text-muted-foreground text-xs">—</span>
                       )}
                     </TableCell>
                     <TableCell className="text-sm">
-                      {m.spouses || <span className="text-muted-foreground text-xs">—</span>}
+                      {m.spouses ? (
+                        canSeeSpouses(m.id, isLoggedIn) ? (
+                          m.spouses
+                        ) : (
+                          <span className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
+                        )
+                      ) : (
+                        <span className="text-muted-foreground text-xs">—</span>
+                      )}
                     </TableCell>
                     <TableCell className="text-sm" dir="ltr">
                       {phone ? (
