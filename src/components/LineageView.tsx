@@ -387,7 +387,7 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                         canSeeAge(member.id, isLoggedIn) ? (
                           <span className="text-xs text-accent font-semibold">{ageText}</span>
                         ) : (
-                          <span className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
+                          <span className="text-[10px] italic text-muted-foreground">{privateLabel('العمر')}</span>
                         )
                       )}
                     </div>
