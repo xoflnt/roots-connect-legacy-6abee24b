@@ -1,6 +1,6 @@
 import { useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
-import { User, Calendar, Heart, ArrowUp, Users, Share2, Check, Download, UserPlus } from "lucide-react";
+import { User, Calendar, Heart, ArrowUp, Users, Share2, Check, Download, UserPlus, Link as LinkIcon, ImageIcon, Loader2 } from "lucide-react";
 import { WhatsAppIcon } from "./WhatsAppIcon";
 import { downloadVCard } from "@/utils/vcard";
 import { useState } from "react";
