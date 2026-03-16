@@ -427,7 +427,13 @@ const BranchNode = React.memo(function BranchNode({
         <div className="flex items-center gap-1.5 shrink-0">
           {motherName && (<span className="text-[9px] px-1 py-0.5 rounded bg-muted text-muted-foreground truncate max-w-[60px]">{motherName}</span>)}
           <Badge variant="outline" className="text-[10px] px-1.5 py-0">{genLabel}</Badge>
-          {member.birth_year && (<span className="text-[10px] text-muted-foreground whitespace-nowrap">{formatAge(member.birth_year, member.death_year)}</span>)}
+          {member.birth_year && (
+            canSeeAge(member.id, isLoggedIn) ? (
+              <span className="text-[10px] text-muted-foreground whitespace-nowrap">{formatAge(member.birth_year, member.death_year)}</span>
+            ) : (
+              <span className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
+            )
+          )}
           {hasChildren && (<Badge variant="secondary" className="text-[10px] px-1.5 py-0 gap-0.5"><Users className="h-3 w-3" />{childLabel} {children.length.toLocaleString("ar-SA")}</Badge>)}
         </div>
       </div>
