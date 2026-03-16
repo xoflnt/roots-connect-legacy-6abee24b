@@ -460,7 +460,13 @@ export function SmartNavigateView() {
             </div>
 
             <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-              {member.birth_year && <span>{formatAge(member.birth_year, member.death_year)}</span>}
+              {member.birth_year && (
+                canSeeAge(member.id, isLoggedIn) ? (
+                  <span>{formatAge(member.birth_year, member.death_year)}</span>
+                ) : (
+                  <span className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
+                )
+              )}
               {motherName && branchStyle && (
                 <span
                   className="px-1.5 py-0.5 rounded-md"
@@ -477,14 +483,20 @@ export function SmartNavigateView() {
 
             {/* Spouses */}
             {spouseList.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-1.5 text-xs text-muted-foreground">
-                {spouseList.map((sp, i) => (
-                  <span key={i} className="flex items-center gap-0.5">
-                    <Heart className="h-3 w-3 text-pink-400" />
-                    {sp}
-                  </span>
-                ))}
-              </div>
+              canSeeSpouses(member.id, isLoggedIn) ? (
+                <div className="flex flex-wrap gap-1.5 mt-1.5 text-xs text-muted-foreground">
+                  {spouseList.map((sp, i) => (
+                    <span key={i} className="flex items-center gap-0.5">
+                      <Heart className="h-3 w-3 text-pink-400" />
+                      {sp}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <div className="mt-1.5">
+                  <span className="text-xs italic text-muted-foreground">{PRIVATE_LABEL}</span>
+                </div>
+              )
             )}
 
             {/* Heritage badges */}
