@@ -326,7 +326,11 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                         الجيل {toArabicNum(genNum)}
                       </div>
                       {ageText && (
-                        <span className="text-xs text-accent font-semibold">{ageText}</span>
+                        canSeeAge(member.id, isLoggedIn) ? (
+                          <span className="text-xs text-accent font-semibold">{ageText}</span>
+                        ) : (
+                          <span className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
+                        )
                       )}
                     </div>
                   </div>
