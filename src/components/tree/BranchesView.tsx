@@ -361,7 +361,7 @@ function MobileBranchesView() {
           </SheetHeader>
           <div className="overflow-y-auto mt-2 space-y-0.5 max-h-[50vh]">
             {genSheet?.members.map((m) => (
-              <GenMemberRow key={m.id} member={m} onSelect={(member) => { setGenSheet(null); setTimeout(() => setSelectedMember(member), 200); }} />
+              <GenMemberRow key={m.id} member={m} isLoggedIn={isLoggedIn} onSelect={(member) => { setGenSheet(null); setTimeout(() => setSelectedMember(member), 200); }} />
             ))}
           </div>
         </SheetContent>
