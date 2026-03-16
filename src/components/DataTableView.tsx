@@ -27,7 +27,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useAuth } from "@/contexts/AuthContext";
-import { canSeeAge, canSeeSpouses, PRIVATE_LABEL } from "@/utils/privacyUtils";
+import { canSeeAge, canSeeSpouses, privateLabel } from "@/utils/privacyUtils";
 
 export function DataTableView() {
   const { currentUser } = useAuth();
@@ -269,7 +269,7 @@ export function DataTableView() {
                         canSeeAge(m.id, isLoggedIn) ? (
                           <span className="font-semibold text-accent">{toArabicNum(age)}</span>
                         ) : (
-                          <span className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
+                          <span className="text-[10px] italic text-muted-foreground">{privateLabel('العمر')}</span>
                         )
                       ) : (
                         <span className="text-muted-foreground text-xs">—</span>
@@ -280,7 +280,7 @@ export function DataTableView() {
                         canSeeSpouses(m.id, isLoggedIn) ? (
                           m.spouses
                         ) : (
-                          <span className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
+                          <span className="text-[10px] italic text-muted-foreground">{privateLabel('الزوجة')}</span>
                         )
                       ) : (
                         <span className="text-muted-foreground text-xs">—</span>

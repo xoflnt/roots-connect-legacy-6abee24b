@@ -10,7 +10,7 @@ import { isFounder, isDeceased, getChildrenOf } from "@/services/familyService";
 import { formatAge } from "@/utils/ageCalculator";
 import { getBranch, getBranchStyle, DOCUMENTER_ID } from "@/utils/branchUtils";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
-import { canSeeAge, canSeeSpouses, canSeeMotherName, PRIVATE_LABEL } from "@/utils/privacyUtils";
+import { canSeeAge, canSeeSpouses, canSeeMotherName, privateLabel } from "@/utils/privacyUtils";
 
 type FamilyCardData = FamilyMember & {
   branchColorIndex: number;
@@ -70,8 +70,11 @@ function FamilyCardComponent({ data, selected }: NodeProps) {
     </span>
   );
 
-  const privateLabelEl = (
-    <span className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
+  const ageLabelEl = (
+    <span className="text-[10px] italic text-muted-foreground">{privateLabel('العمر')}</span>
+  );
+  const motherLabelEl = (
+    <span className="text-[10px] italic text-muted-foreground">{privateLabel('الوالدة')}</span>
   );
 
   // ── MOBILE COMPACT CARD ──
@@ -119,7 +122,7 @@ function FamilyCardComponent({ data, selected }: NodeProps) {
         {ageText && showAge ? (
           <p className="text-[9px] text-accent font-semibold mt-0.5">{ageText}</p>
         ) : ageText && !showAge ? (
-          <div className="mt-0.5">{privateLabelEl}</div>
+          <div className="mt-0.5">{ageLabelEl}</div>
         ) : null}
 
         {/* Children count */}
@@ -231,7 +234,7 @@ function FamilyCardComponent({ data, selected }: NodeProps) {
             ))}
           </div>
         ) : (
-          <div className="mt-0.5 px-2">{privateLabelEl}</div>
+          <div className="mt-0.5 px-2">{motherLabelEl}</div>
         )
       )}
 
@@ -251,7 +254,7 @@ function FamilyCardComponent({ data, selected }: NodeProps) {
             </span>
           </p>
         ) : (
-          <div className="mt-0.5 px-2">{privateLabelEl}</div>
+          <div className="mt-0.5 px-2">{motherLabelEl}</div>
         )
       )}
 
@@ -272,7 +275,7 @@ function FamilyCardComponent({ data, selected }: NodeProps) {
       {ageText && showAge ? (
         <p className="text-[10px] text-accent font-semibold mt-0.5">{ageText}</p>
       ) : ageText && !showAge ? (
-        <div className="mt-0.5">{privateLabelEl}</div>
+        <div className="mt-0.5">{ageLabelEl}</div>
       ) : null}
 
       {/* Children count + WhatsApp row */}

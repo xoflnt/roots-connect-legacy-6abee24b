@@ -4,7 +4,7 @@ import { isDeceased, inferMotherName } from "@/services/familyService";
 import { HeritageBadge } from "@/components/HeritageBadge";
 import type { KinshipViewProps } from "./types";
 import { useAuth } from "@/contexts/AuthContext";
-import { canSeeMotherName, PRIVATE_LABEL } from "@/utils/privacyUtils";
+import { canSeeMotherName, privateLabel } from "@/utils/privacyUtils";
 
 export function KinshipTreeView({ result, person1, person2, onPersonTap }: KinshipViewProps) {
   const { currentUser } = useAuth();
@@ -100,7 +100,7 @@ export function KinshipTreeView({ result, person1, person2, onPersonTap }: Kinsh
                     </span>
                   )}
                   {isEnd && motherName && !canSeeMotherName(m.id, isLoggedIn) && (
-                    <span className="block text-[10px] italic text-muted-foreground mt-0.5">{PRIVATE_LABEL}</span>
+                    <span className="block text-[10px] italic text-muted-foreground mt-0.5">{privateLabel('الوالدة')}</span>
                   )}
                 </button>
               </div>
@@ -144,7 +144,7 @@ export function KinshipTreeView({ result, person1, person2, onPersonTap }: Kinsh
                     </span>
                   )}
                   {isEnd && motherName && !canSeeMotherName(m.id, isLoggedIn) && (
-                    <span className="block text-[10px] italic text-muted-foreground mt-0.5">{PRIVATE_LABEL}</span>
+                    <span className="block text-[10px] italic text-muted-foreground mt-0.5">{privateLabel('الوالدة')}</span>
                   )}
                 </button>
               </div>

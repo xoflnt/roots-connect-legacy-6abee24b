@@ -38,7 +38,7 @@ import { getVerifiedMemberIds } from "@/services/dataService";
 import { cn } from "@/lib/utils";
 import type { FamilyMember } from "@/data/familyData";
 import { staggerContainer, staggerItem, gentleSpring, springConfig } from "@/lib/animations";
-import { canSeeAge, canSeeSpouses, canSeeMotherName, PRIVATE_LABEL } from "@/utils/privacyUtils";
+import { canSeeAge, canSeeSpouses, canSeeMotherName, privateLabel } from "@/utils/privacyUtils";
 
 const PILLAR_IDS = new Set(["200", "300", "400"]);
 const FOUNDER_IDS = new Set(["100", "200", "300", "400"]);
@@ -108,7 +108,7 @@ const SonCard = React.memo(function SonCard({
         showAge ? (
           <div className="text-xs text-muted-foreground">{formatAge(member.birth_year, member.death_year)}</div>
         ) : (
-          <div className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</div>
+          <div className="text-[10px] italic text-muted-foreground">{privateLabel('العمر')}</div>
         )
       )}
       {children.length > 0 && (
@@ -178,7 +178,7 @@ const FatherCard = React.memo(function FatherCard({
                 {formatAge(member.birth_year, member.death_year)}
               </span>
             ) : (
-              <span className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
+              <span className="text-[10px] italic text-muted-foreground">{privateLabel('العمر')}</span>
             )
           )}
         </div>
@@ -464,7 +464,7 @@ export function SmartNavigateView() {
                 canSeeAge(member.id, isLoggedIn) ? (
                   <span>{formatAge(member.birth_year, member.death_year)}</span>
                 ) : (
-                  <span className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
+                  <span className="text-[10px] italic text-muted-foreground">{privateLabel('العمر')}</span>
                 )
               )}
               {motherName && branchStyle && (
@@ -479,7 +479,7 @@ export function SmartNavigateView() {
                     والدته: {motherName}
                   </span>
                 ) : (
-                  <span className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
+                  <span className="text-[10px] italic text-muted-foreground">{privateLabel('الوالدة')}</span>
                 )
               )}
               {!motherName && motherName === null && member.birth_year === null && null}
@@ -498,7 +498,7 @@ export function SmartNavigateView() {
                 </div>
               ) : (
                 <div className="mt-1.5">
-                  <span className="text-xs italic text-muted-foreground">{PRIVATE_LABEL}</span>
+                  <span className="text-xs italic text-muted-foreground">{privateLabel('الزوجة')}</span>
                 </div>
               )
             )}

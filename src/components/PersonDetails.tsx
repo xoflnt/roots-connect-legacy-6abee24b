@@ -19,7 +19,7 @@ import { getVerifiedMemberIds } from "@/services/dataService";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { staggerContainer, staggerItem, springConfig } from "@/lib/animations";
 import { useAuth } from "@/contexts/AuthContext";
-import { canSeeAge, canSeeSpouses, canSeeMotherName, getSpouseLabel, PRIVATE_LABEL } from "@/utils/privacyUtils";
+import { canSeeAge, canSeeSpouses, canSeeMotherName, getSpouseLabel, privateLabel } from "@/utils/privacyUtils";
 
 interface PersonDetailsProps {
   member: FamilyMember | null;
@@ -62,8 +62,14 @@ function DetailContent({ member }: { member: FamilyMember }) {
     return member.spouses.split("،").map((s) => s.trim()).filter(Boolean);
   }, [member.spouses]);
 
-  const privateLabelEl = (
-    <span className="text-xs italic text-muted-foreground">{PRIVATE_LABEL}</span>
+  const ageLabelEl = (
+    <span className="text-xs italic text-muted-foreground">{privateLabel('العمر')}</span>
+  );
+  const motherLabelEl = (
+    <span className="text-xs italic text-muted-foreground">{privateLabel('الوالدة')}</span>
+  );
+  const spouseLabelEl = (
+    <span className="text-xs italic text-muted-foreground">{privateLabel('الزوجة')}</span>
   );
 
   return (
@@ -134,7 +140,7 @@ function DetailContent({ member }: { member: FamilyMember }) {
               {showAge ? (
                 <p className="text-sm font-bold text-foreground">{ageText}</p>
               ) : (
-                privateLabelEl
+                ageLabelEl
               )}
             </div>
           </motion.div>
@@ -150,7 +156,7 @@ function DetailContent({ member }: { member: FamilyMember }) {
               {canSeeMotherName(member.id, isLoggedIn) ? (
                 <p className="text-sm font-bold text-foreground">{motherName}</p>
               ) : (
-                privateLabelEl
+                motherLabelEl
               )}
             </div>
           </motion.div>
@@ -241,7 +247,7 @@ function DetailContent({ member }: { member: FamilyMember }) {
                 })}
               </div>
             ) : (
-              privateLabelEl
+              spouseLabelEl
             )}
           </motion.div>
         )}

@@ -15,7 +15,7 @@ import { getBranch, getBranchStyle, DOCUMENTER_ID } from "@/utils/branchUtils";
 import { springConfig } from "@/lib/animations";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
-import { canSeeAge, canSeeSpouses, canSeeMotherName, getSpouseLabel, PRIVATE_LABEL } from "@/utils/privacyUtils";
+import { canSeeAge, canSeeSpouses, canSeeMotherName, getSpouseLabel, privateLabel } from "@/utils/privacyUtils";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 interface LineageViewProps {
@@ -327,7 +327,7 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                                 {isMale ? "والدته" : "والدتها"}: {motherName}
                               </span>
                             ) : (
-                              <span className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
+                              <span className="text-[10px] italic text-muted-foreground">{privateLabel('الوالدة')}</span>
                             )
                           )}
                         </div>
@@ -387,7 +387,7 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                         canSeeAge(member.id, isLoggedIn) ? (
                           <span className="text-xs text-accent font-semibold">{ageText}</span>
                         ) : (
-                          <span className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
+                          <span className="text-[10px] italic text-muted-foreground">{privateLabel('العمر')}</span>
                         )
                       )}
                     </div>
@@ -418,7 +418,7 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                             {member.spouses}
                           </span>
                         ) : (
-                          <span className="text-xs italic text-muted-foreground">{PRIVATE_LABEL}</span>
+                          <span className="text-xs italic text-muted-foreground">{privateLabel('الزوجة')}</span>
                         )}
                       </div>
                     )}

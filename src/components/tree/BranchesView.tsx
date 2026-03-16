@@ -25,7 +25,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import type { FamilyMember } from "@/data/familyData";
 import { staggerContainer, staggerItem, gentleSpring } from "@/lib/animations";
 import { useAuth } from "@/contexts/AuthContext";
-import { canSeeAge, canSeeMotherName, PRIVATE_LABEL } from "@/utils/privacyUtils";
+import { canSeeAge, canSeeMotherName, privateLabel } from "@/utils/privacyUtils";
 
 const FOUNDER_IDS = new Set(["100", "200", "300", "400"]);
 
@@ -134,7 +134,7 @@ const GenMemberRow = React.memo(function GenMemberRow({
         showAge ? (
           <span className="text-xs text-muted-foreground shrink-0">{formatAge(member.birth_year, member.death_year)}</span>
         ) : (
-          <span className="text-[10px] italic text-muted-foreground shrink-0">{PRIVATE_LABEL}</span>
+          <span className="text-[10px] italic text-muted-foreground shrink-0">{privateLabel('العمر')}</span>
         )
       )}
     </button>
@@ -425,13 +425,13 @@ const BranchNode = React.memo(function BranchNode({
           {isDoc && <HeritageBadge type="documenter" />}
         </button>
         <div className="flex items-center gap-1.5 shrink-0">
-          {motherName && (canSeeMotherName(member.id, isLoggedIn) ? (<span className="text-[9px] px-1 py-0.5 rounded bg-muted text-muted-foreground truncate max-w-[60px]">{motherName}</span>) : (<span className="text-[9px] italic text-muted-foreground">{PRIVATE_LABEL}</span>))}
+          {motherName && (canSeeMotherName(member.id, isLoggedIn) ? (<span className="text-[9px] px-1 py-0.5 rounded bg-muted text-muted-foreground truncate max-w-[60px]">{motherName}</span>) : (<span className="text-[9px] italic text-muted-foreground">{privateLabel('الوالدة')}</span>))}
           <Badge variant="outline" className="text-[10px] px-1.5 py-0">{genLabel}</Badge>
           {member.birth_year && (
             canSeeAge(member.id, isLoggedIn) ? (
               <span className="text-[10px] text-muted-foreground whitespace-nowrap">{formatAge(member.birth_year, member.death_year)}</span>
             ) : (
-              <span className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
+              <span className="text-[10px] italic text-muted-foreground">{privateLabel('العمر')}</span>
             )
           )}
           {hasChildren && (<Badge variant="secondary" className="text-[10px] px-1.5 py-0 gap-0.5"><Users className="h-3 w-3" />{childLabel} {children.length.toLocaleString("ar-SA")}</Badge>)}

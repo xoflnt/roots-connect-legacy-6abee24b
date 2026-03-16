@@ -10,7 +10,7 @@ import { getBranch, getBranchStyle } from "@/utils/branchUtils";
 import { toArabicNum } from "@/utils/ageCalculator";
 import { inferMotherName } from "@/services/familyService";
 import { useAuth } from "@/contexts/AuthContext";
-import { canSeeMotherName, PRIVATE_LABEL } from "@/utils/privacyUtils";
+import { canSeeMotherName, privateLabel } from "@/utils/privacyUtils";
 
 interface KinshipCardViewProps extends KinshipViewProps {
   relationText: string;
@@ -352,7 +352,7 @@ function PersonChip({
             {isMale ? "والدته" : "والدتها"}: {motherName}
           </span>
         ) : (
-          <span className="inline-block text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
+          <span className="inline-block text-[10px] italic text-muted-foreground">{privateLabel('الوالدة')}</span>
         )
       )}
     </button>

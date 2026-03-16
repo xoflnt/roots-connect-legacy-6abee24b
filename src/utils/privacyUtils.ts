@@ -19,7 +19,9 @@ export function canSeeMotherName(memberId: string, isLoggedIn: boolean): boolean
   return AGE_EXEMPT_IDS.includes(memberId);
 }
 
-export const PRIVATE_LABEL = '🔒 معلومة خاصة لأفراد العائلة';
+export function privateLabel(fieldName: string): string {
+  return `🔒 ${fieldName} — خاص بأفراد العائلة`;
+}
 
 /**
  * Get spouse label for grouped children.
