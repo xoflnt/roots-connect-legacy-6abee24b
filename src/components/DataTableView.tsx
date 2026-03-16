@@ -269,7 +269,7 @@ export function DataTableView() {
                         canSeeAge(m.id, isLoggedIn) ? (
                           <span className="font-semibold text-accent">{toArabicNum(age)}</span>
                         ) : (
-                          <span className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
+                          <span className="text-[10px] italic text-muted-foreground">{privateLabel('العمر')}</span>
                         )
                       ) : (
                         <span className="text-muted-foreground text-xs">—</span>
