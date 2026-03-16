@@ -31,7 +31,6 @@ export function KinshipCardView({
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const { currentUser } = useAuth();
   const isLoggedIn = !!currentUser;
-  const [blobUrl, setBlobUrl] = useState<string | null>(null);
 
   const name1 = person1.name.split(" ")[0];
   const name2 = person2.name.split(" ")[0];
