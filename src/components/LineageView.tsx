@@ -39,6 +39,7 @@ function toArabicNum(n: number): string {
 export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
   const [copied, setCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [showShareOptions, setShowShareOptions] = useState(false);
   const isMobile = useIsMobile();
   const { currentUser } = useAuth();
   const isLoggedIn = !!currentUser;
