@@ -313,17 +313,20 @@ function PersonChip({
   branchStyle,
   borderClass,
   onTap,
+  isLoggedIn,
 }: {
   member: FamilyMember;
   branch: { pillarId: string; label: string } | null;
   branchStyle: { bg: string; text: string } | null;
   borderClass: string;
   onTap?: (m: FamilyMember) => void;
+  isLoggedIn: boolean;
 }) {
   const isMale = member.gender === "M";
   const genderBg = isMale ? "bg-[hsl(var(--male))]/15" : "bg-[hsl(var(--female))]/15";
   const genderText = isMale ? "text-[hsl(var(--male))]" : "text-[hsl(var(--female))]";
   const motherName = inferMotherName(member);
+  const showMother = canSeeSpouses(member.id, isLoggedIn);
 
   return (
     <button
@@ -343,9 +346,13 @@ function PersonChip({
         </span>
       )}
       {motherName && (
-        <span className="inline-block text-[10px] text-muted-foreground bg-muted/40 rounded px-2 py-0.5">
-          {isMale ? "والدته" : "والدتها"}: {motherName}
-        </span>
+        showMother ? (
+          <span className="inline-block text-[10px] text-muted-foreground bg-muted/40 rounded px-2 py-0.5">
+            {isMale ? "والدته" : "والدتها"}: {motherName}
+          </span>
+        ) : (
+          <span className="inline-block text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
+        )
       )}
     </button>
   );
