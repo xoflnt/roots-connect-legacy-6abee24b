@@ -29,7 +29,8 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { canSeeAge, canSeeSpouses, PRIVATE_LABEL } from "@/utils/privacyUtils";
 
-export function DataTableView() {
+  const { currentUser } = useAuth();
+  const isLoggedIn = !!currentUser;
   const [search, setSearch] = useState("");
   const [gender, setGender] = useState("all");
   const [ancestorId, setAncestorId] = useState("all");
