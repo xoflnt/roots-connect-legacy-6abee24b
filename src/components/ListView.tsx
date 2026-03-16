@@ -355,7 +355,7 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect,
                     className="text-[10px] font-semibold"
                     style={{ color: BRANCH_COLORS[group.colorIndex % BRANCH_COLORS.length].stroke }}
                   >
-                    أبناء {motherKey}
+                    أبناء {getSpouseLabel(motherKey, group.colorIndex, isLoggedIn)}
                   </span>
                 </div>
               )}
