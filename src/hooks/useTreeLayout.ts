@@ -230,5 +230,5 @@ export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number, fi
     });
 
     return { nodes, edges, totalCount, filteredCount };
-  }, [expandedIds, _refreshKey, filters]);
+  }, [expandedIds, _refreshKey, filters, isLoggedIn]);
 }
