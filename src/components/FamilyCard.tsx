@@ -70,8 +70,11 @@ function FamilyCardComponent({ data, selected }: NodeProps) {
     </span>
   );
 
-  const privateLabelEl = (
-    <span className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
+  const ageLabelEl = (
+    <span className="text-[10px] italic text-muted-foreground">{privateLabel('العمر')}</span>
+  );
+  const motherLabelEl = (
+    <span className="text-[10px] italic text-muted-foreground">{privateLabel('الوالدة')}</span>
   );
 
   // ── MOBILE COMPACT CARD ──
