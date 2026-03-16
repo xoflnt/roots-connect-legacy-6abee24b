@@ -376,9 +376,9 @@ function MobileBranchesView() {
 // DESKTOP: Recursive BranchNode
 // ══════════════════════════════════════════
 const BranchNode = React.memo(function BranchNode({
-  member, depth, pillarId, expandedIds, onToggle, onSelect,
+  member, depth, pillarId, expandedIds, onToggle, onSelect, isLoggedIn,
 }: {
-  member: FamilyMember; depth: number; pillarId: string; expandedIds: Set<string>; onToggle: (id: string) => void; onSelect: (m: FamilyMember) => void;
+  member: FamilyMember; depth: number; pillarId: string; expandedIds: Set<string>; onToggle: (id: string) => void; onSelect: (m: FamilyMember) => void; isLoggedIn: boolean;
 }) {
   const children = useMemo(() => sortByBirth(getChildrenOf(member.id)), [member.id]);
   const isExpanded = expandedIds.has(member.id);
