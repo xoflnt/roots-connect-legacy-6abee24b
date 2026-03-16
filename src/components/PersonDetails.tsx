@@ -19,7 +19,7 @@ import { getVerifiedMemberIds } from "@/services/dataService";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { staggerContainer, staggerItem, springConfig } from "@/lib/animations";
 import { useAuth } from "@/contexts/AuthContext";
-import { canSeeAge, canSeeSpouses, canSeeMotherName, getSpouseLabel, PRIVATE_LABEL } from "@/utils/privacyUtils";
+import { canSeeAge, canSeeSpouses, canSeeMotherName, getSpouseLabel, privateLabel } from "@/utils/privacyUtils";
 
 interface PersonDetailsProps {
   member: FamilyMember | null;
