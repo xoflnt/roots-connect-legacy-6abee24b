@@ -3,6 +3,8 @@ import { ChevronDown } from "lucide-react";
 import { isDeceased, inferMotherName } from "@/services/familyService";
 import { HeritageBadge } from "@/components/HeritageBadge";
 import type { KinshipViewProps } from "./types";
+import { useAuth } from "@/contexts/AuthContext";
+import { canSeeSpouses, PRIVATE_LABEL } from "@/utils/privacyUtils";
 
 export function KinshipTreeView({ result, person1, person2, onPersonTap }: KinshipViewProps) {
   const [showPulse, setShowPulse] = useState(true);
