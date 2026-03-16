@@ -240,22 +240,36 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect,
                 </span>
               )}
               {motherName && motherColor && (
-                <span
-                  className="text-[10px] mt-0.5 px-1.5 py-0.5 rounded-full font-medium"
-                  style={{ color: motherColor.stroke, backgroundColor: `${motherColor.stroke}15` }}
-                >
-                  {member.gender === "F" ? "والدتها" : "والدته"}: {motherName}
-                </span>
+                canSeeMotherName(member.id, isLoggedIn) ? (
+                  <span
+                    className="text-[10px] mt-0.5 px-1.5 py-0.5 rounded-full font-medium"
+                    style={{ color: motherColor.stroke, backgroundColor: `${motherColor.stroke}15` }}
+                  >
+                    {member.gender === "F" ? "والدتها" : "والدته"}: {motherName}
+                  </span>
+                ) : (
+                  <span className="text-[10px] mt-0.5 italic text-muted-foreground">
+                    {privateLabel('الوالدة')}
+                  </span>
+                )
               )}
-              {(member.birth_year || member.death_year) && (
-                <span className="text-xs text-muted-foreground mt-0.5 block">
-                  {member.birth_year && `${member.birth_year} هـ`}
-                  {member.birth_year && member.death_year && " — "}
-                  {member.death_year && `${member.death_year} هـ`}
+              {canSeeAge(member.id, isLoggedIn) ? (
+                <>
+                  {(member.birth_year || member.death_year) && (
+                    <span className="text-xs text-muted-foreground mt-0.5 block">
+                      {member.birth_year && `${member.birth_year} هـ`}
+                      {member.birth_year && member.death_year && " — "}
+                      {member.death_year && `${member.death_year} هـ`}
+                    </span>
+                  )}
+                  {ageText && (
+                    <span className="text-xs text-accent font-semibold mt-0.5">{ageText}</span>
+                  )}
+                </>
+              ) : (
+                <span className="text-xs mt-0.5 italic text-muted-foreground">
+                  {privateLabel('العمر')}
                 </span>
-              )}
-              {ageText && (
-                <span className="text-xs text-accent font-semibold mt-0.5">{ageText}</span>
               )}
             </div>
           </div>
