@@ -7,6 +7,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { canSeeSpouses, PRIVATE_LABEL } from "@/utils/privacyUtils";
 
 export function KinshipTreeView({ result, person1, person2, onPersonTap }: KinshipViewProps) {
+  const { currentUser } = useAuth();
+  const isLoggedIn = !!currentUser;
   const [showPulse, setShowPulse] = useState(true);
 
   useEffect(() => {
