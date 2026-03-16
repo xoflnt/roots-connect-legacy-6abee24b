@@ -140,7 +140,7 @@ function DetailContent({ member }: { member: FamilyMember }) {
               {showAge ? (
                 <p className="text-sm font-bold text-foreground">{ageText}</p>
               ) : (
-                privateLabelEl
+                ageLabelEl
               )}
             </div>
           </motion.div>
