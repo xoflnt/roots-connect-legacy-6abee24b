@@ -2,7 +2,7 @@
 // UI-only — never filter data at the service level.
 
 const AGE_EXEMPT_IDS = ['200', '300', '400', '500', '600'];
-const SPOUSE_EXEMPT_IDS = ['200', '300', '400'];
+const SPOUSE_EXEMPT_IDS = ['101', '200', '300', '400'];
 
 export function canSeeAge(memberId: string, isLoggedIn: boolean): boolean {
   if (isLoggedIn) return true;
@@ -12,6 +12,11 @@ export function canSeeAge(memberId: string, isLoggedIn: boolean): boolean {
 export function canSeeSpouses(memberId: string, isLoggedIn: boolean): boolean {
   if (isLoggedIn) return true;
   return SPOUSE_EXEMPT_IDS.includes(memberId);
+}
+
+export function canSeeMotherName(memberId: string, isLoggedIn: boolean): boolean {
+  if (isLoggedIn) return true;
+  return AGE_EXEMPT_IDS.includes(memberId);
 }
 
 export const PRIVATE_LABEL = '🔒 معلومة خاصة لأفراد العائلة';

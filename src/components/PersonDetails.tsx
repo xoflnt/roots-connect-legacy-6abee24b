@@ -19,7 +19,7 @@ import { getVerifiedMemberIds } from "@/services/dataService";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { staggerContainer, staggerItem, springConfig } from "@/lib/animations";
 import { useAuth } from "@/contexts/AuthContext";
-import { canSeeAge, canSeeSpouses, getSpouseLabel, PRIVATE_LABEL } from "@/utils/privacyUtils";
+import { canSeeAge, canSeeSpouses, canSeeMotherName, getSpouseLabel, PRIVATE_LABEL } from "@/utils/privacyUtils";
 
 interface PersonDetailsProps {
   member: FamilyMember | null;
@@ -147,7 +147,11 @@ function DetailContent({ member }: { member: FamilyMember }) {
             </div>
             <div>
               <p className="text-[11px] text-muted-foreground font-medium">الوالدة</p>
-              <p className="text-sm font-bold text-foreground">{motherName}</p>
+              {canSeeMotherName(member.id, isLoggedIn) ? (
+                <p className="text-sm font-bold text-foreground">{motherName}</p>
+              ) : (
+                privateLabelEl
+              )}
             </div>
           </motion.div>
         )}

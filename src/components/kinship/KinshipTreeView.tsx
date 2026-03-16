@@ -4,7 +4,7 @@ import { isDeceased, inferMotherName } from "@/services/familyService";
 import { HeritageBadge } from "@/components/HeritageBadge";
 import type { KinshipViewProps } from "./types";
 import { useAuth } from "@/contexts/AuthContext";
-import { canSeeSpouses, PRIVATE_LABEL } from "@/utils/privacyUtils";
+import { canSeeMotherName, PRIVATE_LABEL } from "@/utils/privacyUtils";
 
 export function KinshipTreeView({ result, person1, person2, onPersonTap }: KinshipViewProps) {
   const { currentUser } = useAuth();
@@ -94,12 +94,12 @@ export function KinshipTreeView({ result, person1, person2, onPersonTap }: Kinsh
                       <HeritageBadge type="deceased" gender={m.gender} />
                     </span>
                   )}
-                  {isEnd && motherName && canSeeSpouses(m.id, isLoggedIn) && (
+                  {isEnd && motherName && canSeeMotherName(m.id, isLoggedIn) && (
                     <span className="block text-[10px] text-muted-foreground italic mt-0.5">
                       {m.gender === "M" ? "والدته" : "والدتها"}: {motherName}
                     </span>
                   )}
-                  {isEnd && motherName && !canSeeSpouses(m.id, isLoggedIn) && (
+                  {isEnd && motherName && !canSeeMotherName(m.id, isLoggedIn) && (
                     <span className="block text-[10px] italic text-muted-foreground mt-0.5">{PRIVATE_LABEL}</span>
                   )}
                 </button>
@@ -138,12 +138,12 @@ export function KinshipTreeView({ result, person1, person2, onPersonTap }: Kinsh
                       <HeritageBadge type="deceased" gender={m.gender} />
                     </span>
                   )}
-                  {isEnd && motherName && canSeeSpouses(m.id, isLoggedIn) && (
+                  {isEnd && motherName && canSeeMotherName(m.id, isLoggedIn) && (
                     <span className="block text-[10px] text-muted-foreground italic mt-0.5">
                       {m.gender === "M" ? "والدته" : "والدتها"}: {motherName}
                     </span>
                   )}
-                  {isEnd && motherName && !canSeeSpouses(m.id, isLoggedIn) && (
+                  {isEnd && motherName && !canSeeMotherName(m.id, isLoggedIn) && (
                     <span className="block text-[10px] italic text-muted-foreground mt-0.5">{PRIVATE_LABEL}</span>
                   )}
                 </button>

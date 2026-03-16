@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { generationText, lcaContextWord } from "@/services/familyService";
 import type { KinshipViewProps } from "./types";
 import { useAuth } from "@/contexts/AuthContext";
-import { canSeeSpouses, PRIVATE_LABEL } from "@/utils/privacyUtils";
+import { canSeeMotherName, PRIVATE_LABEL } from "@/utils/privacyUtils";
 
 export function KinshipDocumentView({ result, person1, person2, motherName1, motherName2, onPersonTap }: KinshipViewProps) {
   const { currentUser } = useAuth();
@@ -22,8 +22,8 @@ export function KinshipDocumentView({ result, person1, person2, motherName1, mot
   }, [result.path2]);
 
   // Only show mother names if the user can see spouses for both persons
-  const showMother1 = motherName1 && canSeeSpouses(person1.id, isLoggedIn);
-  const showMother2 = motherName2 && canSeeSpouses(person2.id, isLoggedIn);
+  const showMother1 = motherName1 && canSeeMotherName(person1.id, isLoggedIn);
+  const showMother2 = motherName2 && canSeeMotherName(person2.id, isLoggedIn);
   const hasMothers = showMother1 || showMother2;
   const motherLabel1 = person1.gender === "M" ? "والدته" : "والدتها";
   const motherLabel2 = person2.gender === "M" ? "والدته" : "والدتها";

@@ -38,7 +38,7 @@ import { getVerifiedMemberIds } from "@/services/dataService";
 import { cn } from "@/lib/utils";
 import type { FamilyMember } from "@/data/familyData";
 import { staggerContainer, staggerItem, gentleSpring, springConfig } from "@/lib/animations";
-import { canSeeAge, canSeeSpouses, PRIVATE_LABEL } from "@/utils/privacyUtils";
+import { canSeeAge, canSeeSpouses, canSeeMotherName, PRIVATE_LABEL } from "@/utils/privacyUtils";
 
 const PILLAR_IDS = new Set(["200", "300", "400"]);
 const FOUNDER_IDS = new Set(["100", "200", "300", "400"]);
@@ -468,15 +468,19 @@ export function SmartNavigateView() {
                 )
               )}
               {motherName && branchStyle && (
-                <span
-                  className="px-1.5 py-0.5 rounded-md"
-                  style={{
-                    backgroundColor: branchStyle.text + "26",
-                    color: branchStyle.text,
-                  }}
-                >
-                  والدته: {motherName}
-                </span>
+                canSeeMotherName(member.id, isLoggedIn) ? (
+                  <span
+                    className="px-1.5 py-0.5 rounded-md"
+                    style={{
+                      backgroundColor: branchStyle.text + "26",
+                      color: branchStyle.text,
+                    }}
+                  >
+                    والدته: {motherName}
+                  </span>
+                ) : (
+                  <span className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
+                )
               )}
               {!motherName && motherName === null && member.birth_year === null && null}
             </div>

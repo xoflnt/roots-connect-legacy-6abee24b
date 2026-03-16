@@ -10,7 +10,7 @@ import { isFounder, isDeceased, getChildrenOf } from "@/services/familyService";
 import { formatAge } from "@/utils/ageCalculator";
 import { getBranch, getBranchStyle, DOCUMENTER_ID } from "@/utils/branchUtils";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
-import { canSeeAge, canSeeSpouses, PRIVATE_LABEL } from "@/utils/privacyUtils";
+import { canSeeAge, canSeeSpouses, canSeeMotherName, PRIVATE_LABEL } from "@/utils/privacyUtils";
 
 type FamilyCardData = FamilyMember & {
   branchColorIndex: number;
@@ -235,20 +235,24 @@ function FamilyCardComponent({ data, selected }: NodeProps) {
         )
       )}
 
-      {/* Mother name — always show if available */}
+      {/* Mother name */}
       {member.motherName && (
-        <p
-          className="text-[10px] mt-0.5 px-2 py-0.5 rounded-full font-medium"
-          style={branchColor
-            ? { color: branchColor.stroke, backgroundColor: `${branchColor.stroke}15` }
-            : undefined
-          }
-          dir="rtl"
-        >
-          <span className={!branchColor ? "text-muted-foreground" : undefined}>
-            {member.gender === "F" ? "والدتها" : "والدته"}: {member.motherName}
-          </span>
-        </p>
+        canSeeMotherName(member.id, isLoggedIn) ? (
+          <p
+            className="text-[10px] mt-0.5 px-2 py-0.5 rounded-full font-medium"
+            style={branchColor
+              ? { color: branchColor.stroke, backgroundColor: `${branchColor.stroke}15` }
+              : undefined
+            }
+            dir="rtl"
+          >
+            <span className={!branchColor ? "text-muted-foreground" : undefined}>
+              {member.gender === "F" ? "والدتها" : "والدته"}: {member.motherName}
+            </span>
+          </p>
+        ) : (
+          <div className="mt-0.5 px-2">{privateLabelEl}</div>
+        )
       )}
 
       {(member.birth_year || member.death_year) && (

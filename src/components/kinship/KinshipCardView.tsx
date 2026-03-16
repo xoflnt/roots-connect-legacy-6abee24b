@@ -10,7 +10,7 @@ import { getBranch, getBranchStyle } from "@/utils/branchUtils";
 import { toArabicNum } from "@/utils/ageCalculator";
 import { inferMotherName } from "@/services/familyService";
 import { useAuth } from "@/contexts/AuthContext";
-import { canSeeSpouses, PRIVATE_LABEL } from "@/utils/privacyUtils";
+import { canSeeMotherName, PRIVATE_LABEL } from "@/utils/privacyUtils";
 
 interface KinshipCardViewProps extends KinshipViewProps {
   relationText: string;
@@ -62,7 +62,7 @@ export function KinshipCardView({
     setSharing(true);
     try {
       const canvas = await generateKinshipImage(
-        result, person1, person2, relationText, directional, pathChain
+        result, person1, person2, relationText, directional, pathChain, isLoggedIn
       );
       const blob = await new Promise<Blob | null>((resolve) =>
         canvas.toBlob((b) => resolve(b), "image/png")
@@ -100,7 +100,7 @@ export function KinshipCardView({
     let url = blobUrl;
     if (!url) {
       const canvas = await generateKinshipImage(
-        result, person1, person2, relationText, directional, pathChain
+        result, person1, person2, relationText, directional, pathChain, isLoggedIn
       );
       const blob = await new Promise<Blob | null>((resolve) =>
         canvas.toBlob((b) => resolve(b), "image/png")
@@ -327,7 +327,7 @@ function PersonChip({
   const genderBg = isMale ? "bg-[hsl(var(--male))]/15" : "bg-[hsl(var(--female))]/15";
   const genderText = isMale ? "text-[hsl(var(--male))]" : "text-[hsl(var(--female))]";
   const motherName = inferMotherName(member);
-  const showMother = canSeeSpouses(member.id, isLoggedIn);
+  const showMother = canSeeMotherName(member.id, isLoggedIn);
 
   return (
     <button
