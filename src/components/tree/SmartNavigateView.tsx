@@ -555,7 +555,7 @@ export function SmartNavigateView() {
               animate="animate"
             >
               {children.map((child, i) => (
-                <SonCard key={child.id} member={child} onTap={(id) => navigateTo(id, "up")} index={i} />
+                <SonCard key={child.id} member={child} onTap={(id) => navigateTo(id, "up")} index={i} isLoggedIn={isLoggedIn} />
               ))}
             </motion.div>
           )}
