@@ -38,6 +38,7 @@ import { getVerifiedMemberIds } from "@/services/dataService";
 import { cn } from "@/lib/utils";
 import type { FamilyMember } from "@/data/familyData";
 import { staggerContainer, staggerItem, gentleSpring, springConfig } from "@/lib/animations";
+import { canSeeAge, canSeeSpouses, PRIVATE_LABEL } from "@/utils/privacyUtils";
 
 const PILLAR_IDS = new Set(["200", "300", "400"]);
 const FOUNDER_IDS = new Set(["100", "200", "300", "400"]);
