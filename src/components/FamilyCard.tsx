@@ -254,7 +254,7 @@ function FamilyCardComponent({ data, selected }: NodeProps) {
             </span>
           </p>
         ) : (
-          <div className="mt-0.5 px-2">{privateLabelEl}</div>
+          <div className="mt-0.5 px-2">{motherLabelEl}</div>
         )
       )}
 
