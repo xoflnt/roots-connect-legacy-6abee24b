@@ -108,7 +108,7 @@ const SonCard = React.memo(function SonCard({
         showAge ? (
           <div className="text-xs text-muted-foreground">{formatAge(member.birth_year, member.death_year)}</div>
         ) : (
-          <div className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</div>
+          <div className="text-[10px] italic text-muted-foreground">{privateLabel('العمر')}</div>
         )
       )}
       {children.length > 0 && (
