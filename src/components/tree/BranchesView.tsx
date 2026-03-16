@@ -113,10 +113,11 @@ function useBranchStats(selectedBranch: string): BranchStats {
 
 // Generation members sheet row
 const GenMemberRow = React.memo(function GenMemberRow({
-  member, onSelect,
-}: { member: FamilyMember; onSelect: (m: FamilyMember) => void; }) {
+  member, onSelect, isLoggedIn,
+}: { member: FamilyMember; onSelect: (m: FamilyMember) => void; isLoggedIn: boolean; }) {
   const verified = getVerifiedMemberIds().has(member.id);
   const deceased = isDeceased(member);
+  const showAge = canSeeAge(member.id, isLoggedIn);
   return (
     <button
       onClick={() => onSelect(member)}
@@ -130,7 +131,11 @@ const GenMemberRow = React.memo(function GenMemberRow({
       <span className="font-bold text-sm text-foreground truncate flex-1">{member.name}</span>
       {verified && <BadgeCheck className="h-3.5 w-3.5 text-green-500 shrink-0" />}
       {member.birth_year && (
-        <span className="text-xs text-muted-foreground shrink-0">{formatAge(member.birth_year, member.death_year)}</span>
+        showAge ? (
+          <span className="text-xs text-muted-foreground shrink-0">{formatAge(member.birth_year, member.death_year)}</span>
+        ) : (
+          <span className="text-[10px] italic text-muted-foreground shrink-0">{PRIVATE_LABEL}</span>
+        )
       )}
     </button>
   );
