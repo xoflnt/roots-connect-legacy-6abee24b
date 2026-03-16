@@ -62,8 +62,14 @@ function DetailContent({ member }: { member: FamilyMember }) {
     return member.spouses.split("،").map((s) => s.trim()).filter(Boolean);
   }, [member.spouses]);
 
-  const privateLabelEl = (
-    <span className="text-xs italic text-muted-foreground">{PRIVATE_LABEL}</span>
+  const ageLabelEl = (
+    <span className="text-xs italic text-muted-foreground">{privateLabel('العمر')}</span>
+  );
+  const motherLabelEl = (
+    <span className="text-xs italic text-muted-foreground">{privateLabel('الوالدة')}</span>
+  );
+  const spouseLabelEl = (
+    <span className="text-xs italic text-muted-foreground">{privateLabel('الزوجة')}</span>
   );
 
   return (
