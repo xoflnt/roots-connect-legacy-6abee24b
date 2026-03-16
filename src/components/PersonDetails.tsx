@@ -156,7 +156,7 @@ function DetailContent({ member }: { member: FamilyMember }) {
               {canSeeMotherName(member.id, isLoggedIn) ? (
                 <p className="text-sm font-bold text-foreground">{motherName}</p>
               ) : (
-                privateLabelEl
+                motherLabelEl
               )}
             </div>
           </motion.div>
