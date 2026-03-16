@@ -9,6 +9,8 @@ import type { DirectionalKinship } from "@/services/familyService";
 import { getBranch, getBranchStyle } from "@/utils/branchUtils";
 import { toArabicNum } from "@/utils/ageCalculator";
 import { inferMotherName } from "@/services/familyService";
+import { useAuth } from "@/contexts/AuthContext";
+import { canSeeSpouses, PRIVATE_LABEL } from "@/utils/privacyUtils";
 
 interface KinshipCardViewProps extends KinshipViewProps {
   relationText: string;
