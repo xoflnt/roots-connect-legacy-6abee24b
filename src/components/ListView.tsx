@@ -124,9 +124,10 @@ interface ListNodeProps {
   expandedIds: Set<string>;
   onToggle: (id: string) => void;
   onSelect?: (id: string) => void;
+  isLoggedIn: boolean;
 }
 
-function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect }: ListNodeProps) {
+function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect, isLoggedIn }: ListNodeProps) {
   const children = childrenMap.get(member.id) || [];
   const hasChildren = children.length > 0;
   const isExpanded = expandedIds.has(member.id);
