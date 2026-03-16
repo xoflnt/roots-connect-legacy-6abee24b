@@ -327,7 +327,7 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                                 {isMale ? "والدته" : "والدتها"}: {motherName}
                               </span>
                             ) : (
-                              <span className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
+                              <span className="text-[10px] italic text-muted-foreground">{privateLabel('الوالدة')}</span>
                             )
                           )}
                         </div>
