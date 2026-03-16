@@ -54,10 +54,12 @@ const SonCard = React.memo(function SonCard({
   member,
   onTap,
   index,
+  isLoggedIn,
 }: {
   member: FamilyMember;
   onTap: (id: string) => void;
   index: number;
+  isLoggedIn: boolean;
 }) {
   const children = getChildrenOf(member.id);
   const branch = getBranch(member.id);
@@ -66,6 +68,7 @@ const SonCard = React.memo(function SonCard({
   const verified = getVerifiedMemberIds().has(member.id);
   const gc = genderColor(member.gender);
   const childLabel = member.gender === "F" ? "لها" : "له";
+  const showAge = canSeeAge(member.id, isLoggedIn);
 
   return (
     <motion.button
@@ -102,7 +105,11 @@ const SonCard = React.memo(function SonCard({
       </div>
 
       {member.birth_year && (
-        <div className="text-xs text-muted-foreground">{formatAge(member.birth_year, member.death_year)}</div>
+        showAge ? (
+          <div className="text-xs text-muted-foreground">{formatAge(member.birth_year, member.death_year)}</div>
+        ) : (
+          <div className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</div>
+        )
       )}
       {children.length > 0 && (
         <div className="text-xs text-muted-foreground mt-1">
