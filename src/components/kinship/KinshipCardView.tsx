@@ -100,7 +100,7 @@ export function KinshipCardView({
     let url = blobUrl;
     if (!url) {
       const canvas = await generateKinshipImage(
-        result, person1, person2, relationText, directional, pathChain
+        result, person1, person2, relationText, directional, pathChain, isLoggedIn
       );
       const blob = await new Promise<Blob | null>((resolve) =>
         canvas.toBlob((b) => resolve(b), "image/png")
