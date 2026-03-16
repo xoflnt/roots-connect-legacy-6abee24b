@@ -256,6 +256,7 @@ function TruncatedBreadcrumb({
 // ── Main Component ──
 export function SmartNavigateView() {
   const { currentUser } = useAuth();
+  const isLoggedIn = !!currentUser;
   const startId = currentUser?.memberId || "100";
 
   const [currentId, setCurrentId] = useState<string>(startId);
