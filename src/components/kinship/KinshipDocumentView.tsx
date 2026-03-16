@@ -5,6 +5,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { canSeeSpouses, PRIVATE_LABEL } from "@/utils/privacyUtils";
 
 export function KinshipDocumentView({ result, person1, person2, motherName1, motherName2, onPersonTap }: KinshipViewProps) {
+  const { currentUser } = useAuth();
+  const isLoggedIn = !!currentUser;
   const name1 = person1.name.split(" ")[0];
   const name2 = person2.name.split(" ")[0];
   const lcaName = result.lca?.name.split(" ")[0] ?? "";
@@ -19,7 +21,10 @@ export function KinshipDocumentView({ result, person1, person2, motherName1, mot
     return [...result.path2].reverse().map((m) => m.name.split(" ")[0]);
   }, [result.path2]);
 
-  const hasMothers = motherName1 || motherName2;
+  // Only show mother names if the user can see spouses for both persons
+  const showMother1 = motherName1 && canSeeSpouses(person1.id, isLoggedIn);
+  const showMother2 = motherName2 && canSeeSpouses(person2.id, isLoggedIn);
+  const hasMothers = showMother1 || showMother2;
   const motherLabel1 = person1.gender === "M" ? "والدته" : "والدتها";
   const motherLabel2 = person2.gender === "M" ? "والدته" : "والدتها";
 
