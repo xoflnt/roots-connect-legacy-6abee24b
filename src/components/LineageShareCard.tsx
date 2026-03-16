@@ -1,5 +1,6 @@
 import type { FamilyMember } from "@/data/familyData";
 import { getBranch } from "@/utils/branchUtils";
+import { canSeeAge, canSeeSpouses } from "@/utils/privacyUtils";
 
 const COLORS = {
   background: "#F7F3EE",
