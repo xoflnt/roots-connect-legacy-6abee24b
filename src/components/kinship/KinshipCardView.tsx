@@ -327,7 +327,7 @@ function PersonChip({
   const genderBg = isMale ? "bg-[hsl(var(--male))]/15" : "bg-[hsl(var(--female))]/15";
   const genderText = isMale ? "text-[hsl(var(--male))]" : "text-[hsl(var(--female))]";
   const motherName = inferMotherName(member);
-  const showMother = canSeeSpouses(member.id, isLoggedIn);
+  const showMother = canSeeMotherName(member.id, isLoggedIn);
 
   return (
     <button

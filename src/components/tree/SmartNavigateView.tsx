@@ -468,15 +468,19 @@ export function SmartNavigateView() {
                 )
               )}
               {motherName && branchStyle && (
-                <span
-                  className="px-1.5 py-0.5 rounded-md"
-                  style={{
-                    backgroundColor: branchStyle.text + "26",
-                    color: branchStyle.text,
-                  }}
-                >
-                  والدته: {motherName}
-                </span>
+                canSeeMotherName(member.id, isLoggedIn) ? (
+                  <span
+                    className="px-1.5 py-0.5 rounded-md"
+                    style={{
+                      backgroundColor: branchStyle.text + "26",
+                      color: branchStyle.text,
+                    }}
+                  >
+                    والدته: {motherName}
+                  </span>
+                ) : (
+                  <span className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
+                )
               )}
               {!motherName && motherName === null && member.birth_year === null && null}
             </div>

@@ -425,7 +425,7 @@ const BranchNode = React.memo(function BranchNode({
           {isDoc && <HeritageBadge type="documenter" />}
         </button>
         <div className="flex items-center gap-1.5 shrink-0">
-          {motherName && (<span className="text-[9px] px-1 py-0.5 rounded bg-muted text-muted-foreground truncate max-w-[60px]">{motherName}</span>)}
+          {motherName && (canSeeMotherName(member.id, isLoggedIn) ? (<span className="text-[9px] px-1 py-0.5 rounded bg-muted text-muted-foreground truncate max-w-[60px]">{motherName}</span>) : (<span className="text-[9px] italic text-muted-foreground">{PRIVATE_LABEL}</span>))}
           <Badge variant="outline" className="text-[10px] px-1.5 py-0">{genLabel}</Badge>
           {member.birth_year && (
             canSeeAge(member.id, isLoggedIn) ? (

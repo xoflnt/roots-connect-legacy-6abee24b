@@ -265,12 +265,16 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                             {isLast && " — الجد الأعلى"}
                           </p>
                           {motherName && motherColor && (
-                            <span
-                              className="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
-                              style={{ color: motherColor.stroke, backgroundColor: `${motherColor.stroke}15` }}
-                            >
-                              {isMale ? "والدته" : "والدتها"}: {motherName}
-                            </span>
+                            canSeeMotherName(member.id, isLoggedIn) ? (
+                              <span
+                                className="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
+                                style={{ color: motherColor.stroke, backgroundColor: `${motherColor.stroke}15` }}
+                              >
+                                {isMale ? "والدته" : "والدتها"}: {motherName}
+                              </span>
+                            ) : (
+                              <span className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
+                            )
                           )}
                         </div>
                         {/* Heritage badges */}

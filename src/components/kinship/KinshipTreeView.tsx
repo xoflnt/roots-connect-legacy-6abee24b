@@ -138,12 +138,12 @@ export function KinshipTreeView({ result, person1, person2, onPersonTap }: Kinsh
                       <HeritageBadge type="deceased" gender={m.gender} />
                     </span>
                   )}
-                  {isEnd && motherName && canSeeSpouses(m.id, isLoggedIn) && (
+                  {isEnd && motherName && canSeeMotherName(m.id, isLoggedIn) && (
                     <span className="block text-[10px] text-muted-foreground italic mt-0.5">
                       {m.gender === "M" ? "والدته" : "والدتها"}: {motherName}
                     </span>
                   )}
-                  {isEnd && motherName && !canSeeSpouses(m.id, isLoggedIn) && (
+                  {isEnd && motherName && !canSeeMotherName(m.id, isLoggedIn) && (
                     <span className="block text-[10px] italic text-muted-foreground mt-0.5">{PRIVATE_LABEL}</span>
                   )}
                 </button>

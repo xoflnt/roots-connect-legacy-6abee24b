@@ -274,12 +274,18 @@ export async function generateKinshipImage(
 
     // Mother name
     if (motherName) {
-      const mLabel = `${isMale ? "والدته" : "والدتها"}: ${motherName}`;
-      setFont(ctx, "10px Tajawal");
-      const mw = ctx.measureText(mLabel).width + 10;
-      roundRect(ctx, x + (chipW - mw) / 2, nextY, mw, 14, 4, C.mutedBg, undefined);
-      ctx.fillStyle = C.textSecondary;
-      ctx.fillText(mLabel, x + chipW / 2, nextY + 7);
+      if (canSeeMotherName(member.id, isLoggedIn)) {
+        const mLabel = `${isMale ? "والدته" : "والدتها"}: ${motherName}`;
+        setFont(ctx, "10px Tajawal");
+        const mw = ctx.measureText(mLabel).width + 10;
+        roundRect(ctx, x + (chipW - mw) / 2, nextY, mw, 14, 4, C.mutedBg, undefined);
+        ctx.fillStyle = C.textSecondary;
+        ctx.fillText(mLabel, x + chipW / 2, nextY + 7);
+      } else {
+        setFont(ctx, "11px Tajawal");
+        ctx.fillStyle = "rgba(87,122,102,0.6)";
+        ctx.fillText(PRIVATE_LABEL, x + chipW / 2, nextY + 7);
+      }
     }
   }
 
