@@ -247,7 +247,7 @@ function DetailContent({ member }: { member: FamilyMember }) {
                 })}
               </div>
             ) : (
-              privateLabelEl
+              spouseLabelEl
             )}
           </motion.div>
         )}

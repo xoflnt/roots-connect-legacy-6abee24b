@@ -418,7 +418,7 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                             {member.spouses}
                           </span>
                         ) : (
-                          <span className="text-xs italic text-muted-foreground">{PRIVATE_LABEL}</span>
+                          <span className="text-xs italic text-muted-foreground">{privateLabel('الزوجة')}</span>
                         )}
                       </div>
                     )}

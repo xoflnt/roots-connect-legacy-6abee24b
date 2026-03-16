@@ -280,7 +280,7 @@ export function DataTableView() {
                         canSeeSpouses(m.id, isLoggedIn) ? (
                           m.spouses
                         ) : (
-                          <span className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
+                          <span className="text-[10px] italic text-muted-foreground">{privateLabel('الزوجة')}</span>
                         )
                       ) : (
                         <span className="text-muted-foreground text-xs">—</span>

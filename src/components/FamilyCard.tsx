@@ -275,7 +275,7 @@ function FamilyCardComponent({ data, selected }: NodeProps) {
       {ageText && showAge ? (
         <p className="text-[10px] text-accent font-semibold mt-0.5">{ageText}</p>
       ) : ageText && !showAge ? (
-        <div className="mt-0.5">{privateLabelEl}</div>
+        <div className="mt-0.5">{ageLabelEl}</div>
       ) : null}
 
       {/* Children count + WhatsApp row */}

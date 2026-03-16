@@ -352,7 +352,7 @@ function PersonChip({
             {isMale ? "والدته" : "والدتها"}: {motherName}
           </span>
         ) : (
-          <span className="inline-block text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
+          <span className="inline-block text-[10px] italic text-muted-foreground">{privateLabel('الوالدة')}</span>
         )
       )}
     </button>

@@ -498,7 +498,7 @@ export function SmartNavigateView() {
                 </div>
               ) : (
                 <div className="mt-1.5">
-                  <span className="text-xs italic text-muted-foreground">{PRIVATE_LABEL}</span>
+                  <span className="text-xs italic text-muted-foreground">{privateLabel('الزوجة')}</span>
                 </div>
               )
             )}

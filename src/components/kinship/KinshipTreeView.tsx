@@ -144,7 +144,7 @@ export function KinshipTreeView({ result, person1, person2, onPersonTap }: Kinsh
                     </span>
                   )}
                   {isEnd && motherName && !canSeeMotherName(m.id, isLoggedIn) && (
-                    <span className="block text-[10px] italic text-muted-foreground mt-0.5">{PRIVATE_LABEL}</span>
+                    <span className="block text-[10px] italic text-muted-foreground mt-0.5">{privateLabel('الوالدة')}</span>
                   )}
                 </button>
               </div>

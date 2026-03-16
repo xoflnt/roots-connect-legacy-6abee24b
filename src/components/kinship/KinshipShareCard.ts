@@ -284,7 +284,7 @@ export async function generateKinshipImage(
       } else {
         setFont(ctx, "11px Tajawal");
         ctx.fillStyle = "rgba(87,122,102,0.6)";
-        ctx.fillText(PRIVATE_LABEL, x + chipW / 2, nextY + 7);
+        ctx.fillText(privateLabel('الوالدة'), x + chipW / 2, nextY + 7);
       }
     }
   }
