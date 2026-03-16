@@ -9,6 +9,8 @@ import { formatAge } from "@/utils/ageCalculator";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PILLARS, getBranch, getBranchStyle, DOCUMENTER_ID } from "@/utils/branchUtils";
 import { HeritageBadge } from "./HeritageBadge";
+import { useAuth } from "@/contexts/AuthContext";
+import { canSeeAge, canSeeMotherName, privateLabel, getSpouseLabel } from "@/utils/privacyUtils";
 
 interface ListViewProps {
   onSelectMember?: (memberId: string) => void;
@@ -24,6 +26,7 @@ const DEPTH_ACCENTS = [
 ];
 
 export function ListView({ onSelectMember }: ListViewProps) {
+  const { isLoggedIn } = useAuth();
   const members = useMemo(() => getAllMembers(), []);
   const [activeBranch, setActiveBranch] = useState("all");
 
@@ -105,6 +108,7 @@ export function ListView({ onSelectMember }: ListViewProps) {
               expandedIds={expandedIds}
               onToggle={toggleExpand}
               onSelect={onSelectMember}
+              isLoggedIn={isLoggedIn}
             />
           ))}
         </div>
@@ -120,9 +124,10 @@ interface ListNodeProps {
   expandedIds: Set<string>;
   onToggle: (id: string) => void;
   onSelect?: (id: string) => void;
+  isLoggedIn: boolean;
 }
 
-function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect }: ListNodeProps) {
+function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect, isLoggedIn }: ListNodeProps) {
   const children = childrenMap.get(member.id) || [];
   const hasChildren = children.length > 0;
   const isExpanded = expandedIds.has(member.id);
@@ -235,22 +240,36 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect 
                 </span>
               )}
               {motherName && motherColor && (
-                <span
-                  className="text-[10px] mt-0.5 px-1.5 py-0.5 rounded-full font-medium"
-                  style={{ color: motherColor.stroke, backgroundColor: `${motherColor.stroke}15` }}
-                >
-                  {member.gender === "F" ? "والدتها" : "والدته"}: {motherName}
-                </span>
+                canSeeMotherName(member.id, isLoggedIn) ? (
+                  <span
+                    className="text-[10px] mt-0.5 px-1.5 py-0.5 rounded-full font-medium"
+                    style={{ color: motherColor.stroke, backgroundColor: `${motherColor.stroke}15` }}
+                  >
+                    {member.gender === "F" ? "والدتها" : "والدته"}: {motherName}
+                  </span>
+                ) : (
+                  <span className="text-[10px] mt-0.5 italic text-muted-foreground">
+                    {privateLabel('الوالدة')}
+                  </span>
+                )
               )}
-              {(member.birth_year || member.death_year) && (
-                <span className="text-xs text-muted-foreground mt-0.5 block">
-                  {member.birth_year && `${member.birth_year} هـ`}
-                  {member.birth_year && member.death_year && " — "}
-                  {member.death_year && `${member.death_year} هـ`}
+              {canSeeAge(member.id, isLoggedIn) ? (
+                <>
+                  {(member.birth_year || member.death_year) && (
+                    <span className="text-xs text-muted-foreground mt-0.5 block">
+                      {member.birth_year && `${member.birth_year} هـ`}
+                      {member.birth_year && member.death_year && " — "}
+                      {member.death_year && `${member.death_year} هـ`}
+                    </span>
+                  )}
+                  {ageText && (
+                    <span className="text-xs text-accent font-semibold mt-0.5">{ageText}</span>
+                  )}
+                </>
+              ) : (
+                <span className="text-xs mt-0.5 italic text-muted-foreground">
+                  {privateLabel('العمر')}
                 </span>
-              )}
-              {ageText && (
-                <span className="text-xs text-accent font-semibold mt-0.5">{ageText}</span>
               )}
             </div>
           </div>
@@ -336,7 +355,7 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect 
                     className="text-[10px] font-semibold"
                     style={{ color: BRANCH_COLORS[group.colorIndex % BRANCH_COLORS.length].stroke }}
                   >
-                    أبناء {motherKey}
+                    أبناء {getSpouseLabel(motherKey, group.colorIndex, isLoggedIn)}
                   </span>
                 </div>
               )}
@@ -349,6 +368,7 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect 
                   expandedIds={expandedIds}
                   onToggle={onToggle}
                   onSelect={onSelect}
+                  isLoggedIn={isLoggedIn}
                 />
               ))}
             </div>
