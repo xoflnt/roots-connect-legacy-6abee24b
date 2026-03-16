@@ -464,7 +464,7 @@ export function SmartNavigateView() {
                 canSeeAge(member.id, isLoggedIn) ? (
                   <span>{formatAge(member.birth_year, member.death_year)}</span>
                 ) : (
-                  <span className="text-[10px] italic text-muted-foreground">{PRIVATE_LABEL}</span>
+                  <span className="text-[10px] italic text-muted-foreground">{privateLabel('العمر')}</span>
                 )
               )}
               {motherName && branchStyle && (
