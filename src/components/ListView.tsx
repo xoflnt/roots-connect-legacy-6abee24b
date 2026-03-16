@@ -108,6 +108,7 @@ export function ListView({ onSelectMember }: ListViewProps) {
               expandedIds={expandedIds}
               onToggle={toggleExpand}
               onSelect={onSelectMember}
+              isLoggedIn={isLoggedIn}
             />
           ))}
         </div>
