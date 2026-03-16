@@ -179,6 +179,7 @@ export function KinshipCardView({
             branchStyle={branchStyle1}
             borderClass="border-primary/30"
             onTap={onPersonTap}
+            isLoggedIn={isLoggedIn}
           />
           <PersonChip
             member={person2}
@@ -186,6 +187,7 @@ export function KinshipCardView({
             branchStyle={branchStyle2}
             borderClass="border-accent/50"
             onTap={onPersonTap}
+            isLoggedIn={isLoggedIn}
           />
         </div>
 

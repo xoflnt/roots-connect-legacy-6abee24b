@@ -389,11 +389,11 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                               const color = group.colorIndex >= 0 ? BRANCH_COLORS[group.colorIndex % BRANCH_COLORS.length] : null;
                               return (
                                 <div key={motherKey}>
-                                  {motherKey !== "__unknown__" && color && (
+                                {motherKey !== "__unknown__" && color && (
                                     <div className="flex items-center gap-1.5 mb-0.5">
                                       <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color.stroke }} />
                                       <span className="text-[10px] font-semibold" style={{ color: color.stroke }}>
-                                        أبناء {motherKey}
+                                        أبناء {isLoggedIn ? motherKey : getSpouseLabel(motherKey, Array.from(groups.keys()).filter(k => k !== "__unknown__").indexOf(motherKey), isLoggedIn)}
                                       </span>
                                     </div>
                                   )}
