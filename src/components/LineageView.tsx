@@ -351,13 +351,17 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                     {member.spouses && (
                       <div className="flex items-start gap-2 text-sm text-muted-foreground">
                         <Heart className="h-3.5 w-3.5 shrink-0 mt-0.5 text-female fill-female/30" />
-                        <span className="break-words line-clamp-2">
-                          {isMale
-                            ? (member.spouses!.includes("،") ? "الزوجات: " : "الزوجة: ")
-                            : "الزوج: "
-                          }
-                          {member.spouses}
-                        </span>
+                        {canSeeSpouses(member.id, isLoggedIn) ? (
+                          <span className="break-words line-clamp-2">
+                            {isMale
+                              ? (member.spouses!.includes("،") ? "الزوجات: " : "الزوجة: ")
+                              : "الزوج: "
+                            }
+                            {member.spouses}
+                          </span>
+                        ) : (
+                          <span className="text-xs italic text-muted-foreground">{PRIVATE_LABEL}</span>
+                        )}
                       </div>
                     )}
 
