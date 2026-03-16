@@ -82,7 +82,7 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
     if (chain.length === 0) return;
     setDownloading(true);
     try {
-      const blob = await generateLineageImage(chain, shareUrl);
+      const blob = await generateLineageImage(chain, shareUrl, isLoggedIn);
       const firstName = chain[0].name.split(" ")[0];
       const file = new File([blob], `نسب-${firstName}.png`, { type: "image/png" });
 
