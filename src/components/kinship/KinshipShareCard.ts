@@ -54,7 +54,7 @@ async function loadFont() {
 }
 
 function setFont(ctx: CanvasRenderingContext2D, style: string) {
-  ctx.font = style.replace(/Tajawal/g, "'Tajawal', 'Arial', sans-serif");
+  ctx.font = style.replace(/Tajawal/g, "'YearOfHandicrafts', 'Tajawal', 'Arial', sans-serif");
 }
 
 function roundRect(

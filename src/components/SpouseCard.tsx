@@ -11,7 +11,7 @@ export function SpouseCard({ data }: NodeProps) {
     <div
       className="relative w-[160px] min-h-[48px] flex items-center justify-center gap-1.5 rounded-xl border backdrop-blur-sm shadow-sm transition-all duration-200 hover:shadow-md px-3 py-2"
       style={{
-        fontFamily: "'Tajawal', sans-serif",
+        fontFamily: "'YearOfHandicrafts', 'Tajawal', sans-serif",
         borderColor: `${color.stroke}40`,
         background: `hsl(var(--card) / 0.92)`,
       }}
