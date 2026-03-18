@@ -22,17 +22,29 @@ function getBranchColor(pillarId: string | undefined): string {
   return COLORS.gold;
 }
 
-async function loadFont() {
+async function loadFont(): Promise<void> {
   try {
     const font = new FontFace(
-      "Tajawal",
-      "url(https://fonts.gstatic.com/s/tajawal/v9/Iura6YBj_oCad4k1nzSBC45I.woff2)"
+      'YearOfHandicrafts',
+      'url(/fonts/TheYearofHandicrafts-Regular.otf)',
+      { weight: '400' }
     );
-    await font.load();
+    const boldFont = new FontFace(
+      'YearOfHandicrafts',
+      'url(/fonts/TheYearofHandicrafts-Bold.otf)',
+      { weight: '700' }
+    );
+    await Promise.all([font.load(), boldFont.load()]);
     document.fonts.add(font);
-  } catch {
-    /* fallback */
+    document.fonts.add(boldFont);
+  } catch { /* fallback */ }
+}
+
+function applyTatweel(name: string): string {
+  if (name.length <= 4) {
+    return name.split('').join('ـ');
   }
+  return name;
 }
 
 function drawGoldLine(ctx: CanvasRenderingContext2D, y: number, w: number, h: number) {
@@ -57,14 +69,12 @@ function drawCenteredSeparator(ctx: CanvasRenderingContext2D, y: number, w: numb
 function drawTreeIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number) {
   ctx.save();
   ctx.fillStyle = "rgba(201,168,76,0.6)";
-  // Triangle
   ctx.beginPath();
   ctx.moveTo(cx, cy - 18);
   ctx.lineTo(cx - 14, cy + 6);
   ctx.lineTo(cx + 14, cy + 6);
   ctx.closePath();
   ctx.fill();
-  // Trunk
   ctx.fillRect(cx - 3, cy + 6, 6, 10);
   ctx.restore();
 }
@@ -90,6 +100,8 @@ function toArabic(n: number): string {
   return n.toLocaleString("ar-SA");
 }
 
+const FONT = "YearOfHandicrafts, Tajawal, Arial";
+
 export async function generateLineageImage(
   chain: FamilyMember[],
   _url: string,
@@ -100,7 +112,6 @@ export async function generateLineageImage(
   const W = 1080;
   const H = 1440;
   const SCALE = 2;
-  const FONT = "Tajawal, Arial";
 
   const canvas = document.createElement("canvas");
   canvas.width = W * SCALE;
@@ -157,12 +168,12 @@ export async function generateLineageImage(
 
   // Card border
   roundedRect(ctx, cardX, cardY, cardW, cardH, 16);
-  ctx.strokeStyle = branchColor + "66"; // 40%
+  ctx.strokeStyle = branchColor + "66";
   ctx.lineWidth = 1.5;
   ctx.stroke();
 
-  // Subject name
-  const firstName = chain[0].name.split(" ")[0];
+  // Subject name with tatweel
+  const firstName = applyTatweel(chain[0].name.split(" ")[0]);
   ctx.fillStyle = COLORS.textDark;
   ctx.font = `bold 42px ${FONT}`;
   ctx.fillText(firstName, W / 2, cardY + 48);
@@ -192,9 +203,9 @@ export async function generateLineageImage(
   ctx.textAlign = "center";
 
   // ── CHAIN (310 → dynamic) ──
-  const chainStartY = cardY + cardH + 20; // 310
-  const familyNameY_max = H - 260; // leave room for heritage + footer
-  const ancestorCount = chain.length - 1; // chain[1..n-1]
+  const chainStartY = cardY + cardH + 20;
+  const familyNameY_max = H - 260;
+  const ancestorCount = chain.length - 1;
   const availableH = familyNameY_max - chainStartY - 60;
 
   const lineHeight = Math.max(70, Math.min(110, ancestorCount > 0 ? availableH / ancestorCount : 110));
@@ -261,13 +272,15 @@ export async function generateLineageImage(
     ctx.textAlign = "center";
   }
 
-  // ── FAMILY NAME ──
+  // ── FAMILY NAME with tatweel ──
   ctx.fillStyle = COLORS.gold;
   ctx.font = `bold 46px ${FONT}`;
-  ctx.fillText("◆ الخنيني ◆", W / 2, familyNameY);
+  ctx.fillText("◆ الخـنـيـنـي ◆", W / 2, familyNameY);
 
-  // ── SEPARATOR ──
-  drawCenteredSeparator(ctx, familyNameY + 35, W, 200);
+  // ── TATWEEL SEPARATOR ──
+  ctx.fillStyle = COLORS.goldMid;
+  ctx.font = `20px ${FONT}`;
+  ctx.fillText("ـــــــــــــــــــ", W / 2, familyNameY + 35);
 
   // ── HERITAGE TEXT BLOCK (bottom-right) ──
   const heritageX = W - 80;
@@ -294,18 +307,15 @@ export async function generateLineageImage(
   const footerY = H - 100;
   drawCenteredSeparator(ctx, footerY - 20, W, 200);
 
-  // Generation count
   const genNum = toArabic(chain.length);
   ctx.fillStyle = COLORS.textMuted;
   ctx.font = `16px ${FONT}`;
   ctx.fillText(`سلسلة نسب من ${genNum} أجيال`, W / 2, footerY + 10);
 
-  // Branding
   ctx.fillStyle = COLORS.goldMid;
   ctx.font = `bold 15px ${FONT}`;
   ctx.fillText("بوابة تراث الخنيني — حفظ الإرث للأجيال", W / 2, footerY + 40);
 
-  // Bottom gold line
   drawGoldLine(ctx, H - 4, W, 4);
 
   return new Promise((resolve) => {

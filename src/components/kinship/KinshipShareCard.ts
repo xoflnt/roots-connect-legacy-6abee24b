@@ -36,18 +36,25 @@ function toArabicDigits(n: number): string {
 async function loadFont() {
   try {
     const font = new FontFace(
-      "Tajawal",
-      "url(https://fonts.gstatic.com/s/tajawal/v9/Iura6YBj_oCad4k1nzSBC45I.woff2)"
+      'YearOfHandicrafts',
+      'url(/fonts/TheYearofHandicrafts-Regular.otf)',
+      { weight: '400' }
     );
-    await font.load();
+    const boldFont = new FontFace(
+      'YearOfHandicrafts',
+      'url(/fonts/TheYearofHandicrafts-Bold.otf)',
+      { weight: '700' }
+    );
+    await Promise.all([font.load(), boldFont.load()]);
     document.fonts.add(font);
+    document.fonts.add(boldFont);
   } catch {
     /* fallback to system font */
   }
 }
 
 function setFont(ctx: CanvasRenderingContext2D, style: string) {
-  ctx.font = style.replace(/Tajawal/g, "'Tajawal', 'Arial', sans-serif");
+  ctx.font = style.replace(/Tajawal/g, "'YearOfHandicrafts', 'Tajawal', 'Arial', sans-serif");
 }
 
 function roundRect(

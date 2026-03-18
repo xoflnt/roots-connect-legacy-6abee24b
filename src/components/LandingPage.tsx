@@ -201,7 +201,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         >
           <TreePine className="h-10 w-10 text-primary mx-auto" />
           <h1 className="text-2xl font-extrabold text-primary leading-tight">
-            بوابة تراث الخنيني
+            بـوابـة تـراث الخـنـيـنـي
           </h1>
           <p className="text-sm text-muted-foreground">
             فرع الزلفي

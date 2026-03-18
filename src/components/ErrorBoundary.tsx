@@ -33,7 +33,7 @@ export class ErrorBoundary extends Component<Props, State> {
         <div
           dir="rtl"
           className="min-h-screen flex items-center justify-center p-6"
-          style={{ background: "hsl(38 30% 96%)", fontFamily: "Tajawal, sans-serif" }}
+          style={{ background: "hsl(38 30% 96%)", fontFamily: "YearOfHandicrafts, Tajawal, sans-serif" }}
         >
           <div className="text-center max-w-md space-y-4">
             <div className="text-5xl">⚠️</div>
