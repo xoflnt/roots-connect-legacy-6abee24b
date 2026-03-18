@@ -435,7 +435,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                                         <span className="text-base font-bold text-foreground block">{getLineageLabel(m)}</span>
                                         {branch && (
                                           <span className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1">
-                                            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: branch.color }} />
+                                          <span className="w-2 h-2 rounded-full bg-primary" />
                                             {branch.label}
                                           </span>
                                         )}
