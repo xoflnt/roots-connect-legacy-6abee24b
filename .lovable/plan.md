@@ -1,48 +1,77 @@
 
 
-# Marketing Assets for شجرة عائلة الخنيني
+# Phase 3: Enhanced Edit Requests
 
 ## Overview
-Create 4 marketing assets — all in Arabic using the platform's YearOfHandicrafts font and heritage color palette (Deep Palm Green #1B5438, Gold #D4A82B, Warm Sand #F6F3EE).
+Build a full admin requests management system: hook, page with tabs, request cards, detail sheet with approve/reject actions, and a `resolve-request` edge function endpoint that applies approved changes to the database.
 
-## Design Philosophy: "Heritage Cartography"
+## Files to Create
 
-A visual language rooted in the quiet authority of genealogical documentation — where lineage is mapped with the reverence of ancient cartographers charting sacred land. Deep forest greens anchor compositions like the trunk of an ancestral tree, while gold accents trace connections like gilded ink on aged parchment. Every element placed with meticulous care, as if by a master calligrapher spending countless hours on a single page.
+### 1. `src/hooks/admin/useRequests.ts`
+- Hook that fetches requests via edge function `get-requests` with admin token
+- Enriches each request with `target_member_name` from `getAllMembers()`
+- State: `requests`, `activeTab` (pending/done/all), `isLoading`
+- `filtered` memo based on activeTab
+- Exposes `refetch` callback
 
-## Assets to Create
+### 2. `src/components/admin/requests/RequestsPage.tsx`
+- Uses `useRequests()` hook
+- Header "الطلبات" with pending count badge
+- Three tabs: "بانتظار المراجعة (n)" | "تمت المعالجة" | "الكل"
+- Renders list of `RequestCard` components
+- Empty state per tab
+- Manages `selectedRequest` state to open `RequestDetailSheet`
 
-### 1. Product Screenshot
-- Take a browser screenshot of the live app
-- Frame it in a macOS-style window with the product-shot generator
-- Use a custom gradient matching the heritage palette (deep green to warm sand)
-- Output: `/mnt/documents/product-shot.png`
+### 3. `src/components/admin/requests/RequestCard.tsx`
+- Renders differently per `request.type`: add_child (UserPlus green), add_spouse (Heart pink), other (MessageSquare blue)
+- Shows target member name, submitted_by, relative Arabic time
+- Status badge: pending=amber, approved=green, completed=gray
+- Pending cards show "عرض التفاصيل" button → opens detail sheet
+- Uses `toArabicNum` for any numbers
 
-### 2. Social Media / OG Image (1200x630)
-- Canvas-generated PNG with the heritage palette
-- App logo/icon centered, family name "الخنيني" in display font
-- Tagline: "بوابة تراث الخنيني — فرع الزلفي"
-- Geometric pattern motif (dots/lines evoking tree branches)
-- Output: `/mnt/documents/og-image.png`
+### 4. `src/components/admin/requests/RequestDetailSheet.tsx`
+- Sheet (bottom on mobile, side on desktop)
+- Full request details based on type
+- For add_child/add_spouse: editable input to modify name before approving
+- Action buttons: "قبول وتطبيق" (green) and "رفض" (red outline), both min-h-12
+- On approve: calls `family-api/resolve-request` with type-specific payload
+- On reject: calls `family-api/mark-done` to mark as completed
+- Shows loading spinner during action
 
-### 3. Promotional Video (15-20 seconds)
-- Remotion-based motion graphics
-- Scene flow: Logo reveal → Feature highlights (tree, search, kinship) → CTA
-- All text in Arabic with YearOfHandicrafts via @remotion/fonts
-- Heritage color palette throughout
-- Output: `/mnt/documents/promo-video.mp4`
+## Files to Modify
 
-### 4. PDF One-Pager
-- Single A4 page, RTL layout
-- Sections: Hero header, 3-4 feature highlights with icons, statistics, QR code to app URL
-- reportlab with the custom OTF font registered
-- Output: `/mnt/documents/one-pager.pdf`
+### 5. `supabase/functions/family-api/index.ts`
+Add `resolve-request` endpoint (admin-only):
 
-## Execution Order
-1. Screenshot the app → product shot
-2. Generate OG image via Python canvas
-3. Generate PDF one-pager
-4. Build and render Remotion video
+- Reads `requestId, decision, type, targetMemberId, targetMemberName, spouseName, childName, childGender`
+- If decision === 'approved':
+  - **add_spouse**: fetch current member's `spouses`, append new name with Arabic comma separator, update via upsert
+  - **add_child**: fetch all IDs, generate new ID using same logic as `idGenerator.ts` (inline helper), build full name as `childName بن fatherName`, insert new member
+  - **other**: no data change
+- Update request status to 'approved' or 'completed'
+- Return `{ success: true }`
+
+ID generation helper (inline in edge function):
+```text
+function generateId(fatherId, allIds):
+  if fatherId has letter prefix:
+    count direct children (fatherId_N pattern)
+    return fatherId_(count+1)
+  else:
+    find max numeric ID
+    return max+1
+```
+
+### 6. `src/pages/Admin.tsx`
+- Import `RequestsPage`
+- Replace the catch-all placeholder with explicit `{section === 'requests' && <RequestsPage />}`
+- Keep catch-all for remaining sections
 
 ## Technical Details
-- Font: `/home/user/project/public/fonts/TheYearofHandicrafts-*.otf`
-- Colors: Primary #1B5438, Gold #D4A82B, Background #F6F3EE, Fore
+
+- RLS blocks direct SELECT on `family_requests` for anon/authenticated, so requests are fetched via the existing `get-requests` edge function endpoint (service role)
+- The `resolve-request` endpoint uses service role to both read and write `family_members` and `family_requests`
+- Arabic relative time: compute diff from `created_at`, output "منذ دقائق" / "منذ ساعة" / "منذ X أيام" etc.
+- All UI is RTL, min font 16px, min tap target 48px
+- Eastern Arabic numerals throughout via `toArabicNum`
+
