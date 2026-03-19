@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { applyTatweel } from "@/utils/tatweelUtils";
 import { motion } from "framer-motion";
 import { User, Calendar, Heart, FileText, X, ExternalLink, Clock, Send, Users2, UserPlus, BadgeCheck } from "lucide-react";
 import { downloadVCard } from "@/utils/vcard";

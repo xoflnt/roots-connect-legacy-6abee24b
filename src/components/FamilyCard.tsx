@@ -11,6 +11,7 @@ import { formatAge } from "@/utils/ageCalculator";
 import { getBranch, getBranchStyle, DOCUMENTER_ID } from "@/utils/branchUtils";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { canSeeAge, canSeeSpouses, canSeeMotherName, privateLabel } from "@/utils/privacyUtils";
+import { applyTatweel } from "@/utils/tatweelUtils";
 
 type FamilyCardData = FamilyMember & {
   branchColorIndex: number;

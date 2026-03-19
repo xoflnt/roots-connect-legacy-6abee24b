@@ -13,6 +13,7 @@ import {
   inferMotherName,
 } from "@/services/familyService";
 import { getBranch, getBranchStyle, DOCUMENTER_ID } from "@/utils/branchUtils";
+import { applyTatweel } from "@/utils/tatweelUtils";
 import { formatAge } from "@/utils/ageCalculator";
 import { HeritageBadge } from "@/components/HeritageBadge";
 import { PersonDetails } from "@/components/PersonDetails";

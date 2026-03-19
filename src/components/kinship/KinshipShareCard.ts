@@ -4,6 +4,7 @@ import type { DirectionalKinship } from "@/services/familyService";
 import { getBranch } from "@/utils/branchUtils";
 import { inferMotherName } from "@/services/familyService";
 import { canSeeMotherName, privateLabel } from "@/utils/privacyUtils";
+import { applyTatweelCanvas } from "@/utils/tatweelUtils";
 
 /* ── Hardcoded palette (always light, no CSS vars) ── */
 const C = {
