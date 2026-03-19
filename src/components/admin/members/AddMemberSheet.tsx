@@ -313,8 +313,13 @@ export function AddMemberSheet({
         >
           <SheetHeader className="px-5 pt-5 pb-3 border-b border-border/50">
             <SheetTitle className="text-right text-xl font-bold">
-              إضافة عضو جديد
+              {isEditMode ? "تعديل بيانات العضو" : "إضافة عضو جديد"}
             </SheetTitle>
+            {isEditMode && editMember && (
+              <p className="text-sm text-muted-foreground text-right">
+                المعرّف: <span className="font-mono">{editMember.id}</span>
+              </p>
+            )}
           </SheetHeader>
 
           <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
