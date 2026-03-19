@@ -187,6 +187,33 @@ serve(async (req) => {
       return json({ ids: (data || []).map((r: any) => r.member_id) });
     }
 
+    // ─── DELETE MEMBER (admin only) ───
+    if (path === "delete-member" && req.method === "POST") {
+      if (!(await validateAdminToken(req, supabase))) {
+        return json({ error: "Unauthorized" }, 401);
+      }
+      const { memberId } = await req.json();
+      if (!memberId) return json({ error: "memberId required" }, 400);
+
+      // Check children
+      const { count } = await supabase
+        .from("family_members")
+        .select("id", { count: "exact", head: true })
+        .eq("father_id", memberId);
+
+      if ((count ?? 0) > 0) {
+        return json({ error: "يوجد أبناء مسجلون" }, 400);
+      }
+
+      const { error: delError } = await supabase
+        .from("family_members")
+        .delete()
+        .eq("id", memberId);
+
+      if (delError) return json({ error: delError.message }, 500);
+      return json({ success: true });
+    }
+
     return json({ error: "Invalid endpoint" }, 400);
   } catch (error) {
     console.error("[family-api] Error:", error);

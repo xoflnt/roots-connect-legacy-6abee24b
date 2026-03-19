@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import {
   Sheet,
   SheetContent,
@@ -30,8 +30,9 @@ import {
 } from "@/utils/hijriUtils";
 import { generateMemberId, ensureUniqueId } from "@/utils/idGenerator";
 import { ConfirmDialog } from "@/components/admin/shared/ConfirmDialog";
-import { addMember } from "@/services/dataService";
+import { addMember, updateMember } from "@/services/dataService";
 import { getAdminToken } from "@/components/AdminProtect";
+import { getFirstName } from "@/utils/nameUtils";
 import { toast } from "@/hooks/use-toast";
 import { X, Plus, ChevronDown } from "lucide-react";
 import type { EnrichedMember } from "@/hooks/admin/useMembers";
@@ -49,6 +50,7 @@ interface AddMemberSheetProps {
   onSuccess: (newMember: FamilyMember) => void;
   allMembers: EnrichedMember[];
   preselectedFatherId?: string;
+  editMember?: EnrichedMember;
 }
 
 export function AddMemberSheet({
@@ -57,8 +59,10 @@ export function AddMemberSheet({
   onSuccess,
   allMembers,
   preselectedFatherId,
+  editMember,
 }: AddMemberSheetProps) {
   const isMobile = useIsMobile();
+  const isEditMode = !!editMember;
 
   // Form state
   const [name, setName] = useState("");
@@ -86,14 +90,44 @@ export function AddMemberSheet({
   // Errors
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Pre-fill form in edit mode
+  useEffect(() => {
+    if (!editMember || !isOpen) return;
+    const firstName = getFirstName(editMember.name);
+    setName(firstName);
+    if (editMember.father_id) {
+      const father = allMembers.find((m) => m.id === editMember.father_id);
+      if (father) setSelectedFather(father);
+      else setNoFather(true);
+    } else {
+      setNoFather(true);
+    }
+    setGender(editMember.gender as "M" | "F");
+    if (editMember.birth_year) setBirthDate({ year: editMember.birth_year });
+    if (editMember.death_year) {
+      setIsDeceased(true);
+      setDeathDate({ year: editMember.death_year });
+    }
+    if (editMember.spousesArray.length > 0) {
+      setSpouses([...editMember.spousesArray]);
+    }
+    // Extract mother from notes
+    const motherMatch = editMember.notes?.match(/والدت[هها]:\s*(.+)/);
+    if (motherMatch) setSelectedMother(motherMatch[1].trim());
+    // Clean notes (remove mother prefix)
+    const cleanNotes = editMember.notes?.replace(/والدت[هها]:\s*.+\n?/, "").trim() || "";
+    setNotes(cleanNotes);
+  }, [editMember, isOpen, allMembers]);
+
   const allIds = useMemo(() => allMembers.map((m) => m.id), [allMembers]);
 
   const generatedId = useMemo(() => {
+    if (isEditMode) return editMember!.id;
     const fatherId = noFather ? null : selectedFather?.id ?? null;
     if (!fatherId && !noFather) return null;
     const candidate = generateMemberId(fatherId, allIds);
     return ensureUniqueId(candidate, allIds);
-  }, [selectedFather, noFather, allIds]);
+  }, [selectedFather, noFather, allIds, isEditMode, editMember]);
 
   const fatherChildren = useMemo(() => {
     if (!selectedFather) return 0;
@@ -141,7 +175,7 @@ export function AddMemberSheet({
     const errs: Record<string, string> = {};
     if (!name.trim() || name.trim().length < 2)
       errs.name = "الاسم مطلوب (حرفان على الأقل)";
-    if (!selectedFather && !noFather)
+    if (!isEditMode && !selectedFather && !noFather)
       errs.father = "اختر الأب أو حدد «غير معروف»";
     if (!gender) errs.gender = "حدد الجنس";
     if (birthDate.year && !isValidHijriYear(birthDate.year))
@@ -150,7 +184,7 @@ export function AddMemberSheet({
       errs.deathYear = "سنة وفاة غير صالحة";
     setErrors(errs);
     return Object.keys(errs).length === 0;
-  }, [name, selectedFather, noFather, gender, birthDate, isDeceased, deathDate]);
+  }, [name, selectedFather, noFather, gender, birthDate, isDeceased, deathDate, isEditMode]);
 
   const handleSaveClick = () => {
     if (validate()) setConfirmOpen(true);
@@ -175,9 +209,22 @@ export function AddMemberSheet({
         finalNotes = finalNotes ? `${prefix}\n${finalNotes}` : prefix;
       }
 
+      // Build full name
+      let fullName: string;
+      if (isEditMode && editMember) {
+        // Preserve lineage suffix from original name
+        const originalParts = editMember.name.split(/(\s+بن[تة]?\s+.*)/);
+        const suffix = originalParts[1] || "";
+        fullName = name.trim() + suffix;
+      } else {
+        fullName = selectedFather && !noFather
+          ? `${name.trim()} بن ${selectedFather.name}`
+          : name.trim();
+      }
+
       const member: FamilyMember = {
         id: generatedId,
-        name: selectedFather && !noFather ? `${name.trim()} بن ${selectedFather.name}` : name.trim(),
+        name: fullName,
         gender: gender as "M" | "F",
         father_id: noFather ? null : selectedFather?.id ?? null,
         birth_year: birthYearStr || undefined,
@@ -187,11 +234,21 @@ export function AddMemberSheet({
       };
 
       const token = getAdminToken();
-      await addMember(member, token || undefined);
 
-      toast({
-        title: `تمت إضافة ${member.name} بنجاح`,
-      });
+      if (isEditMode && editMember) {
+        await updateMember(editMember.id, {
+          name: fullName,
+          gender: gender as "M" | "F",
+          birth_year: birthYearStr || undefined,
+          death_year: deathYearStr || undefined,
+          spouses: spousesText || undefined,
+          notes: finalNotes || undefined,
+        }, token || undefined);
+        toast({ title: `تم تعديل بيانات ${fullName} بنجاح` });
+      } else {
+        await addMember(member, token || undefined);
+        toast({ title: `تمت إضافة ${member.name} بنجاح` });
+      }
 
       onSuccess(member);
       resetForm();
@@ -256,8 +313,13 @@ export function AddMemberSheet({
         >
           <SheetHeader className="px-5 pt-5 pb-3 border-b border-border/50">
             <SheetTitle className="text-right text-xl font-bold">
-              إضافة عضو جديد
+              {isEditMode ? "تعديل بيانات العضو" : "إضافة عضو جديد"}
             </SheetTitle>
+            {isEditMode && editMember && (
+              <p className="text-sm text-muted-foreground text-right">
+                المعرّف: <span className="font-mono">{editMember.id}</span>
+              </p>
+            )}
           </SheetHeader>
 
           <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
@@ -277,8 +339,8 @@ export function AddMemberSheet({
               )}
             </div>
 
-            {/* Field 2: Father */}
-            <div className="space-y-1.5">
+            {/* Field 2: Father (hidden in edit mode) */}
+            {!isEditMode && <div className="space-y-1.5">
               <label className="text-base font-medium text-foreground">
                 الأب <span className="text-destructive">*</span>
               </label>
@@ -455,7 +517,7 @@ export function AddMemberSheet({
                   </div>
                 </div>
               )}
-            </div>
+            </div>}
 
             {/* Field 3: Gender */}
             <div className="space-y-1.5">
@@ -641,7 +703,7 @@ export function AddMemberSheet({
               disabled={isSaving}
               className="w-full min-h-14 text-base rounded-xl"
             >
-              حفظ العضو
+              {isEditMode ? "حفظ التعديلات" : "حفظ العضو"}
             </Button>
           </div>
         </SheetContent>
@@ -651,13 +713,16 @@ export function AddMemberSheet({
         isOpen={confirmOpen}
         onClose={() => setConfirmOpen(false)}
         onConfirm={handleConfirm}
-        title="تأكيد الإضافة"
-        confirmText="حفظ العضو"
+        title={isEditMode ? "تأكيد التعديل" : "تأكيد الإضافة"}
+        confirmText={isEditMode ? "حفظ التعديلات" : "حفظ العضو"}
         isLoading={isSaving}
       >
         <div className="space-y-1 text-right">
           <p>
-            هل تريد إضافة <strong>{name.trim()}</strong>؟
+            {isEditMode
+              ? <>هل تريد تعديل بيانات <strong>{name.trim()}</strong>؟</>
+              : <>هل تريد إضافة <strong>{name.trim()}</strong>؟</>
+            }
           </p>
           {lineagePreview && (
             <p className="text-sm">{lineagePreview}</p>

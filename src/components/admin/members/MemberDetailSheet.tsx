@@ -3,16 +3,20 @@ import { getFirstName } from "@/utils/nameUtils";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Pencil, Archive, Share2 } from "lucide-react";
+import { Pencil, Trash2, Share2 } from "lucide-react";
 import { toArabicNum } from "@/utils/arabicUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { AddMemberSheet } from "./AddMemberSheet";
+import { ArchiveDeleteDialog } from "./ArchiveDeleteDialog";
 import type { EnrichedMember } from "@/hooks/admin/useMembers";
+import type { FamilyMember } from "@/data/familyData";
 
 interface MemberDetailSheetProps {
   member: EnrichedMember | null;
   allMembers: EnrichedMember[];
   isOpen: boolean;
   onClose: () => void;
+  refresh?: () => void;
 }
 
 const BRANCH_COLORS: Record<string, { bg: string; text: string }> = {
@@ -27,9 +31,11 @@ function extractMother(notes: string | null): string | null {
   return match ? match[1].trim() : null;
 }
 
-export function MemberDetailSheet({ member, allMembers, isOpen, onClose }: MemberDetailSheetProps) {
+export function MemberDetailSheet({ member, allMembers, isOpen, onClose, refresh }: MemberDetailSheetProps) {
   const isMobile = useIsMobile();
   const [viewingMember, setViewingMember] = useState<EnrichedMember | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   useEffect(() => {
     setViewingMember(member);
@@ -72,6 +78,7 @@ export function MemberDetailSheet({ member, allMembers, isOpen, onClose }: Membe
   const navigateTo = (m: EnrichedMember) => setViewingMember(m);
 
   return (
+    <>
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <SheetContent
         side={isMobile ? "bottom" : "right"}
@@ -154,13 +161,13 @@ export function MemberDetailSheet({ member, allMembers, isOpen, onClose }: Membe
 
         {/* Sticky Actions Bar */}
         <div className="absolute bottom-0 inset-x-0 border-t border-border bg-background/95 backdrop-blur p-4 flex gap-2">
-          <Button className="flex-1 min-h-[48px] text-base" disabled>
+          <Button className="flex-1 min-h-[48px] text-base" onClick={() => setEditOpen(true)}>
             <Pencil className="h-4 w-4 me-2" />
             تعديل
           </Button>
-          <Button variant="outline" className="flex-1 min-h-[48px] text-base text-amber-600" disabled>
-            <Archive className="h-4 w-4 me-2" />
-            أرشفة
+          <Button variant="outline" className="flex-1 min-h-[48px] text-base text-destructive" onClick={() => setDeleteOpen(true)}>
+            <Trash2 className="h-4 w-4 me-2" />
+            حذف
           </Button>
           <Button variant="outline" className="flex-1 min-h-[48px] text-base" onClick={handleShare}>
             <Share2 className="h-4 w-4 me-2" />
@@ -169,6 +176,34 @@ export function MemberDetailSheet({ member, allMembers, isOpen, onClose }: Membe
         </div>
       </SheetContent>
     </Sheet>
+
+    {current && (
+      <AddMemberSheet
+        isOpen={editOpen}
+        onClose={() => setEditOpen(false)}
+        onSuccess={() => {
+          setEditOpen(false);
+          refresh?.();
+        }}
+        allMembers={allMembers}
+        editMember={current}
+      />
+    )}
+
+    {current && (
+      <ArchiveDeleteDialog
+        member={current}
+        allMembers={allMembers}
+        isOpen={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        onSuccess={() => {
+          setDeleteOpen(false);
+          onClose();
+          refresh?.();
+        }}
+      />
+    )}
+    </>
   );
 }
 

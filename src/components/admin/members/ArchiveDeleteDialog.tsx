@@ -1,0 +1,186 @@
+import { useState, useEffect, useCallback } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { toArabicNum } from "@/utils/arabicUtils";
+import { deleteMember } from "@/services/dataService";
+import { getAdminToken } from "@/components/AdminProtect";
+import { toast } from "@/hooks/use-toast";
+import { Archive, Trash2 } from "lucide-react";
+import type { EnrichedMember } from "@/hooks/admin/useMembers";
+
+interface ArchiveDeleteDialogProps {
+  member: EnrichedMember;
+  allMembers: EnrichedMember[];
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+export function ArchiveDeleteDialog({
+  member,
+  allMembers,
+  isOpen,
+  onClose,
+  onSuccess,
+}: ArchiveDeleteDialogProps) {
+  const [countdown, setCountdown] = useState(5);
+  const [counting, setCounting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const childrenCount = allMembers.filter(
+    (m) => m.father_id === member.id
+  ).length;
+
+  // Reset state when dialog opens/closes
+  useEffect(() => {
+    if (!isOpen) {
+      setCountdown(5);
+      setCounting(false);
+      setIsDeleting(false);
+    }
+  }, [isOpen]);
+
+  // Countdown timer
+  useEffect(() => {
+    if (!counting) return;
+    if (countdown <= 0) return;
+    const timer = setInterval(() => {
+      setCountdown((c) => {
+        if (c <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return c - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [counting, countdown]);
+
+  const handleStartCountdown = () => {
+    setCounting(true);
+  };
+
+  const handleDelete = useCallback(async () => {
+    setIsDeleting(true);
+    try {
+      const token = getAdminToken();
+      if (!token) throw new Error("غير مصرّح");
+      await deleteMember(member.id, token);
+      toast({ title: "تم حذف العضو نهائياً" });
+      onSuccess();
+    } catch (err) {
+      toast({
+        title: "فشل الحذف",
+        description: err instanceof Error ? err.message : "حدث خطأ",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [member.id, onSuccess]);
+
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-md" dir="rtl">
+        <DialogHeader>
+          <DialogTitle className="text-right text-xl font-bold">
+            إدارة العضو
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          {/* Archive Section */}
+          <div className="border-2 border-amber-300 dark:border-amber-700 rounded-2xl p-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <Archive className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+              <h3 className="text-base font-bold text-amber-700 dark:text-amber-300">
+                أرشفة العضو
+              </h3>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              سيتم إخفاء العضو من الشجرة العامة.
+              يمكن استعادته لاحقاً.
+            </p>
+            <p className="text-sm bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 rounded-xl px-3 py-2">
+              ⚠️ خاصية الأرشفة ستتوفر قريباً
+            </p>
+            <Button
+              disabled
+              className="w-full min-h-[48px] text-base rounded-xl opacity-50"
+              variant="outline"
+            >
+              <Archive className="h-4 w-4 me-2" />
+              أرشفة
+            </Button>
+          </div>
+
+          {/* Delete Section */}
+          <div className="border-2 border-destructive/50 rounded-2xl p-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <Trash2 className="h-5 w-5 text-destructive" />
+              <h3 className="text-base font-bold text-destructive">
+                حذف نهائي
+              </h3>
+            </div>
+
+            {childrenCount > 0 ? (
+              <>
+                <p className="text-sm text-muted-foreground">
+                  لا يمكن الحذف — يوجد {toArabicNum(childrenCount)} أبناء مسجلون
+                </p>
+                <Button
+                  disabled
+                  variant="destructive"
+                  className="w-full min-h-[48px] text-base rounded-xl opacity-50"
+                >
+                  <Trash2 className="h-4 w-4 me-2" />
+                  حذف نهائي
+                </Button>
+              </>
+            ) : (
+              <>
+                <p className="text-sm text-destructive/80">
+                  ⚠️ لا يمكن التراجع عن هذا الإجراء
+                </p>
+                {!counting ? (
+                  <Button
+                    variant="destructive"
+                    onClick={handleStartCountdown}
+                    className="w-full min-h-[48px] text-base rounded-xl"
+                  >
+                    <Trash2 className="h-4 w-4 me-2" />
+                    حذف نهائي
+                  </Button>
+                ) : countdown > 0 ? (
+                  <Button
+                    disabled
+                    variant="destructive"
+                    className="w-full min-h-[48px] text-base rounded-xl opacity-70"
+                  >
+                    <Trash2 className="h-4 w-4 me-2" />
+                    حذف نهائي ({toArabicNum(countdown)})
+                  </Button>
+                ) : (
+                  <Button
+                    variant="destructive"
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                    className="w-full min-h-[48px] text-base rounded-xl"
+                  >
+                    <Trash2 className="h-4 w-4 me-2" />
+                    {isDeleting ? "جاري الحذف..." : "تأكيد الحذف النهائي"}
+                  </Button>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
