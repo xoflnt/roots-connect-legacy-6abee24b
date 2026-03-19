@@ -11,6 +11,7 @@ import { PILLARS, getBranch, getBranchStyle, DOCUMENTER_ID } from "@/utils/branc
 import { HeritageBadge } from "./HeritageBadge";
 import { useAuth } from "@/contexts/AuthContext";
 import { canSeeAge, canSeeMotherName, privateLabel, getSpouseLabel } from "@/utils/privacyUtils";
+import { toArabicNum } from "@/utils/arabicUtils";
 
 interface ListViewProps {
   onSelectMember?: (memberId: string) => void;
