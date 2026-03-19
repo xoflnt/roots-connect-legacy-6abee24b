@@ -13,7 +13,9 @@ import { toArabicNum } from "@/utils/arabicUtils";
 import { useMembers } from "@/hooks/admin/useMembers";
 import { PILLARS } from "@/utils/branchUtils";
 import { MemberCard } from "./MemberCard";
+import { MemberDetailSheet } from "./MemberDetailSheet";
 import { Pagination } from "../shared/Pagination";
+import type { EnrichedMember } from "@/hooks/admin/useMembers";
 
 export function MemberListPage() {
   const {
