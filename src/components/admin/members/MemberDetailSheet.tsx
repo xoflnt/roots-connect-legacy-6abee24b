@@ -160,13 +160,13 @@ export function MemberDetailSheet({ member, allMembers, isOpen, onClose, refresh
 
         {/* Sticky Actions Bar */}
         <div className="absolute bottom-0 inset-x-0 border-t border-border bg-background/95 backdrop-blur p-4 flex gap-2">
-          <Button className="flex-1 min-h-[48px] text-base" disabled>
+          <Button className="flex-1 min-h-[48px] text-base" onClick={() => setEditOpen(true)}>
             <Pencil className="h-4 w-4 me-2" />
             تعديل
           </Button>
-          <Button variant="outline" className="flex-1 min-h-[48px] text-base text-amber-600" disabled>
-            <Archive className="h-4 w-4 me-2" />
-            أرشفة
+          <Button variant="outline" className="flex-1 min-h-[48px] text-base text-destructive" onClick={() => setDeleteOpen(true)}>
+            <Trash2 className="h-4 w-4 me-2" />
+            حذف
           </Button>
           <Button variant="outline" className="flex-1 min-h-[48px] text-base" onClick={handleShare}>
             <Share2 className="h-4 w-4 me-2" />
@@ -175,6 +175,34 @@ export function MemberDetailSheet({ member, allMembers, isOpen, onClose, refresh
         </div>
       </SheetContent>
     </Sheet>
+
+    {current && (
+      <AddMemberSheet
+        isOpen={editOpen}
+        onClose={() => setEditOpen(false)}
+        onSuccess={() => {
+          setEditOpen(false);
+          refresh?.();
+        }}
+        allMembers={allMembers}
+        editMember={current}
+      />
+    )}
+
+    {current && (
+      <ArchiveDeleteDialog
+        member={current}
+        allMembers={allMembers}
+        isOpen={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        onSuccess={() => {
+          setDeleteOpen(false);
+          onClose();
+          refresh?.();
+        }}
+      />
+    )}
+    </>
   );
 }
 
