@@ -30,29 +30,34 @@ serve(async (req) => {
 
     // We need to insert in order respecting foreign keys (father_id).
     // Sort: members without father_id first, then by depth.
-    const memberMap = new Map(members.map((m: any) => [m.id, m]));
-    const inserted = new Set<string>();
-    const ordered: any[] = [];
+    // Topological sort: parents before children
+    function topoSort(members: any[]): any[] {
+      const idSet = new Set(members.map((m: any) => m.id));
+      const sorted: any[] = [];
+      const visited = new Set<string>();
 
-    function addMember(m: any) {
-      if (inserted.has(m.id)) return;
-      if (m.father_id && !inserted.has(m.father_id)) {
-        const parent = memberMap.get(m.father_id);
-        if (parent) addMember(parent);
+      function visit(member: any) {
+        if (visited.has(member.id)) return;
+        if (member.father_id && idSet.has(member.father_id)) {
+          const father = members.find((m: any) => m.id === member.father_id);
+          if (father) visit(father);
+        }
+        visited.add(member.id);
+        sorted.push(member);
       }
-      ordered.push(m);
-      inserted.add(m.id);
+
+      members.forEach((m: any) => visit(m));
+      return sorted;
     }
 
-    members.forEach((m: any) => addMember(m));
+    const ordered = topoSort(members);
 
-    // Insert in batches of 50 to respect ordering
+    // Insert one-by-one to guarantee FK parent exists before child
     let insertedCount = 0;
-    const batchSize = 50;
     const errors: string[] = [];
 
-    for (let i = 0; i < ordered.length; i += batchSize) {
-      const batch = ordered.slice(i, i + batchSize).map((m: any) => ({
+    for (const m of ordered) {
+      const row = {
         id: m.id,
         name: m.name,
         gender: m.gender,
@@ -62,16 +67,16 @@ serve(async (req) => {
         spouses: m.spouses || null,
         phone: m.phone || null,
         notes: m.notes || null,
-      }));
+      };
 
       const { error } = await supabase
         .from("family_members")
-        .upsert(batch, { onConflict: "id" });
+        .upsert(row, { onConflict: "id" });
 
       if (error) {
-        errors.push(`Batch ${i}: ${error.message}`);
+        errors.push(`${m.id}: ${error.message}`);
       } else {
-        insertedCount += batch.length;
+        insertedCount++;
       }
     }
 
