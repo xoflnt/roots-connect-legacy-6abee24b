@@ -1,5 +1,6 @@
 import type { FamilyMember } from "@/data/familyData";
 import { getBranch } from "@/utils/branchUtils";
+import { applyTatweelCanvas } from "@/utils/tatweelUtils";
 
 /* ── COLORS ── */
 const C = {
