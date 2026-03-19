@@ -289,7 +289,7 @@ export function AddMemberSheet({
                     {selectedFather.name}
                   </span>
                   <button
-                    onClick={() => setSelectedFather(null)}
+                    onClick={() => { setSelectedFather(null); setSelectedMother(""); }}
                     className="p-1.5 rounded-lg hover:bg-background min-w-[36px] min-h-[36px] flex items-center justify-center"
                   >
                     <X className="h-4 w-4" />
