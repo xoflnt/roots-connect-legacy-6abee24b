@@ -302,7 +302,7 @@ function AdminContent() {
         <Tabs defaultValue="requests" className="w-full">
           <TabsList className="w-full justify-start rounded-xl bg-muted/50 p-1">
             <TabsTrigger value="requests" className="rounded-lg font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm">
-              الطلبات ({requests.length})
+              الطلبات ({toArabicNum(requests.length)})
             </TabsTrigger>
             <TabsTrigger value="registry" className="rounded-lg font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm">
               السجل الكامل
