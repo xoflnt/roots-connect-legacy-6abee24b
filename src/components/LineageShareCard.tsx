@@ -22,6 +22,11 @@ const C = {
 const FONT = "YearOfHandicrafts, Tajawal, Arial";
 const SCALE = 2;
 const W = 1080;
+const CHAIN_SPACING = 110;
+const HEADER_H = 220;
+const CARD_H = 180;
+const HERITAGE_H = 180;
+const FOOTER_H = 160;
 
 /* ── HELPERS ── */
 
@@ -36,13 +41,16 @@ function toArabic(n: number): string {
   return n.toLocaleString('ar-SA');
 }
 
+const TATWEEL_EXEMPT = [
+  'الله', 'الرحمن', 'الرحيم',
+  'زيد', 'علي', 'نور', 'ابن', 'بنت',
+  'آل', 'أبو', 'بن', 'أم'
+];
+
 function applyTatweelCanvas(name: string): string {
-  const EXEMPT = ['الله', 'الرحمن', 'الرحيم'];
-  if (EXEMPT.includes(name)) return name;
-  if (name.length <= 5) {
-    return name.replace(/([\u0600-\u06FF])([\u0600-\u06FF])/g, '$1ـ$2');
-  }
-  return name;
+  if (TATWEEL_EXEMPT.includes(name)) return name;
+  if (name.length < 5) return name;
+  return name.replace(/([\u0600-\u06FF])([\u0600-\u06FF])/g, '$1ـ$2');
 }
 
 async function loadFont(): Promise<void> {
@@ -106,6 +114,23 @@ function drawDotPattern(ctx: CanvasRenderingContext2D, x: number, y: number, w: 
   ctx.restore();
 }
 
+/* ── Ancestor layout info ── */
+interface AncestorLayout {
+  y: number;        // baseline Y for text
+  fontSize: number;
+  opacity: number;
+  displayName: string;
+  dotY: number;     // Y for the connecting dot above this ancestor
+}
+
+function getAncestorFontSize(index: number): { fontSize: number; opacity: number } {
+  if (index === 1) return { fontSize: 60, opacity: 1.0 };
+  if (index === 2) return { fontSize: 52, opacity: 0.82 };
+  if (index === 3) return { fontSize: 44, opacity: 0.68 };
+  if (index === 4) return { fontSize: 36, opacity: 0.56 };
+  return { fontSize: 30, opacity: 0.45 };
+}
+
 /* ── MAIN EXPORT ── */
 
 export async function generateLineageImage(
@@ -115,18 +140,57 @@ export async function generateLineageImage(
 ): Promise<Blob> {
   await loadFont();
 
-  const ancestorCount = chain.length - 1;
-  const CHAIN_SPACING = 148;
+  const branch = getBranch(chain[0]?.id ?? '');
+  const branchColor = getBranchColor(branch?.pillarId);
+  const branchLabel = branch?.label || '';
+  const depth = chain.length;
 
-  // Dynamic height
-  const chainHeight = ancestorCount * CHAIN_SPACING;
-  const HEADER_H = 220;
-  const CARD_H = 180;
-  const FAMILY_NAME_H = 76;
-  const HERITAGE_H = 200;
-  const FOOTER_H = 160;
-  const computed = HEADER_H + CARD_H + chainHeight + FAMILY_NAME_H + HERITAGE_H + FOOTER_H + 60;
-  const H = Math.max(1620, Math.min(1920, computed));
+  // ══════════════════════════════════════
+  // PASS 1: Pre-compute all Y positions
+  // ══════════════════════════════════════
+
+  const cardY = 230;
+  const cardH = 155;
+  const chainStartY = cardY + cardH + 40;
+
+  // Compute ancestor layouts
+  const ancestors: AncestorLayout[] = [];
+  let prevBottomY = chainStartY; // bottom of previous element (card bottom initially)
+
+  for (let i = 1; i < chain.length; i++) {
+    const { fontSize, opacity } = getAncestorFontSize(i);
+    const name = chain[i].name.split(' ')[0];
+    const displayName = applyTatweelCanvas(name);
+
+    // Position: each ancestor spaced by CHAIN_SPACING from previous
+    const baseY = chainStartY + (i - 1) * CHAIN_SPACING;
+    const textY = baseY + 42; // text baseline
+    const textTopY = textY - fontSize * 0.7; // approximate ascent
+    const textBottomY = textY + fontSize * 0.2; // approximate descent
+
+    // Dot at midpoint between previous bottom and current top
+    const dotY = prevBottomY + (textTopY - prevBottomY) / 2;
+
+    ancestors.push({ y: textY, fontSize, opacity, displayName, dotY });
+    prevBottomY = textBottomY;
+  }
+
+  // Family name Y: after last ancestor with safe margin
+  const lastAncestorBottomY = ancestors.length > 0
+    ? ancestors[ancestors.length - 1].y + ancestors[ancestors.length - 1].fontSize * 0.3
+    : chainStartY;
+  const familyNameY = lastAncestorBottomY + 60;
+
+  // Heritage block
+  const heritageY = familyNameY + 52;
+  const heritageBottom = heritageY + HERITAGE_H;
+
+  // Dynamic canvas height
+  const H = heritageBottom + 40 + FOOTER_H;
+
+  // ══════════════════════════════════════
+  // PASS 2: Create canvas and draw
+  // ══════════════════════════════════════
 
   const canvas = document.createElement('canvas');
   canvas.width = W * SCALE;
@@ -148,32 +212,24 @@ export async function generateLineageImage(
   ctx.fillStyle = C.greenDeep;
   ctx.fillRect(0, 0, W, HEADER_H);
 
-  // Top gold bar
   ctx.fillStyle = C.gold;
   ctx.fillRect(0, 0, W, 5);
 
-  // Dot pattern
   drawDotPattern(ctx, 0, 5, W, HEADER_H - 5);
-
-  // Tree icon
   drawTreeIcon(ctx, W / 2, 55, 44);
 
-  // Title
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillStyle = C.white;
   ctx.font = `bold 52px ${FONT}`;
   ctx.fillText('بـوابـة تـراث الخـنـيـنـي', W / 2, 115);
 
-  // Subtitle
   ctx.fillStyle = C.goldMid;
   ctx.font = `28px ${FONT}`;
   ctx.fillText('فـرع الزلـفـي', W / 2, 152);
 
-  // Gold separator
   drawGoldSeparator(ctx, 178, W, 200);
 
-  // Bottom fade from greenDeep → cream
   const fadeGrad = ctx.createLinearGradient(0, 180, 0, 220);
   fadeGrad.addColorStop(0, C.greenDeep);
   fadeGrad.addColorStop(1, C.cream);
@@ -181,17 +237,10 @@ export async function generateLineageImage(
   ctx.fillRect(0, 180, W, 40);
 
   // ══════════════════════════════════════
-  // SECTION 2: PERSON CARD (220 → 400)
+  // SECTION 2: PERSON CARD
   // ══════════════════════════════════════
-  const branch = getBranch(chain[0]?.id ?? '');
-  const branchColor = getBranchColor(branch?.pillarId);
-  const branchLabel = branch?.label || '';
-  const depth = chain.length;
-
   const cardW = 760;
-  const cardH = 155;
   const cardX = (W - cardW) / 2;
-  const cardY = 230;
 
   // Shadow
   ctx.shadowColor = 'rgba(0,0,0,0.08)';
@@ -206,15 +255,20 @@ export async function generateLineageImage(
 
   // Border
   roundedRect(ctx, cardX, cardY, cardW, cardH, 24);
-  ctx.strokeStyle = branchColor + '99'; // 60% opacity
+  ctx.strokeStyle = branchColor + '99';
   ctx.lineWidth = 2;
   ctx.stroke();
 
-  // Name
+  // Name — Bug 5 fix: auto-shrink to fit
   const firstName = chain[0].name.split(' ')[0];
   const displayName = applyTatweelCanvas(firstName);
+  let subjectFontSize = 72;
+  ctx.font = `bold ${subjectFontSize}px ${FONT}`;
+  while (ctx.measureText(displayName).width > 680 && subjectFontSize > 40) {
+    subjectFontSize -= 4;
+    ctx.font = `bold ${subjectFontSize}px ${FONT}`;
+  }
   ctx.fillStyle = C.textDark;
-  ctx.font = `bold 72px ${FONT}`;
   ctx.fillText(displayName, W / 2, cardY + 70);
 
   // Branch pill
@@ -234,7 +288,7 @@ export async function generateLineageImage(
     ctx.fillText(branchLabel, W / 2, pillY + pillH / 2);
   }
 
-  // Generation badge (top-right of card)
+  // Generation badge
   ctx.font = `18px ${FONT}`;
   ctx.fillStyle = C.textMuted;
   ctx.textAlign = 'right';
@@ -242,100 +296,67 @@ export async function generateLineageImage(
   ctx.textAlign = 'center';
 
   // ══════════════════════════════════════
-  // SECTION 3: CHAIN (420 → dynamic)
+  // SECTION 3: CHAIN
   // ══════════════════════════════════════
-  const chainStartY = cardY + cardH + 40;
-
-  // Compute chain positions
-  const chainPositions: number[] = [];
-  for (let i = 1; i < chain.length; i++) {
-    chainPositions.push(chainStartY + (i - 1) * CHAIN_SPACING);
-  }
-
-  const chainEndY = chainPositions.length > 0
-    ? chainPositions[chainPositions.length - 1] + 40
-    : chainStartY;
 
   // Vertical dashed line
-  if (chainPositions.length > 0) {
+  if (ancestors.length > 0) {
+    const lineEndY = ancestors[ancestors.length - 1].y + 10;
     ctx.save();
     ctx.strokeStyle = C.goldMid;
     ctx.lineWidth = 2;
     ctx.setLineDash([5, 12]);
     ctx.beginPath();
     ctx.moveTo(W / 2, chainStartY - 15);
-    ctx.lineTo(W / 2, chainEndY);
+    ctx.lineTo(W / 2, lineEndY);
     ctx.stroke();
     ctx.setLineDash([]);
     ctx.restore();
   }
 
-  // Ancestors
-  for (let i = 1; i < chain.length; i++) {
-    const y = chainPositions[i - 1];
-    const name = chain[i].name.split(' ')[0];
-    const display = applyTatweelCanvas(name);
-
-    // Gold dot
+  // Draw ancestors with pre-computed positions
+  for (const anc of ancestors) {
+    // Gold dot at computed midpoint
     ctx.beginPath();
-    ctx.arc(W / 2, y, 8, 0, Math.PI * 2);
+    ctx.arc(W / 2, anc.dotY, 8, 0, Math.PI * 2);
     ctx.fillStyle = C.gold;
     ctx.fill();
 
-    // Name with decreasing size and opacity
-    let fontSize: number;
-    let opacity: number;
-    if (i === 1) { fontSize = 60; opacity = 1.0; }
-    else if (i === 2) { fontSize = 52; opacity = 0.82; }
-    else if (i === 3) { fontSize = 44; opacity = 0.68; }
-    else if (i === 4) { fontSize = 36; opacity = 0.56; }
-    else { fontSize = 30; opacity = 0.45; }
-
-    ctx.font = `bold ${fontSize}px ${FONT}`;
-    ctx.fillStyle = `rgba(26,58,42,${opacity})`;
+    // Name
+    ctx.font = `bold ${anc.fontSize}px ${FONT}`;
+    ctx.fillStyle = `rgba(26,58,42,${anc.opacity})`;
     ctx.textAlign = 'center';
-    ctx.fillText(display, W / 2, y + 42);
+    ctx.fillText(anc.displayName, W / 2, anc.y);
   }
 
   // ══════════════════════════════════════
   // SECTION 4: FAMILY NAME
   // ══════════════════════════════════════
-  const familyNameY = chainEndY + 36;
-
   ctx.fillStyle = C.gold;
   ctx.font = `bold 76px ${FONT}`;
   ctx.textAlign = 'center';
   ctx.fillText('◆ الخـنـيـنـي ◆', W / 2, familyNameY);
 
-  // Gold separator below
   drawGoldSeparator(ctx, familyNameY + 30, W, 260);
 
   // ══════════════════════════════════════
-  // SECTION 5: HERITAGE BLOCK (full-width centered)
+  // SECTION 5: HERITAGE BLOCK
   // ══════════════════════════════════════
-  const heritageY = familyNameY + 52;
-  const heritageH = 180;
-
-  // Background
   ctx.fillStyle = 'rgba(201,168,76,0.07)';
-  ctx.fillRect(0, heritageY, W, heritageH);
+  ctx.fillRect(0, heritageY, W, HERITAGE_H);
 
-  // Top + bottom borders
   ctx.fillStyle = C.goldLight;
   ctx.fillRect(0, heritageY, W, 1);
-  ctx.fillRect(0, heritageY + heritageH - 1, W, 1);
+  ctx.fillRect(0, heritageY + HERITAGE_H - 1, W, 1);
 
-  // Left gold accent bar
   roundedRect(ctx, 72, heritageY + 45, 5, 90, 2.5);
   ctx.fillStyle = C.goldMid;
   ctx.fill();
 
-  // Right gold accent bar
   roundedRect(ctx, W - 77, heritageY + 45, 5, 90, 2.5);
   ctx.fillStyle = C.goldMid;
   ctx.fill();
 
-  // Heritage text (3 lines, centered)
   ctx.textAlign = 'center';
 
   ctx.fillStyle = C.textDark;
@@ -351,31 +372,26 @@ export async function generateLineageImage(
   ctx.fillText('جـذورها في نجد — إرث ممتد عبر الأجيال', W / 2, heritageY + 146);
 
   // ══════════════════════════════════════
-  // SECTION 6: FOOTER (last 160px)
+  // SECTION 6: FOOTER
   // ══════════════════════════════════════
-  const footerY = H - 160;
+  const footerY = H - FOOTER_H;
 
-  // Green fade from transparent
   const footGrad = ctx.createLinearGradient(0, footerY, 0, H);
   footGrad.addColorStop(0, 'transparent');
   footGrad.addColorStop(0.4, C.greenDeep);
   footGrad.addColorStop(1, C.greenDeep);
   ctx.fillStyle = footGrad;
-  ctx.fillRect(0, footerY, W, 160);
+  ctx.fillRect(0, footerY, W, FOOTER_H);
 
-  // Generation count
   ctx.textAlign = 'center';
   ctx.fillStyle = C.goldMid;
   ctx.font = `26px ${FONT}`;
-  const genText = `سلسلة نسب من ${toArabic(chain.length)} أجيال`;
-  ctx.fillText(genText, W / 2, H - 90);
+  ctx.fillText(`سلسلة نسب من ${toArabic(chain.length)} أجيال`, W / 2, H - 90);
 
-  // Branding
   ctx.fillStyle = C.goldMid;
   ctx.font = `bold 24px ${FONT}`;
   ctx.fillText('بـوابـة تـراث الخـنـيـنـي — حـفـظ الإرث للأجـيـال', W / 2, H - 50);
 
-  // Bottom gold bar
   ctx.fillStyle = C.gold;
   ctx.fillRect(0, H - 5, W, 5);
 
