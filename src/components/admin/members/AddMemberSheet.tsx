@@ -50,6 +50,7 @@ interface AddMemberSheetProps {
   onSuccess: (newMember: FamilyMember) => void;
   allMembers: EnrichedMember[];
   preselectedFatherId?: string;
+  editMember?: EnrichedMember;
 }
 
 export function AddMemberSheet({
