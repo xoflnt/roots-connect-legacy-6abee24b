@@ -33,8 +33,8 @@ export function KinshipCardView({
   const { currentUser } = useAuth();
   const isLoggedIn = !!currentUser;
 
-  const name1 = person1.name.split(" ")[0];
-  const name2 = person2.name.split(" ")[0];
+  const name1 = applyTatweel(person1.name.split(" ")[0]);
+  const name2 = applyTatweel(person2.name.split(" ")[0]);
   const lcaName = result.lca?.name.split(" ")[0] ?? "";
   const lcaLabel = (() => {
     const isFemale = result.lca?.gender === "F";
