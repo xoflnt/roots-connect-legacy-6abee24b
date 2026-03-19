@@ -228,10 +228,9 @@ export function AddMemberSheet({
     let chain = name.trim();
     if (selectedFather) {
       chain += ` بن ${selectedFather.name}`;
-      if (grandfather) chain += ` بن ${grandfather.name}`;
     }
     return chain;
-  }, [name, selectedFather, grandfather]);
+  }, [name, selectedFather]);
 
   const birthYearStr = composeHijriString(birthDate);
 
