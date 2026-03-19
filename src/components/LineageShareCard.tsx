@@ -42,17 +42,6 @@ function toArabic(n: number): string {
   return n.toLocaleString('ar-SA');
 }
 
-const TATWEEL_EXEMPT = [
-  'الله', 'الرحمن', 'الرحيم',
-  'زيد', 'علي', 'نور', 'ابن', 'بنت',
-  'آل', 'أبو', 'بن', 'أم'
-];
-
-function applyTatweelCanvas(name: string): string {
-  if (TATWEEL_EXEMPT.includes(name)) return name;
-  if (name.length < 5) return name;
-  return name.replace(/([\u0600-\u06FF])([\u0600-\u06FF])/g, '$1ـ$2');
-}
 
 async function loadFont(): Promise<void> {
   try {
