@@ -20,6 +20,7 @@ import type { EnrichedMember } from "@/hooks/admin/useMembers";
 export function MemberListPage() {
   const {
     members,
+    allMembers,
     total,
     page,
     totalPages,
@@ -28,6 +29,8 @@ export function MemberListPage() {
     updateFilters,
     isLoading,
   } = useMembers();
+
+  const [selectedMember, setSelectedMember] = useState<EnrichedMember | null>(null);
 
   const [searchInput, setSearchInput] = useState("");
 
