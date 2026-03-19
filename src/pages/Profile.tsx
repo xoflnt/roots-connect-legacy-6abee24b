@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { getFirstName } from "@/utils/nameUtils";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
