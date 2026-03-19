@@ -363,6 +363,7 @@ export function AddMemberSheet({
                                 onSelect={() => {
                                   setSelectedFather(m);
                                   setNoFather(false);
+                                  setSelectedMother("");
                                   setFatherSearchOpen(false);
                                   setFatherQuery("");
                                 }}
