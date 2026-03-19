@@ -209,9 +209,22 @@ export function AddMemberSheet({
         finalNotes = finalNotes ? `${prefix}\n${finalNotes}` : prefix;
       }
 
+      // Build full name
+      let fullName: string;
+      if (isEditMode && editMember) {
+        // Preserve lineage suffix from original name
+        const originalParts = editMember.name.split(/(\s+بن[تة]?\s+.*)/);
+        const suffix = originalParts[1] || "";
+        fullName = name.trim() + suffix;
+      } else {
+        fullName = selectedFather && !noFather
+          ? `${name.trim()} بن ${selectedFather.name}`
+          : name.trim();
+      }
+
       const member: FamilyMember = {
         id: generatedId,
-        name: selectedFather && !noFather ? `${name.trim()} بن ${selectedFather.name}` : name.trim(),
+        name: fullName,
         gender: gender as "M" | "F",
         father_id: noFather ? null : selectedFather?.id ?? null,
         birth_year: birthYearStr || undefined,
@@ -221,11 +234,21 @@ export function AddMemberSheet({
       };
 
       const token = getAdminToken();
-      await addMember(member, token || undefined);
 
-      toast({
-        title: `تمت إضافة ${member.name} بنجاح`,
-      });
+      if (isEditMode && editMember) {
+        await updateMember(editMember.id, {
+          name: fullName,
+          gender: gender as "M" | "F",
+          birth_year: birthYearStr || undefined,
+          death_year: deathYearStr || undefined,
+          spouses: spousesText || undefined,
+          notes: finalNotes || undefined,
+        }, token || undefined);
+        toast({ title: `تم تعديل بيانات ${fullName} بنجاح` });
+      } else {
+        await addMember(member, token || undefined);
+        toast({ title: `تمت إضافة ${member.name} بنجاح` });
+      }
 
       onSuccess(member);
       resetForm();
