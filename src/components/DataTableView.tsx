@@ -10,6 +10,7 @@ import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
 import { calculateAge } from "@/utils/ageCalculator";
 import { toArabicNum } from "@/utils/ageCalculator";
 import { getBranch, getBranchStyle, DOCUMENTER_ID } from "@/utils/branchUtils";
+import { toArabicNum } from "@/utils/arabicUtils";
 import { HeritageBadge } from "./HeritageBadge";
 import {
   Select,
