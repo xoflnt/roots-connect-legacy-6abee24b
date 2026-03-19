@@ -13,11 +13,14 @@ import { toArabicNum } from "@/utils/arabicUtils";
 import { useMembers } from "@/hooks/admin/useMembers";
 import { PILLARS } from "@/utils/branchUtils";
 import { MemberCard } from "./MemberCard";
+import { MemberDetailSheet } from "./MemberDetailSheet";
 import { Pagination } from "../shared/Pagination";
+import type { EnrichedMember } from "@/hooks/admin/useMembers";
 
 export function MemberListPage() {
   const {
     members,
+    allMembers,
     total,
     page,
     totalPages,
@@ -26,6 +29,8 @@ export function MemberListPage() {
     updateFilters,
     isLoading,
   } = useMembers();
+
+  const [selectedMember, setSelectedMember] = useState<EnrichedMember | null>(null);
 
   const [searchInput, setSearchInput] = useState("");
 
@@ -147,13 +152,20 @@ export function MemberListPage() {
           </div>
         ) : (
           members.map((m, i) => (
-            <MemberCard key={m.id} member={m} isEven={i % 2 === 0} />
+            <MemberCard key={m.id} member={m} isEven={i % 2 === 0} onTap={setSelectedMember} />
           ))
         )}
       </div>
 
       {/* Pagination */}
       <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+
+      <MemberDetailSheet
+        member={selectedMember}
+        allMembers={allMembers}
+        isOpen={!!selectedMember}
+        onClose={() => setSelectedMember(null)}
+      />
     </div>
   );
 }
