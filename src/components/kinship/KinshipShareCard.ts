@@ -104,8 +104,8 @@ export async function generateKinshipImage(
 ): Promise<HTMLCanvasElement> {
   await loadFont();
 
-  const name1 = person1.name.split(" ")[0];
-  const name2 = person2.name.split(" ")[0];
+  const name1 = applyTatweelCanvas(person1.name.split(" ")[0]);
+  const name2 = applyTatweelCanvas(person2.name.split(" ")[0]);
   const lcaName = result.lca?.name.split(" ")[0] ?? "";
   const lcaLabel = result.lca?.gender === "F" ? "الجدة المشتركة" : "الجد المشترك";
   const branch1 = getBranch(person1.id);
