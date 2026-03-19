@@ -6,6 +6,7 @@ import type { EnrichedMember } from "@/hooks/admin/useMembers";
 interface MemberCardProps {
   member: EnrichedMember;
   isEven: boolean;
+  onTap?: (member: EnrichedMember) => void;
 }
 
 const BRANCH_DOT_COLORS: Record<string, string> = {
