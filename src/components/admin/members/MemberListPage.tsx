@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Search, Plus } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -11,9 +12,11 @@ import {
 } from "@/components/ui/select";
 import { toArabicNum } from "@/utils/arabicUtils";
 import { useMembers } from "@/hooks/admin/useMembers";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { PILLARS } from "@/utils/branchUtils";
 import { MemberCard } from "./MemberCard";
 import { MemberDetailSheet } from "./MemberDetailSheet";
+import { AddMemberSheet } from "./AddMemberSheet";
 import { Pagination } from "../shared/Pagination";
 import type { EnrichedMember } from "@/hooks/admin/useMembers";
 
@@ -30,8 +33,9 @@ export function MemberListPage() {
     isLoading,
   } = useMembers();
 
+  const isMobile = useIsMobile();
   const [selectedMember, setSelectedMember] = useState<EnrichedMember | null>(null);
-
+  const [addOpen, setAddOpen] = useState(false);
   const [searchInput, setSearchInput] = useState("");
 
   // Debounced search
@@ -42,6 +46,12 @@ export function MemberListPage() {
     return () => clearTimeout(timer);
   }, [searchInput, updateFilters]);
 
+  const handleAddSuccess = () => {
+    // Force re-render by resetting page
+    setPage(1);
+    setAddOpen(false);
+  };
+
   return (
     <div className="p-4 space-y-4 max-w-6xl mx-auto" dir="rtl">
       {/* Header */}
@@ -50,6 +60,15 @@ export function MemberListPage() {
         <Badge variant="secondary" className="text-base">
           {toArabicNum(total)}
         </Badge>
+        {!isMobile && (
+          <Button
+            onClick={() => setAddOpen(true)}
+            className="mr-auto min-h-12 text-base rounded-xl gap-1.5"
+          >
+            <Plus className="h-4 w-4" />
+            إضافة عضو
+          </Button>
+        )}
       </div>
 
       {/* Search */}
@@ -160,11 +179,28 @@ export function MemberListPage() {
       {/* Pagination */}
       <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
 
+      {/* Mobile FAB */}
+      {isMobile && (
+        <button
+          onClick={() => setAddOpen(true)}
+          className="fixed bottom-20 left-4 z-40 min-w-14 min-h-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center active:scale-95 transition-transform"
+        >
+          <Plus className="h-6 w-6" />
+        </button>
+      )}
+
       <MemberDetailSheet
         member={selectedMember}
         allMembers={allMembers}
         isOpen={!!selectedMember}
         onClose={() => setSelectedMember(null)}
+      />
+
+      <AddMemberSheet
+        isOpen={addOpen}
+        onClose={() => setAddOpen(false)}
+        onSuccess={handleAddSuccess}
+        allMembers={allMembers}
       />
     </div>
   );
