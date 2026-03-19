@@ -18,6 +18,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { HijriDatePicker } from "@/components/HijriDatePicker";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toArabicNum } from "@/utils/arabicUtils";
 import { arabicMatch } from "@/utils/normalizeArabic";
@@ -32,9 +33,15 @@ import { ConfirmDialog } from "@/components/admin/shared/ConfirmDialog";
 import { addMember } from "@/services/dataService";
 import { getAdminToken } from "@/components/AdminProtect";
 import { toast } from "@/hooks/use-toast";
-import { Search, X, Plus, ChevronDown } from "lucide-react";
+import { X, Plus, ChevronDown } from "lucide-react";
 import type { EnrichedMember } from "@/hooks/admin/useMembers";
 import type { FamilyMember } from "@/data/familyData";
+
+interface HijriDate {
+  day?: string;
+  month?: string;
+  year?: string;
+}
 
 interface AddMemberSheetProps {
   isOpen: boolean;
@@ -63,12 +70,13 @@ export function AddMemberSheet({
   );
   const [noFather, setNoFather] = useState(false);
   const [gender, setGender] = useState<"M" | "F" | "">("");
-  const [birthYear, setBirthYear] = useState("");
+  const [birthDate, setBirthDate] = useState<HijriDate>({});
   const [isDeceased, setIsDeceased] = useState(false);
-  const [deathYear, setDeathYear] = useState("");
+  const [deathDate, setDeathDate] = useState<HijriDate>({});
   const [spouses, setSpouses] = useState<string[]>([]);
   const [notes, setNotes] = useState("");
   const [fatherSearchOpen, setFatherSearchOpen] = useState(false);
+  const [fatherQuery, setFatherQuery] = useState("");
 
   // Confirm dialog
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -96,14 +104,26 @@ export function AddMemberSheet({
     return allMembers.find((m) => m.id === selectedFather.father_id) ?? null;
   }, [selectedFather, allMembers]);
 
-  const handleBirthYearChange = (val: string) => {
-    const eastern = toEasternNumerals(toWesternNumerals(val));
-    setBirthYear(eastern);
-  };
+  // Father search results
+  const males = useMemo(
+    () => allMembers.filter((m) => m.gender === "M"),
+    [allMembers]
+  );
 
-  const handleDeathYearChange = (val: string) => {
-    const eastern = toEasternNumerals(toWesternNumerals(val));
-    setDeathYear(eastern);
+  const fatherResults = useMemo(() => {
+    if (!fatherQuery.trim()) {
+      return [...males].sort((a, b) => a.name.localeCompare(b.name, "ar")).slice(0, 20);
+    }
+    return males.filter((m) => arabicMatch(fatherQuery, m.name));
+  }, [males, fatherQuery]);
+
+  const composeHijriString = (d: HijriDate): string => {
+    if (!d.year) return "";
+    const yearEastern = toEasternNumerals(toWesternNumerals(d.year));
+    if (d.day && d.month) {
+      return `${toEasternNumerals(d.day)}/${toEasternNumerals(d.month)}/${yearEastern}`;
+    }
+    return yearEastern;
   };
 
   const addSpouse = () => {
@@ -127,13 +147,13 @@ export function AddMemberSheet({
     if (!selectedFather && !noFather)
       errs.father = "اختر الأب أو حدد «غير معروف»";
     if (!gender) errs.gender = "حدد الجنس";
-    if (birthYear && !isValidHijriYear(birthYear))
+    if (birthDate.year && !isValidHijriYear(birthDate.year))
       errs.birthYear = "سنة ميلاد غير صالحة";
-    if (isDeceased && deathYear && !isValidHijriYear(deathYear))
+    if (isDeceased && deathDate.year && !isValidHijriYear(deathDate.year))
       errs.deathYear = "سنة وفاة غير صالحة";
     setErrors(errs);
     return Object.keys(errs).length === 0;
-  }, [name, selectedFather, noFather, gender, birthYear, isDeceased, deathYear]);
+  }, [name, selectedFather, noFather, gender, birthDate, isDeceased, deathDate]);
 
   const handleSaveClick = () => {
     if (validate()) setConfirmOpen(true);
@@ -147,13 +167,16 @@ export function AddMemberSheet({
         .filter((s) => s.trim())
         .join("، ");
 
+      const birthYearStr = composeHijriString(birthDate);
+      const deathYearStr = isDeceased ? composeHijriString(deathDate) : undefined;
+
       const member: FamilyMember = {
         id: generatedId,
         name: name.trim(),
         gender: gender as "M" | "F",
         father_id: noFather ? null : selectedFather?.id ?? null,
-        birth_year: birthYear || undefined,
-        death_year: isDeceased && deathYear ? deathYear : undefined,
+        birth_year: birthYearStr || undefined,
+        death_year: deathYearStr || undefined,
         spouses: spousesText || undefined,
         notes: notes.trim() || undefined,
       };
@@ -185,12 +208,13 @@ export function AddMemberSheet({
     setSelectedFather(null);
     setNoFather(false);
     setGender("");
-    setBirthYear("");
+    setBirthDate({});
     setIsDeceased(false);
-    setDeathYear("");
+    setDeathDate({});
     setSpouses([]);
     setNotes("");
     setErrors({});
+    setFatherQuery("");
   };
 
   const lineagePreview = useMemo(() => {
@@ -202,6 +226,8 @@ export function AddMemberSheet({
     }
     return chain;
   }, [name, selectedFather, grandfather]);
+
+  const birthYearStr = composeHijriString(birthDate);
 
   return (
     <>
@@ -219,7 +245,7 @@ export function AddMemberSheet({
           dir="rtl"
           className={`flex flex-col ${
             isMobile
-              ? "h-[92vh] rounded-t-2xl"
+              ? "h-[90dvh] rounded-t-2xl"
               : "w-full sm:max-w-md"
           } p-0`}
         >
@@ -239,7 +265,7 @@ export function AddMemberSheet({
                 placeholder="الاسم الأول فقط"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="min-h-12 text-base rounded-xl"
+                className="w-full min-h-12 text-base rounded-xl"
               />
               {errors.name && (
                 <p className="text-sm text-destructive">{errors.name}</p>
@@ -254,10 +280,8 @@ export function AddMemberSheet({
 
               {selectedFather ? (
                 <div className="flex items-center gap-2 p-3 bg-muted rounded-xl min-h-12">
-                  <span className="flex-1 text-base">
+                  <span className="flex-1 text-base font-semibold">
                     {selectedFather.name}
-                    {selectedFather.fatherName &&
-                      ` بن ${selectedFather.fatherName}`}
                   </span>
                   <button
                     onClick={() => setSelectedFather(null)}
@@ -281,7 +305,10 @@ export function AddMemberSheet({
               ) : (
                 <Popover
                   open={fatherSearchOpen}
-                  onOpenChange={setFatherSearchOpen}
+                  onOpenChange={(open) => {
+                    setFatherSearchOpen(open);
+                    if (!open) setFatherQuery("");
+                  }}
                 >
                   <PopoverTrigger asChild>
                     <Button
@@ -300,6 +327,8 @@ export function AddMemberSheet({
                       <CommandInput
                         placeholder="ابحث بالاسم..."
                         className="text-base"
+                        value={fatherQuery}
+                        onValueChange={setFatherQuery}
                       />
                       <CommandList className="max-h-60">
                         <CommandEmpty className="py-4 text-center text-sm text-muted-foreground">
@@ -311,19 +340,47 @@ export function AddMemberSheet({
                               setNoFather(true);
                               setSelectedFather(null);
                               setFatherSearchOpen(false);
+                              setFatherQuery("");
                             }}
                             className="min-h-12 text-base text-muted-foreground"
                           >
                             الأب غير معروف
                           </CommandItem>
-                          <FatherSearchResults
-                            allMembers={allMembers}
-                            onSelect={(m) => {
-                              setSelectedFather(m);
-                              setNoFather(false);
-                              setFatherSearchOpen(false);
-                            }}
-                          />
+                          {fatherResults.map((m) => {
+                            const children = allMembers.filter(
+                              (c) => c.father_id === m.id
+                            ).length;
+                            return (
+                              <CommandItem
+                                key={m.id}
+                                value={m.id}
+                                keywords={[m.name, m.fatherName ?? ""]}
+                                onSelect={() => {
+                                  setSelectedFather(m);
+                                  setNoFather(false);
+                                  setFatherSearchOpen(false);
+                                  setFatherQuery("");
+                                }}
+                                className="min-h-12 flex flex-col items-start gap-0.5 py-2"
+                              >
+                                <span className="text-base font-bold">
+                                  {m.name}
+                                </span>
+                                <span className="text-xs text-muted-foreground flex flex-wrap items-center gap-1">
+                                  {m.fatherName && <span>بن {m.fatherName}</span>}
+                                  {m.branchLabel && (
+                                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                                      {m.branchLabel}
+                                    </Badge>
+                                  )}
+                                  <span>ج{toArabicNum(m.generation)}</span>
+                                  {children > 0 && (
+                                    <span>({toArabicNum(children)} أبناء)</span>
+                                  )}
+                                </span>
+                              </CommandItem>
+                            );
+                          })}
                         </CommandGroup>
                       </CommandList>
                     </Command>
@@ -358,6 +415,20 @@ export function AddMemberSheet({
                   )}
                 </div>
               )}
+
+              {/* Father's spouses */}
+              {selectedFather && selectedFather.spousesArray.length > 0 && (
+                <div className="mt-2 space-y-1">
+                  <span className="text-sm text-muted-foreground">زوجات الأب:</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {selectedFather.spousesArray.map((s, i) => (
+                      <Badge key={i} variant="outline" className="text-sm font-normal">
+                        {s}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Field 3: Gender */}
@@ -388,21 +459,15 @@ export function AddMemberSheet({
               )}
             </div>
 
-            {/* Field 4: Birth Year */}
+            {/* Field 4: Birth Date (Hijri) */}
             <div className="space-y-1.5">
               <label className="text-base font-medium text-foreground">
-                سنة الميلاد
+                تاريخ الميلاد
               </label>
-              <Input
-                placeholder="مثال: ١٣٦٤"
-                value={birthYear}
-                onChange={(e) => handleBirthYearChange(e.target.value)}
-                className="min-h-12 text-base rounded-xl"
-                inputMode="numeric"
-              />
-              {birthYear && isValidHijriYear(birthYear) && (
+              <HijriDatePicker value={birthDate} onChange={setBirthDate} />
+              {birthYearStr && birthDate.year && isValidHijriYear(birthDate.year) && (
                 <p className="text-sm text-muted-foreground">
-                  ≈ {hijriToGregorian(birthYear)}م
+                  ≈ {hijriToGregorian(birthDate.year)}م
                 </p>
               )}
               {errors.birthYear && (
@@ -435,22 +500,16 @@ export function AddMemberSheet({
               </div>
             </div>
 
-            {/* Field 5a: Death Year */}
+            {/* Field 5a: Death Date */}
             {isDeceased && (
               <div className="space-y-1.5">
                 <label className="text-base font-medium text-foreground">
-                  سنة الوفاة
+                  تاريخ الوفاة
                 </label>
-                <Input
-                  placeholder="مثال: ١٤٤٠"
-                  value={deathYear}
-                  onChange={(e) => handleDeathYearChange(e.target.value)}
-                  className="min-h-12 text-base rounded-xl"
-                  inputMode="numeric"
-                />
-                {deathYear && isValidHijriYear(deathYear) && (
+                <HijriDatePicker value={deathDate} onChange={setDeathDate} />
+                {deathDate.year && isValidHijriYear(deathDate.year) && (
                   <p className="text-sm text-muted-foreground">
-                    ≈ {hijriToGregorian(deathYear)}م
+                    ≈ {hijriToGregorian(deathDate.year)}م
                   </p>
                 )}
                 {errors.deathYear && (
@@ -475,7 +534,7 @@ export function AddMemberSheet({
                       }
                       value={spouse}
                       onChange={(e) => updateSpouse(i, e.target.value)}
-                      className="min-h-12 text-base rounded-xl flex-1"
+                      className="min-h-12 text-base rounded-xl flex-1 w-full min-w-0"
                     />
                     <button
                       onClick={() => removeSpouse(i)}
@@ -510,7 +569,7 @@ export function AddMemberSheet({
                 onChange={(e) =>
                   setNotes(e.target.value.slice(0, 500))
                 }
-                className="min-h-[100px] text-base rounded-xl resize-none"
+                className="min-h-[100px] text-base rounded-xl resize-none w-full"
               />
               <p className="text-sm text-muted-foreground text-left" dir="ltr">
                 {toArabicNum(notes.length)}/٥٠٠
@@ -582,60 +641,6 @@ export function AddMemberSheet({
           )}
         </div>
       </ConfirmDialog>
-    </>
-  );
-}
-
-/* ── Father search results sub-component ── */
-
-function FatherSearchResults({
-  allMembers,
-  onSelect,
-}: {
-  allMembers: EnrichedMember[];
-  onSelect: (m: EnrichedMember) => void;
-}) {
-  const [query, setQuery] = useState("");
-
-  // Listen to the Command input via the parent Command's filter
-  // We use shouldFilter=false and manually filter
-  const males = useMemo(
-    () => allMembers.filter((m) => m.gender === "M"),
-    [allMembers]
-  );
-
-  const filtered = useMemo(() => {
-    if (!query.trim()) return males.slice(0, 30);
-    return males.filter((m) => arabicMatch(query, m.name)).slice(0, 30);
-  }, [males, query]);
-
-  return (
-    <>
-      {/* Hidden input listener — we use keywords prop for search */}
-      {filtered.map((m) => {
-        const children = allMembers.filter(
-          (c) => c.father_id === m.id
-        ).length;
-        return (
-          <CommandItem
-            key={m.id}
-            value={m.id}
-            keywords={[m.name, m.fatherName ?? ""]}
-            onSelect={() => onSelect(m)}
-            className="min-h-12 flex flex-col items-start gap-0.5 py-2"
-          >
-            <span className="text-base">
-              {m.name}
-              {m.fatherName && ` بن ${m.fatherName}`}
-            </span>
-            <span className="text-xs text-muted-foreground">
-              {m.branchLabel && `${m.branchLabel} — `}
-              ج{toArabicNum(m.generation)}
-              {children > 0 && ` — (${toArabicNum(children)} أبناء)`}
-            </span>
-          </CommandItem>
-        );
-      })}
     </>
   );
 }
