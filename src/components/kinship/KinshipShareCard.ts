@@ -265,7 +265,7 @@ export async function generateKinshipImage(
     setFont(ctx, "bold 13px Tajawal");
     ctx.fillStyle = C.textPrimary;
     ctx.textAlign = "center";
-    const firstName = member.name.split(" ")[0];
+    const firstName = applyTatweelCanvas(member.name.split(" ")[0]);
     ctx.fillText(firstName, x + chipW / 2, chipY + 48);
 
     // Branch pill

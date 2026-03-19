@@ -89,7 +89,7 @@ function DetailContent({ member }: { member: FamilyMember }) {
         </div>
         <div>
           <div className="flex items-center justify-center gap-1.5">
-            <h3 className="text-xl font-extrabold text-foreground">{member.name}</h3>
+            <h3 className="text-xl font-extrabold text-foreground">{(() => { const p = member.name.split(' '); p[0] = applyTatweel(p[0]); return p.join(' '); })()}</h3>
             {isVerified && (
               <TooltipProvider>
                 <Tooltip>

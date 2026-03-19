@@ -321,7 +321,7 @@ export function KinshipCalculator({ initialMemberId }: KinshipCalculatorProps) {
         >
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary">
             <GitBranch className="h-4 w-4" />
-            <span className="font-bold text-sm">حاسبة القرابة</span>
+            <span className="font-bold text-sm">{applyTatweel("حاسبة القرابة")}</span>
           </div>
           <p className="text-sm text-muted-foreground">
             اكتشف صلة القرابة بين أي فردين في العائلة

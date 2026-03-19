@@ -206,7 +206,7 @@ function FamilyCardComponent({ data, selected }: NodeProps) {
 
       <div className="flex items-center justify-center gap-1 px-3 w-full" dir="rtl">
         <h3 className="text-base font-bold text-foreground leading-tight line-clamp-2">
-          {member.name}
+          {(() => { const p = member.name.split(' '); p[0] = applyTatweel(p[0]); return p.join(' '); })()}
         </h3>
         {member.isVerified && (
           <TooltipProvider>

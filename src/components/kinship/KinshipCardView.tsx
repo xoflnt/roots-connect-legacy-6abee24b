@@ -335,7 +335,7 @@ function PersonChip({
       <div className={`w-10 h-10 rounded-xl mx-auto flex items-center justify-center ${genderBg}`}>
         <User className={`h-5 w-5 ${genderText}`} />
       </div>
-      <p className="text-sm font-bold text-foreground line-clamp-2">{member.name}</p>
+      <p className="text-sm font-bold text-foreground line-clamp-2">{(() => { const p = member.name.split(' '); p[0] = applyTatweel(p[0]); return p.join(' '); })()}</p>
       {branch && branchStyle && (
         <span
           className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full"
