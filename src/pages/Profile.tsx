@@ -12,6 +12,7 @@ import { SubmitRequestForm } from "@/components/SubmitRequestForm";
 import { toast } from "sonner";
 import { formatAge } from "@/utils/ageCalculator";
 import { getBranch, getBranchStyle } from "@/utils/branchUtils";
+import { toArabicNum } from "@/utils/arabicUtils";
 import type { FamilyMember } from "@/data/familyData";
 
 type HijriDate = { day?: string; month?: string; year?: string };
