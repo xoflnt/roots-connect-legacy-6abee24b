@@ -68,6 +68,20 @@
     --gold: 42 65% 50%;
     --gold-light: 42 55% 90%;
 
+    --documenter: 35 70% 92%;
+    --documenter-foreground: 35 55% 30%;
+    --documenter-border: 35 60% 45%;
+
+    --pillar-1-bg: 155 40% 90%;
+    --pillar-1-border: 155 45% 70%;
+    --pillar-1-text: 155 45% 30%;
+    --pillar-2-bg: 25 50% 90%;
+    --pillar-2-border: 25 55% 70%;
+    --pillar-2-text: 25 55% 35%;
+    --pillar-3-bg: 45 70% 92%;
+    --pillar-3-border: 45 60% 70%;
+    --pillar-3-text: 45 60% 35%;
+
     --destructive: 0 72% 51%;
     --destructive-foreground: 38 28% 97%;
 
