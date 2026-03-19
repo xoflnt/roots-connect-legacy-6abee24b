@@ -65,7 +65,6 @@ const App = () => (
             </TooltipProvider>
           </QueryClientProvider>
         </AuthProvider>
-      </FontSizeProvider>
     </ThemeProvider>
   </ErrorBoundary>
 );

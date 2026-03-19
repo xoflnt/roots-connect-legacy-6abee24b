@@ -176,7 +176,6 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
 
         {/* Top-left: Theme + Font */}
         <div className="absolute left-4 z-30 flex items-center gap-1.5" style={{ top: "max(1rem, env(safe-area-inset-top))" }}>
-          <FontSizeToggle />
           <ThemeToggle />
         </div>
 

@@ -133,7 +133,6 @@ export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHom
         </Button>
         {onSearch && <SearchBar onSelect={onSearch} />}
         {!isMobile && activeView === "map" && onReset && <ResetViewButton onReset={onReset} />}
-        <FontSizeToggle />
         <ThemeToggle />
       </div>
     </header>
