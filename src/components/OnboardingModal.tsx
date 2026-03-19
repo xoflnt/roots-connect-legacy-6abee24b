@@ -574,7 +574,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                   className="w-full h-14 rounded-full text-base font-bold text-white disabled:opacity-50"
                   style={{ backgroundColor: "#1B5438" }}
                 >
-                  إرسال رمز التحقق
+                  متابعة
                 </button>
 
                 <button onClick={() => goToStep(3)} className="text-sm text-muted-foreground">
