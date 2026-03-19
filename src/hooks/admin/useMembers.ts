@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { getAllMembers, getDepth } from "@/services/familyService";
+import { getAllMembers, getDepth, refreshMembers } from "@/services/familyService";
 import { getBranch } from "@/utils/branchUtils";
 import { arabicMatch } from "@/utils/normalizeArabic";
 import type { FamilyMember } from "@/data/familyData";
@@ -34,31 +34,37 @@ export function useMembers() {
   });
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
-    const raw = getAllMembers();
-    const memberMap = new Map(raw.map((m) => [m.id, m]));
+    const load = async () => {
+      setIsLoading(true);
+      await refreshMembers();
+      const raw = getAllMembers();
+      const memberMap = new Map(raw.map((m) => [m.id, m]));
 
-    const enriched: EnrichedMember[] = raw.map((m) => {
-      const branchInfo = getBranch(m.id);
-      return {
-        ...m,
-        branch: branchInfo?.pillarId ?? null,
-        branchLabel: branchInfo?.label ?? null,
-        generation: getDepth(m.id),
-        isDeceased: !!m.death_year,
-        spousesArray: m.spouses
-          ? m.spouses.split("،").map((s) => s.trim()).filter(Boolean)
-          : [],
-        fatherName: m.father_id
-          ? memberMap.get(m.father_id)?.name ?? null
-          : null,
-      };
-    });
+      const enriched: EnrichedMember[] = raw.map((m) => {
+        const branchInfo = getBranch(m.id);
+        return {
+          ...m,
+          branch: branchInfo?.pillarId ?? null,
+          branchLabel: branchInfo?.label ?? null,
+          generation: getDepth(m.id),
+          isDeceased: !!m.death_year,
+          spousesArray: m.spouses
+            ? m.spouses.split("،").map((s) => s.trim()).filter(Boolean)
+            : [],
+          fatherName: m.father_id
+            ? memberMap.get(m.father_id)?.name ?? null
+            : null,
+        };
+      });
 
-    setAllMembers(enriched);
-    setIsLoading(false);
-  }, []);
+      setAllMembers(enriched);
+      setIsLoading(false);
+    };
+    load();
+  }, [refreshKey]);
 
   const filtered = useMemo(() => {
     return allMembers.filter((m) => {
@@ -97,5 +103,6 @@ export function useMembers() {
     filters,
     updateFilters,
     isLoading,
+    refresh: () => setRefreshKey((k) => k + 1),
   };
 }
