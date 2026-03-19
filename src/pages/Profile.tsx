@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { getFirstName } from "@/utils/nameUtils";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -309,7 +310,7 @@ const Profile = () => {
                       <Badge variant={child.gender === "M" ? "default" : "secondary"} className="text-xs shrink-0">
                         {child.gender === "M" ? "ذكر" : "أنثى"}
                       </Badge>
-                      <span className="text-sm font-bold text-foreground flex-1">{child.name.split(' بن ')[0]}</span>
+                      <span className="text-sm font-bold text-foreground flex-1">{getFirstName(child.name)}</span>
                     </div>
 
                     {isVerified ? (

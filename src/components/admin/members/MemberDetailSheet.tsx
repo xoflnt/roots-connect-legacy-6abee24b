@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { getFirstName } from "@/utils/nameUtils";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -143,7 +144,7 @@ export function MemberDetailSheet({ member, allMembers, isOpen, onClose }: Membe
                     onClick={() => navigateTo(child)}
                     className="min-h-[48px] px-3 py-2 rounded-xl bg-muted text-foreground text-sm hover:bg-accent transition-colors"
                   >
-                    {child.name.split(' بن ')[0]}
+                    {getFirstName(child.name)}
                   </button>
                 ))}
               </div>
