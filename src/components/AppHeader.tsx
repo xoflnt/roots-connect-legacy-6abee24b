@@ -85,7 +85,7 @@ export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHom
         </div>
       )}
 
-      <div className="flex items-center gap-1.5 shrink-0 font-scale-exempt">
+      <div className="flex items-center gap-1.5 shrink-0">
         {isAdmin && (
           <Button
             variant="ghost"

@@ -280,7 +280,7 @@ const Index = () => {
                   <Icon className={`h-5 w-5 ${isActive ? "text-primary" : ""}`} />
                 </motion.div>
                 {!isNarrow && (
-                  <span className={`font-scale-exempt text-[10px] font-medium ${isActive ? "font-bold" : ""}`}>
+                  <span className={`text-[10px] font-medium ${isActive ? "font-bold" : ""}`}>
                     {item.label}
                   </span>
                 )}

@@ -477,7 +477,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                   وحماية خصوصية بيانات العائلة
                 </p>
 
-                <div className="flex justify-center font-scale-exempt" dir="ltr">
+                <div className="flex justify-center" dir="ltr">
                   <InputOTP maxLength={6} value={familyPasscode} onChange={setFamilyPasscode}>
                     <InputOTPGroup className="gap-2">
                       {[0, 1, 2, 3, 4, 5].map((i) => (
