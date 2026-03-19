@@ -31,7 +31,7 @@ const CONFIG = {
   documenter: {
     label: "موثق الشجرة",
     icon: ScrollText,
-    className: "bg-[hsl(35,70%,92%)] text-[hsl(35,55%,30%)] border-[hsl(35,60%,40%)]/40",
+    className: "bg-documenter text-documenter-foreground border-documenter-border/40",
   },
 };
 

@@ -109,9 +109,9 @@ function StatCard({ icon: Icon, label, value, suffix, highlight }: { icon: React
 }
 
 const PILLAR_COLORS = [
-  { bg: "bg-[hsl(155,40%,90%)]", border: "border-[hsl(155,45%,70%)]", icon: "text-[hsl(155,45%,30%)]" },
-  { bg: "bg-[hsl(25,50%,90%)]", border: "border-[hsl(25,55%,70%)]", icon: "text-[hsl(25,55%,35%)]" },
-  { bg: "bg-[hsl(45,70%,92%)]", border: "border-[hsl(45,60%,70%)]", icon: "text-[hsl(45,60%,35%)]" },
+  { bg: "bg-pillar-1", border: "border-pillar-1-border", icon: "text-pillar-1-text" },
+  { bg: "bg-pillar-2", border: "border-pillar-2-border", icon: "text-pillar-2-text" },
+  { bg: "bg-pillar-3", border: "border-pillar-3-border", icon: "text-pillar-3-text" },
 ];
 
 export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: LandingPageProps) {
@@ -223,11 +223,11 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
             {/* Top row: avatar + name + badges */}
             <div className="flex items-center gap-3">
               <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                style={{
-                  backgroundColor: dashboardData.member.gender === "F" ? "hsl(330, 50%, 92%)" : "hsl(210, 50%, 92%)",
-                  color: dashboardData.member.gender === "F" ? "hsl(330, 50%, 35%)" : "hsl(210, 50%, 35%)",
-                }}
+                className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                  dashboardData.member.gender === "F"
+                    ? "bg-female-light text-female"
+                    : "bg-male-light text-male"
+                }`}
               >
                 {dashboardData.member.gender === "F" ? <UserRound className="h-5 w-5" /> : <User className="h-5 w-5" />}
               </div>
@@ -458,13 +458,13 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
       {/* ─── 4. كلمة الموثّق ─── */}
       <section className="py-6 px-4">
         <div className="max-w-lg mx-auto text-center space-y-4">
-          <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[hsl(35,70%,92%)] text-[hsl(35,55%,30%)] font-bold text-sm">
+          <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-documenter text-documenter-foreground font-bold text-sm">
             <ScrollText className="h-4 w-4" />
             كلمة الموثّق
           </div>
 
-          <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 text-right border-r-4 border-r-[hsl(35,60%,45%)]">
-            <Quote className="absolute top-4 right-4 h-8 w-8 text-[hsl(35,60%,45%)]/20" />
+          <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 text-right border-r-4 border-r-documenter-border">
+            <Quote className="absolute top-4 right-4 h-8 w-8 text-documenter-border/20" />
             <blockquote className="text-base text-muted-foreground leading-loose italic pr-8">
               "الهدف من هذه الشجرة التوثيق مثل تواريخ الميلاد، الوفاة، المصاهرة وترتيب الاخوة نسأل الله سبحانه وتعالى لأبائنا وامهاتنا وابائهم وامهاتهم ومن له حق علينا بالرحمة والمغفرة وان يجمعنا جميعاً معهم بجنات النعيم"
             </blockquote>
@@ -472,7 +472,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
               <span className="font-bold">— جمع وتوثيق </span>
               <Link
                 to={`/person/${DOCUMENTER_ID}`}
-                className="font-extrabold text-[hsl(35,55%,30%)] hover:text-[hsl(35,60%,40%)] underline underline-offset-4 decoration-[hsl(35,60%,45%)]/40 transition-colors"
+                className="font-extrabold text-documenter-foreground hover:text-documenter-border underline underline-offset-4 decoration-documenter-border/40 transition-colors"
               >
                 علي المحمد
               </Link>

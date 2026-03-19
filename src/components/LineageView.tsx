@@ -28,8 +28,8 @@ const DEPTH_COLORS = [
   "hsl(var(--primary))",
   "hsl(340, 60%, 55%)",
   "hsl(35, 70%, 50%)",
-  "hsl(175, 50%, 40%)",
-  "hsl(270, 45%, 55%)",
+  "hsl(175, 50%, 45%)",
+  "hsl(270, 50%, 60%)",
 ];
 
 function toArabicNum(n: number): string {

@@ -135,10 +135,7 @@ export function KinshipCardView({
       {/* ── Shareable card (captured by screenshot) ── */}
       <div
         dir="rtl"
-        className="rounded-2xl shadow-lg p-6 space-y-5 border border-[hsl(38,25%,82%)]"
-        style={{
-          background: "linear-gradient(to bottom, hsl(38,30%,97%), hsl(38,20%,93%))",
-        }}
+        className="rounded-2xl shadow-lg p-6 space-y-5 border border-border bg-gradient-to-b from-card to-muted/50"
       >
         {/* Top gold line */}
         <div className="h-1 rounded-full bg-gradient-to-r from-transparent via-accent to-transparent -mt-3" />
