@@ -463,8 +463,8 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
             كلمة الموثّق
           </div>
 
-          <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 text-right border-r-4 border-r-[hsl(35,60%,45%)]">
-            <Quote className="absolute top-4 right-4 h-8 w-8 text-[hsl(35,60%,45%)]/20" />
+          <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 text-right border-r-4 border-r-documenter-border">
+            <Quote className="absolute top-4 right-4 h-8 w-8 text-documenter-border/20" />
             <blockquote className="text-base text-muted-foreground leading-loose italic pr-8">
               "الهدف من هذه الشجرة التوثيق مثل تواريخ الميلاد، الوفاة، المصاهرة وترتيب الاخوة نسأل الله سبحانه وتعالى لأبائنا وامهاتنا وابائهم وامهاتهم ومن له حق علينا بالرحمة والمغفرة وان يجمعنا جميعاً معهم بجنات النعيم"
             </blockquote>
