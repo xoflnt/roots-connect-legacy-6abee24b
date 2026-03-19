@@ -175,7 +175,7 @@ export function AddMemberSheet({
     const errs: Record<string, string> = {};
     if (!name.trim() || name.trim().length < 2)
       errs.name = "الاسم مطلوب (حرفان على الأقل)";
-    if (!selectedFather && !noFather)
+    if (!isEditMode && !selectedFather && !noFather)
       errs.father = "اختر الأب أو حدد «غير معروف»";
     if (!gender) errs.gender = "حدد الجنس";
     if (birthDate.year && !isValidHijriYear(birthDate.year))
@@ -184,7 +184,7 @@ export function AddMemberSheet({
       errs.deathYear = "سنة وفاة غير صالحة";
     setErrors(errs);
     return Object.keys(errs).length === 0;
-  }, [name, selectedFather, noFather, gender, birthDate, isDeceased, deathDate]);
+  }, [name, selectedFather, noFather, gender, birthDate, isDeceased, deathDate, isEditMode]);
 
   const handleSaveClick = () => {
     if (validate()) setConfirmOpen(true);
