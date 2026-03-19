@@ -44,6 +44,7 @@
 
 @layer base {
   :root {
+    --text-scale: 1rem;
     --background: 38 30% 96%;
     --foreground: 152 42% 13%;
 
