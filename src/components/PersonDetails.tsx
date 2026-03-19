@@ -20,6 +20,7 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/comp
 import { staggerContainer, staggerItem, springConfig } from "@/lib/animations";
 import { useAuth } from "@/contexts/AuthContext";
 import { canSeeAge, canSeeSpouses, canSeeMotherName, getSpouseLabel, privateLabel } from "@/utils/privacyUtils";
+import { toArabicNum } from "@/utils/arabicUtils";
 
 interface PersonDetailsProps {
   member: FamilyMember | null;
