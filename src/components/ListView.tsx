@@ -19,10 +19,10 @@ interface ListViewProps {
 const DEPTH_ACCENTS = [
   "hsl(var(--accent))",
   "hsl(var(--primary))",
-  "hsl(25, 55%, 45%)",
-  "hsl(155, 40%, 35%)",
-  "hsl(350, 40%, 48%)",
-  "hsl(200, 35%, 42%)",
+  "hsl(25, 55%, 50%)",
+  "hsl(155, 45%, 45%)",
+  "hsl(350, 45%, 55%)",
+  "hsl(200, 40%, 50%)",
 ];
 
 export function ListView({ onSelectMember }: ListViewProps) {

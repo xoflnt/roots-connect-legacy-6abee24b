@@ -57,6 +57,26 @@ export default {
           DEFAULT: "hsl(var(--gold))",
           light: "hsl(var(--gold-light))",
         },
+        documenter: {
+          DEFAULT: "hsl(var(--documenter))",
+          foreground: "hsl(var(--documenter-foreground))",
+          border: "hsl(var(--documenter-border))",
+        },
+        "pillar-1": {
+          DEFAULT: "hsl(var(--pillar-1-bg))",
+          border: "hsl(var(--pillar-1-border))",
+          text: "hsl(var(--pillar-1-text))",
+        },
+        "pillar-2": {
+          DEFAULT: "hsl(var(--pillar-2-bg))",
+          border: "hsl(var(--pillar-2-border))",
+          text: "hsl(var(--pillar-2-text))",
+        },
+        "pillar-3": {
+          DEFAULT: "hsl(var(--pillar-3-bg))",
+          border: "hsl(var(--pillar-3-border))",
+          text: "hsl(var(--pillar-3-text))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

@@ -472,7 +472,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
               <span className="font-bold">— جمع وتوثيق </span>
               <Link
                 to={`/person/${DOCUMENTER_ID}`}
-                className="font-extrabold text-[hsl(35,55%,30%)] hover:text-[hsl(35,60%,40%)] underline underline-offset-4 decoration-[hsl(35,60%,45%)]/40 transition-colors"
+                className="font-extrabold text-documenter-foreground hover:text-documenter-border underline underline-offset-4 decoration-documenter-border/40 transition-colors"
               >
                 علي المحمد
               </Link>
