@@ -223,11 +223,11 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
             {/* Top row: avatar + name + badges */}
             <div className="flex items-center gap-3">
               <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                style={{
-                  backgroundColor: dashboardData.member.gender === "F" ? "hsl(330, 50%, 92%)" : "hsl(210, 50%, 92%)",
-                  color: dashboardData.member.gender === "F" ? "hsl(330, 50%, 35%)" : "hsl(210, 50%, 35%)",
-                }}
+                className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                  dashboardData.member.gender === "F"
+                    ? "bg-female-light text-female"
+                    : "bg-male-light text-male"
+                }`}
               >
                 {dashboardData.member.gender === "F" ? <UserRound className="h-5 w-5" /> : <User className="h-5 w-5" />}
               </div>
