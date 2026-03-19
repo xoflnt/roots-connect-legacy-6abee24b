@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getRequests, markRequestDone, getVerifiedUsers, getVisitCount, type FamilyRequest } from "@/services/dataService";
 import { getAllMembers, searchMembers } from "@/services/familyService";
 import { familyMembers, type FamilyMember } from "@/data/familyData";
+const STATIC_COUNT = familyMembers.length;
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DataTableView } from "@/components/DataTableView";
