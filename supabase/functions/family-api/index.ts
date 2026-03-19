@@ -1,6 +1,25 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+/** Generate a hierarchical member ID matching the project convention */
+function generateMemberId(fatherId: string | null, allIds: string[]): string {
+  if (!fatherId) {
+    const numericIds = allIds.filter((id) => /^\d+$/.test(id)).map(Number);
+    return String(Math.max(0, ...numericIds) + 1);
+  }
+  const prefixMatch = fatherId.match(/^([A-Za-z])/);
+  if (prefixMatch) {
+    const children = allIds.filter(
+      (id) => id.startsWith(fatherId + "_") && !id.slice(fatherId.length + 1).includes("_")
+    );
+    let nextId = `${fatherId}_${children.length + 1}`;
+    while (allIds.includes(nextId)) nextId = `${fatherId}_${children.length + 1}_1`;
+    return nextId;
+  }
+  const numericIds = allIds.filter((id) => /^\d+$/.test(id)).map(Number);
+  return String(Math.max(0, ...numericIds) + 1);
+}
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
