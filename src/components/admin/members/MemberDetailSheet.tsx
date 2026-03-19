@@ -78,6 +78,7 @@ export function MemberDetailSheet({ member, allMembers, isOpen, onClose, refresh
   const navigateTo = (m: EnrichedMember) => setViewingMember(m);
 
   return (
+    <>
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <SheetContent
         side={isMobile ? "bottom" : "right"}

@@ -194,6 +194,7 @@ export function MemberListPage() {
         allMembers={allMembers}
         isOpen={!!selectedMember}
         onClose={() => setSelectedMember(null)}
+        refresh={refresh}
       />
 
       <AddMemberSheet

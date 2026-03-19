@@ -66,8 +66,13 @@ export async function getMembers(): Promise<FamilyMember[]> {
   }));
 }
 
-export async function updateMember(id: string, data: Partial<FamilyMember>): Promise<void> {
-  await callFamilyApi("update-member", { id, data });
+export async function updateMember(id: string, data: Partial<FamilyMember>, adminToken?: string): Promise<void> {
+  const headers = adminToken ? { "x-admin-token": adminToken } : undefined;
+  await callFamilyApi("update-member", { id, data }, headers);
+}
+
+export async function deleteMember(memberId: string, adminToken: string): Promise<void> {
+  await callFamilyApi("delete-member", { memberId }, { "x-admin-token": adminToken });
 }
 
 export async function addMember(member: FamilyMember, adminToken?: string): Promise<void> {
