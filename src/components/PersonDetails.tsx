@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { getFirstName } from "@/utils/nameUtils";
 import { applyTatweel } from "@/utils/tatweelUtils";
 import { motion } from "framer-motion";
 import { User, Calendar, Heart, FileText, X, ExternalLink, Clock, Send, Users2, UserPlus, BadgeCheck } from "lucide-react";
