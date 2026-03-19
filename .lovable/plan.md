@@ -1,31 +1,23 @@
 
 
-# Replace seed-family-data Edge Function
+# Fix All Onboarding Issues
 
-## What needs to happen
+## Bug Analysis
 
-Two files need to be created/modified:
+### BUG 1: Registration Flow
+After code review, the flow logic (search → confirm → passcode → phone → complete) is **functionally correct**. The steps chain properly via `goToStep()`. However, the Step 4 button says "إرسال رمز التحقق" (Send verification code) which is misleading — no code is actually sent. This should say "متابعة" (Continue). No actual broken logic found.
 
-### 1. Create `supabase/functions/_shared/family-data.ts`
-Edge functions cannot import from `src/`. The static data must be duplicated into the edge functions shared directory. This file will export the same `familyMembers` array from `src/data/familyData.ts` (all 489 lines).
+### BUG 2: WhatsApp Toggle (lines 570-580)
+The toggle card at lines 570-580 references a non-existent backend feature. Remove the entire block. Also remove the unused `MessageCircle` import.
 
-### 2. Replace `supabase/functions/seed-family-data/index.ts`
-Replace entirely with the user-provided code, which includes:
-- **Kahn's topological sort** (BFS-based) instead of recursive DFS — more robust for large trees
-- **Orphan cleaning** — nullifies `father_id` references that point outside the dataset
-- **Batch upsert with fallback** — tries batches of 50, falls back to one-by-one on failure
-- **Two-pass strategy** — retries failed members from pass 1 individually in pass 2
-- **Full diagnostics** — returns orphan count, sort stats, and per-member error details
+### BUG 3 & 4: Arabic Numerals + Month Numbers
+These affect `HijriDatePicker.tsx` (shared component used in OnboardingModal and Profile). Modifying the shared component is the correct approach — it fixes both pages at once.
 
-### Important note
-The import `import { familyMembers } from "../_shared/family-data.ts";` is correct for Deno edge functions — relative path from `seed-family-data/` to `_shared/`.
+**Note:** Requires touching 2 files instead of 1 (OnboardingModal.tsx + HijriDatePicker.tsx). Inlining the picker would be worse engineering.
 
-### CORS consideration
-The user's provided code does **not** include CORS headers or OPTIONS handling. The current code has them. Since Admin.tsx calls this via `supabase.functions.invoke()`, CORS headers are needed. I will add the standard CORS headers and OPTIONS handler to the provided code.
+## Changes
 
-### Files changed
-| File | Action |
-|------|--------|
-| `supabase/functions/_shared/family-data.ts` | **Create** — copy of static data |
-| `supabase/functions/seed-family-data/index.ts` | **Replace** — new implementation |
+### File 1: `src/components/OnboardingModal.tsx`
 
+1. **Remove WhatsApp toggle** (lines 570-580) — delete the entire `div` block with `MessageCircle`, `Switch`, and related text
+2. **Remove unused imports**: `Switch`, `MessageCircle` from imports (lines 9, 13
