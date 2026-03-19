@@ -18,7 +18,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { HijriDatePicker } from "@/components/HijriDatePicker";
 import { registerVerifiedUser, submitRequest, getVerifiedMemberIds, verifyFamilyPasscode } from "@/services/dataService";
 import { getLineageLabel } from "@/utils/memberLabel";
-import { getBranch } from "@/utils/branchUtils";
+import { getBranch, getBranchStyle } from "@/utils/branchUtils";
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
