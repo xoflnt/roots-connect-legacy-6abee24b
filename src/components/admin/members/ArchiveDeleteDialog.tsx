@@ -147,20 +147,19 @@ export function ArchiveDeleteDialog({
                 <p className="text-sm text-destructive/80">
                   ⚠️ لا يمكن التراجع عن هذا الإجراء
                 </p>
-                {!counting ? (
+                {!counting && !readyToDelete ? (
                   <Button
-                    variant="destructive"
+                    variant="outline"
                     onClick={handleStartCountdown}
-                    className="w-full min-h-[48px] text-base rounded-xl"
+                    className="w-full min-h-[48px] text-base rounded-xl border-destructive text-destructive hover:bg-destructive/10"
                   >
                     <Trash2 className="h-4 w-4 me-2" />
-                    حذف نهائي
+                    ابدأ الحذف
                   </Button>
-                ) : countdown > 0 ? (
+                ) : counting ? (
                   <Button
                     disabled
-                    variant="destructive"
-                    className="w-full min-h-[48px] text-base rounded-xl opacity-70"
+                    className="w-full min-h-[48px] text-base rounded-xl bg-muted text-muted-foreground"
                   >
                     <Trash2 className="h-4 w-4 me-2" />
                     حذف نهائي ({toArabicNum(countdown)})
