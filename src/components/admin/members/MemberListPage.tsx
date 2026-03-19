@@ -159,6 +159,13 @@ export function MemberListPage() {
 
       {/* Pagination */}
       <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+
+      <MemberDetailSheet
+        member={selectedMember}
+        allMembers={allMembers}
+        isOpen={!!selectedMember}
+        onClose={() => setSelectedMember(null)}
+      />
     </div>
   );
 }

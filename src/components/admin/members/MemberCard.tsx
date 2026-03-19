@@ -15,13 +15,14 @@ const BRANCH_DOT_COLORS: Record<string, string> = {
   "400": "bg-orange-500",
 };
 
-export function MemberCard({ member, isEven }: MemberCardProps) {
+export function MemberCard({ member, isEven, onTap }: MemberCardProps) {
   return (
     <div
-      className={`flex items-center justify-between min-h-16 px-4 py-3 ${
+      className={`flex items-center justify-between min-h-16 px-4 py-3 cursor-pointer hover:bg-accent/50 transition-colors ${
         isEven ? "bg-muted/30" : ""
       }`}
       dir="rtl"
+      onClick={() => onTap?.(member)}
     >
       {/* Right side */}
       <div className="flex items-center gap-3 min-w-0 flex-1">
