@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DataTableView } from "@/components/DataTableView";
 import { PILLARS } from "@/utils/branchUtils";
+import { toArabicNum } from "@/utils/arabicUtils";
 import { Progress } from "@/components/ui/progress";
 
 // --- Smart Export Helpers ---
