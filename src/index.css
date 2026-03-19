@@ -208,3 +208,36 @@
     background-size: 24px 24px;
   }
 }
+
+/* ═══════════════════════════════════════════════ */
+/* Font size toggle — text only, never affects rem spacing */
+/* ═══════════════════════════════════════════════ */
+
+.fs-normal  { --app-font-scale: 1; }
+.fs-large   { --app-font-scale: 1.15; }
+.fs-xlarge  { --app-font-scale: 1.3; }
+
+/* Apply scale only to text elements */
+.fs-large p, .fs-large span, .fs-large div,
+.fs-large h1, .fs-large h2, .fs-large h3,
+.fs-large h4, .fs-large button, .fs-large label,
+.fs-large input, .fs-large textarea, .fs-large a,
+.fs-large td, .fs-large th, .fs-large li {
+  font-size: calc(1em * 1.15) !important;
+}
+
+.fs-xlarge p, .fs-xlarge span, .fs-xlarge div,
+.fs-xlarge h1, .fs-xlarge h2, .fs-xlarge h3,
+.fs-xlarge h4, .fs-xlarge button, .fs-xlarge label,
+.fs-xlarge input, .fs-xlarge textarea, .fs-xlarge a,
+.fs-xlarge td, .fs-xlarge th, .fs-xlarge li {
+  font-size: calc(1em * 1.3) !important;
+}
+
+/* Exempt elements — never scale */
+.fs-large .font-scale-exempt,
+.fs-xlarge .font-scale-exempt,
+.fs-large .font-scale-exempt *,
+.fs-xlarge .font-scale-exempt * {
+  font-size: revert !important;
+}
