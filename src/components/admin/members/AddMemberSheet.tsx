@@ -90,14 +90,44 @@ export function AddMemberSheet({
   // Errors
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Pre-fill form in edit mode
+  useEffect(() => {
+    if (!editMember || !isOpen) return;
+    const firstName = getFirstName(editMember.name);
+    setName(firstName);
+    if (editMember.father_id) {
+      const father = allMembers.find((m) => m.id === editMember.father_id);
+      if (father) setSelectedFather(father);
+      else setNoFather(true);
+    } else {
+      setNoFather(true);
+    }
+    setGender(editMember.gender as "M" | "F");
+    if (editMember.birth_year) setBirthDate({ year: editMember.birth_year });
+    if (editMember.death_year) {
+      setIsDeceased(true);
+      setDeathDate({ year: editMember.death_year });
+    }
+    if (editMember.spousesArray.length > 0) {
+      setSpouses([...editMember.spousesArray]);
+    }
+    // Extract mother from notes
+    const motherMatch = editMember.notes?.match(/والدت[هها]:\s*(.+)/);
+    if (motherMatch) setSelectedMother(motherMatch[1].trim());
+    // Clean notes (remove mother prefix)
+    const cleanNotes = editMember.notes?.replace(/والدت[هها]:\s*.+\n?/, "").trim() || "";
+    setNotes(cleanNotes);
+  }, [editMember, isOpen, allMembers]);
+
   const allIds = useMemo(() => allMembers.map((m) => m.id), [allMembers]);
 
   const generatedId = useMemo(() => {
+    if (isEditMode) return editMember!.id;
     const fatherId = noFather ? null : selectedFather?.id ?? null;
     if (!fatherId && !noFather) return null;
     const candidate = generateMemberId(fatherId, allIds);
     return ensureUniqueId(candidate, allIds);
-  }, [selectedFather, noFather, allIds]);
+  }, [selectedFather, noFather, allIds, isEditMode, editMember]);
 
   const fatherChildren = useMemo(() => {
     if (!selectedFather) return 0;
