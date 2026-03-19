@@ -30,8 +30,9 @@ import {
 } from "@/utils/hijriUtils";
 import { generateMemberId, ensureUniqueId } from "@/utils/idGenerator";
 import { ConfirmDialog } from "@/components/admin/shared/ConfirmDialog";
-import { addMember } from "@/services/dataService";
+import { addMember, updateMember } from "@/services/dataService";
 import { getAdminToken } from "@/components/AdminProtect";
+import { getFirstName } from "@/utils/nameUtils";
 import { toast } from "@/hooks/use-toast";
 import { X, Plus, ChevronDown } from "lucide-react";
 import type { EnrichedMember } from "@/hooks/admin/useMembers";
