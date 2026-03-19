@@ -109,9 +109,9 @@ function StatCard({ icon: Icon, label, value, suffix, highlight }: { icon: React
 }
 
 const PILLAR_COLORS = [
-  { bg: "bg-[hsl(155,40%,90%)]", border: "border-[hsl(155,45%,70%)]", icon: "text-[hsl(155,45%,30%)]" },
-  { bg: "bg-[hsl(25,50%,90%)]", border: "border-[hsl(25,55%,70%)]", icon: "text-[hsl(25,55%,35%)]" },
-  { bg: "bg-[hsl(45,70%,92%)]", border: "border-[hsl(45,60%,70%)]", icon: "text-[hsl(45,60%,35%)]" },
+  { bg: "bg-pillar-1", border: "border-pillar-1-border", icon: "text-pillar-1-text" },
+  { bg: "bg-pillar-2", border: "border-pillar-2-border", icon: "text-pillar-2-text" },
+  { bg: "bg-pillar-3", border: "border-pillar-3-border", icon: "text-pillar-3-text" },
 ];
 
 export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: LandingPageProps) {
