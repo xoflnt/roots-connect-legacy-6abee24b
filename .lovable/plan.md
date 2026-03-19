@@ -1,18 +1,22 @@
 
 
-# Show Sync Diagnostics in Admin UI
+# Add Static Member Count to Admin Sync UI
 
 ## Changes (single file: `src/pages/Admin.tsx`)
 
-### 1. Replace `handleSync` function (lines 189–207)
-Replace with the user-provided version that:
-- Shows "جاري المزامنة..." immediately
-- Displays multi-line diagnostics: sent count, inserted count, orphans cleaned, success status, errors, missing fathers
-- Uses `finally` to clear syncing state
+### 1. Add `STATIC_COUNT` constant (after line 10)
+Add immediately after the `familyMembers` import:
+```ts
+const STATIC_COUNT = familyMembers.length;
+```
 
-### 2. Update syncResult display (line 292–294)
-Change the `<span>` to a `<p>` (or keep `<span>` but add `whitespace-pre-wrap`) so line breaks render:
+### 2. Display count next to sync button (line 311–313 area)
+Add the static count display inside the sync section, after the Button and before or alongside the syncResult span:
+```tsx
+<span className="text-xs font-semibold bg-white/20 rounded-lg px-2 py-1">
+  ({toArabicNum(STATIC_COUNT)} عضو في الملف)
+</span>
 ```
-<span className="text-sm font-medium whitespace-pre-wrap">
-```
+
+This will show the bundle-time array length directly in the UI, confirming whether the import contains 477 or fewer members — no DevTools needed.
 
