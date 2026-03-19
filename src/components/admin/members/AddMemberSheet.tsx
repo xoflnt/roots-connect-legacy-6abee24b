@@ -100,10 +100,6 @@ export function AddMemberSheet({
     return allMembers.filter((m) => m.father_id === selectedFather.id).length;
   }, [selectedFather, allMembers]);
 
-  const grandfather = useMemo(() => {
-    if (!selectedFather?.father_id) return null;
-    return allMembers.find((m) => m.id === selectedFather.father_id) ?? null;
-  }, [selectedFather, allMembers]);
 
   // Father search results
   const males = useMemo(
