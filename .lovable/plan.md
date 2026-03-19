@@ -1,40 +1,52 @@
 
 
-# Phase 2A: Member Detail Sheet
+# Phase 2B: Add Member Form
 
-## Files to Create (1)
+## Summary
+Add a form sheet for creating new family members, with father search, auto-generated IDs, Hijri year validation, and confirmation dialog. Integrates with the existing `addMember()` service and `add-member` edge function.
 
-### `src/components/admin/members/MemberDetailSheet.tsx`
-A Sheet component showing full member details when a MemberCard is tapped.
+## Files to Create (4)
 
-- **Props**: `member: EnrichedMember | null`, `allMembers: EnrichedMember[]`, `isOpen: boolean`, `onClose: () => void`
-- **Sheet side**: `bottom` (mobile viewport detected via `useIsMobile()`) / `right` (desktop, visually left in RTL)
-- **Content** (scrollable, `dir="rtl"`):
-  - **Header**: Name (22px+ bold), lineage chain ("بن father بن grandfather" resolved from allMembers), branch colored badge, generation text, deceased indicator
-  - **Info section** ("المعلومات الأساسية"): ID (monospace), gender, birth year, death year (if deceased), notes (if exists)
-  - **Family section** ("العائلة"): Father (tappable → opens that member's detail), mother (extracted from notes via regex for "والدته:" or "والدتها:"), spouses list
-  - **Children section** ("الأبناء"): Filter `allMembers` by `father_id === member.id`, group sons/daughters, show counts with `toArabicNum()`, each child as tappable chip that sets the sheet to show that child
-  - **Sticky actions bar**: 3 buttons — "تعديل" (placeholder), "أرشفة" (placeholder), "مشاركة" (WhatsApp share via `wa.me`)
+### 1. `src/utils/idGenerator.ts`
+- `generateMemberId(fatherId, allIds)`: If father has letter prefix, appends `_N` suffix. If numeric, increments max numeric ID.
+- `ensureUniqueId(candidateId, allIds)`: Collision-safe wrapper.
 
-Internal state: `viewingMember` to allow navigating to father/child within the same sheet without closing it.
+### 2. `src/utils/hijriUtils.ts`
+- `toWesternNumerals(text)` / `toEasternNumerals(n)`: Convert between ٠-٩ and 0-9.
+- `isValidHijriYear(text)`: Range check 1300-1500.
+- `hijriToGregorian(hijriText)`: Approximate conversion formula.
 
-## Files to Modify (2)
+### 3. `src/components/admin/members/AddMemberSheet.tsx`
+Sheet (bottom mobile, side desktop). Props: `isOpen`, `onClose`, `onSuccess`, `allMembers`, `preselectedFatherId?`.
 
-### `src/components/admin/members/MemberCard.tsx`
-- Add `onTap: (member: EnrichedMember) => void` prop
-- Wrap the main content area (excluding ⋮ button) in a tappable `button` or add `onClick` to the outer div, calling `onTap(member)`
-- Add `cursor-pointer` and hover state
+Form fields (RTL, min-h-12 inputs):
+1. **الاسم** — required text, min 2 chars
+2. **الأب** — Popover+Command combobox filtering males from `allMembers` via `arabicMatch`. Shows lineage + children count. Selecting auto-generates ID, shows branch/generation preview.
+3. **الجنس** — two toggle buttons (M/F), 48px height
+4. **سنة الميلاد** — optional, auto-converts to Eastern Arabic, shows Gregorian equivalent, validated with `isValidHijriYear`
+5. **الحالة** — toggle (alive/deceased), shows death year field when deceased
+6. **الزوجات** — dynamic list (max 4), add/remove buttons, label adapts to gender
+7. **ملاحظات** — textarea, 500 char limit with counter
 
-### `src/components/admin/members/MemberListPage.tsx`
-- Add `selectedMember` state (`EnrichedMember | null`)
-- Destructure `allMembers` from `useMembers()`
-- Pass `onTap={setSelectedMember}` to each `MemberCard`
-- Render `<MemberDetailSheet>` at the bottom with `member={selectedMember}`, `allMembers`, `isOpen={!!selectedMember}`, `onClose={() => setSelectedMember(null)}`
+Auto-generated preview box showing ID, branch, generation, lineage chain.
+
+Save button calls `addMember(member, adminToken)` from dataService after ConfirmDialog approval. Uses `getAdminToken()` for auth header.
+
+### 4. `src/components/admin/shared/ConfirmDialog.tsx`
+AlertDialog wrapper. Props: `isOpen`, `onClose`, `onConfirm`, `title`, `children`, `confirmText`, `cancelText`, `variant` (default/danger). Min-h-12 buttons.
+
+## Files to Modify (1)
+
+### 5. `src/components/admin/members/MemberListPage.tsx`
+- Add `addOpen` state
+- Mobile: FAB (fixed, bottom-20 left-4, Plus icon, min-w-14 min-h-14)
+- Desktop: "+ إضافة عضو" button in header
+- Both open `AddMemberSheet`
+- On success: toast + trigger member list refresh
 
 ## Technical Notes
-- All numbers via `toArabicNum()`
-- `dir="rtl"`, logical margins (`ms-*`/`me-*`)
-- Min font 16px, min tap 48px
-- Sheet scrollable via `overflow-y-auto` with max height
-- Grandfather resolved by: `allMembers.find(m => m.id === member.father_id)?.fatherName`
+- Edge function payload: `{ member: { id, name, gender, father_id, birth_year, death_year, spouses, phone, notes } }` with `x-admin-token` header — already handled by `addMember()` in dataService
+- `toArabicNum` from arabicUtils used for display; `toEasternNumerals` from hijriUtils for form conversion (same logic, kept in hijriUtils for co-location with validation)
+- Father combobox uses Popover + Command from shadcn (already in project)
+- All RTL, 16px min font, 48px min tap
 
