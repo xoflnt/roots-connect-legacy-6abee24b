@@ -161,7 +161,7 @@ export function DataTableView() {
         </Select>
 
         <Badge variant="secondary" className="text-xs shrink-0">
-          {filtered.length} فرد
+          {toArabicNum(filtered.length)} فرد
         </Badge>
 
         {hasFilters && (
