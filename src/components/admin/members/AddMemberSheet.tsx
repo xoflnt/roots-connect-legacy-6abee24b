@@ -167,6 +167,14 @@ export function AddMemberSheet({
       const birthYearStr = composeHijriString(birthDate);
       const deathYearStr = isDeceased ? composeHijriString(deathDate) : undefined;
 
+      let finalNotes = notes.trim() || "";
+      if (selectedMother && selectedMother !== "غير معروفة") {
+        const prefix = gender === "M"
+          ? `والدته: ${selectedMother}`
+          : `والدتها: ${selectedMother}`;
+        finalNotes = finalNotes ? `${prefix}\n${finalNotes}` : prefix;
+      }
+
       const member: FamilyMember = {
         id: generatedId,
         name: name.trim(),
@@ -175,7 +183,7 @@ export function AddMemberSheet({
         birth_year: birthYearStr || undefined,
         death_year: deathYearStr || undefined,
         spouses: spousesText || undefined,
-        notes: notes.trim() || undefined,
+        notes: finalNotes || undefined,
       };
 
       const token = getAdminToken();
