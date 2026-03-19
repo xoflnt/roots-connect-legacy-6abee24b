@@ -112,7 +112,7 @@ function FamilyCardComponent({ data, selected }: NodeProps) {
 
         <div className="flex items-center justify-center gap-1 px-2 w-full" dir="rtl">
           <h3 className="text-sm font-bold text-foreground leading-tight line-clamp-1">
-            {member.name}
+            {(() => { const p = member.name.split(' '); p[0] = applyTatweel(p[0]); return p.join(' '); })()}
           </h3>
           {member.isVerified && (
             <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-[#22c55e]" />
