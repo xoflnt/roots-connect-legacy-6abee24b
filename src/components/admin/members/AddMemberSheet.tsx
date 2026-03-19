@@ -59,8 +59,10 @@ export function AddMemberSheet({
   onSuccess,
   allMembers,
   preselectedFatherId,
+  editMember,
 }: AddMemberSheetProps) {
   const isMobile = useIsMobile();
+  const isEditMode = !!editMember;
 
   // Form state
   const [name, setName] = useState("");
