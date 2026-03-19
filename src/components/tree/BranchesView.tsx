@@ -205,7 +205,7 @@ function MobileBranchesView() {
                 key={p.id}
                 onClick={() => handleBranchSwitch(p.id)}
                 className={cn(
-                  "flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2.5 px-2 min-h-[44px] text-sm font-bold transition-all duration-200",
+                  "font-scale-exempt flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2.5 px-2 min-h-[44px] text-sm font-bold transition-all duration-200",
                   isActive ? "text-white shadow-md" : "hover:bg-muted/50"
                 )}
                 style={isActive ? { backgroundColor: style.text, color: "white" } : { color: style.text }}

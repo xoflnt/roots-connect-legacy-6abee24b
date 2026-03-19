@@ -2,13 +2,8 @@ import { createContext, useContext, useState, useEffect, type ReactNode } from "
 
 export type FontSizeLevel = "normal" | "large" | "xlarge";
 
-const FONT_SIZES: Record<FontSizeLevel, number> = {
-  normal: 16,
-  large: 19,
-  xlarge: 22,
-};
-
 const LEVELS: FontSizeLevel[] = ["normal", "large", "xlarge"];
+const ALL_CLASSES = LEVELS.map((l) => `fs-${l}`);
 
 interface FontSizeContextType {
   level: FontSizeLevel;
@@ -27,7 +22,12 @@ export function FontSizeProvider({ children }: { children: ReactNode }) {
   });
 
   useEffect(() => {
-    document.documentElement.style.fontSize = `${FONT_SIZES[level]}px`;
+    const root = document.documentElement;
+    // Remove all font-size classes, add current one
+    root.classList.remove(...ALL_CLASSES);
+    root.classList.add(`fs-${level}`);
+    // Ensure root font-size stays at 16px (Tailwind default)
+    root.style.fontSize = "";
     localStorage.setItem("font-size-level", level);
   }, [level]);
 
