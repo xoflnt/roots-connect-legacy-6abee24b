@@ -70,7 +70,7 @@ function StatCard({ icon: Icon, label, value }: { icon: React.ElementType; label
         <Icon className="h-6 w-6 text-primary" />
       </div>
       <div>
-        <p className="text-2xl font-extrabold text-foreground">{value}</p>
+        <p className="text-2xl font-extrabold text-foreground">{toArabicNum(value)}</p>
         <p className="text-sm text-muted-foreground font-medium">{label}</p>
       </div>
     </div>
