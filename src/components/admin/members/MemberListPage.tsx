@@ -31,6 +31,7 @@ export function MemberListPage() {
     filters,
     updateFilters,
     isLoading,
+    refresh,
   } = useMembers();
 
   const isMobile = useIsMobile();
@@ -47,9 +48,8 @@ export function MemberListPage() {
   }, [searchInput, updateFilters]);
 
   const handleAddSuccess = () => {
-    // Force re-render by resetting page
-    setPage(1);
     setAddOpen(false);
+    refresh();
   };
 
   return (

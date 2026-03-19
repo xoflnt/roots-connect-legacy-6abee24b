@@ -177,7 +177,7 @@ export function AddMemberSheet({
 
       const member: FamilyMember = {
         id: generatedId,
-        name: name.trim(),
+        name: selectedFather && !noFather ? `${name.trim()} بن ${selectedFather.name}` : name.trim(),
         gender: gender as "M" | "F",
         father_id: noFather ? null : selectedFather?.id ?? null,
         birth_year: birthYearStr || undefined,
