@@ -8,6 +8,7 @@ import type { KinshipViewProps } from "./types";
 import type { DirectionalKinship } from "@/services/familyService";
 import { getBranch, getBranchStyle } from "@/utils/branchUtils";
 import { toArabicNum } from "@/utils/arabicUtils";
+import { applyTatweel } from "@/utils/tatweelUtils";
 import { inferMotherName } from "@/services/familyService";
 import { useAuth } from "@/contexts/AuthContext";
 import { canSeeMotherName, privateLabel } from "@/utils/privacyUtils";
@@ -32,8 +33,8 @@ export function KinshipCardView({
   const { currentUser } = useAuth();
   const isLoggedIn = !!currentUser;
 
-  const name1 = person1.name.split(" ")[0];
-  const name2 = person2.name.split(" ")[0];
+  const name1 = applyTatweel(person1.name.split(" ")[0]);
+  const name2 = applyTatweel(person2.name.split(" ")[0]);
   const lcaName = result.lca?.name.split(" ")[0] ?? "";
   const lcaLabel = (() => {
     const isFemale = result.lca?.gender === "F";
@@ -334,7 +335,7 @@ function PersonChip({
       <div className={`w-10 h-10 rounded-xl mx-auto flex items-center justify-center ${genderBg}`}>
         <User className={`h-5 w-5 ${genderText}`} />
       </div>
-      <p className="text-sm font-bold text-foreground line-clamp-2">{member.name}</p>
+      <p className="text-sm font-bold text-foreground line-clamp-2">{(() => { const p = member.name.split(' '); p[0] = applyTatweel(p[0]); return p.join(' '); })()}</p>
       {branch && branchStyle && (
         <span
           className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full"

@@ -488,7 +488,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
       <section className="py-8 px-4 border-t border-border/30">
         <div className="max-w-4xl mx-auto text-center space-y-6">
           <div className="inline-block px-5 py-2 rounded-full bg-accent/15 text-accent font-bold text-sm">
-            ركائز العائلة
+            {applyTatweel("ركائز العائلة")}
           </div>
           <h2 className="text-2xl md:text-4xl font-extrabold text-foreground">
             أبناء زيد الثلاثة — أعمدة الفرع

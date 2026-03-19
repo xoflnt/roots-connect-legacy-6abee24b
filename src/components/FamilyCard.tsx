@@ -11,6 +11,7 @@ import { formatAge } from "@/utils/ageCalculator";
 import { getBranch, getBranchStyle, DOCUMENTER_ID } from "@/utils/branchUtils";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { canSeeAge, canSeeSpouses, canSeeMotherName, privateLabel } from "@/utils/privacyUtils";
+import { applyTatweel } from "@/utils/tatweelUtils";
 
 type FamilyCardData = FamilyMember & {
   branchColorIndex: number;
@@ -111,7 +112,7 @@ function FamilyCardComponent({ data, selected }: NodeProps) {
 
         <div className="flex items-center justify-center gap-1 px-2 w-full" dir="rtl">
           <h3 className="text-sm font-bold text-foreground leading-tight line-clamp-1">
-            {member.name}
+            {(() => { const p = member.name.split(' '); p[0] = applyTatweel(p[0]); return p.join(' '); })()}
           </h3>
           {member.isVerified && (
             <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-[#22c55e]" />
@@ -205,7 +206,7 @@ function FamilyCardComponent({ data, selected }: NodeProps) {
 
       <div className="flex items-center justify-center gap-1 px-3 w-full" dir="rtl">
         <h3 className="text-base font-bold text-foreground leading-tight line-clamp-2">
-          {member.name}
+          {(() => { const p = member.name.split(' '); p[0] = applyTatweel(p[0]); return p.join(' '); })()}
         </h3>
         {member.isVerified && (
           <TooltipProvider>

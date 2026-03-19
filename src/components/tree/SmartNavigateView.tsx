@@ -13,6 +13,7 @@ import {
   inferMotherName,
 } from "@/services/familyService";
 import { getBranch, getBranchStyle, DOCUMENTER_ID } from "@/utils/branchUtils";
+import { applyTatweel } from "@/utils/tatweelUtils";
 import { formatAge } from "@/utils/ageCalculator";
 import { HeritageBadge } from "@/components/HeritageBadge";
 import { PersonDetails } from "@/components/PersonDetails";
@@ -445,7 +446,7 @@ export function SmartNavigateView() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h2 className="text-lg font-extrabold text-foreground">{member.name}</h2>
+                  <h2 className="text-lg font-extrabold text-foreground">{(() => { const p = member.name.split(' '); p[0] = applyTatweel(p[0]); return p.join(' '); })()}</h2>
                   {verified && <BadgeCheck className="h-4 w-4 text-green-500" />}
                 </div>
                 {branch && (

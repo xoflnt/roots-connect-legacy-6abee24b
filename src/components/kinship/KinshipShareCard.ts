@@ -4,6 +4,7 @@ import type { DirectionalKinship } from "@/services/familyService";
 import { getBranch } from "@/utils/branchUtils";
 import { inferMotherName } from "@/services/familyService";
 import { canSeeMotherName, privateLabel } from "@/utils/privacyUtils";
+import { applyTatweelCanvas } from "@/utils/tatweelUtils";
 
 /* ── Hardcoded palette (always light, no CSS vars) ── */
 const C = {
@@ -103,8 +104,8 @@ export async function generateKinshipImage(
 ): Promise<HTMLCanvasElement> {
   await loadFont();
 
-  const name1 = person1.name.split(" ")[0];
-  const name2 = person2.name.split(" ")[0];
+  const name1 = applyTatweelCanvas(person1.name.split(" ")[0]);
+  const name2 = applyTatweelCanvas(person2.name.split(" ")[0]);
   const lcaName = result.lca?.name.split(" ")[0] ?? "";
   const lcaLabel = result.lca?.gender === "F" ? "الجدة المشتركة" : "الجد المشترك";
   const branch1 = getBranch(person1.id);
@@ -264,7 +265,7 @@ export async function generateKinshipImage(
     setFont(ctx, "bold 13px Tajawal");
     ctx.fillStyle = C.textPrimary;
     ctx.textAlign = "center";
-    const firstName = member.name.split(" ")[0];
+    const firstName = applyTatweelCanvas(member.name.split(" ")[0]);
     ctx.fillText(firstName, x + chipW / 2, chipY + 48);
 
     // Branch pill
