@@ -190,6 +190,7 @@
   body {
     @apply bg-background text-foreground;
     font-family: 'YearOfHandicrafts', 'Tajawal', sans-serif;
+    font-size: var(--text-scale);
   }
 
   /* Allow pinch-to-zoom on family tree canvas */
