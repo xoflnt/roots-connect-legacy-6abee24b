@@ -214,6 +214,23 @@ serve(async (req) => {
       return json({ success: true });
     }
 
+    // ─── ARCHIVE MEMBER (admin only) ───
+    if (path === "archive-member" && req.method === "POST") {
+      if (!(await validateAdminToken(req, supabase))) {
+        return json({ error: "Unauthorized" }, 401);
+      }
+      const { memberId } = await req.json();
+      if (!memberId) return json({ error: "memberId required" }, 400);
+
+      const { error: archiveError } = await supabase
+        .from("family_members")
+        .update({ is_archived: true, archived_at: new Date().toISOString() })
+        .eq("id", memberId);
+
+      if (archiveError) return json({ error: archiveError.message }, 500);
+      return json({ success: true });
+    }
+
     return json({ error: "Invalid endpoint" }, 400);
   } catch (error) {
     console.error("[family-api] Error:", error);

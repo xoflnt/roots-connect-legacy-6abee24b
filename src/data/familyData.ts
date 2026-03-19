@@ -9,6 +9,7 @@ export interface FamilyMember {
   spouses?: string;
   phone?: string;
   notes?: string;
+  is_archived?: boolean;
 }
 
 export const familyMembers: FamilyMember[] = [

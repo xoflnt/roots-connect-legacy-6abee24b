@@ -45,7 +45,7 @@ async function callFamilyApi(action: string, body: Record<string, unknown>, head
 export async function getMembers(): Promise<FamilyMember[]> {
   const { data, error } = await supabase
     .from("family_members")
-    .select("id, name, gender, father_id, birth_year, death_year, spouses, notes")
+    .select("id, name, gender, father_id, birth_year, death_year, spouses, notes, is_archived")
     .order("created_at", { ascending: true });
 
   if (error) {
@@ -63,6 +63,7 @@ export async function getMembers(): Promise<FamilyMember[]> {
     spouses: row.spouses,
     phone: null,
     notes: row.notes,
+    is_archived: row.is_archived ?? false,
   }));
 }
 

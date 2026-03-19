@@ -54,8 +54,10 @@ export async function loadMembers(): Promise<void> {
       if (!staticMap.has(m.id)) merged.push(m);
     });
 
-    console.log(`[familyService] merged ${merged.length} members (static=${staticMembers.length}, cloud=${cloudMembers.length})`);
-    buildMaps(merged);
+    // Filter out archived members from public views
+    const active = merged.filter(m => !m.is_archived);
+    console.log(`[familyService] merged ${merged.length} members, ${active.length} active (static=${staticMembers.length}, cloud=${cloudMembers.length})`);
+    buildMaps(active);
     initialized = true;
   } catch (e) {
     console.error("[familyService] loadMembers error, using static fallback:", e);
