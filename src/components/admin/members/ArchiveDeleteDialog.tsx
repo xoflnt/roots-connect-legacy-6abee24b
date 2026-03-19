@@ -30,35 +30,35 @@ export function ArchiveDeleteDialog({
 }: ArchiveDeleteDialogProps) {
   const [countdown, setCountdown] = useState(5);
   const [counting, setCounting] = useState(false);
+  const [readyToDelete, setReadyToDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const childrenCount = allMembers.filter(
     (m) => m.father_id === member.id
   ).length;
 
-  // Reset state when dialog opens/closes
+  // Reset state when dialog closes
   useEffect(() => {
     if (!isOpen) {
       setCountdown(5);
       setCounting(false);
+      setReadyToDelete(false);
       setIsDeleting(false);
     }
   }, [isOpen]);
 
-  // Countdown timer
+  // Countdown timer using setTimeout
   useEffect(() => {
     if (!counting) return;
-    if (countdown <= 0) return;
-    const timer = setInterval(() => {
-      setCountdown((c) => {
-        if (c <= 1) {
-          clearInterval(timer);
-          return 0;
-        }
-        return c - 1;
-      });
+    if (countdown <= 0) {
+      setReadyToDelete(true);
+      setCounting(false);
+      return;
+    }
+    const timer = setTimeout(() => {
+      setCountdown((c) => c - 1);
     }, 1000);
-    return () => clearInterval(timer);
+    return () => clearTimeout(timer);
   }, [counting, countdown]);
 
   const handleStartCountdown = () => {
