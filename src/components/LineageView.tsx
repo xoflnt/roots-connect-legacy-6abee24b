@@ -126,7 +126,7 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
             سلسلة النسب
           </div>
           <h2 className="text-2xl md:text-3xl font-extrabold text-foreground break-words">
-            نسب {chain[0].name}
+            نـسـب {chain[0].name}
           </h2>
           <p className="text-muted-foreground text-sm">
             من {chain[0].name} إلى الجد الأعلى — {toArabicNum(chain.length)} أجيال

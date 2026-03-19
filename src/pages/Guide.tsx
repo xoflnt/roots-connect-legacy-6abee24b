@@ -323,7 +323,7 @@ export default function Guide() {
           <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
             <BookOpen className="h-4.5 w-4.5 text-primary" />
           </div>
-          <h1 className="text-base md:text-lg font-extrabold text-foreground">دليل الاستخدام</h1>
+          <h1 className="text-base md:text-lg font-extrabold text-foreground">دلـيـل الاسـتـخـدام</h1>
         </div>
         <Button variant="ghost" size="icon" onClick={() => window.history.length > 1 ? navigate(-1) : navigate("/")} className="h-11 w-11 rounded-xl">
           <Home className="h-5 w-5" />

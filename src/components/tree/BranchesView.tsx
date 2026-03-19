@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
+import { applyTatweel } from "@/utils/tatweelUtils";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   getChildrenOf,
@@ -232,7 +233,7 @@ function MobileBranchesView() {
             background: `linear-gradient(135deg, ${branchStyle.text}12 0%, transparent 60%)`,
           }}
         >
-          <h2 className="font-extrabold text-lg text-foreground mb-1">{pillar?.label}</h2>
+          <h2 className="font-extrabold text-lg text-foreground mb-1">{applyTatweel(pillar?.label ?? "")}</h2>
           <button
             onClick={() => stats.notableMembers.founder && setSelectedMember(stats.notableMembers.founder)}
             className="text-sm text-muted-foreground hover:underline min-h-[44px] flex items-center"
