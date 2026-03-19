@@ -75,6 +75,7 @@ export function AddMemberSheet({
   const [deathDate, setDeathDate] = useState<HijriDate>({});
   const [spouses, setSpouses] = useState<string[]>([]);
   const [notes, setNotes] = useState("");
+  const [selectedMother, setSelectedMother] = useState("");
   const [fatherSearchOpen, setFatherSearchOpen] = useState(false);
   const [fatherQuery, setFatherQuery] = useState("");
 
@@ -99,10 +100,6 @@ export function AddMemberSheet({
     return allMembers.filter((m) => m.father_id === selectedFather.id).length;
   }, [selectedFather, allMembers]);
 
-  const grandfather = useMemo(() => {
-    if (!selectedFather?.father_id) return null;
-    return allMembers.find((m) => m.id === selectedFather.father_id) ?? null;
-  }, [selectedFather, allMembers]);
 
   // Father search results
   const males = useMemo(
@@ -170,6 +167,14 @@ export function AddMemberSheet({
       const birthYearStr = composeHijriString(birthDate);
       const deathYearStr = isDeceased ? composeHijriString(deathDate) : undefined;
 
+      let finalNotes = notes.trim() || "";
+      if (selectedMother && selectedMother !== "غير معروفة") {
+        const prefix = gender === "M"
+          ? `والدته: ${selectedMother}`
+          : `والدتها: ${selectedMother}`;
+        finalNotes = finalNotes ? `${prefix}\n${finalNotes}` : prefix;
+      }
+
       const member: FamilyMember = {
         id: generatedId,
         name: name.trim(),
@@ -178,7 +183,7 @@ export function AddMemberSheet({
         birth_year: birthYearStr || undefined,
         death_year: deathYearStr || undefined,
         spouses: spousesText || undefined,
-        notes: notes.trim() || undefined,
+        notes: finalNotes || undefined,
       };
 
       const token = getAdminToken();
@@ -213,6 +218,7 @@ export function AddMemberSheet({
     setDeathDate({});
     setSpouses([]);
     setNotes("");
+    setSelectedMother("");
     setErrors({});
     setFatherQuery("");
   };
@@ -222,10 +228,9 @@ export function AddMemberSheet({
     let chain = name.trim();
     if (selectedFather) {
       chain += ` بن ${selectedFather.name}`;
-      if (grandfather) chain += ` بن ${grandfather.name}`;
     }
     return chain;
-  }, [name, selectedFather, grandfather]);
+  }, [name, selectedFather]);
 
   const birthYearStr = composeHijriString(birthDate);
 
@@ -284,7 +289,7 @@ export function AddMemberSheet({
                     {selectedFather.name}
                   </span>
                   <button
-                    onClick={() => setSelectedFather(null)}
+                    onClick={() => { setSelectedFather(null); setSelectedMother(""); }}
                     className="p-1.5 rounded-lg hover:bg-background min-w-[36px] min-h-[36px] flex items-center justify-center"
                   >
                     <X className="h-4 w-4" />
@@ -358,6 +363,7 @@ export function AddMemberSheet({
                                 onSelect={() => {
                                   setSelectedFather(m);
                                   setNoFather(false);
+                                  setSelectedMother("");
                                   setFatherSearchOpen(false);
                                   setFatherQuery("");
                                 }}
@@ -416,16 +422,36 @@ export function AddMemberSheet({
                 </div>
               )}
 
-              {/* Father's spouses */}
+              {/* Mother selection from father's spouses */}
               {selectedFather && selectedFather.spousesArray.length > 0 && (
-                <div className="mt-2 space-y-1">
-                  <span className="text-sm text-muted-foreground">زوجات الأب:</span>
-                  <div className="flex flex-wrap gap-1.5">
+                <div className="mt-2 space-y-2">
+                  <span className="text-sm font-medium text-foreground">اختر أم الطفل:</span>
+                  <div className="space-y-1.5">
                     {selectedFather.spousesArray.map((s, i) => (
-                      <Badge key={i} variant="outline" className="text-sm font-normal">
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => setSelectedMother(s)}
+                        className={`min-h-12 w-full rounded-xl text-right px-4 text-base border transition-colors ${
+                          selectedMother === s
+                            ? "bg-primary/10 border-primary text-primary"
+                            : "bg-card border-border text-foreground hover:bg-muted"
+                        }`}
+                      >
                         {s}
-                      </Badge>
+                      </button>
                     ))}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedMother("غير معروفة")}
+                      className={`min-h-12 w-full rounded-xl text-right px-4 text-base border transition-colors ${
+                        selectedMother === "غير معروفة"
+                          ? "bg-primary/10 border-primary text-primary"
+                          : "bg-card border-border text-muted-foreground hover:bg-muted"
+                      }`}
+                    >
+                      غير معروفة
+                    </button>
                   </div>
                 </div>
               )}
