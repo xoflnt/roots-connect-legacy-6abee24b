@@ -713,13 +713,16 @@ export function AddMemberSheet({
         isOpen={confirmOpen}
         onClose={() => setConfirmOpen(false)}
         onConfirm={handleConfirm}
-        title="تأكيد الإضافة"
-        confirmText="حفظ العضو"
+        title={isEditMode ? "تأكيد التعديل" : "تأكيد الإضافة"}
+        confirmText={isEditMode ? "حفظ التعديلات" : "حفظ العضو"}
         isLoading={isSaving}
       >
         <div className="space-y-1 text-right">
           <p>
-            هل تريد إضافة <strong>{name.trim()}</strong>؟
+            {isEditMode
+              ? <>هل تريد تعديل بيانات <strong>{name.trim()}</strong>؟</>
+              : <>هل تريد إضافة <strong>{name.trim()}</strong>؟</>
+            }
           </p>
           {lineagePreview && (
             <p className="text-sm">{lineagePreview}</p>
