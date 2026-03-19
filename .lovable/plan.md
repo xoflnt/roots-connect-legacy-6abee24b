@@ -1,28 +1,35 @@
 
 
-# Fix Child Display Names — Show First Name Only
+# Fix: Consistent `getFirstName` for Children Chips
 
 ## Problem
-Children chips show full lineage names like "عبدالله بن علي بن محمد" instead of just "عبدالله".
+Current code splits only on `" بن "`, missing female names like `"ألماس بنت علي"`.
 
 ## Solution
-Apply `name.split(' بن ')[0]` to all child chip/badge displays across 4 files.
+Add a shared `getFirstName` utility and use it in all 4 files.
 
-## Files to Modify
+### 1. Create `src/utils/nameUtils.ts`
+```ts
+export function getFirstName(fullName: string): string {
+  return fullName.split(/\s+بن[تة]?\s+/)[0].trim();
+}
+```
 
-### 1. `src/components/PersonDetails.tsx` (line 297)
-Change `{child.name}` → `{child.name.split(' بن ')[0]}`
+### 2. Update 4 files
+Replace `.split(' بن ')[0]` with `getFirstName(child.name)`:
 
-### 2. `src/components/admin/members/MemberDetailSheet.tsx` (line 146)
-Change `{child.name}` → `{child.name.split(' بن ')[0]}`
+- **`src/components/PersonDetails.tsx`** (line 297)
+- **`src/components/admin/members/MemberDetailSheet.tsx`** (line 146)
+- **`src/components/LineageView.tsx`** (line 477)
+- **`src/pages/Profile.tsx`** (line 312)
 
-### 3. `src/components/LineageView.tsx` (line 477)
-Change `{child.name}` → `{child.name.split(' بن ')[0]}`
+Each file gets `import { getFirstName } from "@/utils/nameUtils"` added.
 
-### 4. `src/pages/Profile.tsx` (line 312)
-Change `{child.name}` → `{child.name.split(' بن ')[0]}`
+### 3. `OnboardingModal.tsx` — no change
+Already uses `.split(" ")[0]` which works correctly for its context.
 
-No changes needed in `OnboardingModal.tsx` — it already uses `child.name.split(" ")[0]` (similar effect).
+### 4. `KinshipCardView.tsx` — no change
+Does not display children as chips.
 
-Each child has a unique `id`, so "زيد بن علي" and "خالد بن علي" are separate members and won't be confused — we only change the display text, not the data or keys.
+**Total: 5 files touched** (1 new utility + 4 updated imports/usages).
 
