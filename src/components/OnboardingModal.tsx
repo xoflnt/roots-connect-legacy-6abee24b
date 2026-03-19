@@ -567,17 +567,6 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                   </p>
                 </div>
 
-                {/* WhatsApp toggle */}
-                <div className="w-full bg-white rounded-xl border border-border p-3 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <MessageCircle className="h-5 w-5 text-green-600" />
-                    <div>
-                      <p className="font-bold text-sm text-foreground">التحقق عبر واتساب</p>
-                      <p className="text-xs text-muted-foreground">أسرع وأكثر سهولة</p>
-                    </div>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
 
                 <button
                   onClick={handlePhoneContinue}
