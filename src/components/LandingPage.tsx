@@ -458,7 +458,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
       {/* ─── 4. كلمة الموثّق ─── */}
       <section className="py-6 px-4">
         <div className="max-w-lg mx-auto text-center space-y-4">
-          <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[hsl(35,70%,92%)] text-[hsl(35,55%,30%)] font-bold text-sm">
+          <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-documenter text-documenter-foreground font-bold text-sm">
             <ScrollText className="h-4 w-4" />
             كلمة الموثّق
           </div>
