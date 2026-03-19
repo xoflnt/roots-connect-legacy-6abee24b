@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { getFirstName } from "@/utils/nameUtils";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
