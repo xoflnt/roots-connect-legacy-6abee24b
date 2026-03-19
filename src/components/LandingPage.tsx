@@ -103,7 +103,7 @@ function StatCard({ icon: Icon, label, value, suffix, highlight }: { icon: React
       <Icon className="h-5 w-5 text-accent shrink-0" />
       <span className="text-2xl md:text-3xl font-extrabold text-foreground">
         {highlight && <span className="text-primary">{highlight} </span>}
-        {counter.value}{suffix}
+        {toArabicNum(counter.value)}{suffix}
       </span>
       <span className="text-xs md:text-sm text-muted-foreground font-bold text-center break-words leading-snug">{label}</span>
     </div>
