@@ -95,7 +95,7 @@ function FamilyCardComponent({ data, selected }: NodeProps) {
              : "border-[hsl(var(--female)/0.25)] bg-card/95"
           }
         `}
-        style={{ fontFamily: "'Tajawal', sans-serif" }}
+        style={{ fontFamily: "'YearOfHandicrafts', 'Tajawal', sans-serif" }}
       >
         {generationBadge}
 
