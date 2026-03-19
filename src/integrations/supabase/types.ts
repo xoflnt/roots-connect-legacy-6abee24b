@@ -85,12 +85,14 @@ export type Database = {
       }
       family_members: {
         Row: {
+          archived_at: string | null
           birth_year: string | null
           created_at: string | null
           death_year: string | null
           father_id: string | null
           gender: string
           id: string
+          is_archived: boolean | null
           name: string
           notes: string | null
           phone: string | null
@@ -98,12 +100,14 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          archived_at?: string | null
           birth_year?: string | null
           created_at?: string | null
           death_year?: string | null
           father_id?: string | null
           gender: string
           id: string
+          is_archived?: boolean | null
           name: string
           notes?: string | null
           phone?: string | null
@@ -111,12 +115,14 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          archived_at?: string | null
           birth_year?: string | null
           created_at?: string | null
           death_year?: string | null
           father_id?: string | null
           gender?: string
           id?: string
+          is_archived?: boolean | null
           name?: string
           notes?: string | null
           phone?: string | null

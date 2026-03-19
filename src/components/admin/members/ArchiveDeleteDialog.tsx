@@ -10,7 +10,8 @@ import { toArabicNum } from "@/utils/arabicUtils";
 import { deleteMember } from "@/services/dataService";
 import { getAdminToken } from "@/components/AdminProtect";
 import { toast } from "@/hooks/use-toast";
-import { Archive, Trash2 } from "lucide-react";
+import { Archive, Trash2, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import type { EnrichedMember } from "@/hooks/admin/useMembers";
 
 interface ArchiveDeleteDialogProps {
@@ -32,6 +33,7 @@ export function ArchiveDeleteDialog({
   const [counting, setCounting] = useState(false);
   const [readyToDelete, setReadyToDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [archiving, setArchiving] = useState(false);
 
   const childrenCount = allMembers.filter(
     (m) => m.father_id === member.id
@@ -44,6 +46,7 @@ export function ArchiveDeleteDialog({
       setCounting(false);
       setReadyToDelete(false);
       setIsDeleting(false);
+      setArchiving(false);
     }
   }, [isOpen]);
 
@@ -84,6 +87,30 @@ export function ArchiveDeleteDialog({
     }
   }, [member.id, onSuccess]);
 
+  const handleArchive = useCallback(async () => {
+    setArchiving(true);
+    try {
+      const token = getAdminToken();
+      if (!token) throw new Error("غير مصرّح");
+      const { error } = await supabase.functions.invoke("family-api/archive-member", {
+        body: { memberId: member.id },
+        headers: { "x-admin-token": token },
+      });
+      if (error) throw error;
+      toast({ title: "تم أرشفة العضو" });
+      onSuccess();
+      onClose();
+    } catch (err) {
+      toast({
+        title: "فشلت الأرشفة",
+        description: err instanceof Error ? err.message : "حدث خطأ",
+        variant: "destructive",
+      });
+    } finally {
+      setArchiving(false);
+    }
+  }, [member.id, onSuccess, onClose]);
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-md" dir="rtl">
@@ -106,16 +133,23 @@ export function ArchiveDeleteDialog({
               سيتم إخفاء العضو من الشجرة العامة.
               يمكن استعادته لاحقاً.
             </p>
-            <p className="text-sm bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 rounded-xl px-3 py-2">
-              ⚠️ خاصية الأرشفة ستتوفر قريباً
-            </p>
             <Button
-              disabled
-              className="w-full min-h-[48px] text-base rounded-xl opacity-50"
+              onClick={handleArchive}
+              disabled={archiving}
+              className="w-full min-h-[48px] text-base rounded-xl"
               variant="outline"
             >
-              <Archive className="h-4 w-4 me-2" />
-              أرشفة
+              {archiving ? (
+                <>
+                  <Loader2 className="h-4 w-4 me-2 animate-spin" />
+                  جاري الأرشفة...
+                </>
+              ) : (
+                <>
+                  <Archive className="h-4 w-4 me-2" />
+                  أرشفة
+                </>
+              )}
             </Button>
           </div>
 

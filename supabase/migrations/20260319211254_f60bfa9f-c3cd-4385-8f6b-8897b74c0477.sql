@@ -1,0 +1,3 @@
+ALTER TABLE family_members 
+  ADD COLUMN IF NOT EXISTS is_archived BOOLEAN DEFAULT false,
+  ADD COLUMN IF NOT EXISTS archived_at TIMESTAMPTZ;
