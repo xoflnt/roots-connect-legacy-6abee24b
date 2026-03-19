@@ -188,19 +188,38 @@ function AdminContent() {
 
   const handleSync = async () => {
     setSyncing(true);
-    setSyncResult('');
+    setSyncResult('جاري المزامنة...');
+
     try {
-      const members = familyMembers;
-      const { data, error } = await supabase.functions.invoke('seed-family-data', {
-        body: { members }
-      });
-      if (error) throw error;
-      const inserted = (data as any)?.inserted ?? members.length;
-      const total = members.length;
-      setSyncResult(inserted < total ? `تمت المزامنة: ${inserted} من ${total} فرد` : `تمت المزامنة: ${total} فرد`);
+      const { data, error } = await supabase.functions.invoke(
+        'seed-family-data',
+        { body: { members: familyMembers } }
+      );
+
+      if (error) {
+        setSyncResult(`فشل: ${error.message}`);
+        return;
+      }
+
+      const d = data as any;
+
+      const lines = [
+        `المُرسل: ${familyMembers.length}`,
+        `المُدرج: ${d?.inserted ?? '؟'}`,
+        `الأيتام المُصلحة: ${d?.orphans_cleaned ?? '؟'}`,
+        `نجح: ${d?.success ? 'نعم' : 'لا'}`,
+        d?.errors?.length > 0
+          ? `أخطاء (${d.errors.length}): ${d.errors[0]?.id} — ${d.errors[0]?.error}`
+          : 'لا أخطاء',
+        d?.diagnostics?.fathers_outside_set?.length > 0
+          ? `آباء ناقصون: ${d.diagnostics.fathers_outside_set.join('، ')}`
+          : 'لا آباء ناقصون',
+      ].filter(Boolean).join('\n');
+
+      setSyncResult(lines);
       await loadData();
     } catch (err: any) {
-      setSyncResult('فشلت المزامنة: ' + (err.message || 'خطأ غير معروف'));
+      setSyncResult(`استثناء: ${err.message ?? String(err)}`);
     } finally {
       setSyncing(false);
     }
