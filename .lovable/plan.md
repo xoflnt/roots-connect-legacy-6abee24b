@@ -1,52 +1,63 @@
 
 
-# Phase 1A: Admin Panel Foundation — Modular Shell
+# Phase 1B: Dashboard Page + Member List
 
-## Summary
-Replace the monolithic Admin.tsx with a navigable admin shell: sidebar on desktop, bottom bar on mobile, section-based routing. All existing functionality moves into the 'dashboard' section.
+## Files to Create (6)
 
-## Files to Create
+### 1. `src/hooks/admin/useDashboard.ts`
+Custom hook that loads dashboard stats using `getAllMembers()`, `getRequests()`, `getVerifiedUsers()`, `getVisitCount()`. Returns `{ stats: DashboardStats, isLoading, refetch }`. Computes `livingMembers` as `members.filter(m => !m.death_year).length`, `pendingRequests` from requests with status `'pending'`.
 
-### 1. `src/types/admin.ts`
-Type definitions: `AdminSection` union, `AdminRequest`, `VerifiedUser`, `DashboardStats` — exactly as specified.
+### 2. `src/hooks/admin/useMembers.ts`
+Custom hook for filtered, paginated member browsing. Enriches each member with `branch` (via `getBranch`), `generation` (via `getDepth`), `isDeceased`, `fatherName`, `spousesArray`. Filters using `arabicMatch` for search, plus branch/status/gender/generation dropdowns. PAGE_SIZE=30. Resets page on filter change. Exports `EnrichedMember` and `MemberFilters` interfaces.
 
-### 2. `src/utils/normalizeArabic.ts`
-Two functions: `normalizeArabic()` (strip diacritics, normalize hamza/ta-marbuta/alef-maqsura/tatweel) and `arabicMatch()` (substring check using normalized forms).
+### 3. `src/components/admin/dashboard/DashboardPage.tsx`
+Props: `onNavigate: (section: AdminSection) => void`
 
-### 3. `src/components/admin/AdminSidebar.tsx`
-- RTL sidebar, 240px wide, border-left (RTL context)
-- 8 nav items with lucide icons, Arabic labels, min-h-12 tap targets
-- Header: "لوحة الإدارة" + "بوابة تراث الخنيني"
-- Footer: admin name + logout button
-- Active state: `bg-primary text-primary-foreground rounded-lg`
+Layout:
+- **Action banner** (amber, only if pendingRequests > 0) — tappable, navigates to `'requests'`
+- **Stats grid** — 2-col mobile, 3-col desktop. 5 stat cards (totalMembers/TreePine, livingMembers/Heart, activeUsers/Users, totalVisits/Eye, pendingRequests/FileText). Numbers via `toArabicNum()`.
+- **Branch overview** — 3 cards with colored right borders (green=300, amber=200, orange=400). Shows per-branch member count computed client-side from `getAllMembers()` + `getBranch()`.
+- **Sync section** — moved from existing DashboardContent (sync button + STATIC_COUNT display + syncResult)
+- **Refresh button** in header
 
-### 4. `src/components/admin/AdminBottomBar.tsx`
-- Fixed bottom, `md:hidden`, safe-area padding
-- 4 tabs: الرئيسية, الأعضاء, الطلبات, المزيد
-- "المزيد" opens a Sheet listing remaining 5 sections
-- Min-h-14 per tab, min-h-12 per sheet item
+### 4. `src/components/admin/members/MemberListPage.tsx`
+Uses `useMembers()` hook.
 
-### 5. `src/components/admin/AdminLayout.tsx`
-- Props: `currentSection`, `onNavigate`, `adminName`, `onLogout`, `children`
-- Desktop: flex row — sidebar (right in RTL) + scrollable content
-- Mobile: full-width content + bottom bar
-- Uses `useIsMobile()` hook
+- Header: "الأعضاء" + Badge with total count
+- Search Input (debounced 300ms), placeholder: "ابحث بالاسم أو المعرف..."
+- Filter row (horizontal scroll on mobile): 4 Select dropdowns for branch/status/gender/generation
+- List of `MemberCard` components
+- `Pagination` component at bottom
 
-## Files to Modify
+### 5. `src/components/admin/members/MemberCard.tsx`
+Props: `member: EnrichedMember`, `isEven: boolean`
 
-### 6. `src/pages/Admin.tsx`
-- Keep `AdminProtect` wrapper, `getAdminToken`, all helper functions (`StatCard`, `RequestCard`, CSV helpers) untouched
-- Add `section` state of type `AdminSection`
-- Wrap existing content in `<AdminLayout>` 
-- When `section === 'dashboard'`: render ALL existing content (sync, stats, tabs)
-- Other sections: placeholder "قيد التطوير"
-- Logout clears sessionStorage keys + reloads
+Card row (min-h-16):
+- Right: branch color dot (6px) + name (font-semibold) + "بن {fatherName}" lineage + generation badge "ج{N}"
+- Left: birth year + deceased indicator (رحمه/رحمها الله) + placeholder ⋮ button
+- Even rows get `bg-muted/30`
 
-## Technical Details
+### 6. `src/components/admin/shared/Pagination.tsx`
+Props: `page, totalPages, onPageChange`
 
-- All containers use `dir="rtl"`, margin/padding use `ms-`/`me-` not `ml-`/`mr-`
-- Font sizes ≥ 16px, tap targets ≥ 48px
-- Desktop breakpoint: `md:` (768px) via Tailwind + `useIsMobile()` hook
-- Sheet component from `@/components/ui/sheet` for mobile "more" menu
-- Full-height layout: `h-[100dvh]` with `env(safe-area-inset-*)` padding
+Centered: prev (ChevronRight in RTL) + "صفحة X من Y" + next (ChevronLeft in RTL). Buttons disabled at boundaries. Min-h-12 buttons.
+
+## Files to Modify (1)
+
+### 7. `src/pages/Admin.tsx`
+- Remove the inline `DashboardContent` component (lines 150-500+) and `StatCard`/`RequestCard` helpers — they move to `DashboardPage`
+- Keep `AdminProtect`, `getDescendants`, `buildCSV`, `downloadCSV` helpers, and the sync logic (these get used by DashboardPage)
+- Wire up section routing in `AdminContent`:
+  - `'dashboard'` → `<DashboardPage onNavigate={setSection} />`
+  - `'members'` → `<MemberListPage />`
+  - Others → placeholder "قيد التطوير"
+
+## Technical Notes
+- `getBranch()` from `branchUtils.ts` walks `father_id` chain — called per member during enrichment (one-time on mount)
+- `getDepth()` from `familyService.ts` counts hops to root — same pattern
+- All numbers displayed via `toArabicNum()`
+- All containers `dir="rtl"`, logical properties (`ms-*`/`me-*`)
+- Min font 16px, min tap 48px throughout
+- Select dropdowns use existing `@/components/ui/select`
+- Sync button and export features stay in DashboardPage (moved from old DashboardContent)
 
