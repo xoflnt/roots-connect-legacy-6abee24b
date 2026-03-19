@@ -75,6 +75,7 @@ export function AddMemberSheet({
   const [deathDate, setDeathDate] = useState<HijriDate>({});
   const [spouses, setSpouses] = useState<string[]>([]);
   const [notes, setNotes] = useState("");
+  const [selectedMother, setSelectedMother] = useState("");
   const [fatherSearchOpen, setFatherSearchOpen] = useState(false);
   const [fatherQuery, setFatherQuery] = useState("");
 
