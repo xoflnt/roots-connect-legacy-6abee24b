@@ -218,6 +218,7 @@ export function AddMemberSheet({
     setDeathDate({});
     setSpouses([]);
     setNotes("");
+    setSelectedMother("");
     setErrors({});
     setFatherQuery("");
   };
