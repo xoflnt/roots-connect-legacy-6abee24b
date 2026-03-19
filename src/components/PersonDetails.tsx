@@ -295,7 +295,7 @@ function DetailContent({ member }: { member: FamilyMember }) {
                         className="text-xs font-medium px-2.5 py-1 rounded-full transition-colors min-h-[28px] bg-muted text-foreground hover:bg-muted/80"
                         style={color ? { borderLeft: `3px solid ${color.stroke}` } : undefined}
                       >
-                        {child.name.split(' بن ')[0]}
+                        {getFirstName(child.name)}
                       </motion.button>
                     ))}
                   </div>
