@@ -339,8 +339,8 @@ export function AddMemberSheet({
               )}
             </div>
 
-            {/* Field 2: Father */}
-            <div className="space-y-1.5">
+            {/* Field 2: Father (hidden in edit mode) */}
+            {!isEditMode && <div className="space-y-1.5">
               <label className="text-base font-medium text-foreground">
                 الأب <span className="text-destructive">*</span>
               </label>
