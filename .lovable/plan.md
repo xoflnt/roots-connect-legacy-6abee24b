@@ -1,51 +1,48 @@
 
 
-# Fix Countdown Button in ArchiveDeleteDialog
+# Add Archive Functionality
 
-## Problem
-The countdown logic uses `setInterval` which can cause race conditions and the button states aren't clearly separated into three phases.
+## Overview
+Add `is_archived` and `archived_at` columns to `family_members`, implement an `archive-member` edge function endpoint, enable the archive button in the UI, and filter archived members from public views.
 
-## Changes — Single file: `src/components/admin/members/ArchiveDeleteDialog.tsx`
-
-### State
-Replace `isDeleting` with `readyToDelete`:
-```ts
-const [countdown, setCountdown] = useState(5);
-const [counting, setCounting] = useState(false);
-const [readyToDelete, setReadyToDelete] = useState(false);
-const [isDeleting, setIsDeleting] = useState(false);
+## Step 1: Database Migration
+```sql
+ALTER TABLE family_members 
+  ADD COLUMN IF NOT EXISTS is_archived BOOLEAN DEFAULT false,
+  ADD COLUMN IF NOT EXISTS archived_at TIMESTAMPTZ;
 ```
 
-### Countdown effect
-Replace `setInterval` with `setTimeout` that re-fires via dependency on `countdown`:
-```ts
-useEffect(() => {
-  if (!counting) return;
-  if (countdown <= 0) {
-    setReadyToDelete(true);
-    setCounting(false);
-    return;
-  }
-  const timer = setTimeout(() => setCountdown(c => c - 1), 1000);
-  return () => clearTimeout(timer);
-}, [counting, countdown]);
-```
+## Step 2: Edge Function — `archive-member` endpoint
+**File: `supabase/functions/family-api/index.ts`**
+- Add new route `archive-member` (admin-only, validated via `validateAdminToken`)
+- Accepts `{ memberId }` in body
+- Updates `family_members` set `is_archived = true, archived_at = now()` where `id = memberId`
+- Returns `{ success: true }`
 
-### Reset effect
-Add `readyToDelete` to reset:
-```ts
-if (!isOpen) {
-  setCountdown(5);
-  setCounting(false);
-  setReadyToDelete(false);
-  setIsDeleting(false);
-}
-```
+## Step 3: Enable Archive Button in UI
+**File: `src/components/admin/members/ArchiveDeleteDialog.tsx`**
+- Add `archiving` state
+- Replace placeholder text and disabled button with working `handleArchive` function
+- Calls edge function `family-api/archive-member` with admin token header
+- Shows loading state on button, toast on success/failure
+- Calls `onSuccess()` + `onClose()` on success
 
-### Button rendering (3 states instead of current ternary chain)
-Replace the `!counting ? ... : countdown > 0 ? ... : ...` block with:
+## Step 4: Filter Archived Members
+**File: `src/services/dataService.ts`**
+- Add `is_archived` to the select columns in `getMembers()`
+- Include `is_archived` in the mapped return object
 
-1. **Not started** (`!counting && !readyToDelete`): outline variant, text "ابدأ الحذف", onClick starts countdown
-2. **Counting** (`counting`): disabled, gray/muted background, text "حذف نهائي ({toArabicNum(countdown)})"
-3. **Ready** (`readyToDelete`): filled destructive, text "تأكيد الحذف النهائي" / "جاري الحذف...", onClick executes delete
+**File: `src/services/familyService.ts`**
+- In `loadMembers()`, after merging, filter out members where `is_archived === true`
+
+**File: `src/data/familyData.ts`**
+- Add `is_archived?: boolean` to `FamilyMember` interface
+
+## Files Changed
+- `supabase/functions/family-api/index.ts` — new endpoint
+- `src/components/admin/members/ArchiveDeleteDialog.tsx` — enable archive button
+- `src/services/dataService.ts` — fetch `is_archived` column
+- `src/services/familyService.ts` — filter archived members
+- `src/data/familyData.ts` — type update
+- Database migration for new columns
 
