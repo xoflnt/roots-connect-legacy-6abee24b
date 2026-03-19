@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
+
 import {
   TreePine, Search, UserCheck, Phone, CalendarDays, ChevronDown, Loader2,
   UserCircle, Users2, Heart, UserPlus, GitBranch, Edit3, BadgeCheck, Info,
