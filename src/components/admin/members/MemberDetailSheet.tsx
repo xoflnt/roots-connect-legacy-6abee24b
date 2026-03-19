@@ -31,9 +31,11 @@ function extractMother(notes: string | null): string | null {
   return match ? match[1].trim() : null;
 }
 
-export function MemberDetailSheet({ member, allMembers, isOpen, onClose }: MemberDetailSheetProps) {
+export function MemberDetailSheet({ member, allMembers, isOpen, onClose, refresh }: MemberDetailSheetProps) {
   const isMobile = useIsMobile();
   const [viewingMember, setViewingMember] = useState<EnrichedMember | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   useEffect(() => {
     setViewingMember(member);
