@@ -517,7 +517,7 @@ export function AddMemberSheet({
                   </div>
                 </div>
               )}
-            </div>
+            </div>}
 
             {/* Field 3: Gender */}
             <div className="space-y-1.5">
