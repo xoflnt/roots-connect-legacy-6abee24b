@@ -1,4 +1,5 @@
 import { useMemo, useCallback } from "react";
+import { getFirstName } from "@/utils/nameUtils";
 import { motion } from "framer-motion";
 import { User, Calendar, Heart, ArrowUp, Users, Share2, Check, Download, UserPlus, Link as LinkIcon, ImageIcon, Loader2 } from "lucide-react";
 import { WhatsAppIcon } from "./WhatsAppIcon";
