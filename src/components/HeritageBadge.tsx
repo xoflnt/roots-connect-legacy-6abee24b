@@ -52,7 +52,7 @@ export function HeritageBadge({ type, generationNum, gender }: HeritageBadgeProp
   return (
     <Badge
       variant="outline"
-      className={`font-scale-exempt gap-1 text-[10px] px-2 py-0.5 font-bold ${config.className}`}
+      className={`gap-1 text-[10px] px-2 py-0.5 font-bold ${config.className}`}
     >
       <Icon className="h-3 w-3" />
       {label}

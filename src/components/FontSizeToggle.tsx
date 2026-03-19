@@ -20,7 +20,7 @@ export function FontSizeToggle() {
       title={`حجم الخط: ${LABELS[level]}`}
     >
       <AArrowUp className="h-5 w-5" />
-      <span className="font-scale-exempt absolute -bottom-0.5 -right-0.5 text-[9px] font-bold bg-primary text-primary-foreground rounded-full w-4 h-4 flex items-center justify-center">
+      <span className="absolute -bottom-0.5 -right-0.5 text-[9px] font-bold bg-primary text-primary-foreground rounded-full w-4 h-4 flex items-center justify-center">
         {LABELS[level]}
       </span>
     </Button>
