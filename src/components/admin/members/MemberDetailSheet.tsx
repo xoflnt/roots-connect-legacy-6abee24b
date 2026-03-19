@@ -3,16 +3,20 @@ import { getFirstName } from "@/utils/nameUtils";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Pencil, Archive, Share2 } from "lucide-react";
+import { Pencil, Trash2, Share2 } from "lucide-react";
 import { toArabicNum } from "@/utils/arabicUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { AddMemberSheet } from "./AddMemberSheet";
+import { ArchiveDeleteDialog } from "./ArchiveDeleteDialog";
 import type { EnrichedMember } from "@/hooks/admin/useMembers";
+import type { FamilyMember } from "@/data/familyData";
 
 interface MemberDetailSheetProps {
   member: EnrichedMember | null;
   allMembers: EnrichedMember[];
   isOpen: boolean;
   onClose: () => void;
+  refresh?: () => void;
 }
 
 const BRANCH_COLORS: Record<string, { bg: string; text: string }> = {
