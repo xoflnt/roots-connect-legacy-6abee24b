@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   TreePine, Search, UserCheck, Phone, CalendarDays, ChevronDown, Loader2,
   UserCircle, Users2, Heart, UserPlus, GitBranch, Edit3, BadgeCheck, Info,
-  Lock, Shield, MessageCircle,
+  Lock, Shield,
 } from "lucide-react";
 import type { FamilyMember } from "@/data/familyData";
 import { getAllMembers, searchMembers, getChildrenOf } from "@/services/familyService";
