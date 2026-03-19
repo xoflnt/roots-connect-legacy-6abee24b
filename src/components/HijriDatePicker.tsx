@@ -5,11 +5,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { toArabicNum } from "@/utils/arabicUtils";
 
 const HIJRI_MONTHS = [
-  "محرم", "صفر", "ربيع الأول", "ربيع الثاني",
-  "جمادى الأولى", "جمادى الآخرة", "رجب", "شعبان",
-  "رمضان", "شوال", "ذو القعدة", "ذو الحجة",
+  { num: '١', name: 'محرم' },
+  { num: '٢', name: 'صفر' },
+  { num: '٣', name: 'ربيع الأول' },
+  { num: '٤', name: 'ربيع الآخر' },
+  { num: '٥', name: 'جمادى الأولى' },
+  { num: '٦', name: 'جمادى الآخرة' },
+  { num: '٧', name: 'رجب' },
+  { num: '٨', name: 'شعبان' },
+  { num: '٩', name: 'رمضان' },
+  { num: '١٠', name: 'شوال' },
+  { num: '١١', name: 'ذو القعدة' },
+  { num: '١٢', name: 'ذو الحجة' },
 ];
 
 interface HijriDatePickerProps {
@@ -33,7 +43,7 @@ export function HijriDatePicker({ value = {}, onChange }: HijriDatePickerProps) 
         </SelectTrigger>
         <SelectContent>
           {days.map((d) => (
-            <SelectItem key={d} value={d}>{d}</SelectItem>
+            <SelectItem key={d} value={d}>{toArabicNum(d)}</SelectItem>
           ))}
         </SelectContent>
       </Select>
@@ -45,7 +55,7 @@ export function HijriDatePicker({ value = {}, onChange }: HijriDatePickerProps) 
         </SelectTrigger>
         <SelectContent>
           {HIJRI_MONTHS.map((m, i) => (
-            <SelectItem key={i} value={String(i + 1)}>{m}</SelectItem>
+            <SelectItem key={i} value={String(i + 1)}>{m.num} — {m.name}</SelectItem>
           ))}
         </SelectContent>
       </Select>
@@ -57,7 +67,7 @@ export function HijriDatePicker({ value = {}, onChange }: HijriDatePickerProps) 
         </SelectTrigger>
         <SelectContent>
           {years.map((y) => (
-            <SelectItem key={y} value={y}>{y}</SelectItem>
+            <SelectItem key={y} value={y}>{toArabicNum(y)}</SelectItem>
           ))}
         </SelectContent>
       </Select>

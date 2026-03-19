@@ -6,11 +6,11 @@ import { Input } from "@/components/ui/input";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
+
 import {
   TreePine, Search, UserCheck, Phone, CalendarDays, ChevronDown, Loader2,
   UserCircle, Users2, Heart, UserPlus, GitBranch, Edit3, BadgeCheck, Info,
-  Lock, Shield, MessageCircle,
+  Lock, Shield,
 } from "lucide-react";
 import type { FamilyMember } from "@/data/familyData";
 import { getAllMembers, searchMembers, getChildrenOf } from "@/services/familyService";
@@ -567,17 +567,6 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                   </p>
                 </div>
 
-                {/* WhatsApp toggle */}
-                <div className="w-full bg-white rounded-xl border border-border p-3 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <MessageCircle className="h-5 w-5 text-green-600" />
-                    <div>
-                      <p className="font-bold text-sm text-foreground">التحقق عبر واتساب</p>
-                      <p className="text-xs text-muted-foreground">أسرع وأكثر سهولة</p>
-                    </div>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
 
                 <button
                   onClick={handlePhoneContinue}
@@ -585,7 +574,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                   className="w-full h-14 rounded-full text-base font-bold text-white disabled:opacity-50"
                   style={{ backgroundColor: "#1B5438" }}
                 >
-                  إرسال رمز التحقق
+                  متابعة
                 </button>
 
                 <button onClick={() => goToStep(3)} className="text-sm text-muted-foreground">
