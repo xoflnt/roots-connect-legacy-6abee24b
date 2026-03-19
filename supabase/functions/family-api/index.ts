@@ -1,6 +1,25 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+/** Generate a hierarchical member ID matching the project convention */
+function generateMemberId(fatherId: string | null, allIds: string[]): string {
+  if (!fatherId) {
+    const numericIds = allIds.filter((id) => /^\d+$/.test(id)).map(Number);
+    return String(Math.max(0, ...numericIds) + 1);
+  }
+  const prefixMatch = fatherId.match(/^([A-Za-z])/);
+  if (prefixMatch) {
+    const children = allIds.filter(
+      (id) => id.startsWith(fatherId + "_") && !id.slice(fatherId.length + 1).includes("_")
+    );
+    let nextId = `${fatherId}_${children.length + 1}`;
+    while (allIds.includes(nextId)) nextId = `${fatherId}_${children.length + 1}_1`;
+    return nextId;
+  }
+  const numericIds = allIds.filter((id) => /^\d+$/.test(id)).map(Number);
+  return String(Math.max(0, ...numericIds) + 1);
+}
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -228,6 +247,76 @@ serve(async (req) => {
         .eq("id", memberId);
 
       if (archiveError) return json({ error: archiveError.message }, 500);
+      return json({ success: true });
+    }
+
+    // ─── RESOLVE REQUEST (admin only) ───
+    if (path === "resolve-request" && req.method === "POST") {
+      if (!(await validateAdminToken(req, supabase))) {
+        return json({ error: "Unauthorized" }, 401);
+      }
+
+      const {
+        requestId, decision, type,
+        targetMemberId, targetMemberName,
+        spouseName, childName, childGender,
+      } = await req.json();
+
+      if (!requestId) return json({ error: "requestId required" }, 400);
+
+      if (decision === "approved") {
+        if (type === "add_spouse") {
+          const { data: member } = await supabase
+            .from("family_members")
+            .select("spouses, name")
+            .eq("id", targetMemberId)
+            .single();
+
+          const current = member?.spouses?.trim() || "";
+          const updated = current ? `${current}،${spouseName}` : spouseName;
+
+          await supabase
+            .from("family_members")
+            .update({ spouses: updated, updated_at: new Date().toISOString() })
+            .eq("id", targetMemberId);
+        }
+
+        if (type === "add_child") {
+          const { data: allIds } = await supabase
+            .from("family_members")
+            .select("id");
+
+          const ids = (allIds || []).map((r: any) => r.id);
+          const newId = generateMemberId(targetMemberId, ids);
+
+          const { data: father } = await supabase
+            .from("family_members")
+            .select("name")
+            .eq("id", targetMemberId)
+            .single();
+
+          const fatherName = father?.name || targetMemberName || "";
+          const fullName = `${childName} بن ${fatherName}`;
+
+          await supabase.from("family_members").insert({
+            id: newId,
+            name: fullName,
+            gender: childGender || "M",
+            father_id: targetMemberId,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          });
+        }
+
+        // type === 'other' — no data change needed
+      }
+
+      const newStatus = decision === "approved" ? "approved" : "completed";
+      await supabase
+        .from("family_requests")
+        .update({ status: newStatus })
+        .eq("id", requestId);
+
       return json({ success: true });
     }
 
