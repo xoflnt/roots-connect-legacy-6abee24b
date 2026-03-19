@@ -195,7 +195,9 @@ function AdminContent() {
         body: { members }
       });
       if (error) throw error;
-      setSyncResult(`تمت المزامنة: ${(data as any)?.inserted ?? members.length} فرد`);
+      const inserted = (data as any)?.inserted ?? members.length;
+      const total = members.length;
+      setSyncResult(inserted < total ? `تمت المزامنة: ${inserted} من ${total} فرد` : `تمت المزامنة: ${total} فرد`);
       await loadData();
     } catch (err: any) {
       setSyncResult('فشلت المزامنة: ' + (err.message || 'خطأ غير معروف'));
