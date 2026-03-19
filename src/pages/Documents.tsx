@@ -174,7 +174,7 @@ export default function Documents() {
               <ScrollText className="h-4.5 w-4.5 text-accent" />
             </div>
             <h1 className="text-base md:text-lg font-extrabold text-foreground tracking-tight">
-              مستندات تاريخية
+              أرشـيـف العائـلـة الموثّـق
             </h1>
           </div>
         </div>
