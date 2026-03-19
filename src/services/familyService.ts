@@ -31,20 +31,32 @@ export async function loadMembers(): Promise<void> {
       getMembers(),
       loadVerifiedMemberIds(),
     ]);
-    if (cloudMembers.length > 0) {
-      const staticMap = new Map(staticMembers.map(m => [m.id, m]));
-      const cloudMap = new Map(cloudMembers.map(m => [m.id, m]));
-      const merged: FamilyMember[] = staticMembers.map(m =>
-        cloudMap.has(m.id) ? { ...m, ...cloudMap.get(m.id)! } : m
-      );
-      cloudMembers.forEach(m => {
-        if (!staticMap.has(m.id)) merged.push(m);
-      });
-      buildMaps(merged);
-      initialized = true;
-    } else if (!initialized) {
-      buildMaps([...staticMembers]);
-    }
+    // Helper: strip null/undefined so cloud never blanks static data
+    const stripNulls = (obj: Record<string, unknown>): Record<string, unknown> => {
+      const clean: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(obj)) {
+        if (v !== null && v !== undefined && v !== "") clean[k] = v;
+      }
+      return clean;
+    };
+
+    const staticMap = new Map(staticMembers.map(m => [m.id, m]));
+    const cloudMap = new Map(cloudMembers.map(m => [m.id, m]));
+
+    // Start with ALL static members as base — cloud only enriches
+    const merged: FamilyMember[] = staticMembers.map(m => {
+      if (!cloudMap.has(m.id)) return m;
+      return { ...m, ...stripNulls(cloudMap.get(m.id) as unknown as Record<string, unknown>) } as FamilyMember;
+    });
+
+    // Add any cloud-only members not in static
+    cloudMembers.forEach(m => {
+      if (!staticMap.has(m.id)) merged.push(m);
+    });
+
+    console.log(`[familyService] merged ${merged.length} members (static=${staticMembers.length}, cloud=${cloudMembers.length})`);
+    buildMaps(merged);
+    initialized = true;
   } catch (e) {
     console.error("[familyService] loadMembers error, using static fallback:", e);
     if (!initialized) {
