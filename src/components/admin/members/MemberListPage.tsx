@@ -152,7 +152,7 @@ export function MemberListPage() {
           </div>
         ) : (
           members.map((m, i) => (
-            <MemberCard key={m.id} member={m} isEven={i % 2 === 0} />
+            <MemberCard key={m.id} member={m} isEven={i % 2 === 0} onTap={setSelectedMember} />
           ))
         )}
       </div>
