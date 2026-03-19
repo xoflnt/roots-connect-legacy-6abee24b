@@ -422,16 +422,36 @@ export function AddMemberSheet({
                 </div>
               )}
 
-              {/* Father's spouses */}
+              {/* Mother selection from father's spouses */}
               {selectedFather && selectedFather.spousesArray.length > 0 && (
-                <div className="mt-2 space-y-1">
-                  <span className="text-sm text-muted-foreground">زوجات الأب:</span>
-                  <div className="flex flex-wrap gap-1.5">
+                <div className="mt-2 space-y-2">
+                  <span className="text-sm font-medium text-foreground">اختر أم الطفل:</span>
+                  <div className="space-y-1.5">
                     {selectedFather.spousesArray.map((s, i) => (
-                      <Badge key={i} variant="outline" className="text-sm font-normal">
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => setSelectedMother(s)}
+                        className={`min-h-12 w-full rounded-xl text-right px-4 text-base border transition-colors ${
+                          selectedMother === s
+                            ? "bg-primary/10 border-primary text-primary"
+                            : "bg-card border-border text-foreground hover:bg-muted"
+                        }`}
+                      >
                         {s}
-                      </Badge>
+                      </button>
                     ))}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedMother("غير معروفة")}
+                      className={`min-h-12 w-full rounded-xl text-right px-4 text-base border transition-colors ${
+                        selectedMother === "غير معروفة"
+                          ? "bg-primary/10 border-primary text-primary"
+                          : "bg-card border-border text-muted-foreground hover:bg-muted"
+                      }`}
+                    >
+                      غير معروفة
+                    </button>
                   </div>
                 </div>
               )}
