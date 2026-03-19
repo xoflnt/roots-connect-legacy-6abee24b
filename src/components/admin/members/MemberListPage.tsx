@@ -31,6 +31,7 @@ export function MemberListPage() {
     filters,
     updateFilters,
     isLoading,
+    refresh,
   } = useMembers();
 
   const isMobile = useIsMobile();
