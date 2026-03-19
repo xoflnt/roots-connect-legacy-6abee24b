@@ -4,7 +4,7 @@ import { Search, TreePine, ChevronDown, Users, Layers, Crown, User, UserRound, H
 import { Link, useNavigate } from "react-router-dom";
 import { getLineageLabel, getMemberSubtitle } from "@/utils/memberLabel";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { FontSizeToggle } from "@/components/FontSizeToggle";
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import type { FamilyMember } from "@/data/familyData";
