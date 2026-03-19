@@ -11,6 +11,7 @@ import { PILLARS, getBranch, getBranchStyle, DOCUMENTER_ID } from "@/utils/branc
 import { HeritageBadge } from "./HeritageBadge";
 import { useAuth } from "@/contexts/AuthContext";
 import { canSeeAge, canSeeMotherName, privateLabel, getSpouseLabel } from "@/utils/privacyUtils";
+import { toArabicNum } from "@/utils/arabicUtils";
 
 interface ListViewProps {
   onSelectMember?: (memberId: string) => void;
@@ -305,7 +306,7 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect,
                 }}
               >
                 <Users className="h-3 w-3" />
-                {children.length}
+                {toArabicNum(children.length)}
               </div>
             )}
           </div>

@@ -12,6 +12,7 @@ import { SubmitRequestForm } from "@/components/SubmitRequestForm";
 import { toast } from "sonner";
 import { formatAge } from "@/utils/ageCalculator";
 import { getBranch, getBranchStyle } from "@/utils/branchUtils";
+import { toArabicNum } from "@/utils/arabicUtils";
 import type { FamilyMember } from "@/data/familyData";
 
 type HijriDate = { day?: string; month?: string; year?: string };
@@ -214,7 +215,7 @@ const Profile = () => {
               <Users className="h-4 w-4 text-primary shrink-0" />
               <div>
                 <p className="text-xs text-muted-foreground">الأبناء</p>
-                <p className="text-sm font-semibold text-foreground">{children.length}</p>
+                <p className="text-sm font-semibold text-foreground">{toArabicNum(children.length)}</p>
               </div>
             </div>
             <div className="flex items-center gap-2 p-3 rounded-xl bg-muted/50 border border-border/30">
@@ -296,7 +297,7 @@ const Profile = () => {
           <section className="bg-card border border-border/50 rounded-2xl p-6 space-y-4 shadow-sm">
             <div className="flex items-center gap-2">
               <Users className="h-5 w-5 text-primary" />
-              <h3 className="text-lg font-bold text-foreground">الأبناء ({children.length})</h3>
+              <h3 className="text-lg font-bold text-foreground">الأبناء ({toArabicNum(children.length)})</h3>
             </div>
 
             <div className="space-y-3">

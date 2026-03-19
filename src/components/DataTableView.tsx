@@ -8,8 +8,8 @@ import { WhatsAppIcon } from "./WhatsAppIcon";
 import { downloadVCard } from "@/utils/vcard";
 import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
 import { calculateAge } from "@/utils/ageCalculator";
-import { toArabicNum } from "@/utils/ageCalculator";
 import { getBranch, getBranchStyle, DOCUMENTER_ID } from "@/utils/branchUtils";
+import { toArabicNum } from "@/utils/arabicUtils";
 import { HeritageBadge } from "./HeritageBadge";
 import {
   Select,
@@ -160,7 +160,7 @@ export function DataTableView() {
         </Select>
 
         <Badge variant="secondary" className="text-xs shrink-0">
-          {filtered.length} فرد
+          {toArabicNum(filtered.length)} فرد
         </Badge>
 
         {hasFilters && (
@@ -314,7 +314,7 @@ export function DataTableView() {
                       {childrenMap.has(m.id) ? (
                         <div className="flex flex-wrap items-center gap-1">
                           <Badge variant="outline" className="text-xs shrink-0">
-                            {childrenMap.get(m.id)!.length}
+                            {toArabicNum(childrenMap.get(m.id)!.length)}
                           </Badge>
                           <span>{childrenMap.get(m.id)!.join("، ")}</span>
                         </div>

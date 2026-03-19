@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DataTableView } from "@/components/DataTableView";
 import { PILLARS } from "@/utils/branchUtils";
+import { toArabicNum } from "@/utils/arabicUtils";
 import { Progress } from "@/components/ui/progress";
 
 // --- Smart Export Helpers ---
@@ -69,7 +70,7 @@ function StatCard({ icon: Icon, label, value }: { icon: React.ElementType; label
         <Icon className="h-6 w-6 text-primary" />
       </div>
       <div>
-        <p className="text-2xl font-extrabold text-foreground">{value}</p>
+        <p className="text-2xl font-extrabold text-foreground">{toArabicNum(value)}</p>
         <p className="text-sm text-muted-foreground font-medium">{label}</p>
       </div>
     </div>
@@ -301,7 +302,7 @@ function AdminContent() {
         <Tabs defaultValue="requests" className="w-full">
           <TabsList className="w-full justify-start rounded-xl bg-muted/50 p-1">
             <TabsTrigger value="requests" className="rounded-lg font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm">
-              الطلبات ({requests.length})
+              الطلبات ({toArabicNum(requests.length)})
             </TabsTrigger>
             <TabsTrigger value="registry" className="rounded-lg font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm">
               السجل الكامل
@@ -316,7 +317,7 @@ function AdminContent() {
             <section className="space-y-4">
               <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-                طلبات معلقة ({pending.length})
+                طلبات معلقة ({toArabicNum(pending.length)})
               </h2>
               {pending.length === 0 ? (
                 <div className="bg-card border border-border/50 rounded-2xl p-8 text-center">

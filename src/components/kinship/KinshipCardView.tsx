@@ -7,7 +7,7 @@ import type { FamilyMember } from "@/data/familyData";
 import type { KinshipViewProps } from "./types";
 import type { DirectionalKinship } from "@/services/familyService";
 import { getBranch, getBranchStyle } from "@/utils/branchUtils";
-import { toArabicNum } from "@/utils/ageCalculator";
+import { toArabicNum } from "@/utils/arabicUtils";
 import { inferMotherName } from "@/services/familyService";
 import { useAuth } from "@/contexts/AuthContext";
 import { canSeeMotherName, privateLabel } from "@/utils/privacyUtils";

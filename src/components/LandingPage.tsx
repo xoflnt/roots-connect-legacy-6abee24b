@@ -4,6 +4,8 @@ import { Search, TreePine, ChevronDown, Users, Layers, Crown, User, UserRound, H
 import { Link, useNavigate } from "react-router-dom";
 import { getLineageLabel, getMemberSubtitle } from "@/utils/memberLabel";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { toArabicNum } from "@/utils/arabicUtils";
+import { applyTatweel } from "@/utils/tatweelUtils";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -101,7 +103,7 @@ function StatCard({ icon: Icon, label, value, suffix, highlight }: { icon: React
       <Icon className="h-5 w-5 text-accent shrink-0" />
       <span className="text-2xl md:text-3xl font-extrabold text-foreground">
         {highlight && <span className="text-primary">{highlight} </span>}
-        {counter.value}{suffix}
+        {toArabicNum(counter.value)}{suffix}
       </span>
       <span className="text-xs md:text-sm text-muted-foreground font-bold text-center break-words leading-snug">{label}</span>
     </div>
@@ -232,7 +234,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-base font-bold text-foreground truncate">{currentUser.memberName}</span>
+                  <span className="text-base font-bold text-foreground truncate">{(() => { const parts = currentUser.memberName.split(' '); parts[0] = applyTatweel(parts[0]); return parts.join(' '); })()}</span>
                   <BadgeCheck className="h-4 w-4 text-green-500 shrink-0" />
                 </div>
                 <div className="flex items-center gap-1.5 mt-1 flex-wrap">
@@ -517,7 +519,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                   <h3 className="text-xl md:text-2xl font-extrabold text-foreground">{pillar.name}</h3>
                   <div className="flex items-center gap-1.5 text-muted-foreground text-sm font-bold">
                     <Users className="h-4 w-4" />
-                    <span>{pillar.descendants} فرد</span>
+                    <span>{toArabicNum(pillar.descendants)} فرد</span>
                   </div>
                   <Button
                     variant="outline"
