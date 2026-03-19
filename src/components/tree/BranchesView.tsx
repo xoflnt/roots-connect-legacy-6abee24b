@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
+import { applyTatweel } from "@/utils/tatweelUtils";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   getChildrenOf,
