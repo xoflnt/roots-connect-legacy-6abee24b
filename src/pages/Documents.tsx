@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowRight, ScrollText, ZoomIn, Download, Heart, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { FontSizeToggle } from "@/components/FontSizeToggle";
+
 import { DocumentViewer } from "@/components/DocumentViewer";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
