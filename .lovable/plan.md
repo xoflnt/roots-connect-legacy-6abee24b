@@ -1,36 +1,23 @@
 
 
-# Fix Sync Button Count Display
+# Fix seed-family-data Topological Sort
 
-## Problem
-Line 198 displays `data.inserted` (410) instead of the actual static member count (475). The edge function's `inserted` count reflects only successful DB upserts, not total members sent.
+## Analysis
+The existing topological sort logic is functionally correct, but the **batching** is the real culprit. When 50 members are upserted in a single statement, a child and its father can land in the same batch. Postgres processes the upsert as one operation, so if the father row doesn't exist yet (being inserted in the same batch), the FK check fails — even though the sort order is correct.
 
-## Root Cause
-The `seed-family-data` edge function processes members in batches and skips failures (e.g., FK constraint violations from ordering issues). Its response `inserted` count < total sent.
+## Fix (single file: `supabase/functions/seed-family-data/index.ts`)
 
-There are **two issues** to fix:
+1. **Replace the sort logic** with the user's cleaner `topoSort()` function (lines 31–47)
+2. **Reduce batch size from 50 → 1** (sequential inserts) to guarantee parent exists before child — OR keep batches but ensure no batch contains a child whose father is in the same batch
 
-### Fix 1: Show correct count in Admin.tsx (line 198)
-Change the success message to always use the local array length:
-```ts
-setSyncResult(`تمت المزامنة: ${members.length} فرد`);
+The simplest reliable fix: insert **one by one** in topological order. With 475 members this is still fast (~2-3 seconds).
+
+### Changes
+- Lines 31–47: Replace inline sort with the standalone `topoSort()` function
+- Lines 49–76: Change batch upsert to single-row upserts in a loop, collecting errors per member
+
+```text
+Before:  batch of 50 → some fathers + children in same batch → FK failure
+After:   one-by-one in topo order → father always exists first → 0 failures
 ```
-This shows how many were **sent**, not how many succeeded silently.
-
-Better yet, show both for transparency:
-```ts
-const inserted = (data as any)?.inserted ?? members.length;
-const total = members.length;
-if (inserted < total) {
-  setSyncResult(`تمت المزامنة: ${inserted} من ${total} فرد`);
-} else {
-  setSyncResult(`تمت المزامنة: ${total} فرد`);
-}
-```
-
-### Fix 2 (optional but recommended): Fix the edge function ordering
-The 65-member gap likely comes from FK constraint failures in `seed-family-data`. The topological sort may have bugs. This is a separate task.
-
-## Files Changed
-- `src/pages/Admin.tsx` — line 198 only
 
