@@ -703,7 +703,7 @@ export function AddMemberSheet({
               disabled={isSaving}
               className="w-full min-h-14 text-base rounded-xl"
             >
-              حفظ العضو
+              {isEditMode ? "حفظ التعديلات" : "حفظ العضو"}
             </Button>
           </div>
         </SheetContent>
