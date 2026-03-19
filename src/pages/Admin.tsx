@@ -309,6 +309,9 @@ function AdminContent() {
             {syncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Database className="h-4 w-4" />}
             {syncing ? 'جاري المزامنة...' : 'مزامنة البيانات'}
           </Button>
+          <span className="text-xs font-semibold bg-white/20 rounded-lg px-2 py-1">
+            ({toArabicNum(STATIC_COUNT)} عضو في الملف)
+          </span>
           <span className="text-sm font-medium whitespace-pre-wrap">
             {syncResult || 'مزامنة جميع الأفراد من الملف المحلي إلى قاعدة البيانات'}
           </span>
