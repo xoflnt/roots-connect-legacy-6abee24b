@@ -3,7 +3,7 @@ import { AdminProtect, getAdminToken } from "@/components/AdminProtect";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Users, Eye, ShieldCheck, TreePine, Check, Loader2, ArrowRight, Bell, Download, Search, X, RefreshCw, FileDown, Database } from "lucide-react";
+import { Users, Eye, ShieldCheck, TreePine, Check, Loader2, Bell, Download, Search, X, RefreshCw, FileDown, Database } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getRequests, markRequestDone, getVerifiedUsers, getVisitCount, type FamilyRequest } from "@/services/dataService";
 import { getAllMembers, searchMembers } from "@/services/familyService";
@@ -15,6 +15,8 @@ import { DataTableView } from "@/components/DataTableView";
 import { PILLARS } from "@/utils/branchUtils";
 import { toArabicNum } from "@/utils/arabicUtils";
 import { Progress } from "@/components/ui/progress";
+import { AdminLayout } from "@/components/admin/AdminLayout";
+import type { AdminSection } from "@/types/admin";
 
 // --- Smart Export Helpers ---
 
@@ -145,7 +147,7 @@ function RequestCard({ req, onAction }: { req: FamilyRequest; onAction: () => vo
   );
 }
 
-function AdminContent() {
+function DashboardContent() {
   const [requests, setRequests] = useState<FamilyRequest[]>([]);
   const [verifiedCount, setVerifiedCount] = useState(0);
   const [visitCount, setVisitCount] = useState(0);
@@ -176,7 +178,6 @@ function AdminContent() {
 
   useEffect(() => {
     loadData();
-    // Poll every 30s instead of realtime (RLS blocks SELECT for realtime)
     const interval = setInterval(loadData, 30000);
     return () => clearInterval(interval);
   }, []);
@@ -279,242 +280,258 @@ function AdminContent() {
       setTimeout(() => setExportProgress(''), 4000);
     }
   };
+
   return (
-    <div className="flex flex-col h-[100dvh] bg-background" dir="rtl">
-      <header className="shrink-0 z-50 bg-card/90 backdrop-blur-sm border-b border-border/30 px-4 py-3" style={{ paddingTop: `max(0.75rem, env(safe-area-inset-top))` }}>
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="h-5 w-5 text-primary" />
-            <h1 className="text-lg font-bold text-foreground">لوحة الإدارة</h1>
-            <Button variant="ghost" size="icon" onClick={handleRefresh} disabled={refreshing} className="h-11 w-11 min-w-[44px] min-h-[44px]">
-              <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+    <div className="p-4 space-y-6 max-w-6xl mx-auto" dir="rtl">
+      {/* Refresh */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-bold text-foreground">لوحة المعلومات</h2>
+        <Button variant="ghost" size="icon" onClick={handleRefresh} disabled={refreshing} className="h-12 w-12 min-w-12 min-h-12">
+          <RefreshCw className={`h-5 w-5 ${refreshing ? "animate-spin" : ""}`} />
+        </Button>
+      </div>
+
+      {/* Sync Button */}
+      <div className="bg-blue-600 hover:bg-blue-700 text-white rounded-2xl p-4 flex flex-col sm:flex-row items-center gap-3">
+        <Button
+          onClick={handleSync}
+          disabled={syncing}
+          className="bg-white text-blue-700 hover:bg-blue-50 font-bold rounded-xl gap-2 min-h-12"
+        >
+          {syncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Database className="h-4 w-4" />}
+          {syncing ? 'جاري المزامنة...' : 'مزامنة البيانات'}
+        </Button>
+        <span className="text-xs font-semibold bg-white/20 rounded-lg px-2 py-1">
+          ({toArabicNum(STATIC_COUNT)} عضو في الملف)
+        </span>
+        <span className="text-sm font-medium whitespace-pre-wrap">
+          {syncResult || 'مزامنة جميع الأفراد من الملف المحلي إلى قاعدة البيانات'}
+        </span>
+      </div>
+
+      {/* Stats */}
+      <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <StatCard icon={Eye} label="عدد الزيارات" value={visitCount} />
+        <StatCard icon={Users} label="الحسابات الموثقة" value={verifiedCount} />
+        <StatCard icon={TreePine} label="إجمالي الأفراد" value={memberCount} />
+      </section>
+
+      <Tabs defaultValue="requests" className="w-full">
+        <TabsList className="w-full justify-start rounded-xl bg-muted/50 p-1">
+          <TabsTrigger value="requests" className="rounded-lg font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            الطلبات ({toArabicNum(requests.length)})
+          </TabsTrigger>
+          <TabsTrigger value="registry" className="rounded-lg font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            السجل الكامل
+          </TabsTrigger>
+          <TabsTrigger value="tree-export" className="rounded-lg font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm gap-1.5">
+            <TreePine className="h-3.5 w-3.5" />
+            تصدير الشجرة
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="requests" className="space-y-6 mt-4">
+          <section className="space-y-4">
+            <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+              طلبات معلقة ({toArabicNum(pending.length)})
+            </h2>
+            {pending.length === 0 ? (
+              <div className="bg-card border border-border/50 rounded-2xl p-8 text-center">
+                <p className="text-muted-foreground">لا توجد طلبات معلقة</p>
+              </div>
+            ) : (
+              <div className="grid gap-4">
+                {pending.map((r) => (
+                  <RequestCard key={r.id} req={r} onAction={loadData} />
+                ))}
+              </div>
+            )}
+          </section>
+
+          {handled.length > 0 && (
+            <section className="space-y-4">
+              <h2 className="text-lg font-bold text-foreground">الطلبات المنجزة ({handled.length})</h2>
+              <div className="grid gap-4">
+                {handled.map((r) => (
+                  <RequestCard key={r.id} req={r} onAction={loadData} />
+                ))}
+              </div>
+            </section>
+          )}
+        </TabsContent>
+
+        <TabsContent value="registry" className="mt-4 space-y-4">
+          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between bg-card border border-border/50 rounded-2xl p-4">
+            <Button onClick={handleExportFull} className="rounded-xl font-bold gap-2 shrink-0">
+              <Download className="h-4 w-4" />
+              تصدير السجل الكامل
+            </Button>
+
+            <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center flex-1 sm:justify-end">
+              {selectedExportMember ? (
+                <Badge className="gap-1.5 py-1.5 px-3 text-sm">
+                  {selectedExportMember.name}
+                  <button onClick={() => setSelectedExportMember(null)} className="hover:opacity-70">
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </Badge>
+              ) : (
+                <div className="relative w-full sm:w-64" ref={exportRef}>
+                  <div className="relative">
+                    <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    <Input
+                      placeholder="ابحث لتصدير ذرية شخص..."
+                      value={exportSearch}
+                      onChange={e => { setExportSearch(e.target.value); setExportDropdownOpen(true); }}
+                      onFocus={() => setExportDropdownOpen(true)}
+                      onBlur={() => setTimeout(() => setExportDropdownOpen(false), 200)}
+                      className="pr-9 rounded-xl"
+                    />
+                  </div>
+                  {exportDropdownOpen && exportResults.length > 0 && (
+                    <div className="absolute z-50 top-full mt-1 w-full bg-popover border border-border rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                      {exportResults.map(m => (
+                        <button
+                          key={m.id}
+                          className="w-full text-right px-3 py-2 text-sm hover:bg-accent/50 transition-colors"
+                          onMouseDown={() => {
+                            setSelectedExportMember(m);
+                            setExportSearch("");
+                            setExportDropdownOpen(false);
+                          }}
+                        >
+                          {m.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+              <Button
+                onClick={handleExportDescendants}
+                disabled={!selectedExportMember}
+                variant="secondary"
+                className="rounded-xl font-bold gap-2 shrink-0"
+              >
+                <TreePine className="h-4 w-4" />
+                تصدير ذرية المختار
+              </Button>
+            </div>
+          </div>
+
+          <div className="bg-card border border-border/50 rounded-2xl overflow-hidden" style={{ height: "min(60dvh, 600px)" }}>
+            <DataTableView />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="tree-export" className="mt-4">
+          <div className="bg-card border border-border/50 rounded-2xl p-6 space-y-5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <TreePine className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-foreground">تصدير شجرة العائلة</h2>
+                <p className="text-sm text-muted-foreground">صدّر الشجرة كملف PDF احترافي</p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <p className="text-sm font-bold text-foreground">اختر نطاق التصدير:</p>
+              <div className="grid gap-2">
+                <button
+                  onClick={() => { setExportMode('full'); setExportBranchId(''); }}
+                  className={`flex items-center gap-3 rounded-xl border p-3 text-sm font-medium transition-colors text-right ${
+                    exportMode === 'full' ? 'border-primary bg-primary/10 text-foreground' : 'border-border bg-card text-muted-foreground hover:bg-muted/50'
+                  }`}
+                >
+                  <span className="w-3 h-3 rounded-full border-2 border-current flex items-center justify-center">
+                    {exportMode === 'full' && <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
+                  </span>
+                  الشجرة كاملة
+                </button>
+                {PILLARS.map(p => {
+                  const dotColors: Record<string, string> = {
+                    '300': 'bg-green-500',
+                    '200': 'bg-yellow-500',
+                    '400': 'bg-orange-500',
+                  };
+                  const isSelected = exportMode === 'branch' && exportBranchId === p.id;
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => { setExportMode('branch'); setExportBranchId(p.id); }}
+                      className={`flex items-center gap-3 rounded-xl border p-3 text-sm font-medium transition-colors text-right ${
+                        isSelected ? 'border-primary bg-primary/10 text-foreground' : 'border-border bg-card text-muted-foreground hover:bg-muted/50'
+                      }`}
+                    >
+                      <span className="w-3 h-3 rounded-full border-2 border-current flex items-center justify-center">
+                        {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
+                      </span>
+                      <span className={`w-2.5 h-2.5 rounded-full ${dotColors[p.id] || ''}`} />
+                      {p.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 rounded-xl p-3 text-sm">
+              ⚠️ قد يستغرق التصدير ٣٠-٦٠ ثانية حسب حجم الشجرة. يرجى الانتظار.
+            </div>
+
+            {exportProgress && (
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-foreground">{exportProgress}</p>
+                {exporting && <Progress value={undefined} className="h-1.5" />}
+              </div>
+            )}
+
+            <Button
+              onClick={handleTreeExport}
+              disabled={exporting}
+              className="w-full min-h-[52px] rounded-2xl font-bold gap-2 text-base"
+            >
+              {exporting ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <FileDown className="h-5 w-5" />
+              )}
+              {exporting ? exportProgress || 'جاري التصدير...' : 'تصدير PDF'}
             </Button>
           </div>
-          <Button variant="ghost" size="sm" onClick={() => window.history.length > 1 ? navigate(-1) : navigate("/")} className="gap-1">
-            <ArrowRight className="h-4 w-4" />
-            الرئيسية
-          </Button>
-        </div>
-      </header>
-
-      <div className="flex-1 overflow-y-auto pb-[calc(2rem+env(safe-area-inset-bottom))]">
-      <div className="max-w-6xl mx-auto p-4 space-y-6">
-        {/* Sync Button */}
-        <div className="bg-blue-600 hover:bg-blue-700 text-white rounded-2xl p-4 flex flex-col sm:flex-row items-center gap-3">
-          <Button
-            onClick={handleSync}
-            disabled={syncing}
-            className="bg-white text-blue-700 hover:bg-blue-50 font-bold rounded-xl gap-2 min-h-[44px]"
-          >
-            {syncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Database className="h-4 w-4" />}
-            {syncing ? 'جاري المزامنة...' : 'مزامنة البيانات'}
-          </Button>
-          <span className="text-xs font-semibold bg-white/20 rounded-lg px-2 py-1">
-            ({toArabicNum(STATIC_COUNT)} عضو في الملف)
-          </span>
-          <span className="text-sm font-medium whitespace-pre-wrap">
-            {syncResult || 'مزامنة جميع الأفراد من الملف المحلي إلى قاعدة البيانات'}
-          </span>
-        </div>
-
-        {/* Stats */}
-        <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <StatCard icon={Eye} label="عدد الزيارات" value={visitCount} />
-          <StatCard icon={Users} label="الحسابات الموثقة" value={verifiedCount} />
-          <StatCard icon={TreePine} label="إجمالي الأفراد" value={memberCount} />
-        </section>
-
-        <Tabs defaultValue="requests" className="w-full">
-          <TabsList className="w-full justify-start rounded-xl bg-muted/50 p-1">
-            <TabsTrigger value="requests" className="rounded-lg font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm">
-              الطلبات ({toArabicNum(requests.length)})
-            </TabsTrigger>
-            <TabsTrigger value="registry" className="rounded-lg font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm">
-              السجل الكامل
-            </TabsTrigger>
-            <TabsTrigger value="tree-export" className="rounded-lg font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm gap-1.5">
-              <TreePine className="h-3.5 w-3.5" />
-              تصدير الشجرة
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="requests" className="space-y-6 mt-4">
-            <section className="space-y-4">
-              <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-                طلبات معلقة ({toArabicNum(pending.length)})
-              </h2>
-              {pending.length === 0 ? (
-                <div className="bg-card border border-border/50 rounded-2xl p-8 text-center">
-                  <p className="text-muted-foreground">لا توجد طلبات معلقة</p>
-                </div>
-              ) : (
-                <div className="grid gap-4">
-                  {pending.map((r) => (
-                    <RequestCard key={r.id} req={r} onAction={loadData} />
-                  ))}
-                </div>
-              )}
-            </section>
-
-            {handled.length > 0 && (
-              <section className="space-y-4">
-                <h2 className="text-lg font-bold text-foreground">الطلبات المنجزة ({handled.length})</h2>
-                <div className="grid gap-4">
-                  {handled.map((r) => (
-                    <RequestCard key={r.id} req={r} onAction={loadData} />
-                  ))}
-                </div>
-              </section>
-            )}
-          </TabsContent>
-
-          <TabsContent value="registry" className="mt-4 space-y-4">
-            <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between bg-card border border-border/50 rounded-2xl p-4">
-              <Button onClick={handleExportFull} className="rounded-xl font-bold gap-2 shrink-0">
-                <Download className="h-4 w-4" />
-                تصدير السجل الكامل
-              </Button>
-
-              <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center flex-1 sm:justify-end">
-                {selectedExportMember ? (
-                  <Badge className="gap-1.5 py-1.5 px-3 text-sm">
-                    {selectedExportMember.name}
-                    <button onClick={() => setSelectedExportMember(null)} className="hover:opacity-70">
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  </Badge>
-                ) : (
-                  <div className="relative w-full sm:w-64" ref={exportRef}>
-                    <div className="relative">
-                      <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                      <Input
-                        placeholder="ابحث لتصدير ذرية شخص..."
-                        value={exportSearch}
-                        onChange={e => { setExportSearch(e.target.value); setExportDropdownOpen(true); }}
-                        onFocus={() => setExportDropdownOpen(true)}
-                        onBlur={() => setTimeout(() => setExportDropdownOpen(false), 200)}
-                        className="pr-9 rounded-xl"
-                      />
-                    </div>
-                    {exportDropdownOpen && exportResults.length > 0 && (
-                      <div className="absolute z-50 top-full mt-1 w-full bg-popover border border-border rounded-xl shadow-lg max-h-48 overflow-y-auto">
-                        {exportResults.map(m => (
-                          <button
-                            key={m.id}
-                            className="w-full text-right px-3 py-2 text-sm hover:bg-accent/50 transition-colors"
-                            onMouseDown={() => {
-                              setSelectedExportMember(m);
-                              setExportSearch("");
-                              setExportDropdownOpen(false);
-                            }}
-                          >
-                            {m.name}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-                <Button
-                  onClick={handleExportDescendants}
-                  disabled={!selectedExportMember}
-                  variant="secondary"
-                  className="rounded-xl font-bold gap-2 shrink-0"
-                >
-                  <TreePine className="h-4 w-4" />
-                  تصدير ذرية المختار
-                </Button>
-              </div>
-            </div>
-
-            <div className="bg-card border border-border/50 rounded-2xl overflow-hidden" style={{ height: "calc(100dvh - var(--admin-header-h, 400px))" }}>
-              <DataTableView />
-            </div>
-          </TabsContent>
-
-          <TabsContent value="tree-export" className="mt-4">
-            <div className="bg-card border border-border/50 rounded-2xl p-6 space-y-5">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <TreePine className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-bold text-foreground">تصدير شجرة العائلة</h2>
-                  <p className="text-sm text-muted-foreground">صدّر الشجرة كملف PDF احترافي</p>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <p className="text-sm font-bold text-foreground">اختر نطاق التصدير:</p>
-                <div className="grid gap-2">
-                  <button
-                    onClick={() => { setExportMode('full'); setExportBranchId(''); }}
-                    className={`flex items-center gap-3 rounded-xl border p-3 text-sm font-medium transition-colors text-right ${
-                      exportMode === 'full' ? 'border-primary bg-primary/10 text-foreground' : 'border-border bg-card text-muted-foreground hover:bg-muted/50'
-                    }`}
-                  >
-                    <span className="w-3 h-3 rounded-full border-2 border-current flex items-center justify-center">
-                      {exportMode === 'full' && <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
-                    </span>
-                    الشجرة كاملة
-                  </button>
-                  {PILLARS.map(p => {
-                    const dotColors: Record<string, string> = {
-                      '300': 'bg-green-500',
-                      '200': 'bg-yellow-500',
-                      '400': 'bg-orange-500',
-                    };
-                    const isSelected = exportMode === 'branch' && exportBranchId === p.id;
-                    return (
-                      <button
-                        key={p.id}
-                        onClick={() => { setExportMode('branch'); setExportBranchId(p.id); }}
-                        className={`flex items-center gap-3 rounded-xl border p-3 text-sm font-medium transition-colors text-right ${
-                          isSelected ? 'border-primary bg-primary/10 text-foreground' : 'border-border bg-card text-muted-foreground hover:bg-muted/50'
-                        }`}
-                      >
-                        <span className="w-3 h-3 rounded-full border-2 border-current flex items-center justify-center">
-                          {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
-                        </span>
-                        <span className={`w-2.5 h-2.5 rounded-full ${dotColors[p.id] || ''}`} />
-                        {p.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 rounded-xl p-3 text-sm">
-                ⚠️ قد يستغرق التصدير ٣٠-٦٠ ثانية حسب حجم الشجرة. يرجى الانتظار.
-              </div>
-
-              {exportProgress && (
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-foreground">{exportProgress}</p>
-                  {exporting && <Progress value={undefined} className="h-1.5" />}
-                </div>
-              )}
-
-              <Button
-                onClick={handleTreeExport}
-                disabled={exporting}
-                className="w-full min-h-[52px] rounded-2xl font-bold gap-2 text-base"
-              >
-                {exporting ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <FileDown className="h-5 w-5" />
-                )}
-                {exporting ? exportProgress || 'جاري التصدير...' : 'تصدير PDF'}
-              </Button>
-            </div>
-          </TabsContent>
-        </Tabs>
-
-      </div>
-      </div>
+        </TabsContent>
+      </Tabs>
     </div>
+  );
+}
+
+function AdminContent() {
+  const [section, setSection] = useState<AdminSection>('dashboard');
+
+  const handleLogout = () => {
+    sessionStorage.removeItem('khunaini-admin-token');
+    sessionStorage.removeItem('khunaini-admin-expiry');
+    window.location.reload();
+  };
+
+  return (
+    <AdminLayout
+      currentSection={section}
+      onNavigate={setSection}
+      adminName=""
+      onLogout={handleLogout}
+    >
+      {section === 'dashboard' ? (
+        <DashboardContent />
+      ) : (
+        <div className="p-6 text-center text-muted-foreground" dir="rtl">
+          <p className="text-lg">{section}</p>
+          <p className="text-sm mt-2">قيد التطوير</p>
+        </div>
+      )}
+    </AdminLayout>
   );
 }
 
