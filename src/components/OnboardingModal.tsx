@@ -392,6 +392,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                               ) : (
                                 filtered.map((m) => {
                                   const br = getBranch(m.id);
+                                  const brStyle = br ? getBranchStyle(br.pillarId) : null;
                                   return (
                                     <button
                                       key={m.id}
@@ -401,9 +402,9 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                                       <div>
                                         <span className="font-bold text-base text-foreground block">{getLineageLabel(m)}</span>
                                         <div className="flex items-center gap-1.5 mt-1">
-                                          {br && (
+                                          {br && brStyle && (
                                             <>
-                                              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: br.color }} />
+                                              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: brStyle.text }} />
                                               <span className="text-sm text-muted-foreground">{br.label}</span>
                                             </>
                                           )}
