@@ -474,7 +474,7 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                                           `}
                                           style={color && !isInChain ? { borderLeft: `3px solid ${color.stroke}` } : undefined}
                                         >
-                                          {child.name}
+                                          {child.name.split(' بن ')[0]}
                                         </button>
                                       );
                                     })}
