@@ -83,12 +83,12 @@ export function MemberListPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <Select
           value={filters.branch || "all"}
           onValueChange={(v) => updateFilters({ branch: v === "all" ? null : v })}
         >
-          <SelectTrigger className="min-h-12 min-w-[120px] text-base rounded-xl shrink-0">
+          <SelectTrigger className="min-h-12 min-w-0 text-base rounded-xl">
             <SelectValue placeholder="الفرع" />
           </SelectTrigger>
           <SelectContent>
@@ -109,7 +109,7 @@ export function MemberListPage() {
             })
           }
         >
-          <SelectTrigger className="min-h-12 min-w-[100px] text-base rounded-xl shrink-0">
+          <SelectTrigger className="min-h-12 min-w-0 text-base rounded-xl">
             <SelectValue placeholder="الحالة" />
           </SelectTrigger>
           <SelectContent>
@@ -127,7 +127,7 @@ export function MemberListPage() {
             })
           }
         >
-          <SelectTrigger className="min-h-12 min-w-[100px] text-base rounded-xl shrink-0">
+          <SelectTrigger className="min-h-12 min-w-0 text-base rounded-xl">
             <SelectValue placeholder="الجنس" />
           </SelectTrigger>
           <SelectContent>
@@ -145,7 +145,7 @@ export function MemberListPage() {
             })
           }
         >
-          <SelectTrigger className="min-h-12 min-w-[100px] text-base rounded-xl shrink-0">
+          <SelectTrigger className="min-h-12 min-w-0 text-base rounded-xl">
             <SelectValue placeholder="الجيل" />
           </SelectTrigger>
           <SelectContent>

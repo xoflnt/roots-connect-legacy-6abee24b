@@ -32,7 +32,7 @@ export function AdminLayout({
       />
 
       {/* Main content */}
-      <main className={`flex-1 overflow-y-auto ${isMobile ? 'pb-20' : ''}`}>
+      <main className={`flex-1 overflow-y-auto overflow-x-hidden ${isMobile ? 'pb-24' : ''}`}>
         {children}
       </main>
 
