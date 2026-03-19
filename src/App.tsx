@@ -44,7 +44,6 @@ const LoadingSpinner = () => (
 const App = () => (
   <ErrorBoundary>
     <ThemeProvider>
-      <FontSizeProvider>
         <AuthProvider>
           <QueryClientProvider client={queryClient}>
             <TooltipProvider>
