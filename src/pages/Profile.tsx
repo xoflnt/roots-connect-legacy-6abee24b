@@ -215,7 +215,7 @@ const Profile = () => {
               <Users className="h-4 w-4 text-primary shrink-0" />
               <div>
                 <p className="text-xs text-muted-foreground">الأبناء</p>
-                <p className="text-sm font-semibold text-foreground">{children.length}</p>
+                <p className="text-sm font-semibold text-foreground">{toArabicNum(children.length)}</p>
               </div>
             </div>
             <div className="flex items-center gap-2 p-3 rounded-xl bg-muted/50 border border-border/30">
