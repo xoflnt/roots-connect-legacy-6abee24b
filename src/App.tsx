@@ -4,7 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/contexts/ThemeContext";
-import { FontSizeProvider } from "@/contexts/FontSizeContext";
+
 import { AuthProvider } from "@/contexts/AuthContext";
 import { SWUpdateBanner } from "@/components/SWUpdateBanner";
 
@@ -44,7 +44,6 @@ const LoadingSpinner = () => (
 const App = () => (
   <ErrorBoundary>
     <ThemeProvider>
-      <FontSizeProvider>
         <AuthProvider>
           <QueryClientProvider client={queryClient}>
             <TooltipProvider>
@@ -66,7 +65,6 @@ const App = () => (
             </TooltipProvider>
           </QueryClientProvider>
         </AuthProvider>
-      </FontSizeProvider>
     </ThemeProvider>
   </ErrorBoundary>
 );
