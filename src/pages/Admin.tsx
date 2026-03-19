@@ -317,7 +317,7 @@ function AdminContent() {
             <section className="space-y-4">
               <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-                طلبات معلقة ({pending.length})
+                طلبات معلقة ({toArabicNum(pending.length)})
               </h2>
               {pending.length === 0 ? (
                 <div className="bg-card border border-border/50 rounded-2xl p-8 text-center">

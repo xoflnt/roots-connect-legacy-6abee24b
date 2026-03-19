@@ -297,7 +297,7 @@ const Profile = () => {
           <section className="bg-card border border-border/50 rounded-2xl p-6 space-y-4 shadow-sm">
             <div className="flex items-center gap-2">
               <Users className="h-5 w-5 text-primary" />
-              <h3 className="text-lg font-bold text-foreground">الأبناء ({children.length})</h3>
+              <h3 className="text-lg font-bold text-foreground">الأبناء ({toArabicNum(children.length)})</h3>
             </div>
 
             <div className="space-y-3">

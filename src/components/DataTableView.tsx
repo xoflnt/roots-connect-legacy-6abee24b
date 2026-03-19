@@ -315,7 +315,7 @@ export function DataTableView() {
                       {childrenMap.has(m.id) ? (
                         <div className="flex flex-wrap items-center gap-1">
                           <Badge variant="outline" className="text-xs shrink-0">
-                            {childrenMap.get(m.id)!.length}
+                            {toArabicNum(childrenMap.get(m.id)!.length)}
                           </Badge>
                           <span>{childrenMap.get(m.id)!.join("، ")}</span>
                         </div>

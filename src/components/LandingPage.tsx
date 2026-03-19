@@ -519,7 +519,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                   <h3 className="text-xl md:text-2xl font-extrabold text-foreground">{pillar.name}</h3>
                   <div className="flex items-center gap-1.5 text-muted-foreground text-sm font-bold">
                     <Users className="h-4 w-4" />
-                    <span>{pillar.descendants} فرد</span>
+                    <span>{toArabicNum(pillar.descendants)} فرد</span>
                   </div>
                   <Button
                     variant="outline"

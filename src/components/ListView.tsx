@@ -306,7 +306,7 @@ function ListNode({ member, depth, childrenMap, expandedIds, onToggle, onSelect,
                 }}
               >
                 <Users className="h-3 w-3" />
-                {children.length}
+                {toArabicNum(children.length)}
               </div>
             )}
           </div>

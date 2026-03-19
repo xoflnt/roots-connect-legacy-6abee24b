@@ -256,7 +256,7 @@ function DetailContent({ member }: { member: FamilyMember }) {
         {/* Children grouped by mother */}
         {groupedChildren.length > 0 && (
           <motion.div variants={staggerItem} className="px-4 py-3 rounded-xl bg-muted/50 border border-border/30 space-y-2">
-            <p className="text-[11px] text-muted-foreground font-medium">الأبناء ({children.length})</p>
+            <p className="text-[11px] text-muted-foreground font-medium">الأبناء ({toArabicNum(children.length)})</p>
             {groupedChildren.map(([motherKey, group], groupIndex) => {
               const color = group.colorIndex >= 0 ? BRANCH_COLORS[group.colorIndex % BRANCH_COLORS.length] : null;
               const showMotherName = motherKey !== "__unknown__" && color;
