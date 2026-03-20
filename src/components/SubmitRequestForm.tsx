@@ -37,6 +37,7 @@ export function SubmitRequestForm({ open, onOpenChange, targetMember }: SubmitRe
   // Fields
   const [childName, setChildName] = useState("");
   const [childGender, setChildGender] = useState<"M" | "F">("M");
+  const [selectedMother, setSelectedMother] = useState("");
   const [spouseName, setSpouseName] = useState("");
   const [textContent, setTextContent] = useState("");
   const [notes, setNotes] = useState("");
@@ -50,11 +51,17 @@ export function SubmitRequestForm({ open, onOpenChange, targetMember }: SubmitRe
 
   const filtered = useMemo(() => searchMembers(searchQuery, 10), [searchQuery]);
 
+  const fatherSpouses = useMemo(() => {
+    if (requestType !== "add_child" || !selectedTarget?.spouses) return [];
+    return selectedTarget.spouses.split(/[،,]/).map(s => s.trim()).filter(Boolean);
+  }, [requestType, selectedTarget]);
+
   const resetForm = () => {
     setStep(1);
     setRequestType(null);
     setChildName("");
     setChildGender("M");
+    setSelectedMother("");
     setSpouseName("");
     setTextContent("");
     setNotes("");
@@ -90,6 +97,7 @@ export function SubmitRequestForm({ open, onOpenChange, targetMember }: SubmitRe
     if (requestType === "add_child") {
       data.child_name = childName.trim();
       data.child_gender = childGender;
+      data.mother_name = selectedMother || "";
     } else if (requestType === "add_spouse") {
       data.spouse_name = spouseName.trim();
     } else {
@@ -112,6 +120,7 @@ export function SubmitRequestForm({ open, onOpenChange, targetMember }: SubmitRe
         type: requestType,
         memberName: selectedTarget.name,
         summary: getSummary(),
+        motherName: requestType === "add_child" ? (selectedMother || "غير معروفة") : undefined,
         submittedAt: new Date().toISOString(),
         status: "pending",
       });
@@ -259,6 +268,26 @@ export function SubmitRequestForm({ open, onOpenChange, targetMember }: SubmitRe
                     </div>
                   </div>
                   {renderTargetSelector("أب المولود")}
+                  {fatherSpouses.length > 0 && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-foreground">اختر أم المولود:</label>
+                      <div className="space-y-2">
+                        {[...fatherSpouses, "غير معروفة"].map((name) => (
+                          <button
+                            key={name}
+                            onClick={() => setSelectedMother(name === "غير معروفة" ? "" : name)}
+                            className={`w-full min-h-[48px] px-4 py-3 rounded-xl text-right text-sm font-medium transition-all border ${
+                              (name === "غير معروفة" && selectedMother === "") || selectedMother === name
+                                ? "border-primary bg-primary/5 text-foreground"
+                                : "border-border bg-card text-muted-foreground hover:border-primary/30"
+                            }`}
+                          >
+                            {name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   <div className="space-y-2">
                     <label className="text-sm font-semibold text-foreground">ملاحظات (اختياري)</label>
                     <Textarea
@@ -347,6 +376,12 @@ export function SubmitRequestForm({ open, onOpenChange, targetMember }: SubmitRe
                   <span className="text-muted-foreground">التفاصيل</span>
                   <span className="font-medium truncate max-w-[180px]">{getSummary()}</span>
                 </div>
+                {requestType === "add_child" && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">الأم</span>
+                    <span className="font-medium">{selectedMother || "غير معروفة"}</span>
+                  </div>
+                )}
               </div>
 
               <Button
