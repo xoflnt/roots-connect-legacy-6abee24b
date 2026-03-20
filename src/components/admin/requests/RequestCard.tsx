@@ -44,7 +44,18 @@ export function RequestCard({ request, onViewDetails }: RequestCardProps) {
   const status = statusConfig[request.status] || statusConfig.completed;
 
   return (
-    <Card className="border-border/50" dir="rtl">
+    <Card className="border-border/50 overflow-hidden" dir="rtl">
+      {/* Status banner for processed requests */}
+      {request.status === "approved" && (
+        <div className="bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 text-xs font-bold px-4 py-1.5 text-center">
+          ✓ تم القبول
+        </div>
+      )}
+      {request.status === "completed" && (
+        <div className="bg-muted text-muted-foreground text-xs font-bold px-4 py-1.5 text-center">
+          ✓ تمت المعالجة
+        </div>
+      )}
       <CardContent className="p-4 space-y-3">
         {/* Header */}
         <div className="flex items-start justify-between gap-2">
