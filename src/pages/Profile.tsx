@@ -15,7 +15,6 @@ import { formatAge } from "@/utils/ageCalculator";
 import { getBranch, getBranchStyle } from "@/utils/branchUtils";
 import { toArabicNum } from "@/utils/arabicUtils";
 import { relativeArabicTime } from "@/utils/relativeArabicTime";
-import { Badge } from "@/components/ui/badge";
 import type { FamilyMember } from "@/data/familyData";
 
 type HijriDate = { day?: string; month?: string; year?: string };
