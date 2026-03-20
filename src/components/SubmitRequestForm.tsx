@@ -376,6 +376,12 @@ export function SubmitRequestForm({ open, onOpenChange, targetMember }: SubmitRe
                   <span className="text-muted-foreground">التفاصيل</span>
                   <span className="font-medium truncate max-w-[180px]">{getSummary()}</span>
                 </div>
+                {requestType === "add_child" && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">الأم</span>
+                    <span className="font-medium">{selectedMother || "غير معروفة"}</span>
+                  </div>
+                )}
               </div>
 
               <Button
