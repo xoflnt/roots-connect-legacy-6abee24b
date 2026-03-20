@@ -400,6 +400,9 @@ const Profile = () => {
           </Button>
         </div>
 
+        {/* ═══════ 8b. My Requests History ═══════ */}
+        <MyRequestsSection />
+
         {/* ═══════ 9. View in tree + Logout ═══════ */}
         <div className="flex flex-col sm:flex-row gap-3 pb-6">
           <Button
