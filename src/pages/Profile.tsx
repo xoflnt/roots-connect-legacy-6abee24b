@@ -94,7 +94,7 @@ function MyRequestsSection() {
   );
 }
 
-
+const Profile = () => {
   const { currentUser, logout, isLoggedIn, login } = useAuth();
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
