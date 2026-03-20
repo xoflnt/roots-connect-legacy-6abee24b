@@ -1,93 +1,79 @@
 
 
-# Premium Cinematic Promo Video — Implementation Plan
+# Recreate Promo Video with Real App Screenshots
 
-## Creative Direction
+## Step 1: Capture Screenshots
 
-**Movement**: "Heritage Cartography" — warm, slow, confident. Apple keynote reverence meets Arabian genealogical tradition.
+Use a Puppeteer script (run via `lov-exec`) to capture 8 screenshots from the live published app at `https://roots-connect-legacy.lovable.app`. Save to `/tmp/promo-video/public/screenshots/`.
 
-**Palette**:
-- Background: `#F6F3EE` (warm sand)
-- Primary: `#1B5438` (deep palm green)
-- Gold: `#D4A82B` (accent)
-- Warm white: `#FEFCF8`
-- Dark overlay: `rgba(27, 84, 56, 0.85)`
+**Mobile (390×844):**
+1. `landing.png` — `/` (landing page hero)
+2. `tree.png` — `/?view=map` (family tree, wait for render)
+3. `person.png` — `/person/1` (any member detail)
+4. `branches.png` — `/?view=branches` (branches view)
+5. `search.png` — `/?view=navigate` (navigate view with search)
+6. `lineage.png` — `/?view=navigate` or `/person/1` (lineage section)
+7. `kinship.png` — `/?view=kinship&p1=1&p2=209` (kinship with pre-selected members)
 
-**Motion System**:
-- Enter: Slide from right (RTL) + opacity fade via spring (damping: 20)
-- Exit: Fade out + slight left drift
-- Scene transitions: `fade()` and `slide({ direction: "from-left" })` alternating
-- Accent: Scale spring with gold shimmer on reveals
-- Dot pattern: 0.06 opacity max, subtle radial grid
+**Desktop (1440×900):**
+8. `admin.png` — `/admin` (will likely show login gate — capture whatever is visible; if blocked, create a styled admin mockup screenshot)
 
-**Typography**: YearOfHandicrafts (Bold for headlines, Regular for body) loaded via `@remotion/fonts` from copied OTF files. Tajawal from Google Fonts for body/labels.
+The script uses Puppeteer with the sandbox Chromium (`/nix/var/nix/profiles/sandbox/bin/chromium`).
 
-## Architecture
+## Step 2: Replace Scene Components
 
-**9:16 vertical** (1080×1920), 30fps, ~50 seconds (1500 frames).
+Keep these files **unchanged**: `Opening.tsx`, `ClosingScene.tsx`, `MainVideo.tsx`, `Root.tsx`, `colors.ts`, `fonts.ts`, `FontLoader.tsx`, `GoldParticles.tsx`, `DotPattern.tsx`, `TextOverlay.tsx`, `PhoneMockup.tsx`, `DesktopMockup.tsx`, `render.mjs`.
 
-### Scenes (10 total)
+### New reusable component: `KenBurnsImage.tsx`
+Displays a screenshot with slow Ken Burns zoom/pan animation:
+- Uses `staticFile()` to load the screenshot
+- `interpolate(frame, [0, duration], [startScale, endScale])` for zoom (e.g., 1.0 → 1.15)
+- `interpolate(frame, [0, duration], [startX, endX])` for pan (e.g., 0 → -20px)
+- Props: `src`, `startScale`, `endScale`, `panX`, `panY`
 
-| # | Scene | Frames | Key Elements |
-|---|---|---|---|
-| 1 | Opening | 120 | Black → gold particles → app name + subtitle |
-| 2 | Landing | 120 | Phone mockup with hero section |
-| 3 | Tree | 180 | Network nodes with real names (زيد، ناصر، محمد، عبدالعزيز، علي), pan + zoom |
-| 4 | Person Card | 120 | Card slides up with member details |
-| 5 | Branches | 120 | Three colored branch columns, overlay text |
-| 6 | Search | 120 | Search bar types Arabic, results appear |
-| 7 | Lineage | 150 | "عـبـدالله بن عـلـي بن مـحـمـد بن زيـد" cascading chain |
-| 8 | Kinship | 120 | Two members → connection result |
-| 9 | Admin | 120 | Desktop frame with stats |
-| 10 | Closing | 150 | Pull back, app name returns, "جذورها في نجد — إرث ممتد عبر الأجيال" |
+### Rewrite 8 scene files (Scenes 2-9)
 
-Transitions: 9 × ~20 frames = 180 overlap. Total composition: ~1320 frames = 44 seconds.
-
-### File Structure
+Each scene follows this pattern:
 ```
-/tmp/promo-video/
-  tsconfig.json
-  scripts/render.mjs
-  src/
-    index.ts
-    Root.tsx
-    MainVideo.tsx
-    fonts.ts
-    colors.ts
-    components/
-      PhoneMockup.tsx
-      DesktopMockup.tsx
-      TextOverlay.tsx
-      GoldParticles.tsx
-      DotPattern.tsx
-      TreeNetwork.tsx
-    scenes/
-      Opening.tsx
-      LandingScene.tsx
-      TreeScene.tsx
-      PersonScene.tsx
-      BranchesScene.tsx
-      SearchScene.tsx
-      LineageScene.tsx
-      KinshipScene.tsx
-      AdminScene.tsx
-      ClosingScene.tsx
-  public/fonts/ (copied OTFs)
+AbsoluteFill (bg color)
+  → PhoneMockup/DesktopMockup with spring entrance
+    → KenBurnsImage (screenshot, Ken Burns params vary per scene)
+  → TextOverlay (same text as original)
 ```
 
-### Execution Steps
-1. Scaffold project, install deps, fix compositor binary
-2. Copy YearOfHandicrafts fonts to project
-3. Write all source files
-4. Render via programmatic script → `/mnt/documents/promo-video.mp4`
-5. QA with still frames, fix issues
-6. Output audio timing guide → `/mnt/documents/audio-timing-guide.md`
+**Scene-specific Ken Burns:**
+- Landing: slow zoom in (1.0→1.1), no pan
+- Tree: zoom out to in (1.2→1.0), slight upward pan — reveals scope
+- Person: zoom in (1.0→1.15), pan down — follows detail card
+- Branches: slow zoom (1.0→1.08), subtle right pan
+- Search: zoom in (1.0→1.12), pan up — follows search results
+- Lineage: slow zoom (1.0→1.1), downward pan — follows chain
+- Kinship: zoom in (1.0→1.15), no pan — centered result
+- Admin (desktop): slow zoom (1.0→1.06), slight pan — dashboard overview
 
-### Key Details
-- **Muted render** (sandbox ffmpeg lacks audio encoder)
-- Real family names: ناصر، زيد، محمد، عبدالعزيز، علي، عبدالله
-- Lineage chain with tatweel: "عـبـدالله بن عـلـي بن مـحـمـد بن زيـد"
-- Closing line: "جذورها في نجد — إرث ممتد عبر الأجيال"
-- Gold particles: sparse, 8-12 particles max, slow drift
-- Dot pattern: opacity 0.06, radial grid
+## Step 3: Render
+
+Same render script, output to `/mnt/documents/promo-video-real.mp4`.
+
+## Files
+
+**Create:**
+- `/tmp/promo-video/scripts/screenshots.mjs` — Puppeteer screenshot capture
+- `/tmp/promo-video/src/components/KenBurnsImage.tsx`
+
+**Rewrite:**
+- `/tmp/promo-video/src/scenes/LandingScene.tsx`
+- `/tmp/promo-video/src/scenes/TreeScene.tsx`
+- `/tmp/promo-video/src/scenes/PersonScene.tsx`
+- `/tmp/promo-video/src/scenes/BranchesScene.tsx`
+- `/tmp/promo-video/src/scenes/SearchScene.tsx`
+- `/tmp/promo-video/src/scenes/LineageScene.tsx`
+- `/tmp/promo-video/src/scenes/KinshipScene.tsx`
+- `/tmp/promo-video/src/scenes/AdminScene.tsx`
+
+**Update:**
+- `/tmp/promo-video/scripts/render.mjs` — output path → `promo-video-real.mp4`
+
+**Unchanged:**
+- Opening, Closing, MainVideo, Root, all shared components
 
