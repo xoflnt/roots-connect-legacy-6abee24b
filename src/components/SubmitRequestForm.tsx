@@ -61,6 +61,7 @@ export function SubmitRequestForm({ open, onOpenChange, targetMember }: SubmitRe
     setRequestType(null);
     setChildName("");
     setChildGender("M");
+    setSelectedMother("");
     setSpouseName("");
     setTextContent("");
     setNotes("");
