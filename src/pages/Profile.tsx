@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { TreePine, Phone, CalendarDays, Users, LogOut, GitBranch, Home, Save, Loader2, MessageSquarePlus, ShieldCheck, User, Heart } from "lucide-react";
+import { TreePine, Phone, CalendarDays, Users, LogOut, GitBranch, Home, Save, Loader2, MessageSquarePlus, ShieldCheck, User, Heart, Baby, MessageSquare, Clock } from "lucide-react";
 import { getAncestorChain, getDescendantCount, getMemberById, getChildrenOf, refreshMembers, inferMotherName } from "@/services/familyService";
 import { updateMember, getVerifiedMemberIds } from "@/services/dataService";
 import { useMemo, useState, useEffect } from "react";
@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { formatAge } from "@/utils/ageCalculator";
 import { getBranch, getBranchStyle } from "@/utils/branchUtils";
 import { toArabicNum } from "@/utils/arabicUtils";
+import { relativeArabicTime } from "@/utils/relativeArabicTime";
 import type { FamilyMember } from "@/data/familyData";
 
 type HijriDate = { day?: string; month?: string; year?: string };
@@ -29,6 +30,68 @@ function parseHijriDate(dateStr: string | null | undefined): HijriDate {
 function formatHijriDate(d: HijriDate): string | undefined {
   if (!d.year) return undefined;
   return `${d.year}${d.month ? `/${d.month}` : ""}${d.day ? `/${d.day}` : ""}`;
+}
+const requestTypeIcons: Record<string, typeof Baby> = {
+  add_child: Baby,
+  add_spouse: Heart,
+  other: MessageSquare,
+};
+const requestTypeLabels: Record<string, string> = {
+  add_child: "إضافة مولود",
+  add_spouse: "إضافة زواج",
+  other: "ملاحظة",
+};
+
+function MyRequestsSection() {
+  const requests = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem("my_requests") || "[]").slice(0, 10);
+    } catch { return []; }
+  }, []);
+
+  if (requests.length === 0) return null;
+
+  return (
+    <section className="bg-card border border-border/50 rounded-2xl p-6 space-y-4 shadow-sm">
+      <div className="flex items-center gap-2">
+        <Clock className="h-5 w-5 text-primary" />
+        <h3 className="text-lg font-bold text-foreground">طلباتي</h3>
+      </div>
+      <div className="space-y-3">
+        {requests.map((req: any) => {
+          const Icon = requestTypeIcons[req.type] || MessageSquare;
+          return (
+            <div key={req.id} className="flex items-center gap-3 p-3 rounded-xl bg-muted/50 border border-border/30">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <Icon className="h-4 w-4 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground truncate">
+                  {requestTypeLabels[req.type] || "طلب"} — {req.memberName}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">{req.summary}</p>
+              </div>
+              <div className="flex flex-col items-end gap-1 shrink-0">
+                <Badge
+                  variant="outline"
+                  className={`text-xs ${
+                    req.status === "approved"
+                      ? "border-emerald-400 text-emerald-700 dark:text-emerald-400"
+                      : req.status === "completed"
+                      ? "text-muted-foreground"
+                      : "border-amber-400 text-amber-700 dark:text-amber-400"
+                  }`}
+                >
+                  {req.status === "approved" ? "تم القبول" : req.status === "completed" ? "تمت المعالجة" : "بانتظار المراجعة"}
+                </Badge>
+                <span className="text-xs text-muted-foreground">{relativeArabicTime(req.submittedAt)}</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
 }
 
 const Profile = () => {
@@ -397,6 +460,9 @@ const Profile = () => {
             إرسال طلب تعديل
           </Button>
         </div>
+
+        {/* ═══════ 8b. My Requests History ═══════ */}
+        <MyRequestsSection />
 
         {/* ═══════ 9. View in tree + Logout ═══════ */}
         <div className="flex flex-col sm:flex-row gap-3 pb-6">

@@ -8,7 +8,7 @@ import type { FamilyMember } from "@/data/familyData";
 
 // ─── Request Types ───
 
-export type RequestType = "other";
+export type RequestType = "add_child" | "add_spouse" | "other";
 
 export interface FamilyRequest {
   id: string;

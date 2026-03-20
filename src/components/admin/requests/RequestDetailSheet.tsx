@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -34,6 +35,8 @@ export function RequestDetailSheet({
   const { toast } = useToast();
   const [editedName, setEditedName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showRejectForm, setShowRejectForm] = useState(false);
+  const [rejectionNote, setRejectionNote] = useState("");
 
   if (!request) return null;
 
@@ -60,6 +63,7 @@ export function RequestDetailSheet({
         type: request.type,
         targetMemberId: request.target_member_id,
         targetMemberName: request.target_member_name,
+        adminNote: "",
       };
 
       if (request.type === "add_spouse") {
@@ -75,22 +79,14 @@ export function RequestDetailSheet({
       );
 
       if (error || data?.error) {
-        toast({
-          title: "خطأ",
-          description: data?.error || "حدث خطأ أثناء المعالجة",
-          variant: "destructive",
-        });
+        toast({ title: "خطأ", description: data?.error || "حدث خطأ أثناء المعالجة", variant: "destructive" });
       } else {
         toast({ title: "تم القبول بنجاح ✓" });
         onSuccess();
         onClose();
       }
     } catch {
-      toast({
-        title: "خطأ",
-        description: "حدث خطأ في الاتصال",
-        variant: "destructive",
-      });
+      toast({ title: "خطأ", description: "حدث خطأ في الاتصال", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -101,38 +97,45 @@ export function RequestDetailSheet({
     if (!token) return;
     setLoading(true);
     try {
-      const { error } = await supabase.functions.invoke(
-        "family-api/mark-done",
+      const { data, error } = await supabase.functions.invoke(
+        "family-api/resolve-request",
         {
-          body: { requestId: request.id },
+          body: {
+            requestId: request.id,
+            decision: "rejected",
+            type: request.type,
+            targetMemberId: request.target_member_id,
+            adminNote: rejectionNote.trim() || "",
+          },
           headers: { "x-admin-token": token },
         }
       );
 
-      if (error) {
-        toast({
-          title: "خطأ",
-          description: "حدث خطأ أثناء الرفض",
-          variant: "destructive",
-        });
+      if (error || data?.error) {
+        toast({ title: "خطأ", description: "حدث خطأ أثناء الرفض", variant: "destructive" });
       } else {
         toast({ title: "تم الرفض" });
         onSuccess();
         onClose();
       }
     } catch {
-      toast({
-        title: "خطأ",
-        description: "حدث خطأ في الاتصال",
-        variant: "destructive",
-      });
+      toast({ title: "خطأ", description: "حدث خطأ في الاتصال", variant: "destructive" });
     } finally {
       setLoading(false);
+      setShowRejectForm(false);
+      setRejectionNote("");
     }
   };
 
+  const handleClose = () => {
+    setShowRejectForm(false);
+    setRejectionNote("");
+    setEditedName("");
+    onClose();
+  };
+
   return (
-    <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <SheetContent
         side={isMobile ? "bottom" : "right"}
         className="overflow-y-auto"
@@ -141,9 +144,7 @@ export function RequestDetailSheet({
         <SheetHeader className="text-right">
           <div className="flex items-center gap-2">
             {typeIcon[request.type]}
-            <SheetTitle className="text-lg">
-              {typeLabel[request.type]}
-            </SheetTitle>
+            <SheetTitle className="text-lg">{typeLabel[request.type]}</SheetTitle>
           </div>
           <SheetDescription className="text-right">
             بخصوص: {request.target_member_name}
@@ -161,15 +162,11 @@ export function RequestDetailSheet({
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">الجنس</span>
-                  <Badge variant="secondary">
-                    {request.data.child_gender === "F" ? "أنثى" : "ذكر"}
-                  </Badge>
+                  <Badge variant="secondary">{request.data.child_gender === "F" ? "أنثى" : "ذكر"}</Badge>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">سيُضاف كابن لـ</span>
-                  <span className="font-medium">
-                    {request.target_member_name}
-                  </span>
+                  <span className="font-medium">{request.target_member_name}</span>
                 </div>
               </>
             )}
@@ -177,22 +174,16 @@ export function RequestDetailSheet({
               <>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">الزوجة المقترحة</span>
-                  <span className="font-medium">
-                    {request.data.spouse_name}
-                  </span>
+                  <span className="font-medium">{request.data.spouse_name}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">لـ</span>
-                  <span className="font-medium">
-                    {request.target_member_name}
-                  </span>
+                  <span className="font-medium">{request.target_member_name}</span>
                 </div>
               </>
             )}
             {request.type === "other" && (
-              <p className="text-sm leading-relaxed">
-                {request.data.text_content}
-              </p>
+              <p className="text-sm leading-relaxed">{request.data.text_content}</p>
             )}
 
             {request.submitted_by && (
@@ -204,8 +195,7 @@ export function RequestDetailSheet({
           </div>
 
           {/* Modification section */}
-          {(request.type === "add_child" ||
-            request.type === "add_spouse") && (
+          {(request.type === "add_child" || request.type === "add_spouse") && (
             <div className="space-y-2">
               <Label className="text-sm text-muted-foreground">
                 {request.type === "add_child"
@@ -216,36 +206,66 @@ export function RequestDetailSheet({
                 value={editedName}
                 onChange={(e) => setEditedName(e.target.value)}
                 placeholder={
-                  request.type === "add_child"
-                    ? request.data.child_name
-                    : request.data.spouse_name
+                  request.type === "add_child" ? request.data.child_name : request.data.spouse_name
                 }
                 className="min-h-[48px]"
               />
             </div>
           )}
 
-          {/* Actions */}
-          <div className="space-y-3 pt-2">
-            <Button
-              onClick={handleApprove}
-              disabled={loading}
-              className="w-full min-h-[48px] bg-emerald-600 hover:bg-emerald-700 text-white text-base font-bold"
-            >
-              {loading ? (
-                <Loader2 className="h-4 w-4 animate-spin ml-2" />
-              ) : null}
-              قبول وتطبيق
-            </Button>
-            <Button
-              onClick={handleReject}
-              disabled={loading}
-              variant="outline"
-              className="w-full min-h-[48px] border-destructive text-destructive hover:bg-destructive/10 text-base"
-            >
-              رفض
-            </Button>
-          </div>
+          {/* Rejection form */}
+          {showRejectForm && (
+            <div className="space-y-3 rounded-xl border border-destructive/30 p-4">
+              <Label className="text-sm font-semibold text-foreground">سبب الرفض (اختياري)</Label>
+              <Textarea
+                value={rejectionNote}
+                onChange={(e) => setRejectionNote(e.target.value)}
+                placeholder="اكتب سبب الرفض..."
+                className="rounded-xl min-h-[80px] resize-none text-sm"
+              />
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleReject}
+                  disabled={loading}
+                  variant="destructive"
+                  className="flex-1 min-h-[48px] text-base font-bold"
+                >
+                  {loading ? <Loader2 className="h-4 w-4 animate-spin ml-2" /> : null}
+                  تأكيد الرفض
+                </Button>
+                <Button
+                  onClick={() => { setShowRejectForm(false); setRejectionNote(""); }}
+                  disabled={loading}
+                  variant="outline"
+                  className="min-h-[48px]"
+                >
+                  إلغاء
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Action buttons */}
+          {!showRejectForm && (
+            <div className="space-y-3 pt-2">
+              <Button
+                onClick={handleApprove}
+                disabled={loading}
+                className="w-full min-h-[48px] bg-emerald-600 hover:bg-emerald-700 text-white text-base font-bold"
+              >
+                {loading ? <Loader2 className="h-4 w-4 animate-spin ml-2" /> : null}
+                قبول وتطبيق
+              </Button>
+              <Button
+                onClick={() => setShowRejectForm(true)}
+                disabled={loading}
+                variant="outline"
+                className="w-full min-h-[48px] border-destructive text-destructive hover:bg-destructive/10 text-base"
+              >
+                رفض
+              </Button>
+            </div>
+          )}
         </div>
       </SheetContent>
     </Sheet>

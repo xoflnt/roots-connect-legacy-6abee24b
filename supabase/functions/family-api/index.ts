@@ -260,6 +260,7 @@ serve(async (req) => {
         requestId, decision, type,
         targetMemberId, targetMemberName,
         spouseName, childName, childGender,
+        adminNote,
       } = await req.json();
 
       if (!requestId) return json({ error: "requestId required" }, 400);
@@ -314,7 +315,7 @@ serve(async (req) => {
       const newStatus = decision === "approved" ? "approved" : "completed";
       await supabase
         .from("family_requests")
-        .update({ status: newStatus })
+        .update({ status: newStatus, notes: adminNote || null })
         .eq("id", requestId);
 
       return json({ success: true });

@@ -2,21 +2,8 @@ import { UserPlus, Heart, MessageSquare } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { toArabicNum } from "@/utils/arabicUtils";
+import { relativeArabicTime } from "@/utils/relativeArabicTime";
 import type { AdminRequest } from "@/hooks/admin/useRequests";
-
-function relativeArabicTime(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "الآن";
-  if (mins < 60) return `منذ ${toArabicNum(mins)} دقيقة`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `منذ ${toArabicNum(hours)} ساعة`;
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `منذ ${toArabicNum(days)} يوم`;
-  const months = Math.floor(days / 30);
-  return `منذ ${toArabicNum(months)} شهر`;
-}
 
 const typeConfig = {
   add_child: {
@@ -57,7 +44,18 @@ export function RequestCard({ request, onViewDetails }: RequestCardProps) {
   const status = statusConfig[request.status] || statusConfig.completed;
 
   return (
-    <Card className="border-border/50" dir="rtl">
+    <Card className="border-border/50 overflow-hidden" dir="rtl">
+      {/* Status banner for processed requests */}
+      {request.status === "approved" && (
+        <div className="bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 text-xs font-bold px-4 py-1.5 text-center">
+          ✓ تم القبول
+        </div>
+      )}
+      {request.status === "completed" && (
+        <div className="bg-muted text-muted-foreground text-xs font-bold px-4 py-1.5 text-center">
+          ✓ تمت المعالجة
+        </div>
+      )}
       <CardContent className="p-4 space-y-3">
         {/* Header */}
         <div className="flex items-start justify-between gap-2">
@@ -108,6 +106,13 @@ export function RequestCard({ request, onViewDetails }: RequestCardProps) {
             <p className="line-clamp-2">{request.data.text_content}</p>
           )}
         </div>
+
+        {/* Admin note */}
+        {request.notes && request.status !== "pending" && (
+          <div className="text-xs text-muted-foreground bg-muted/50 rounded-lg p-2.5 pr-11">
+            <span className="font-semibold">ملاحظة الإدارة:</span> {request.notes}
+          </div>
+        )}
 
         {/* Footer */}
         <div className="flex items-center justify-between pt-1 border-t border-border/30">
