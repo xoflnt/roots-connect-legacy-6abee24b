@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import dagre from "dagre";
+import { hierarchy, tree as d3tree } from "d3-hierarchy";
 import type { Node, Edge } from "@xyflow/react";
 import { getAllMembers, getDepth, inferMotherName, isDeceased, sortByBirth } from "@/services/familyService";
 import { getVerifiedMemberIds } from "@/services/dataService";
@@ -13,17 +13,6 @@ export const BRANCH_COLORS = [
   { stroke: "hsl(42, 55%, 42%)",   bg: "hsl(42, 40%, 92%)",   bgDark: "hsl(42, 35%, 20%)" },
   { stroke: "hsl(200, 35%, 42%)",  bg: "hsl(200, 25%, 92%)",  bgDark: "hsl(200, 25%, 18%)" },
 ];
-
-function buildChildrenOfMap(members: ReturnType<typeof getAllMembers>) {
-  const map = new Map<string, string[]>();
-  members.forEach((m) => {
-    if (m.father_id) {
-      if (!map.has(m.father_id)) map.set(m.father_id, []);
-      map.get(m.father_id)!.push(m.id);
-    }
-  });
-  return map;
-}
 
 export function getChildrenOf(id: string): string[] {
   const members = getAllMembers();
@@ -55,6 +44,12 @@ export interface TreeFilters {
   living: string;
 }
 
+interface HierarchyMember {
+  id: string;
+  _virtual?: boolean;
+  [key: string]: unknown;
+}
+
 export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number, filters?: TreeFilters, isLoggedIn: boolean = false) {
   return useMemo(() => {
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
@@ -66,15 +61,13 @@ export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number, fi
     const currentMembers = getAllMembers();
     const totalCount = currentMembers.length;
     const memberById = new Map(currentMembers.map((m) => [m.id, m]));
-    const childrenOfMap = buildChildrenOfMap(currentMembers);
     const verifiedIds = getVerifiedMemberIds();
 
+    // --- Visibility expansion (unchanged) ---
     const visibleIds = new Set<string>();
-
     currentMembers.forEach((m) => {
       if (!m.father_id) visibleIds.add(m.id);
     });
-
     let changed = true;
     while (changed) {
       changed = false;
@@ -87,7 +80,7 @@ export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number, fi
       });
     }
 
-    // Apply filters — keep ancestors to maintain connected tree
+    // --- Apply filters (unchanged) ---
     if (filters && (filters.branch !== 'all' || filters.gender !== 'all' || filters.living !== 'all')) {
       const matchingIds = new Set<string>();
       for (const id of visibleIds) {
@@ -106,7 +99,6 @@ export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number, fi
         }
         if (matches) matchingIds.add(id);
       }
-      // Add ancestors of matching nodes to keep tree connected
       const withAncestors = new Set(matchingIds);
       for (const id of matchingIds) {
         let current = memberById.get(id);
@@ -115,7 +107,6 @@ export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number, fi
           current = memberById.get(current.father_id);
         }
       }
-      // Intersect with visibleIds
       for (const id of visibleIds) {
         if (!withAncestors.has(id)) visibleIds.delete(id);
       }
@@ -124,11 +115,7 @@ export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number, fi
     const visibleMembers = currentMembers.filter((m) => visibleIds.has(m.id));
     const filteredCount = visibleMembers.length;
 
-    const g = new dagre.graphlib.Graph();
-    g.setGraph({ rankdir: "TB", nodesep: NODE_SEP, ranksep: RANK_SEP });
-    g.setDefaultEdgeLabel(() => ({}));
-
-    // Group children by father AND mother
+    // --- Mother grouping & color assignment (preserved) ---
     const childrenByFatherAndMother = new Map<string, Map<string, string[]>>();
     visibleMembers.forEach((member) => {
       if (!member.father_id) return;
@@ -141,22 +128,15 @@ export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number, fi
       motherMap.get(motherName)!.push(member.id);
     });
 
-    visibleMembers.forEach((member) => {
-      g.setNode(member.id, { width: CARD_WIDTH, height: CARD_HEIGHT });
-    });
-
     const childColorMap = new Map<string, number>();
     const childMotherMap = new Map<string, string>();
     const edgeColorMap = new Map<string, number>();
     let colorCounter = 0;
-
-    // Collect spouse names per father
     const fatherSpouseNames = new Map<string, string[]>();
 
     childrenByFatherAndMother.forEach((motherMap, fatherId) => {
       const names: string[] = [];
       motherMap.forEach((childIds, motherName) => {
-        // Sort children within each mother group by birth
         const sortedChildIds = sortByBirth(childIds.map((id) => memberById.get(id)!)).map((m) => m.id);
         const ci = colorCounter % BRANCH_COLORS.length;
         colorCounter++;
@@ -164,7 +144,6 @@ export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number, fi
           names.push(motherName);
         }
         sortedChildIds.forEach((childId) => {
-          g.setEdge(fatherId, childId);
           if (motherName !== "__unknown__") {
             childColorMap.set(childId, ci);
             childMotherMap.set(childId, motherName);
@@ -177,7 +156,7 @@ export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number, fi
       }
     });
 
-    // Add spouses from spouses field that weren't captured via mother grouping
+    // Add spouses from spouses field
     visibleMembers.forEach((member) => {
       if (!member.spouses) return;
       const spouseNames = member.spouses.split("،").map((s) => s.trim()).filter(Boolean);
@@ -188,10 +167,51 @@ export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number, fi
       }
     });
 
-    dagre.layout(g);
+    // --- d3-hierarchy layout ---
+    const visibleSet = visibleIds;
+    const visibleMemberById = new Map(visibleMembers.map((m) => [m.id, m]));
 
+    // Build children lookup for visible members, sorted by birth
+    const getVisibleChildren = (parentId: string): HierarchyMember[] => {
+      const children = visibleMembers.filter((m) => m.father_id === parentId);
+      return sortByBirth(children) as unknown as HierarchyMember[];
+    };
+
+    // Find roots (no father_id or father not visible)
+    const roots = visibleMembers.filter((m) => !m.father_id || !visibleSet.has(m.father_id));
+
+    let rootNode: ReturnType<typeof hierarchy<HierarchyMember>>;
+
+    if (roots.length === 1) {
+      rootNode = hierarchy<HierarchyMember>(roots[0] as unknown as HierarchyMember, (d) =>
+        d._virtual ? [] : getVisibleChildren(d.id)
+      );
+    } else {
+      // Virtual root wrapping multiple roots
+      const virtualRoot: HierarchyMember = { id: '__virtual_root__', _virtual: true };
+      rootNode = hierarchy<HierarchyMember>(virtualRoot, (d) => {
+        if (d.id === '__virtual_root__') return roots as unknown as HierarchyMember[];
+        return getVisibleChildren(d.id);
+      });
+    }
+
+    const treeLayout = d3tree<HierarchyMember>()
+      .nodeSize([CARD_WIDTH + NODE_SEP, CARD_HEIGHT + RANK_SEP])
+      .separation((a, b) => a.parent === b.parent ? 1 : 1.5);
+
+    treeLayout(rootNode);
+
+    // Build position map (exclude virtual root)
+    const posMap = new Map<string, { x: number; y: number }>();
+    rootNode.descendants().forEach((d) => {
+      if (d.data.id !== '__virtual_root__') {
+        posMap.set(d.data.id, { x: d.x, y: d.y });
+      }
+    });
+
+    // --- Build nodes (same data payload as before) ---
     const nodes: Node[] = visibleMembers.map((member) => {
-      const pos = g.node(member.id);
+      const pos = posMap.get(member.id) || { x: 0, y: 0 };
       return {
         id: member.id,
         type: "familyCard",
@@ -211,23 +231,25 @@ export function useTreeLayout(expandedIds: Set<string>, _refreshKey?: number, fi
       };
     });
 
-    const edges: Edge[] = g.edges().map((e) => {
-      const edgeKey = `e-${e.v}-${e.w}`;
-      const ci = edgeColorMap.get(edgeKey);
-      const color = ci !== undefined ? BRANCH_COLORS[ci].stroke : "hsl(var(--muted-foreground) / 0.4)";
-
-      return {
-        id: edgeKey,
-        source: e.v,
-        target: e.w,
-        type: "default",
-        style: {
-          stroke: color,
-          strokeWidth: 2,
-        },
-        animated: false,
-      };
-    });
+    // --- Build edges from d3 links ---
+    const edges: Edge[] = rootNode.links()
+      .filter((link) => link.source.data.id !== '__virtual_root__')
+      .map((link) => {
+        const edgeKey = `e-${link.source.data.id}-${link.target.data.id}`;
+        const ci = edgeColorMap.get(edgeKey);
+        const color = ci !== undefined ? BRANCH_COLORS[ci].stroke : "hsl(var(--muted-foreground) / 0.4)";
+        return {
+          id: edgeKey,
+          source: link.source.data.id,
+          target: link.target.data.id,
+          type: "default",
+          style: {
+            stroke: color,
+            strokeWidth: 2,
+          },
+          animated: false,
+        };
+      });
 
     return { nodes, edges, totalCount, filteredCount };
   }, [expandedIds, _refreshKey, filters, isLoggedIn]);
