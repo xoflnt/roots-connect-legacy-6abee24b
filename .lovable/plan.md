@@ -1,79 +1,70 @@
 
 
-# Recreate Promo Video with Real App Screenshots
+# Replace Dagre with d3-hierarchy for Sibling Grouping
 
-## Step 1: Capture Screenshots
+## Problem
+Dagre positions nodes based on global edge-crossing minimization, causing siblings of the same parent to drift far apart when their subtrees differ in size. d3-hierarchy's `tree()` layout guarantees children are centered directly under their parent.
 
-Use a Puppeteer script (run via `lov-exec`) to capture 8 screenshots from the live published app at `https://roots-connect-legacy.lovable.app`. Save to `/tmp/promo-video/public/screenshots/`.
+## Changes — Single file: `src/hooks/useTreeLayout.ts`
 
-**Mobile (390×844):**
-1. `landing.png` — `/` (landing page hero)
-2. `tree.png` — `/?view=map` (family tree, wait for render)
-3. `person.png` — `/person/1` (any member detail)
-4. `branches.png` — `/?view=branches` (branches view)
-5. `search.png` — `/?view=navigate` (navigate view with search)
-6. `lineage.png` — `/?view=navigate` or `/person/1` (lineage section)
-7. `kinship.png` — `/?view=kinship&p1=1&p2=209` (kinship with pre-selected members)
+### 1. Install d3-hierarchy
+Add `d3-hierarchy` and its types as dependencies.
 
-**Desktop (1440×900):**
-8. `admin.png` — `/admin` (will likely show login gate — capture whatever is visible; if blocked, create a styled admin mockup screenshot)
+### 2. Replace layout engine (lines 127-191)
 
-The script uses Puppeteer with the sandbox Chromium (`/nix/var/nix/profiles/sandbox/bin/chromium`).
+Remove `dagre` import. Add `import { hierarchy, tree as d3tree } from "d3-hierarchy"`.
 
-## Step 2: Replace Scene Components
+**Build hierarchy**: Find root members (no `father_id`). For each visible member, define children as visible members whose `father_id` matches, sorted by birth (via `sortByBirth`). If single root, build one hierarchy. If multiple roots, create a virtual root with the real roots as children.
 
-Keep these files **unchanged**: `Opening.tsx`, `ClosingScene.tsx`, `MainVideo.tsx`, `Root.tsx`, `colors.ts`, `fonts.ts`, `FontLoader.tsx`, `GoldParticles.tsx`, `DotPattern.tsx`, `TextOverlay.tsx`, `PhoneMockup.tsx`, `DesktopMockup.tsx`, `render.mjs`.
-
-### New reusable component: `KenBurnsImage.tsx`
-Displays a screenshot with slow Ken Burns zoom/pan animation:
-- Uses `staticFile()` to load the screenshot
-- `interpolate(frame, [0, duration], [startScale, endScale])` for zoom (e.g., 1.0 → 1.15)
-- `interpolate(frame, [0, duration], [startX, endX])` for pan (e.g., 0 → -20px)
-- Props: `src`, `startScale`, `endScale`, `panX`, `panY`
-
-### Rewrite 8 scene files (Scenes 2-9)
-
-Each scene follows this pattern:
-```
-AbsoluteFill (bg color)
-  → PhoneMockup/DesktopMockup with spring entrance
-    → KenBurnsImage (screenshot, Ken Burns params vary per scene)
-  → TextOverlay (same text as original)
+**Configure tree layout**:
+```ts
+const treeLayout = d3tree<MemberType>()
+  .nodeSize([CARD_WIDTH + NODE_SEP, CARD_HEIGHT + RANK_SEP])
+  .separation((a, b) => a.parent === b.parent ? 1 : 1.5);
 ```
 
-**Scene-specific Ken Burns:**
-- Landing: slow zoom in (1.0→1.1), no pan
-- Tree: zoom out to in (1.2→1.0), slight upward pan — reveals scope
-- Person: zoom in (1.0→1.15), pan down — follows detail card
-- Branches: slow zoom (1.0→1.08), subtle right pan
-- Search: zoom in (1.0→1.12), pan up — follows search results
-- Lineage: slow zoom (1.0→1.1), downward pan — follows chain
-- Kinship: zoom in (1.0→1.15), no pan — centered result
-- Admin (desktop): slow zoom (1.0→1.06), slight pan — dashboard overview
+**Apply**: `treeLayout(root)` then read `node.x` (horizontal) and `node.y` (vertical) from `root.descendants()`.
 
-## Step 3: Render
+### 3. Convert positions to nodes (lines 193-212)
 
-Same render script, output to `/mnt/documents/promo-video-real.mp4`.
+Replace `g.node(member.id)` position lookup with a Map built from `root.descendants()`:
+```ts
+const posMap = new Map(root.descendants().map(d => [d.data.id, { x: d.x, y: d.y }]));
+```
 
-## Files
+Then for each visible member:
+```ts
+position: { x: pos.x - CARD_WIDTH / 2, y: pos.y - CARD_HEIGHT / 2 }
+```
 
-**Create:**
-- `/tmp/promo-video/scripts/screenshots.mjs` — Puppeteer screenshot capture
-- `/tmp/promo-video/src/components/KenBurnsImage.tsx`
+### 4. Convert links to edges (lines 214-230)
 
-**Rewrite:**
-- `/tmp/promo-video/src/scenes/LandingScene.tsx`
-- `/tmp/promo-video/src/scenes/TreeScene.tsx`
-- `/tmp/promo-video/src/scenes/PersonScene.tsx`
-- `/tmp/promo-video/src/scenes/BranchesScene.tsx`
-- `/tmp/promo-video/src/scenes/SearchScene.tsx`
-- `/tmp/promo-video/src/scenes/LineageScene.tsx`
-- `/tmp/promo-video/src/scenes/KinshipScene.tsx`
-- `/tmp/promo-video/src/scenes/AdminScene.tsx`
+Replace `g.edges()` with `root.links()`:
+```ts
+const edges = root.links()
+  .filter(link => link.source.data.id !== '__virtual_root__')
+  .map(link => {
+    const edgeKey = `e-${link.source.data.id}-${link.target.data.id}`;
+    const ci = edgeColorMap.get(edgeKey);
+    const color = ci !== undefined ? BRANCH_COLORS[ci].stroke : "hsl(var(--muted-foreground) / 0.4)";
+    return { id: edgeKey, source: link.source.data.id, target: link.target.data.id, type: "default", style: { stroke: color, strokeWidth: 2 }, animated: false };
+  });
+```
 
-**Update:**
-- `/tmp/promo-video/scripts/render.mjs` — output path → `promo-video-real.mp4`
+### 5. Preserve all existing logic
+- Visibility expansion (lines 72-88) — unchanged
+- Filter logic (lines 90-122) — unchanged
+- Mother grouping and color assignment (lines 131-178) — unchanged, just no longer calls `g.setEdge`; instead populates `edgeColorMap` directly
+- Spouse names (lines 180-189) — unchanged
+- Node `data` payload (lines 199-210) — unchanged
+- `BRANCH_COLORS`, helper functions, exports — unchanged
 
-**Unchanged:**
-- Opening, Closing, MainVideo, Root, all shared components
+### 6. Handle multiple roots
+The data has one primary root (id `"100"`). But if filters create disconnected visible members, wrap them under a virtual root node that gets excluded from final output.
 
+### 7. Generation bands compatibility
+`FamilyTree.tsx` reads `node.data.generation` (from `getDepth`) and `node.position.y` to build generation bands. d3-hierarchy's `y` values will be consistent per depth level, so bands will work correctly without changes.
+
+## Technical Notes
+- d3-hierarchy `tree()` with `nodeSize` centers children under parents by design — this directly solves the sibling drift
+- `separation()` with `1
