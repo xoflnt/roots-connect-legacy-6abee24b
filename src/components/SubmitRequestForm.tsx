@@ -51,6 +51,11 @@ export function SubmitRequestForm({ open, onOpenChange, targetMember }: SubmitRe
 
   const filtered = useMemo(() => searchMembers(searchQuery, 10), [searchQuery]);
 
+  const fatherSpouses = useMemo(() => {
+    if (requestType !== "add_child" || !selectedTarget?.spouses) return [];
+    return selectedTarget.spouses.split(/[،,]/).map(s => s.trim()).filter(Boolean);
+  }, [requestType, selectedTarget]);
+
   const resetForm = () => {
     setStep(1);
     setRequestType(null);
