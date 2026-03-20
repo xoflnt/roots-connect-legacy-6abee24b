@@ -120,6 +120,7 @@ export function SubmitRequestForm({ open, onOpenChange, targetMember }: SubmitRe
         type: requestType,
         memberName: selectedTarget.name,
         summary: getSummary(),
+        motherName: requestType === "add_child" ? (selectedMother || "غير معروفة") : undefined,
         submittedAt: new Date().toISOString(),
         status: "pending",
       });
