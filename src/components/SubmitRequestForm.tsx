@@ -268,6 +268,26 @@ export function SubmitRequestForm({ open, onOpenChange, targetMember }: SubmitRe
                     </div>
                   </div>
                   {renderTargetSelector("أب المولود")}
+                  {fatherSpouses.length > 0 && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-foreground">اختر أم المولود:</label>
+                      <div className="space-y-2">
+                        {[...fatherSpouses, "غير معروفة"].map((name) => (
+                          <button
+                            key={name}
+                            onClick={() => setSelectedMother(name === "غير معروفة" ? "" : name)}
+                            className={`w-full min-h-[48px] px-4 py-3 rounded-xl text-right text-sm font-medium transition-all border ${
+                              (name === "غير معروفة" && selectedMother === "") || selectedMother === name
+                                ? "border-primary bg-primary/5 text-foreground"
+                                : "border-border bg-card text-muted-foreground hover:border-primary/30"
+                            }`}
+                          >
+                            {name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   <div className="space-y-2">
                     <label className="text-sm font-semibold text-foreground">ملاحظات (اختياري)</label>
                     <Textarea
