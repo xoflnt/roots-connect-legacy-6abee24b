@@ -107,6 +107,13 @@ export function RequestCard({ request, onViewDetails }: RequestCardProps) {
           )}
         </div>
 
+        {/* Admin note */}
+        {request.notes && request.status !== "pending" && (
+          <div className="text-xs text-muted-foreground bg-muted/50 rounded-lg p-2.5 pr-11">
+            <span className="font-semibold">ملاحظة الإدارة:</span> {request.notes}
+          </div>
+        )}
+
         {/* Footer */}
         <div className="flex items-center justify-between pt-1 border-t border-border/30">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">

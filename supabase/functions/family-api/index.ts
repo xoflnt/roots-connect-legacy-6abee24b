@@ -314,7 +314,7 @@ serve(async (req) => {
       const newStatus = decision === "approved" ? "approved" : "completed";
       await supabase
         .from("family_requests")
-        .update({ status: newStatus })
+        .update({ status: newStatus, notes: adminNote || null })
         .eq("id", requestId);
 
       return json({ success: true });
