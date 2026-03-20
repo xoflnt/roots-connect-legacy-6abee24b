@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
@@ -9,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 import {
   TreePine, Search, UserCheck, Phone, CalendarDays, ChevronDown, Loader2,
-  UserCircle, Users2, Heart, UserPlus, GitBranch, Edit3, BadgeCheck, Info,
+  Users2, Heart, UserPlus, GitBranch, Edit3, BadgeCheck, Info,
   Lock, Shield,
 } from "lucide-react";
 import type { FamilyMember } from "@/data/familyData";
@@ -19,7 +18,6 @@ import { HijriDatePicker } from "@/components/HijriDatePicker";
 import { registerVerifiedUser, submitRequest, getVerifiedMemberIds, verifyFamilyPasscode } from "@/services/dataService";
 import { getLineageLabel } from "@/utils/memberLabel";
 import { getBranch, getBranchStyle } from "@/utils/branchUtils";
-import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 
@@ -60,12 +58,11 @@ const slideVariants = {
 };
 
 export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
-  const { isLoggedIn, currentUser, login } = useAuth();
+  const { isLoggedIn, login } = useAuth();
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(1);
   const [direction, setDirection] = useState(1);
-  const navigate = useNavigate();
 
   // Phase A
   const [searchQuery, setSearchQuery] = useState("");
@@ -93,11 +90,12 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    if (isLoggedIn) return; // Don't show for logged-in users
     if (forceOpen) { setOpen(true); return; }
     if (!sessionStorage.getItem("onboarding-dismissed")) {
       setOpen(true);
     }
-  }, [forceOpen]);
+  }, [forceOpen, isLoggedIn]);
 
   const filtered = useMemo(() => {
     return searchMembers(searchQuery, 15);
@@ -220,69 +218,15 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
     return { siblings, spouses, children, branch, fatherName };
   }, [selectedMember]);
 
-  // ─── Logged-in user: Welcome back ───
-  if (isLoggedIn && currentUser) {
-    return (
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-md w-[95vw] p-0 gap-0 rounded-2xl overflow-hidden border-border/50 bg-card">
-          <DialogTitle className="sr-only">مرحباً بعودتك</DialogTitle>
-          <DialogDescription className="sr-only">نافذة الترحيب بالمستخدم المسجل</DialogDescription>
-          <div className="px-5 py-8 flex flex-col items-center text-center gap-5 max-h-[85vh] overflow-y-auto" dir="rtl">
-            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
-              <TreePine className="h-8 w-8 text-primary" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-foreground mb-2">أهلاً بعودتك، {currentUser.memberName}</h2>
-              <p className="text-sm text-muted-foreground">سعداء برجوعك لبوابة تراث الخنيني</p>
-            </div>
-            <div className="w-full space-y-2">
-              <p className="text-xs font-bold text-muted-foreground">دليل سريع</p>
-              {[
-                { icon: TreePine, title: "تصفح الشجرة", desc: "استكشف فروع العائلة بشكل تفاعلي وتوسّع في الفروع" },
-                { icon: Search, title: "البحث السريع", desc: "ابحث عن أي فرد بالاسم واعرض نسبه الكامل" },
-                { icon: UserCircle, title: "ملفك الشخصي", desc: "عدّل بياناتك وأضف الزوجات والأبناء مباشرة" },
-              ].map(({ icon: Icon, title, desc }) => (
-                <div key={title} className="flex items-start gap-3 p-3 rounded-xl bg-muted/50 border border-border/30 text-right">
-                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                    <Icon className="h-4 w-4 text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-sm text-foreground">{title}</p>
-                    <p className="text-xs text-muted-foreground">{desc}</p>
-                  </div>
-                </div>
-              ))}
-              <Button variant="ghost" size="sm" onClick={() => { setOpen(false); navigate("/guide"); }} className="w-full text-xs text-primary">
-                دليل الاستخدام الكامل ←
-              </Button>
-            </div>
-            <div className="flex flex-col w-full gap-2">
-              <Button onClick={() => setOpen(false)} className="min-h-[52px] w-full text-base font-semibold rounded-xl">
-                <TreePine className="h-5 w-5 ml-2" />
-                تصفح الشجرة
-              </Button>
-              <Button variant="outline" onClick={() => { setOpen(false); navigate("/profile"); }} className="min-h-[52px] w-full text-base rounded-xl">
-                <UserCircle className="h-5 w-5 ml-2" />
-                الملف الشخصي
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
+  // Logged-in users see nothing
+  if (isLoggedIn) return null;
 
   if (!open) return null;
 
   // ─── Non-logged-in: Full registration flow (full-screen overlay) ───
   return (
     <div
-      className="fixed inset-0 z-50 flex flex-col overflow-hidden"
-      style={{
-        backgroundColor: "#F6F3EE",
-        backgroundImage: "radial-gradient(rgba(118,90,0,0.08) 1px, transparent 0)",
-        backgroundSize: "24px 24px",
-      }}
+      className="fixed inset-0 z-50 flex flex-col overflow-hidden bg-background canvas-dots"
       dir="rtl"
     >
       {/* Main content area */}
@@ -309,22 +253,22 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                   تصفح كزائر
                 </button>
 
-                {/* Hero card with sparkles */}
+                {/* Hero card */}
                 <div className="relative mt-8">
-                  <div className="w-44 h-44 rounded-3xl bg-white shadow-lg flex items-center justify-center">
-                    <TreePine className="h-16 w-16" style={{ color: "#1B5438" }} />
+                  <div className="w-44 h-44 rounded-2xl bg-card shadow-lg flex items-center justify-center">
+                    <TreePine className="h-16 w-16 text-primary" />
                   </div>
                   {/* Sparkle decorations */}
-                  <span className="absolute -top-3 -right-3 text-xl opacity-60" style={{ color: "#D4A82B" }}>✦</span>
-                  <span className="absolute -top-2 -left-4 text-xl opacity-60" style={{ color: "#D4A82B" }}>✦</span>
-                  <span className="absolute -bottom-3 -right-4 text-xl opacity-60" style={{ color: "#D4A82B" }}>✦</span>
-                  <span className="absolute -bottom-2 -left-3 text-xl opacity-60" style={{ color: "#D4A82B" }}>✦</span>
+                  <span className="absolute -top-3 -right-3 text-xl opacity-60 text-accent">✦</span>
+                  <span className="absolute -top-2 -left-4 text-xl opacity-60 text-accent">✦</span>
+                  <span className="absolute -bottom-3 -right-4 text-xl opacity-60 text-accent">✦</span>
+                  <span className="absolute -bottom-2 -left-3 text-xl opacity-60 text-accent">✦</span>
                 </div>
 
-                <h2 className="text-2xl font-extrabold mt-10" style={{ color: "#1B5438", fontFamily: "YearOfHandicrafts, sans-serif" }}>
+                <h2 className="text-2xl font-bold mt-10 text-primary">
                   أهلاً بك في بوابة تراث الخنيني
                 </h2>
-                <p className="text-base font-semibold" style={{ color: "#D4A82B" }}>
+                <p className="text-base font-semibold text-accent">
                   فرع الزلفي — توثيق الإرث عبر الأجيال
                 </p>
                 <p className="text-sm text-muted-foreground text-center max-w-xs mx-auto mt-1 leading-relaxed">
@@ -334,11 +278,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
 
                 <button
                   onClick={() => goToStep(2)}
-                  className="w-full h-14 rounded-full text-lg font-bold text-white mt-8 transition-transform active:scale-[0.98]"
-                  style={{
-                    backgroundColor: "#1B5438",
-                    boxShadow: "0 8px 24px rgba(27,84,56,0.3)",
-                  }}
+                  className="w-full h-14 rounded-xl text-lg font-bold text-primary-foreground bg-primary shadow-lg mt-8 transition-transform active:scale-[0.98]"
                 >
                   ابدأ رحلتك ←
                 </button>
@@ -349,8 +289,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
 
                 {/* Large decorative tree */}
                 <TreePine
-                  className="absolute bottom-8 left-4 opacity-[0.06]"
-                  style={{ color: "#1B5438", width: 96, height: 96 }}
+                  className="absolute bottom-8 left-4 opacity-[0.06] text-primary w-24 h-24"
                 />
               </div>
             )}
@@ -358,7 +297,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
             {/* ─── Step 2: Search ─── */}
             {step === 2 && (
               <div className="flex-1 flex flex-col gap-4">
-                <h2 className="text-3xl font-extrabold text-right leading-tight mb-1" style={{ color: "#1B5438" }}>
+                <h2 className="text-2xl font-bold text-right leading-tight mb-1 text-primary">
                   ابحث عن اسمك في الشجرة
                 </h2>
                 <p className="text-sm text-muted-foreground mb-4">
@@ -376,14 +315,14 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                             value={searchQuery}
                             onChange={(e) => { setSearchQuery(e.target.value); setSelectedMember(null); }}
                             placeholder="اكتب اسمك للبحث..."
-                            className="h-14 pr-12 text-base rounded-2xl shadow-sm border-border bg-white"
+                            className="h-14 pr-12 text-base rounded-2xl shadow-sm border-border bg-card"
                             autoFocus
                           />
                         </div>
                         {searchQuery.trim() && (
                           <>
                             <div className="flex justify-between items-center mb-1">
-                              <span className="text-sm font-bold" style={{ color: "#D4A82B" }}>النتائج المحتملة</span>
+                              <span className="text-sm font-bold text-accent">النتائج المحتملة</span>
                               <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">{filtered.length}</span>
                             </div>
                             <div className="space-y-2 max-h-[260px] overflow-y-auto">
@@ -397,7 +336,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                                     <button
                                       key={m.id}
                                       onClick={() => { setSelectedMember(m); setSearchQuery(""); }}
-                                      className="w-full bg-white rounded-2xl border border-border shadow-sm p-4 flex items-center justify-between hover:shadow-md transition-shadow text-right"
+                                      className="w-full bg-card rounded-2xl border border-border shadow-sm p-4 flex items-center justify-between hover:shadow-md transition-shadow text-right"
                                     >
                                       <div>
                                         <span className="font-bold text-base text-foreground block">{getLineageLabel(m)}</span>
@@ -448,8 +387,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                   {!selectedMember && !searchQuery.trim() && (
                     <button
                       onClick={() => goToStep(1)}
-                      className="w-full h-14 rounded-full text-base font-semibold text-white"
-                      style={{ backgroundColor: "#1B5438" }}
+                      className="w-full h-14 rounded-xl text-base font-semibold text-primary-foreground bg-primary"
                     >
                       استمرار
                     </button>
@@ -465,11 +403,11 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
             {step === 3 && (
               <div className="flex-1 flex flex-col items-center justify-center text-center gap-5">
                 {/* Hero card */}
-                <div className="w-36 h-36 rounded-3xl bg-white shadow-lg flex items-center justify-center">
-                  <Shield className="h-12 w-12" style={{ color: "#D4A82B" }} />
+                <div className="w-36 h-36 rounded-2xl bg-card shadow-lg flex items-center justify-center">
+                  <Shield className="h-12 w-12 text-accent" />
                 </div>
 
-                <h2 className="text-2xl font-extrabold" style={{ color: "#1B5438" }}>
+                <h2 className="text-2xl font-bold text-primary">
                   تحقق من هويتك
                 </h2>
                 <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
@@ -484,7 +422,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                         <InputOTPSlot
                           key={i}
                           index={i}
-                          className="w-12 h-14 text-xl rounded-xl border-border bg-white"
+                          className="w-12 h-14 text-xl rounded-xl border-border bg-card"
                         />
                       ))}
                     </InputOTPGroup>
@@ -503,8 +441,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                     }
                   }}
                   disabled={familyPasscode.length < 6 || passcodeVerifying}
-                  className="w-full h-14 rounded-full text-base font-bold text-white flex items-center justify-center gap-2 disabled:opacity-50"
-                  style={{ backgroundColor: "#1B5438" }}
+                  className="w-full h-14 rounded-xl text-base font-bold text-primary-foreground bg-primary shadow-lg flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {passcodeVerifying && <Loader2 className="h-4 w-4 animate-spin" />}
                   <Shield className="h-4 w-4" />
@@ -526,18 +463,15 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
               <div className="flex-1 flex flex-col items-center gap-5 pt-8">
                 {/* Hero card */}
                 <div className="relative">
-                  <div className="w-36 h-36 rounded-3xl bg-white shadow-lg flex items-center justify-center">
-                    <Phone className="h-12 w-12" style={{ color: "#1B5438" }} />
+                  <div className="w-36 h-36 rounded-2xl bg-card shadow-lg flex items-center justify-center">
+                    <Phone className="h-12 w-12 text-primary" />
                   </div>
-                  <div
-                    className="absolute -bottom-2 -left-2 rounded-full p-1.5"
-                    style={{ backgroundColor: "#D4A82B" }}
-                  >
+                  <div className="absolute -bottom-2 -left-2 rounded-full p-1.5 bg-accent">
                     <Shield className="h-3 w-3 text-white" />
                   </div>
                 </div>
 
-                <h2 className="text-2xl font-extrabold" style={{ color: "#1B5438" }}>
+                <h2 className="text-2xl font-bold text-primary">
                   أضف رقم جوالك
                 </h2>
                 <p className="text-sm text-muted-foreground text-center">
@@ -545,7 +479,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                 </p>
 
                 <div className="w-full flex gap-2" dir="ltr">
-                  <div className="w-24 h-12 rounded-xl border border-border bg-white flex items-center justify-center text-base font-bold shrink-0">
+                  <div className="w-24 h-12 rounded-xl border border-border bg-card flex items-center justify-center text-base font-bold shrink-0">
                     +966 🇸🇦
                   </div>
                   <Input
@@ -554,7 +488,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 9))}
                     placeholder="5XXXXXXXX"
-                    className="h-12 rounded-xl border-border bg-white text-base text-left tracking-wider flex-1"
+                    className="h-12 rounded-xl border-border bg-card text-base text-left tracking-wider flex-1"
                     autoFocus
                   />
                 </div>
@@ -571,8 +505,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                 <button
                   onClick={handlePhoneContinue}
                   disabled={phone.length < 9}
-                  className="w-full h-14 rounded-full text-base font-bold text-white disabled:opacity-50"
-                  style={{ backgroundColor: "#1B5438" }}
+                  className="w-full h-14 rounded-xl text-base font-bold text-primary-foreground bg-primary shadow-lg disabled:opacity-50"
                 >
                   متابعة
                 </button>
@@ -588,13 +521,13 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
               <div className="flex-1 flex flex-col gap-4 overflow-y-auto">
                 {/* Hero card */}
                 <div className="flex flex-col items-center gap-2 pt-4">
-                  <div className="w-36 h-36 rounded-3xl bg-white shadow-lg flex flex-col items-center justify-center gap-1">
-                    <CalendarDays className="h-12 w-12" style={{ color: "#1B5438" }} />
+                  <div className="w-36 h-36 rounded-2xl bg-card shadow-lg flex flex-col items-center justify-center gap-1">
+                    <CalendarDays className="h-12 w-12 text-primary" />
                     <span className="text-[10px] text-muted-foreground">التاريخ الهجري</span>
                   </div>
                 </div>
 
-                <h2 className="text-2xl font-extrabold text-center" style={{ color: "#1B5438" }}>
+                <h2 className="text-2xl font-bold text-center text-primary">
                   أضف تاريخ ميلادك الهجري
                 </h2>
                 <p className="text-sm text-muted-foreground text-center">
@@ -620,7 +553,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
 
                 {/* Family context */}
                 {(familyContext.siblings.length > 0 || familyContext.spouses.length > 0 || familyContext.children.length > 0) && (
-                  <div className="rounded-xl border border-border/50 bg-white/80 p-3 space-y-3">
+                  <div className="rounded-xl border border-border/50 bg-card/80 p-3 space-y-3">
                     <p className="text-xs font-extrabold text-foreground">عائلتك حالياً</p>
                     {familyContext.siblings.length > 0 && (
                       <div className="space-y-1">
@@ -685,7 +618,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                 {/* Children Dates */}
                 {familyContext.children.length > 0 && (
                   <Collapsible>
-                    <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-2 rounded-xl bg-white/80 border border-border/30 hover:bg-muted/70 transition-colors text-right">
+                    <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-2 rounded-xl bg-card/80 border border-border/30 hover:bg-muted/70 transition-colors text-right">
                       <div className="flex items-center gap-2">
                         <UserPlus className="h-4 w-4 text-primary" />
                         <span className="text-sm font-bold text-foreground">تواريخ ميلاد الأبناء</span>
@@ -723,7 +656,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
 
                 {/* Quick Update */}
                 <Collapsible open={quickUpdateOpen} onOpenChange={setQuickUpdateOpen}>
-                  <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-2 rounded-xl bg-white/80 border border-border/30 hover:bg-muted/70 transition-colors text-right">
+                  <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-2 rounded-xl bg-card/80 border border-border/30 hover:bg-muted/70 transition-colors text-right">
                     <div className="flex items-center gap-2">
                       <Edit3 className="h-4 w-4 text-accent" />
                       <span className="text-sm font-bold text-foreground">هل تود تحديث بياناتك الآن؟</span>
@@ -740,7 +673,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                         value={quickUpdateText}
                         onChange={(e) => setQuickUpdateText(e.target.value)}
                         placeholder="مثال: رزقت بمولود جديد اسمه فهد، أو أود تعديل تاريخ ميلادي إلى..."
-                        className="min-h-[100px] text-sm rounded-lg resize-none leading-relaxed bg-white"
+                        className="min-h-[100px] text-sm rounded-lg resize-none leading-relaxed bg-card"
                       />
                     </div>
                   </CollapsibleContent>
@@ -754,8 +687,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
                   <button
                     onClick={handleComplete}
                     disabled={isSubmitting || !hijriDate.year}
-                    className="w-full h-14 rounded-full text-base font-bold text-white flex items-center justify-center gap-2 disabled:opacity-50"
-                    style={{ backgroundColor: "#1B5438" }}
+                    className="w-full h-14 rounded-xl text-base font-bold text-primary-foreground bg-primary shadow-lg flex items-center justify-center gap-2 disabled:opacity-50"
                   >
                     {isSubmitting && <Loader2 className="h-5 w-5 animate-spin" />}
                     أتم التسجيل ✓
@@ -775,12 +707,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
         {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map((s) => (
           <div
             key={s}
-            className="rounded-full transition-all duration-300"
-            style={{
-              width: s === step ? 24 : 8,
-              height: 8,
-              backgroundColor: s === step ? "#D4A82B" : "rgba(118,90,0,0.15)",
-            }}
+            className={`rounded-full transition-all duration-300 ${s === step ? "w-6 h-2 bg-accent" : "w-2 h-2 bg-accent/15"}`}
           />
         ))}
       </div>
