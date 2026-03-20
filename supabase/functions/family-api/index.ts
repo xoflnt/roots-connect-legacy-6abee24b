@@ -260,6 +260,7 @@ serve(async (req) => {
         requestId, decision, type,
         targetMemberId, targetMemberName,
         spouseName, childName, childGender,
+        adminNote,
       } = await req.json();
 
       if (!requestId) return json({ error: "requestId required" }, 400);
