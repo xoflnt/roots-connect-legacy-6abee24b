@@ -606,25 +606,32 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
 
             {/* Android */}
             <div className="space-y-2">
-              <p className="text-xs font-bold text-muted-foreground">أندرويد 🤖</p>
+              <p className="text-xs font-bold text-muted-foreground flex items-center gap-1.5">
+                أندرويد
+                <Smartphone className="h-3.5 w-3.5" />
+              </p>
               {pwa.canInstall && !pwa.isIOS ? (
-                <Button onClick={pwa.triggerInstall} className="w-full min-h-[44px] rounded-xl text-sm font-bold">
-                  ⬇️ تثبيت التطبيق الآن
+                <Button onClick={pwa.triggerInstall} className="w-full min-h-[44px] rounded-xl text-sm font-bold gap-2">
+                  <Download className="h-4 w-4" />
+                  تثبيت التطبيق الآن
                 </Button>
               ) : pwa.isInstalled ? (
-                <div className="text-center py-2 text-xs font-bold text-primary">
-                  ✅ التطبيق مثبّت بالفعل
+                <div className="text-center py-2 text-xs font-bold text-primary flex items-center justify-center gap-1.5">
+                  <Check className="h-4 w-4" />
+                  التطبيق مثبّت بالفعل
                 </div>
               ) : (
                 <div className="space-y-1.5">
                   {[
-                    { num: "1️⃣", text: "افتح القائمة ⋮ في المتصفح" },
-                    { num: "2️⃣", text: 'اختر "إضافة إلى الشاشة الرئيسية"' },
-                    { num: "3️⃣", text: 'اضغط "إضافة"' },
-                  ].map((step, i) => (
+                    "افتح القائمة ⋮ في المتصفح",
+                    'اختر "إضافة إلى الشاشة الرئيسية"',
+                    'اضغط "إضافة"',
+                  ].map((text, i) => (
                     <div key={i} className="rounded-lg bg-muted/50 border border-border/40 p-2 flex items-center gap-2 text-xs">
-                      <span>{step.num}</span>
-                      <span className="text-foreground">{step.text}</span>
+                      <span className="flex-shrink-0 w-7 h-7 rounded-full bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center">
+                        {toArabicNum(i + 1)}
+                      </span>
+                      <span className="text-foreground">{text}</span>
                     </div>
                   ))}
                 </div>
@@ -636,32 +643,40 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
 
             {/* iOS */}
             <div className="space-y-2">
-              <p className="text-xs font-bold text-muted-foreground">آيفون 🍎</p>
+              <p className="text-xs font-bold text-muted-foreground">آيفون</p>
               <div className="space-y-1.5">
                 {[
-                  { num: "1️⃣", text: "افتح الصفحة في Safari" },
-                  { num: "2️⃣", text: "اضغط زر المشاركة ⬆️" },
-                  { num: "3️⃣", text: 'اختر "إضافة إلى الشاشة الرئيسية" 📲' },
-                  { num: "4️⃣", text: 'اضغط "إضافة" ✓' },
-                ].map((step, i) => (
-                  <div key={i} className="rounded-lg bg-muted/50 border border-border/40 p-2 flex items-center gap-2 text-xs">
-                    <span>{step.num}</span>
-                    <span className="text-foreground">{step.text}</span>
-                  </div>
-                ))}
+                  "افتح الصفحة في Safari",
+                  { text: "اضغط زر المشاركة", icon: <Share2 className="h-3.5 w-3.5 inline" /> },
+                  'اختر "إضافة إلى الشاشة الرئيسية"',
+                  'اضغط "إضافة"',
+                ].map((item, i) => {
+                  const text = typeof item === "string" ? item : item.text;
+                  const icon = typeof item === "object" ? item.icon : null;
+                  return (
+                    <div key={i} className="rounded-lg bg-muted/50 border border-border/40 p-2 flex items-center gap-2 text-xs">
+                      <span className="flex-shrink-0 w-7 h-7 rounded-full bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center">
+                        {toArabicNum(i + 1)}
+                      </span>
+                      <span className="text-foreground flex items-center gap-1">{text} {icon}</span>
+                    </div>
+                  );
+                })}
               </div>
-              <div className="text-xs text-amber-600 bg-amber-50 dark:bg-amber-950/30 dark:text-amber-400 rounded-lg px-3 py-1.5 text-center">
-                ⚠️ تأكد من استخدام Safari
+              <div className="text-xs text-accent bg-accent/10 rounded-lg px-3 py-1.5 text-center flex items-center justify-center gap-1.5">
+                <AlertTriangle className="h-3.5 w-3.5" />
+                تأكد من استخدام Safari
               </div>
               <Button
                 variant="ghost"
-                className="w-full text-xs text-muted-foreground underline py-1"
+                className="w-full text-xs text-muted-foreground underline py-1 gap-1.5"
                 onClick={() => {
                   localStorage.setItem('khunaini-pwa-installed-ios', 'true');
                   setShowInstallSection(false);
                 }}
               >
-                ✓ ثبّتت التطبيق — إخفاء
+                <Check className="h-3.5 w-3.5" />
+                ثبّتت التطبيق — إخفاء
               </Button>
             </div>
           </div>
