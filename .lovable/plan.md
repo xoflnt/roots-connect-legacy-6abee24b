@@ -1,77 +1,77 @@
 
 
-# Phase 3: Enhanced Edit Requests
+# Redesign Request System End-to-End
 
 ## Overview
-Build a full admin requests management system: hook, page with tabs, request cards, detail sheet with approve/reject actions, and a `resolve-request` edge function endpoint that applies approved changes to the database.
+Replace the single free-text request form with a multi-type, multi-step form; add user-facing request history in Profile; enhance admin cards with status banners and rejection notes; add admin_note support to the rejection flow and edge function.
 
-## Files to Create
+## Files to Modify (5)
 
-### 1. `src/hooks/admin/useRequests.ts`
-- Hook that fetches requests via edge function `get-requests` with admin token
-- Enriches each request with `target_member_name` from `getAllMembers()`
-- State: `requests`, `activeTab` (pending/done/all), `isLoading`
-- `filtered` memo based on activeTab
-- Exposes `refetch` callback
+### 1. `src/components/SubmitRequestForm.tsx` — Full Rewrite
+Multi-step flow inside the existing Dialog:
 
-### 2. `src/components/admin/requests/RequestsPage.tsx`
-- Uses `useRequests()` hook
-- Header "الطلبات" with pending count badge
-- Three tabs: "بانتظار المراجعة (n)" | "تمت المعالجة" | "الكل"
-- Renders list of `RequestCard` components
-- Empty state per tab
-- Manages `selectedRequest` state to open `RequestDetailSheet`
+**Step 1 — Type Selection** (3 clickable cards):
+- `add_child`: Baby icon, "إضافة مولود جديد"
+- `add_spouse`: Heart icon, "إضافة زواج"
+- `other`: MessageSquare icon, "ملاحظة أخرى"
+- Selected card gets `border-primary bg-primary/5`
 
-### 3. `src/components/admin/requests/RequestCard.tsx`
-- Renders differently per `request.type`: add_child (UserPlus green), add_spouse (Heart pink), other (MessageSquare blue)
-- Shows target member name, submitted_by, relative Arabic time
-- Status badge: pending=amber, approved=green, completed=gray
-- Pending cards show "عرض التفاصيل" button → opens detail sheet
-- Uses `toArabicNum` for any numbers
+**Step 2 — Type-specific fields**:
+- `add_child`: child name input (required), gender toggle (ذكر/أنثى), target member selector (label "أب المولود"), optional notes textarea
+- `add_spouse`: spouse name input (required), target member selector (label "العضو المعني"), optional notes textarea
+- `other`: target member selector, required textarea (label "تفاصيل الطلب")
+- Target member: reuse existing search pattern, pre-filled if `targetMember` prop provided
+- "رجوع" button to go back to step 1
 
-### 4. `src/components/admin/requests/RequestDetailSheet.tsx`
-- Sheet (bottom on mobile, side on desktop)
-- Full request details based on type
-- For add_child/add_spouse: editable input to modify name before approving
-- Action buttons: "قبول وتطبيق" (green) and "رفض" (red outline), both min-h-12
-- On approve: calls `family-api/resolve-request` with type-specific payload
-- On reject: calls `family-api/mark-done` to mark as completed
-- Shows loading spinner during action
+**Step 3 — Confirmation screen** (replaces closing dialog):
+- Checkmark icon + "تم إرسال طلبك بنجاح"
+- Summary: type label, member name, brief details
+- "سيتم مراجعة طلبك من قِبل الإدارة"
+- "إغلاق" button
 
-## Files to Modify
+**On submit**: call `submitRequest()` with correct `type` (`add_child`/`add_spouse`/`other`) and structured `data` object. Also save to `localStorage('my_requests')` array for tracking.
 
-### 5. `supabase/functions/family-api/index.ts`
-Add `resolve-request` endpoint (admin-only):
+State: `step` (1/2/3), `requestType`, `childName`, `childGender`, `spouseName`, `textContent`, `notes`, `selectedTarget`, `submitting`, `searchQuery`.
 
-- Reads `requestId, decision, type, targetMemberId, targetMemberName, spouseName, childName, childGender`
-- If decision === 'approved':
-  - **add_spouse**: fetch current member's `spouses`, append new name with Arabic comma separator, update via upsert
-  - **add_child**: fetch all IDs, generate new ID using same logic as `idGenerator.ts` (inline helper), build full name as `childName بن fatherName`, insert new member
-  - **other**: no data change
-- Update request status to 'approved' or 'completed'
-- Return `{ success: true }`
+### 2. `src/pages/Profile.tsx` — Add "طلباتي" Section
+Insert new section between the "Request Change Portal" (section 8) and "View in tree + Logout" (section 9):
 
-ID generation helper (inline in edge function):
-```text
-function generateId(fatherId, allIds):
-  if fatherId has letter prefix:
-    count direct children (fatherId_N pattern)
-    return fatherId_(count+1)
-  else:
-    find max numeric ID
-    return max+1
+- Read `JSON.parse(localStorage.getItem('my_requests') || '[]')`
+- Show up to 10 most recent requests
+- Each item: type icon + label, member name, summary text, relative Arabic time, status badge (pending=amber, approved=green, completed=gray)
+- Empty state: "لا توجد طلبات مرسلة بعد"
+- Import `relativeArabicTime` helper (extract to shared util or inline)
+
+### 3. `src/components/admin/requests/RequestCard.tsx` — Status Banners + Notes
+- For non-pending requests, add a colored banner at top of card:
+  - `approved`: green strip with "✓ تم القبول"
+  - `completed`: gray strip with "✓ تمت المعالجة"
+- If `request.notes` exists and status !== 'pending', show "ملاحظة الإدارة: {notes}" below the body
+- Keep existing layout otherwise unchanged
+
+### 4. `src/components/admin/requests/RequestDetailSheet.tsx` — Rejection Notes
+- Add `rejectionNote` state and `showRejectForm` state
+- When admin clicks "رفض":
+  - Show inline textarea "سبب الرفض (اختياري)" with confirm/cancel buttons
+  - On confirm: call `family-api/resolve-request` with `decision: 'rejected'` and `adminNote: rejectionNote`
+- Update the approve call to also pass `adminNote: ''` (no note on approve)
+
+### 5. `supabase/functions/family-api/index.ts` — Save admin_note on resolve
+In the `resolve-request` handler, update the final status update to also save the admin note:
 ```
-
-### 6. `src/pages/Admin.tsx`
-- Import `RequestsPage`
-- Replace the catch-all placeholder with explicit `{section === 'requests' && <RequestsPage />}`
-- Keep catch-all for remaining sections
+await supabase.from("family_requests")
+  .update({ 
+    status: newStatus, 
+    notes: adminNote || null 
+  })
+  .eq("id", requestId);
+```
+- Read `adminNote` from request body (already destructured alongside other fields)
+- Change `decision === "approved" ? "approved" : "completed"` to handle `"rejected"` → `"completed"` mapping
 
 ## Technical Details
-
-- RLS blocks direct SELECT on `family_requests` for anon/authenticated, so requests are fetched via the existing `get-requests` edge function endpoint (service role)
-- The `resolve-request` endpoint uses service role to both read and write `family_members` and `family_requests`
-- Arabic relative time: compute diff from `created_at`, output "منذ دقائق" / "منذ ساعة" / "منذ X أيام" etc.
-- All UI is RTL, min font 16px, min tap target 48px
-- Eastern Arabic numerals throughout via `toArabicNum`
+- `submitRequest` in `dataService.ts` already accepts any `type` string and `data` object — no change needed there
+- `family_requests.data` is JSONB, so structured fields (child_name, child_gender, spouse_name, text_content) are already supported
+- localStorage tracking is client-only; status stays "pending" until a future enhancement syncs with server
+- No DB migration needed — `notes` column already exists on `family_requests`
 
