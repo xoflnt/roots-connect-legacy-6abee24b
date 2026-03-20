@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { TreePine, Phone, CalendarDays, Users, LogOut, GitBranch, Home, Save, Loader2, MessageSquarePlus, ShieldCheck, User, Heart } from "lucide-react";
+import { TreePine, Phone, CalendarDays, Users, LogOut, GitBranch, Home, Save, Loader2, MessageSquarePlus, ShieldCheck, User, Heart, Baby, MessageSquare, Clock } from "lucide-react";
 import { getAncestorChain, getDescendantCount, getMemberById, getChildrenOf, refreshMembers, inferMotherName } from "@/services/familyService";
 import { updateMember, getVerifiedMemberIds } from "@/services/dataService";
 import { useMemo, useState, useEffect } from "react";
