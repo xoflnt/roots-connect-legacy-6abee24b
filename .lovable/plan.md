@@ -1,42 +1,27 @@
 
 
-# Add Mother Selection for add_child Requests
+# Delete Test Member from Database
 
-## Problem
-When submitting an "add child" request, users cannot specify the mother even when the selected father has known spouses.
+## Finding
+Found the test member:
+- **ID**: `601`
+- **Name**: خالد
+- **Father**: علي بن محمد (id: 209)
+- **Children**: None (safe to delete)
 
-## Changes — Single file: `src/components/SubmitRequestForm.tsx`
+## Action Required
+Run this SQL via a database migration:
 
-### 1. Add state
-```ts
-const [selectedMother, setSelectedMother] = useState("");
-```
-Reset it in `resetForm()`.
-
-### 2. Compute spouses list from selectedTarget
-```ts
-const fatherSpouses = useMemo(() => {
-  if (requestType !== "add_child" || !selectedTarget?.spouses) return [];
-  return selectedTarget.spouses.split(/[،,]/).map(s => s.trim()).filter(Boolean);
-}, [requestType, selectedTarget]);
+```sql
+DELETE FROM family_members WHERE id = '601';
 ```
 
-### 3. Render mother selection (after `renderTargetSelector("أب المولود")`, before notes)
-Only shown when `fatherSpouses.length > 0`:
-- Label: "اختر أم المولود:"
-- Radio-style buttons: one per spouse + "غير معروفة"
-- Selected: `border-primary bg-primary/5`, Unselected: `border-border bg-card`
-- Min height 48px, full width, text-right
+This will remove the single test member "خالد" (id=601) that was added under "علي بن محمد". No children depend on this record.
 
-### 4. Include in request data
-In `handleSubmit`, for `add_child`:
-```ts
-data.mother_name = selectedMother || "";
+## Verification
+After deletion, confirm with:
+```sql
+SELECT id, name, father_id FROM family_members WHERE id = '601';
 ```
-
-### 5. Include in localStorage summary
-Add `motherName: selectedMother || "غير معروفة"` to the saved object.
-
-### 6. Include in confirmation screen summary
-Add a row showing the mother name when type is `add_child`.
+Expected result: 0 rows.
 
