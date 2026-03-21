@@ -1,84 +1,62 @@
 
 
-# Fix update-member Security Vulnerability
+# Build Admin Users Section
 
-## Problem
-The `update-member` endpoint in `family-api` has zero authentication — anyone can update any member's data.
+## Overview
+Create the "المستخدمون الموثّقون" (Verified Users) section in the admin panel. Since `verified_users` table has RLS blocking all client access, all operations go through the `family-api` edge function.
 
 ## Changes
 
-### 1. Edge Function: `supabase/functions/family-api/index.ts` (lines 132-143)
+### 1. Edge Function: add delete endpoint
+**File: `supabase/functions/family-api/index.ts`**
 
-Replace the current open `update-member` handler with auth-gated logic:
-
-- **Admin path**: Check `x-admin-token` header against `admin_sessions` table
-- **Self-update path**: Check `requesterPhone` against `verified_users` to confirm the caller owns the member record
-- **Field restriction**: Self-updates limited to `birth_year` only (phone is already stored separately in `verified_users`)
-- **Deny** if neither admin nor verified self
-
-### 2. Frontend: `src/services/dataService.ts` (line 70-73)
-
-Update `updateMember()` to automatically include the current user's phone from localStorage:
+Add a new `delete-verified-user` handler (admin-only) before the final `return json({ error: "Invalid endpoint" })`:
 
 ```ts
-export async function updateMember(id: string, data: Partial<FamilyMember>, adminToken?: string): Promise<void> {
-  const headers = adminToken ? { "x-admin-token": adminToken } : undefined;
-  // Include requester phone for self-auth
-  const stored = localStorage.getItem("khunaini-current-user");
-  const requesterPhone = stored ? JSON.parse(stored)?.phone : undefined;
-  await callFamilyApi("update-member", { id, data, requesterPhone }, headers);
-}
-```
-
-No changes needed in callers (`OnboardingModal.tsx`, `Profile.tsx`, `AddMemberSheet.tsx`) — they all go through `updateMember()` which will now auto-include the phone. Admin callers already pass `adminToken`.
-
-### 3. Edge function handler detail
-
-```ts
-if (path === "update-member" && req.method === "POST") {
-  const { id, data: updates, requesterPhone } = await req.json();
-  if (!id) return json({ error: "id required" }, 400);
-
-  // Path 1: Admin
-  let isAdmin = false;
-  const adminToken = req.headers.get("x-admin-token");
-  if (adminToken) {
-    isAdmin = await validateAdminToken(req, supabase);
-  }
-
-  // Path 2: Verified self
-  let isSelf = false;
-  if (!isAdmin && requesterPhone) {
-    const { data: vu } = await supabase
-      .from("verified_users")
-      .select("member_id")
-      .eq("phone", requesterPhone)
-      .single();
-    isSelf = vu?.member_id === id;
-  }
-
-  if (!isAdmin && !isSelf) {
-    return json({ error: "Unauthorized" }, 403);
-  }
-
-  // Self-update: restrict fields
-  if (isSelf && !isAdmin) {
-    const allowed = ["birth_year", "phone"];
-    const blocked = Object.keys(updates).filter(k => !allowed.includes(k));
-    if (blocked.length > 0) {
-      return json({ error: `Cannot update: ${blocked.join(", ")}` }, 403);
-    }
-  }
-
-  await supabase.from("family_members")
-    .update({ ...updates, updated_at: new Date().toISOString() })
-    .eq("id", id);
-
+if (path === "delete-verified-user" && req.method === "POST") {
+  if (!(await validateAdminToken(req, supabase))) return json({ error: "Unauthorized" }, 401);
+  const { userId } = await req.json();
+  if (!userId) return json({ error: "userId required" }, 400);
+  await supabase.from("verified_users").delete().eq("id", userId);
   return json({ success: true });
 }
 ```
 
-## Files Modified
-- `supabase/functions/family-api/index.ts` — add auth to update-member
-- `src/services/dataService.ts` — include requester phone automatically
+### 2. Hook: `src/hooks/admin/useUsers.ts`
+
+Fetch users via `getVerifiedUsers(adminToken)` from `dataService.ts`. Provides:
+- `users` (filtered by search on name/phone)
+- `total` count
+- `isLoading`, `search`, `setSearch`
+- `deleteUser(userId)` — calls edge function `delete-verified-user`
+- `refetch()`
+
+### 3. Component: `src/components/admin/users/UserCard.tsx`
+
+Card row (matches `MemberCard` pattern):
+- Right side: member name (bold), phone (muted), hijri birth date if present
+- Left side: relative time via `relativeArabicTime`, three-dot menu with "حذف التوثيق" option
+- Delete triggers `ConfirmDialog` with warning text
+- min-h-16, dir="rtl"
+
+### 4. Page: `src/components/admin/users/UsersPage.tsx`
+
+Layout:
+- Header: "المستخدمون الموثّقون" + Badge with total (Arabic numerals)
+- Search input: placeholder "ابحث بالاسم أو رقم الجوال..."
+- Loading state: Skeleton cards
+- Empty state: "لا يوجد مستخدمون مسجّلون بعد"
+- List of `UserCard` components
+
+### 5. Wire up: `src/pages/Admin.tsx`
+
+Add import and route: `{section === 'users' && <UsersPage />}`
+
+### 6. Unhide in nav: `AdminSidebar.tsx` + `AdminBottomBar.tsx`
+
+Re-enable the `users` nav item only (keep other 4 hidden).
+
+## Files
+- **Create**: `src/hooks/admin/useUsers.ts`, `src/components/admin/users/UsersPage.tsx`, `src/components/admin/users/UserCard.tsx`
+- **Modify**: `supabase/functions/family-api/index.ts`, `src/pages/Admin.tsx`, `src/components/admin/AdminSidebar.tsx`, `src/components/admin/AdminBottomBar.tsx`
 
