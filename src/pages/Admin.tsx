@@ -4,6 +4,7 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import { DashboardPage } from "@/components/admin/dashboard/DashboardPage";
 import { MemberListPage } from "@/components/admin/members/MemberListPage";
 import { RequestsPage } from "@/components/admin/requests/RequestsPage";
+import { UsersPage } from "@/components/admin/users/UsersPage";
 import type { AdminSection } from "@/types/admin";
 
 function AdminContent() {
