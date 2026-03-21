@@ -3,6 +3,7 @@ import {
   Users,
   FileText,
   UserCheck,
+  Activity,
 } from "lucide-react";
 import type { AdminSection } from "@/types/admin";
 
