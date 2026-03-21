@@ -1,62 +1,40 @@
 
 
-# Build Admin Users Section
+# Build Data Health Admin Section
 
-## Overview
-Create the "المستخدمون الموثّقون" (Verified Users) section in the admin panel. Since `verified_users` table has RLS blocking all client access, all operations go through the `family-api` edge function.
+## Files to Create
 
-## Changes
+### 1. `src/hooks/admin/useDataHealth.ts`
+Custom hook that runs 5 client-side checks against `getAllMembers()`:
+- **Missing birth year** (warning) — members without `birth_year`
+- **No spouse** (info) — living males at depth ≥ 3 without spouses
+- **Orphaned father_id** (critical) — `father_id` points to nonexistent member
+- **Duplicate names** (warning) — same `name` + `father_id` combo
+- **Missing mother** (info) — no `والدت` pattern in notes
 
-### 1. Edge Function: add delete endpoint
-**File: `supabase/functions/family-api/index.ts`**
+Computes a health score (0-100) weighted by severity. Returns `{ health, isLoading }`.
 
-Add a new `delete-verified-user` handler (admin-only) before the final `return json({ error: "Invalid endpoint" })`:
+### 2. `src/components/admin/data-health/HealthScoreRing.tsx`
+SVG circular progress ring (120px). Color shifts green/amber/red based on score. Center shows `toArabicNum(score)٪`.
 
-```ts
-if (path === "delete-verified-user" && req.method === "POST") {
-  if (!(await validateAdminToken(req, supabase))) return json({ error: "Unauthorized" }, 401);
-  const { userId } = await req.json();
-  if (!userId) return json({ error: "userId required" }, 400);
-  await supabase.from("verified_users").delete().eq("id", userId);
-  return json({ success: true });
-}
-```
+### 3. `src/components/admin/data-health/DataHealthPage.tsx`
+Main page with:
+- Score ring at top
+- 5 collapsible category cards (using shadcn Collapsible), each showing severity icon, label, count badge
+- Expanded view lists affected members (name + branch badge), capped at 20 with overflow text
+- "إعادة الفحص" refresh button
+- RTL, all numbers via `toArabicNum`
 
-### 2. Hook: `src/hooks/admin/useUsers.ts`
+## Files to Modify
 
-Fetch users via `getVerifiedUsers(adminToken)` from `dataService.ts`. Provides:
-- `users` (filtered by search on name/phone)
-- `total` count
-- `isLoading`, `search`, `setSearch`
-- `deleteUser(userId)` — calls edge function `delete-verified-user`
-- `refetch()`
+### 4. `src/pages/Admin.tsx`
+- Add import for `DataHealthPage`
+- Add `{section === "data-health" && <DataHealthPage />}`
+- Add `"data-health"` to the fallback exclusion list
 
-### 3. Component: `src/components/admin/users/UserCard.tsx`
+### 5. `src/components/admin/AdminSidebar.tsx`
+Uncomment the `data-health` nav item only (keep content/analytics/settings commented).
 
-Card row (matches `MemberCard` pattern):
-- Right side: member name (bold), phone (muted), hijri birth date if present
-- Left side: relative time via `relativeArabicTime`, three-dot menu with "حذف التوثيق" option
-- Delete triggers `ConfirmDialog` with warning text
-- min-h-16, dir="rtl"
-
-### 4. Page: `src/components/admin/users/UsersPage.tsx`
-
-Layout:
-- Header: "المستخدمون الموثّقون" + Badge with total (Arabic numerals)
-- Search input: placeholder "ابحث بالاسم أو رقم الجوال..."
-- Loading state: Skeleton cards
-- Empty state: "لا يوجد مستخدمون مسجّلون بعد"
-- List of `UserCard` components
-
-### 5. Wire up: `src/pages/Admin.tsx`
-
-Add import and route: `{section === 'users' && <UsersPage />}`
-
-### 6. Unhide in nav: `AdminSidebar.tsx` + `AdminBottomBar.tsx`
-
-Re-enable the `users` nav item only (keep other 4 hidden).
-
-## Files
-- **Create**: `src/hooks/admin/useUsers.ts`, `src/components/admin/users/UsersPage.tsx`, `src/components/admin/users/UserCard.tsx`
-- **Modify**: `supabase/functions/family-api/index.ts`, `src/pages/Admin.tsx`, `src/components/admin/AdminSidebar.tsx`, `src/components/admin/AdminBottomBar.tsx`
+### 6. `src/components/admin/AdminBottomBar.tsx`
+Add `data-health` tab with `Activity` icon and label "صحة البيانات" to `MAIN_TABS` (now 5 tabs total — fits mobile bar).
 
