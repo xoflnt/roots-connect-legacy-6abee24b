@@ -5,6 +5,7 @@ import { DashboardPage } from "@/components/admin/dashboard/DashboardPage";
 import { MemberListPage } from "@/components/admin/members/MemberListPage";
 import { RequestsPage } from "@/components/admin/requests/RequestsPage";
 import { UsersPage } from "@/components/admin/users/UsersPage";
+import { DataHealthPage } from "@/components/admin/data-health/DataHealthPage";
 import type { AdminSection } from "@/types/admin";
 
 function AdminContent() {
