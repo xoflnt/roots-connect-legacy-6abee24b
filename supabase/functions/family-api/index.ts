@@ -352,6 +352,23 @@ serve(async (req) => {
       return json({ success: true });
     }
 
+    // ─── DELETE VERIFIED USER (admin only) ───
+    if (path === "delete-verified-user" && req.method === "POST") {
+      if (!(await validateAdminToken(req, supabase))) {
+        return json({ error: "Unauthorized" }, 401);
+      }
+      const { userId } = await req.json();
+      if (!userId) return json({ error: "userId required" }, 400);
+
+      const { error: delErr } = await supabase
+        .from("verified_users")
+        .delete()
+        .eq("id", userId);
+
+      if (delErr) return json({ error: delErr.message }, 500);
+      return json({ success: true });
+    }
+
     return json({ error: "Invalid endpoint" }, 400);
   } catch (error) {
     console.error("[family-api] Error:", error);

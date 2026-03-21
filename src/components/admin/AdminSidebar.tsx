@@ -23,10 +23,11 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'members',     label: 'الأعضاء',        icon: Users },
   { id: 'requests',    label: 'الطلبات',        icon: FileText },
   { id: 'users',       label: 'المستخدمون',     icon: UserCheck },
-  { id: 'data-health', label: 'صحة البيانات',   icon: Activity },
-  { id: 'content',     label: 'المحتوى',        icon: BookOpen },
-  { id: 'analytics',   label: 'الإحصائيات',     icon: BarChart2 },
-  { id: 'settings',    label: 'الإعدادات',      icon: Settings },
+  // Hidden until implemented:
+  // { id: 'data-health', label: 'صحة البيانات',   icon: Activity },
+  // { id: 'content',     label: 'المحتوى',        icon: BookOpen },
+  // { id: 'analytics',   label: 'الإحصائيات',     icon: BarChart2 },
+  // { id: 'settings',    label: 'الإعدادات',      icon: Settings },
 ];
 
 interface AdminSidebarProps {

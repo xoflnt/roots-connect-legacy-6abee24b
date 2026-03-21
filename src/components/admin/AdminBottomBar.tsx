@@ -28,15 +28,16 @@ const MAIN_TABS: BottomTab[] = [
   { id: 'dashboard', label: 'الرئيسية', icon: LayoutDashboard },
   { id: 'members',   label: 'الأعضاء',  icon: Users },
   { id: 'requests',  label: 'الطلبات',  icon: FileText },
+  { id: 'users',     label: 'المستخدمون', icon: UserCheck },
 ];
 
-const MORE_ITEMS: BottomTab[] = [
-  { id: 'users',       label: 'المستخدمون',   icon: UserCheck },
-  { id: 'data-health', label: 'صحة البيانات', icon: Activity },
-  { id: 'content',     label: 'المحتوى',      icon: BookOpen },
-  { id: 'analytics',   label: 'الإحصائيات',   icon: BarChart2 },
-  { id: 'settings',    label: 'الإعدادات',    icon: Settings },
-];
+// Hidden until implemented:
+// const MORE_ITEMS: BottomTab[] = [
+//   { id: 'data-health', label: 'صحة البيانات', icon: Activity },
+//   { id: 'content',     label: 'المحتوى',      icon: BookOpen },
+//   { id: 'analytics',   label: 'الإحصائيات',   icon: BarChart2 },
+//   { id: 'settings',    label: 'الإعدادات',    icon: Settings },
+// ];
 
 interface AdminBottomBarProps {
   currentSection: AdminSection;
