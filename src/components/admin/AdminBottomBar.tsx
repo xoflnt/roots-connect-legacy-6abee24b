@@ -3,6 +3,7 @@ import {
   Users,
   FileText,
   UserCheck,
+  Activity,
 } from "lucide-react";
 import type { AdminSection } from "@/types/admin";
 
@@ -16,7 +17,8 @@ const MAIN_TABS: BottomTab[] = [
   { id: 'dashboard', label: 'الرئيسية', icon: LayoutDashboard },
   { id: 'members',   label: 'الأعضاء',  icon: Users },
   { id: 'requests',  label: 'الطلبات',  icon: FileText },
-  { id: 'users',     label: 'المستخدمون', icon: UserCheck },
+  { id: 'users',        label: 'المستخدمون',  icon: UserCheck },
+  { id: 'data-health',  label: 'صحة البيانات', icon: Activity },
 ];
 
 // Hidden until implemented:
