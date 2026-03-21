@@ -1,70 +1,84 @@
 
 
-# Replace Dagre with d3-hierarchy for Sibling Grouping
+# Fix update-member Security Vulnerability
 
 ## Problem
-Dagre positions nodes based on global edge-crossing minimization, causing siblings of the same parent to drift far apart when their subtrees differ in size. d3-hierarchy's `tree()` layout guarantees children are centered directly under their parent.
+The `update-member` endpoint in `family-api` has zero authentication — anyone can update any member's data.
 
-## Changes — Single file: `src/hooks/useTreeLayout.ts`
+## Changes
 
-### 1. Install d3-hierarchy
-Add `d3-hierarchy` and its types as dependencies.
+### 1. Edge Function: `supabase/functions/family-api/index.ts` (lines 132-143)
 
-### 2. Replace layout engine (lines 127-191)
+Replace the current open `update-member` handler with auth-gated logic:
 
-Remove `dagre` import. Add `import { hierarchy, tree as d3tree } from "d3-hierarchy"`.
+- **Admin path**: Check `x-admin-token` header against `admin_sessions` table
+- **Self-update path**: Check `requesterPhone` against `verified_users` to confirm the caller owns the member record
+- **Field restriction**: Self-updates limited to `birth_year` only (phone is already stored separately in `verified_users`)
+- **Deny** if neither admin nor verified self
 
-**Build hierarchy**: Find root members (no `father_id`). For each visible member, define children as visible members whose `father_id` matches, sorted by birth (via `sortByBirth`). If single root, build one hierarchy. If multiple roots, create a virtual root with the real roots as children.
+### 2. Frontend: `src/services/dataService.ts` (line 70-73)
 
-**Configure tree layout**:
+Update `updateMember()` to automatically include the current user's phone from localStorage:
+
 ```ts
-const treeLayout = d3tree<MemberType>()
-  .nodeSize([CARD_WIDTH + NODE_SEP, CARD_HEIGHT + RANK_SEP])
-  .separation((a, b) => a.parent === b.parent ? 1 : 1.5);
+export async function updateMember(id: string, data: Partial<FamilyMember>, adminToken?: string): Promise<void> {
+  const headers = adminToken ? { "x-admin-token": adminToken } : undefined;
+  // Include requester phone for self-auth
+  const stored = localStorage.getItem("khunaini-current-user");
+  const requesterPhone = stored ? JSON.parse(stored)?.phone : undefined;
+  await callFamilyApi("update-member", { id, data, requesterPhone }, headers);
+}
 ```
 
-**Apply**: `treeLayout(root)` then read `node.x` (horizontal) and `node.y` (vertical) from `root.descendants()`.
+No changes needed in callers (`OnboardingModal.tsx`, `Profile.tsx`, `AddMemberSheet.tsx`) — they all go through `updateMember()` which will now auto-include the phone. Admin callers already pass `adminToken`.
 
-### 3. Convert positions to nodes (lines 193-212)
+### 3. Edge function handler detail
 
-Replace `g.node(member.id)` position lookup with a Map built from `root.descendants()`:
 ```ts
-const posMap = new Map(root.descendants().map(d => [d.data.id, { x: d.x, y: d.y }]));
+if (path === "update-member" && req.method === "POST") {
+  const { id, data: updates, requesterPhone } = await req.json();
+  if (!id) return json({ error: "id required" }, 400);
+
+  // Path 1: Admin
+  let isAdmin = false;
+  const adminToken = req.headers.get("x-admin-token");
+  if (adminToken) {
+    isAdmin = await validateAdminToken(req, supabase);
+  }
+
+  // Path 2: Verified self
+  let isSelf = false;
+  if (!isAdmin && requesterPhone) {
+    const { data: vu } = await supabase
+      .from("verified_users")
+      .select("member_id")
+      .eq("phone", requesterPhone)
+      .single();
+    isSelf = vu?.member_id === id;
+  }
+
+  if (!isAdmin && !isSelf) {
+    return json({ error: "Unauthorized" }, 403);
+  }
+
+  // Self-update: restrict fields
+  if (isSelf && !isAdmin) {
+    const allowed = ["birth_year", "phone"];
+    const blocked = Object.keys(updates).filter(k => !allowed.includes(k));
+    if (blocked.length > 0) {
+      return json({ error: `Cannot update: ${blocked.join(", ")}` }, 403);
+    }
+  }
+
+  await supabase.from("family_members")
+    .update({ ...updates, updated_at: new Date().toISOString() })
+    .eq("id", id);
+
+  return json({ success: true });
+}
 ```
 
-Then for each visible member:
-```ts
-position: { x: pos.x - CARD_WIDTH / 2, y: pos.y - CARD_HEIGHT / 2 }
-```
+## Files Modified
+- `supabase/functions/family-api/index.ts` — add auth to update-member
+- `src/services/dataService.ts` — include requester phone automatically
 
-### 4. Convert links to edges (lines 214-230)
-
-Replace `g.edges()` with `root.links()`:
-```ts
-const edges = root.links()
-  .filter(link => link.source.data.id !== '__virtual_root__')
-  .map(link => {
-    const edgeKey = `e-${link.source.data.id}-${link.target.data.id}`;
-    const ci = edgeColorMap.get(edgeKey);
-    const color = ci !== undefined ? BRANCH_COLORS[ci].stroke : "hsl(var(--muted-foreground) / 0.4)";
-    return { id: edgeKey, source: link.source.data.id, target: link.target.data.id, type: "default", style: { stroke: color, strokeWidth: 2 }, animated: false };
-  });
-```
-
-### 5. Preserve all existing logic
-- Visibility expansion (lines 72-88) — unchanged
-- Filter logic (lines 90-122) — unchanged
-- Mother grouping and color assignment (lines 131-178) — unchanged, just no longer calls `g.setEdge`; instead populates `edgeColorMap` directly
-- Spouse names (lines 180-189) — unchanged
-- Node `data` payload (lines 199-210) — unchanged
-- `BRANCH_COLORS`, helper functions, exports — unchanged
-
-### 6. Handle multiple roots
-The data has one primary root (id `"100"`). But if filters create disconnected visible members, wrap them under a virtual root node that gets excluded from final output.
-
-### 7. Generation bands compatibility
-`FamilyTree.tsx` reads `node.data.generation` (from `getDepth`) and `node.position.y` to build generation bands. d3-hierarchy's `y` values will be consistent per depth level, so bands will work correctly without changes.
-
-## Technical Notes
-- d3-hierarchy `tree()` with `nodeSize` centers children under parents by design — this directly solves the sibling drift
-- `separation()` with `1
