@@ -4,6 +4,7 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import { DashboardPage } from "@/components/admin/dashboard/DashboardPage";
 import { MemberListPage } from "@/components/admin/members/MemberListPage";
 import { RequestsPage } from "@/components/admin/requests/RequestsPage";
+import { UsersPage } from "@/components/admin/users/UsersPage";
 import type { AdminSection } from "@/types/admin";
 
 function AdminContent() {
@@ -25,7 +26,8 @@ function AdminContent() {
       {section === "dashboard" && <DashboardPage onNavigate={setSection} />}
       {section === "members" && <MemberListPage />}
       {section === "requests" && <RequestsPage />}
-      {!["dashboard", "members", "requests"].includes(section) && (
+      {section === "users" && <UsersPage />}
+      {!["dashboard", "members", "requests", "users"].includes(section) && (
         <div className="p-6 text-center text-muted-foreground" dir="rtl">
           <p className="text-lg">{section}</p>
           <p className="text-sm mt-2">قيد التطوير</p>
