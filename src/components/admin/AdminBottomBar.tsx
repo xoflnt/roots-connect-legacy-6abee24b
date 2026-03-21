@@ -1,21 +1,9 @@
-import { useState } from "react";
 import {
   LayoutDashboard,
   Users,
   FileText,
-  MoreHorizontal,
   UserCheck,
-  Activity,
-  BookOpen,
-  BarChart2,
-  Settings,
 } from "lucide-react";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
 import type { AdminSection } from "@/types/admin";
 
 interface BottomTab {

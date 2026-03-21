@@ -54,7 +54,7 @@ export function UserCard({ user, isEven, onDelete }: UserCardProps) {
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" dir="rtl">
+            <DropdownMenuContent align="end">
               <DropdownMenuItem
                 className="text-destructive focus:text-destructive gap-2"
                 onClick={() => setConfirmOpen(true)}
@@ -68,14 +68,18 @@ export function UserCard({ user, isEven, onDelete }: UserCardProps) {
       </div>
 
       <ConfirmDialog
-        open={confirmOpen}
-        onOpenChange={setConfirmOpen}
+        isOpen={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
         title="حذف التوثيق"
-        description={`هل تريد حذف توثيق ${user.memberName}؟ سيفقد الوصول إلى المنصة.`}
-        confirmLabel="حذف"
-        variant="destructive"
-        onConfirm={onDelete}
-      />
+        confirmText="حذف"
+        variant="danger"
+        onConfirm={() => {
+          onDelete();
+          setConfirmOpen(false);
+        }}
+      >
+        هل تريد حذف توثيق {user.memberName}؟ سيفقد الوصول إلى المنصة.
+      </ConfirmDialog>
     </>
   );
 }
