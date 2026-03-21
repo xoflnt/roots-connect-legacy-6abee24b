@@ -129,10 +129,41 @@ serve(async (req) => {
       return json({ success: true });
     }
 
-    // ─── UPDATE MEMBER (public — from onboarding/profile) ───
+    // ─── UPDATE MEMBER (auth-gated) ───
     if (path === "update-member" && req.method === "POST") {
-      const { id, data: updates } = await req.json();
+      const { id, data: updates, requesterPhone } = await req.json();
       if (!id) return json({ error: "id required" }, 400);
+
+      // Path 1: Admin token
+      let isAdmin = false;
+      const adminToken = req.headers.get("x-admin-token");
+      if (adminToken) {
+        isAdmin = await validateAdminToken(req, supabase);
+      }
+
+      // Path 2: Verified self
+      let isSelf = false;
+      if (!isAdmin && requesterPhone) {
+        const { data: vu } = await supabase
+          .from("verified_users")
+          .select("member_id")
+          .eq("phone", requesterPhone)
+          .single();
+        isSelf = vu?.member_id === id;
+      }
+
+      if (!isAdmin && !isSelf) {
+        return json({ error: "Unauthorized" }, 403);
+      }
+
+      // Self-update: restrict allowed fields
+      if (isSelf && !isAdmin) {
+        const allowed = ["birth_year", "phone"];
+        const blocked = Object.keys(updates).filter((k: string) => !allowed.includes(k));
+        if (blocked.length > 0) {
+          return json({ error: `Cannot update: ${blocked.join(", ")}` }, 403);
+        }
+      }
 
       await supabase
         .from("family_members")
