@@ -184,11 +184,14 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
           />
         </picture>
 
+        {/* Dark mode overlay */}
+        <div className="absolute inset-0 dark:bg-black/50 bg-transparent pointer-events-none" />
+
         {/* Dark gradient overlay */}
         <div
           className="absolute inset-0"
           style={{
-            background: 'linear-gradient(to bottom, rgba(15,42,30,0.45) 0%, rgba(15,42,30,0.35) 40%, rgba(15,42,30,0.55) 75%, rgba(246,243,238,1) 100%)',
+            background: 'linear-gradient(to bottom, rgba(15,42,30,0.45) 0%, rgba(15,42,30,0.35) 40%, rgba(15,42,30,0.55) 75%, hsl(var(--background)) 100%)',
           }}
         />
 
