@@ -127,6 +127,8 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
   const [aboutOpen, setAboutOpen] = useState(false);
   const [showNasabSheet, setShowNasabSheet] = useState(false);
   const [nasabQuery, setNasabQuery] = useState("");
+  const guestSearchRef = useRef<HTMLDivElement>(null);
+  const loggedSearchRef = useRef<HTMLDivElement>(null);
   const stats = useMemo(computeStats, [dataReady]);
   const navigate = useNavigate();
   const { currentUser } = useAuth();
