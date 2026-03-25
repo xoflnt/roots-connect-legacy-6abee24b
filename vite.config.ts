@@ -19,9 +19,12 @@ export default defineConfig(({ mode }) => ({
     VitePWA({
       registerType: "autoUpdate",
       workbox: {
-        navigateFallbackDenylist: [/^\/~oauth/, /^\/api\/auth/, /^\/auth/],
-        navigateFallback: "/index.html",
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+      navigateFallbackDenylist: [/^\/~oauth/, /^\/api\/auth/, /^\/auth/],
+      navigateFallback: "/index.html",
+      globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+      additionalManifestEntries: [
+        { url: '/offline.html', revision: '1' }
+      ],
         cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
