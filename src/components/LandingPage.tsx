@@ -172,252 +172,281 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
     <div className="min-h-[100dvh] bg-background overflow-x-hidden" dir="rtl" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
       <OnboardingModal forceOpen={forceOnboarding} />
 
-      {/* ─── 1. Hero (compact) ─── */}
-      <section className="relative flex flex-col items-center justify-center px-4 text-center pb-4" style={{ paddingTop: "max(3rem, calc(env(safe-area-inset-top) + 1rem))" }}>
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-accent to-transparent" />
+      {/* ─── Hero with liquid glass ─── */}
+      <div className="relative overflow-hidden">
+        {/* Background image */}
+        <picture>
+          <source media="(max-width: 768px)" srcSet="/images/hero-bg-mobile.jpg" />
+          <img
+            src="/images/hero-bg.jpg"
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover object-top pointer-events-none select-none"
+          />
+        </picture>
 
-        {/* Top-left: Theme + Font */}
-        <div className="absolute left-4 z-30 flex items-center gap-1.5" style={{ top: "max(1rem, env(safe-area-inset-top))" }}>
-          <ThemeToggle />
-        </div>
+        {/* Dark gradient overlay */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: 'linear-gradient(to bottom, rgba(15,42,30,0.45) 0%, rgba(15,42,30,0.35) 40%, rgba(15,42,30,0.55) 75%, rgba(246,243,238,1) 100%)',
+          }}
+        />
 
-        {/* Top-right: Admin shield */}
-        {isAdmin && (
-          <div className="absolute right-4 z-30" style={{ top: "max(1rem, env(safe-area-inset-top))" }}>
-            <button
-              onClick={() => navigate("/admin")}
-              className="h-9 w-9 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 flex items-center justify-center transition-colors"
-              aria-label="لوحة الإدارة"
-            >
-              <Shield className="h-5 w-5" />
-            </button>
+        {/* Hero content */}
+        <section className="relative z-10 flex flex-col items-center justify-center px-4 text-center pb-4" style={{ paddingTop: "max(3rem, calc(env(safe-area-inset-top) + 1rem))" }}>
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-accent to-transparent" />
+
+          {/* Top-left: Theme + Font */}
+          <div className="absolute left-4 z-30 flex items-center gap-1.5" style={{ top: "max(1rem, env(safe-area-inset-top))" }}>
+            <ThemeToggle />
           </div>
+
+          {/* Top-right: Admin shield */}
+          {isAdmin && (
+            <div className="absolute right-4 z-30" style={{ top: "max(1rem, env(safe-area-inset-top))" }}>
+              <button
+                onClick={() => navigate("/admin")}
+                className="h-9 w-9 rounded-lg text-white/70 hover:text-white hover:bg-white/10 flex items-center justify-center transition-colors"
+                aria-label="لوحة الإدارة"
+              >
+                <Shield className="h-5 w-5" />
+              </button>
+            </div>
+          )}
+
+          <motion.div
+            className="max-w-lg mx-auto space-y-2 w-full"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+          >
+            <TreePine className="h-10 w-10 text-white mx-auto" style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.4))' }} />
+            <h1 className="text-2xl font-extrabold text-white leading-tight" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.5)' }}>
+              بـوابـة تـراث الخـنـيـنـي
+            </h1>
+            <p className="text-sm text-white/80" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.5)' }}>
+              فرع الزلفي
+            </p>
+            <div className="h-px bg-gradient-to-r from-transparent via-accent to-transparent max-w-xs mx-auto" />
+          </motion.div>
+        </section>
+
+        {/* ─── 2A. Personal Dashboard (logged-in) ─── */}
+        {currentUser && dashboardData && (
+          <section className="relative z-10 py-4 px-4">
+            <motion.div
+              className="max-w-lg mx-auto rounded-2xl border border-white/20 backdrop-blur-md bg-white/10 p-4 space-y-4"
+              initial={{ opacity: 0, scale: 0.97, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ ...gentleSpring, delay: 0.1 }}
+            >
+              {/* Top row: avatar + name + badges */}
+              <div className="flex items-center gap-3">
+                <div
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                    dashboardData.member.gender === "F"
+                      ? "bg-female-light text-female"
+                      : "bg-male-light text-male"
+                  }`}
+                >
+                  {dashboardData.member.gender === "F" ? <UserRound className="h-5 w-5" /> : <User className="h-5 w-5" />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-base font-bold text-white truncate" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.5)' }}>{(() => { const parts = currentUser.memberName.split(' '); parts[0] = applyTatweel(parts[0]); return parts.join(' '); })()}</span>
+                    <BadgeCheck className="h-4 w-4 text-green-400 shrink-0" />
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                    {dashboardData.branch && (
+                      <span
+                        className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                        style={{
+                          backgroundColor: dashboardData.branchStyle?.bg,
+                          color: dashboardData.branchStyle?.text,
+                        }}
+                      >
+                        {dashboardData.branch.label}
+                      </span>
+                    )}
+                    <HeritageBadge type="generation" generationNum={dashboardData.depth} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Stats row */}
+              <motion.div
+                className="grid grid-cols-3 gap-2 text-center"
+                variants={staggerContainer}
+                initial="initial"
+                animate="animate"
+              >
+                {[
+                  { label: "الأبناء", value: dashboardData.children.length },
+                  { label: "الأجداد", value: dashboardData.ancestors.length - 1 },
+                  { label: "الأشقاء", value: dashboardData.siblings.length },
+                ].map((s) => (
+                  <motion.div key={s.label} variants={staggerItem} className="rounded-xl backdrop-blur-sm bg-white/10 border border-white/15 py-2 px-1">
+                    <div className="text-lg font-extrabold text-white">{s.value.toLocaleString("ar-SA")}</div>
+                    <div className="text-xs text-white/70 font-medium">{s.label}</div>
+                  </motion.div>
+                ))}
+              </motion.div>
+
+              {/* Action buttons */}
+              <motion.div
+                className="grid grid-cols-3 gap-2"
+                variants={staggerContainer}
+                initial="initial"
+                animate="animate"
+              >
+                {[
+                  { label: "نسبي", icon: ScrollText, onClick: () => navigate(`/person/${currentUser.memberId}`) },
+                  { label: "قرابة", icon: Scale, onClick: () => onBrowseTree() },
+                  { label: "ملفي", icon: User, onClick: () => navigate("/profile") },
+                ].map((action) => (
+                  <motion.button
+                    key={action.label}
+                    variants={staggerItem}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={action.onClick}
+                    className="flex flex-col items-center gap-1 rounded-xl backdrop-blur-sm bg-white/10 border border-white/15 p-2.5 min-h-[56px] text-xs font-medium text-white/90 hover:bg-white/20 transition-colors"
+                  >
+                    <action.icon className="h-5 w-5 text-white" />
+                    {action.label}
+                  </motion.button>
+                ))}
+              </motion.div>
+            </motion.div>
+          </section>
         )}
 
-        <motion.div
-          className="max-w-lg mx-auto space-y-2 w-full"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
-        >
-          <TreePine className="h-10 w-10 text-primary mx-auto" />
-          <h1 className="text-2xl font-extrabold text-primary leading-tight">
-            بـوابـة تـراث الخـنـيـنـي
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            فرع الزلفي
-          </p>
-          <div className="h-px bg-gradient-to-r from-transparent via-accent to-transparent max-w-xs mx-auto" />
-        </motion.div>
-      </section>
-
-      {/* ─── 2A. Personal Dashboard (logged-in) ─── */}
-      {currentUser && dashboardData && (
-        <section className="py-4 px-4">
-          <motion.div
-            className="max-w-lg mx-auto rounded-2xl border bg-card/80 backdrop-blur-sm p-4 space-y-4"
-            style={{ borderColor: dashboardData.branchStyle ? dashboardData.branchStyle.text + "40" : undefined }}
-            initial={{ opacity: 0, scale: 0.97, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ ...gentleSpring, delay: 0.1 }}
-          >
-            {/* Top row: avatar + name + badges */}
-            <div className="flex items-center gap-3">
-              <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                  dashboardData.member.gender === "F"
-                    ? "bg-female-light text-female"
-                    : "bg-male-light text-male"
-                }`}
-              >
-                {dashboardData.member.gender === "F" ? <UserRound className="h-5 w-5" /> : <User className="h-5 w-5" />}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-base font-bold text-foreground truncate">{(() => { const parts = currentUser.memberName.split(' '); parts[0] = applyTatweel(parts[0]); return parts.join(' '); })()}</span>
-                  <BadgeCheck className="h-4 w-4 text-green-500 shrink-0" />
-                </div>
-                <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                  {dashboardData.branch && (
-                    <span
-                      className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                      style={{
-                        backgroundColor: dashboardData.branchStyle?.bg,
-                        color: dashboardData.branchStyle?.text,
-                      }}
-                    >
-                      {dashboardData.branch.label}
-                    </span>
-                  )}
-                  <HeritageBadge type="generation" generationNum={dashboardData.depth} />
-                </div>
-              </div>
-            </div>
-
-            {/* Stats row */}
+        {/* ─── 2B. Guest CTA (guest only) ─── */}
+        {!currentUser && (
+          <section className="relative z-10 py-4 px-4">
             <motion.div
-              className="grid grid-cols-3 gap-2 text-center"
-              variants={staggerContainer}
-              initial="initial"
-              animate="animate"
+              className="max-w-lg mx-auto space-y-4 text-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, ease: "easeOut", delay: 0.15 }}
             >
-              {[
-                { label: "الأبناء", value: dashboardData.children.length },
-                { label: "الأجداد", value: dashboardData.ancestors.length - 1 },
-                { label: "الأشقاء", value: dashboardData.siblings.length },
-              ].map((s) => (
-                <motion.div key={s.label} variants={staggerItem} className="rounded-xl bg-muted/50 border border-border/40 py-2 px-1">
-                  <div className="text-lg font-extrabold text-primary">{s.value.toLocaleString("ar-SA")}</div>
-                  <div className="text-xs text-muted-foreground font-medium">{s.label}</div>
-                </motion.div>
-              ))}
-            </motion.div>
+              <h2 className="text-lg font-bold text-white" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.5)' }}>
+                اكتشف موقعك في شجرة العائلة
+              </h2>
 
-            {/* Action buttons */}
-            <motion.div
-              className="grid grid-cols-3 gap-2"
-              variants={staggerContainer}
-              initial="initial"
-              animate="animate"
-            >
-              {[
-                { label: "نسبي", icon: ScrollText, onClick: () => navigate(`/person/${currentUser.memberId}`) },
-                { label: "قرابة", icon: Scale, onClick: () => onBrowseTree() },
-                { label: "ملفي", icon: User, onClick: () => navigate("/profile") },
-              ].map((action) => (
-                <motion.button
-                  key={action.label}
-                  variants={staggerItem}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={action.onClick}
-                  className="flex flex-col items-center gap-1 rounded-xl bg-muted/50 border border-border/40 p-2.5 min-h-[56px] text-xs font-medium text-foreground hover:bg-muted transition-colors"
+              {/* Guest search */}
+              <div className="relative z-20">
+                <div className="relative">
+                  <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/70 pointer-events-none" />
+                  <Input
+                    placeholder="ابحث عن اسمك لمعرفة نسبك"
+                    value={query}
+                    onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
+                    onFocus={() => query.trim() && setOpen(true)}
+                    onBlur={() => setTimeout(() => setOpen(false), 200)}
+                    className="pr-12 pl-4 h-14 text-base rounded-2xl backdrop-blur-md bg-white/15 border border-white/30 text-white placeholder:text-white/60 shadow-lg focus:ring-2 focus:ring-accent"
+                  />
+                </div>
+                {showingResults && (
+                  <div className="absolute top-full mt-2 w-full bg-card border border-border rounded-2xl shadow-xl z-50 overflow-hidden max-h-72 overflow-y-auto">
+                    {filtered.map((m) => {
+                      const subtitle = getMemberSubtitle(m);
+                      return (
+                        <button
+                          key={m.id}
+                          className="w-full text-right px-5 py-3 text-foreground hover:bg-muted transition-colors border-b border-border/30 last:border-b-0"
+                          style={{ minHeight: 48 }}
+                          onMouseDown={() => { onSearchSelect(m.id); setQuery(m.name); setOpen(false); }}
+                        >
+                          <span className="font-bold block">{getLineageLabel(m)}</span>
+                          {subtitle && <span className="text-xs text-muted-foreground">{subtitle}</span>}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Guest action buttons */}
+              <div className="flex gap-3">
+                <Button
+                  onClick={onBrowseTree}
+                  className="flex-1 min-h-[48px] rounded-2xl font-bold text-base gap-2 backdrop-blur-md bg-white/20 border border-white/40 text-white hover:bg-white/30"
                 >
-                  <action.icon className="h-5 w-5 text-primary" />
-                  {action.label}
-                </motion.button>
-              ))}
-            </motion.div>
-          </motion.div>
-        </section>
-      )}
-
-      {/* ─── 2B. Guest CTA (guest only) ─── */}
-      {!currentUser && (
-        <section className="py-4 px-4">
-          <motion.div
-            className="max-w-lg mx-auto space-y-4 text-center"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, ease: "easeOut", delay: 0.15 }}
-          >
-            <h2 className="text-lg font-bold text-foreground">
-              اكتشف موقعك في شجرة العائلة
-            </h2>
-
-            {/* Guest search */}
-            <div className="relative z-20">
-              <div className="relative">
-                <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
-                <Input
-                  placeholder="ابحث عن اسمك لمعرفة نسبك"
-                  value={query}
-                  onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
-                  onFocus={() => query.trim() && setOpen(true)}
-                  onBlur={() => setTimeout(() => setOpen(false), 200)}
-                  className="pr-12 pl-4 h-14 text-base rounded-2xl bg-card border-border shadow-lg focus:ring-2 focus:ring-accent placeholder:text-muted-foreground"
-                />
+                  <TreePine className="h-5 w-5" />
+                  تصفح الشجرة
+                </Button>
+                <Button
+                  onClick={() => setForceOnboarding(true)}
+                  variant="outline"
+                  className="flex-1 min-h-[48px] rounded-2xl font-bold text-base gap-2 backdrop-blur-md bg-white/10 border border-white/30 text-white/90 hover:bg-white/20"
+                >
+                  <User className="h-5 w-5" />
+                  سجّل دخولك
+                </Button>
               </div>
-              {showingResults && (
-                <div className="absolute top-full mt-2 w-full bg-card border border-border rounded-2xl shadow-xl z-50 overflow-hidden max-h-72 overflow-y-auto">
-                  {filtered.map((m) => {
-                    const subtitle = getMemberSubtitle(m);
-                    return (
-                      <button
-                        key={m.id}
-                        className="w-full text-right px-5 py-3 text-foreground hover:bg-muted transition-colors border-b border-border/30 last:border-b-0"
-                        style={{ minHeight: 48 }}
-                        onMouseDown={() => { onSearchSelect(m.id); setQuery(m.name); setOpen(false); }}
-                      >
-                        <span className="font-bold block">{getLineageLabel(m)}</span>
-                        {subtitle && <span className="text-xs text-muted-foreground">{subtitle}</span>}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+            </motion.div>
+          </section>
+        )}
 
-            {/* Guest action buttons */}
-            <div className="flex gap-3">
-              <Button
-                onClick={onBrowseTree}
-                className="flex-1 min-h-[48px] rounded-xl font-bold text-base gap-2"
+        {/* ─── Quick Actions Grid (all users) ─── */}
+        <section className="relative z-10 py-3 px-4">
+          <motion.div
+            className="max-w-lg mx-auto grid grid-cols-3 gap-2.5"
+            variants={staggerContainer}
+            initial="initial"
+            animate="animate"
+          >
+            {[
+              { label: "الشجرة", icon: MapIcon, onClick: () => onBrowseTree() },
+              { label: "النسب", icon: ScrollText, onClick: () => setShowNasabSheet(true) },
+              { label: "القرابة", icon: Scale, onClick: () => { onBrowseTree(); window.dispatchEvent(new CustomEvent('switch-to-kinship')); } },
+              { label: "تنقل", icon: Compass, onClick: () => { onBrowseTree(); window.dispatchEvent(new CustomEvent('switch-to-navigate')); } },
+              { label: "فروع", icon: GitBranch, onClick: () => { onBrowseTree(); window.dispatchEvent(new CustomEvent('switch-to-branches')); } },
+              { label: "القائمة", icon: AlignJustify, onClick: () => { onBrowseTree(); window.dispatchEvent(new CustomEvent('switch-to-list')); } },
+            ].map((action) => (
+              <motion.button
+                key={action.label}
+                variants={staggerItem}
+                whileHover={{ scale: 1.03, transition: springConfig }}
+                whileTap={{ scale: 0.97 }}
+                onClick={action.onClick}
+                className="flex flex-col items-center gap-1.5 rounded-2xl backdrop-blur-md bg-white/10 border border-white/20 p-3 min-h-[72px] text-center hover:bg-white/20 transition-all"
               >
-                <TreePine className="h-5 w-5" />
-                تصفح الشجرة
-              </Button>
-              <Button
-                onClick={() => setForceOnboarding(true)}
-                variant="outline"
-                className="flex-1 min-h-[48px] rounded-xl font-bold text-base gap-2 border-accent/30 text-accent hover:bg-accent/10"
-              >
-                <User className="h-5 w-5" />
-                سجّل دخولك
-              </Button>
-            </div>
+                <action.icon className="h-5 w-5 text-white/90" />
+                <span className="text-xs font-medium text-white/85">{action.label}</span>
+              </motion.button>
+            ))}
           </motion.div>
         </section>
-      )}
 
-      {/* ─── Quick Actions Grid (all users) ─── */}
-      <section className="py-3 px-4">
-        <motion.div
-          className="max-w-lg mx-auto grid grid-cols-3 gap-2.5"
-          variants={staggerContainer}
-          initial="initial"
-          animate="animate"
-        >
-          {[
-            { label: "الشجرة", icon: MapIcon, color: "text-primary", onClick: () => onBrowseTree() },
-            { label: "النسب", icon: ScrollText, color: "text-accent", onClick: () => setShowNasabSheet(true) },
-            { label: "القرابة", icon: Scale, color: "text-primary", onClick: () => { onBrowseTree(); window.dispatchEvent(new CustomEvent('switch-to-kinship')); } },
-            { label: "تنقل", icon: Compass, color: "text-primary", onClick: () => { onBrowseTree(); window.dispatchEvent(new CustomEvent('switch-to-navigate')); } },
-            { label: "فروع", icon: GitBranch, color: "text-primary", onClick: () => { onBrowseTree(); window.dispatchEvent(new CustomEvent('switch-to-branches')); } },
-            { label: "القائمة", icon: AlignJustify, color: "text-muted-foreground", onClick: () => { onBrowseTree(); window.dispatchEvent(new CustomEvent('switch-to-list')); } },
-          ].map((action) => (
-            <motion.button
-              key={action.label}
-              variants={staggerItem}
-              whileHover={{ scale: 1.03, transition: springConfig }}
-              whileTap={{ scale: 0.97 }}
-              onClick={action.onClick}
-              className="flex flex-col items-center gap-1.5 rounded-xl border bg-card/60 p-3 min-h-[72px] text-center hover:bg-card hover:shadow-sm transition-all"
+        {/* Bottom action buttons */}
+        <section className="relative z-10 px-4 pb-6">
+          <div className="max-w-lg mx-auto flex gap-2">
+            <button
+              onClick={() => setRequestOpen(true)}
+              className="flex-1 rounded-2xl backdrop-blur-md bg-white/10 border border-white/25 min-h-[48px] flex items-center justify-center gap-2 text-sm text-white/80 font-medium hover:bg-white/20 transition-colors"
             >
-              <action.icon className={`h-5 w-5 ${action.color}`} />
-              <span className="text-xs font-medium text-foreground">{action.label}</span>
-            </motion.button>
-          ))}
-        </motion.div>
-      </section>
-      <section className="px-4">
-        <div className="max-w-lg mx-auto flex gap-2">
-          <button
-            onClick={() => setRequestOpen(true)}
-            className="flex-1 rounded-xl border border-dashed border-accent/40 bg-accent/5 hover:bg-accent/10 min-h-[48px] flex items-center justify-center gap-2 text-sm text-accent font-medium transition-colors"
-          >
-            <Send className="h-4 w-4" />
-            أرسل طلب تعديل
-          </button>
-          <button
-            onClick={() => navigate('/guide')}
-            className="flex-1 rounded-xl border border-dashed border-border bg-card hover:bg-muted min-h-[48px] flex items-center justify-center gap-2 text-sm text-muted-foreground font-medium transition-colors"
-          >
-            <BookOpen className="h-4 w-4" />
-            دليل الاستخدام
-          </button>
+              <Send className="h-4 w-4" />
+              أرسل طلب تعديل
+            </button>
+            <button
+              onClick={() => navigate('/guide')}
+              className="flex-1 rounded-2xl backdrop-blur-md bg-white/10 border border-white/25 min-h-[48px] flex items-center justify-center gap-2 text-sm text-white/80 font-medium hover:bg-white/20 transition-colors"
+            >
+              <BookOpen className="h-4 w-4" />
+              دليل الاستخدام
+            </button>
+          </div>
+        </section>
+
+        {/* SVG wave at bottom */}
+        <div className="absolute bottom-0 left-0 right-0 overflow-hidden z-10">
+          <svg viewBox="0 0 1440 60" className="w-full h-12 fill-background" preserveAspectRatio="none">
+            <path d="M0,30 C480,60 960,0 1440,30 L1440,60 L0,60 Z" />
+          </svg>
         </div>
-      </section>
+      </div>
 
       {/* ─── 3. Search (logged-in only, below dashboard) ─── */}
       {currentUser && (
