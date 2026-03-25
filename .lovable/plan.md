@@ -1,34 +1,29 @@
 
 
-# Fix Search Dropdown Position & Wave Balance
+# Fix Search Dropdown Z-Index Stacking
 
 ## Problem
-1. Portal-rendered search dropdowns appear above the search bar on mobile (keyboard shifts viewport, `getBoundingClientRect` gives wrong position)
-2. SVG wave is asymmetric
+Search dropdown has `zIndex: 9999` but gradient (`z-[9]`) and wave (`z-10`) render on top because the search wrapper lacks its own stacking context.
 
-## Solution
+## Changes — `src/components/LandingPage.tsx`
 
-### FIX 1: Remove portals, use overflow-x-hidden instead
+### 1. Hero content section (line 205)
+`z-10` → `z-20`
 
-**Line 186** — Change hero container:
-```
-FROM: <div className="relative overflow-hidden">
-TO:   <div className="relative overflow-x-hidden">
-```
+### 2. Guest search wrapper (line 337)
+Add `style={{ position: 'relative', zIndex: 9999 }}` to the outer div
 
-Wrap the background image + overlays (lines 188-206) in a clipping container:
-```tsx
-<div className="absolute inset-0 overflow-hidden pointer-events-none">
-  <picture>...</picture>
-  <div className="... dark overlay ..." />
-  <div className="... gradient overlay ..." />
-</div>
-```
+### 3. Logged-in search section (line 448)
+Change `z-10` → `z-20`, and add `style={{ position: 'relative', zIndex: 9999 }}` to inner wrapper (line 449)
 
-**Guest dropdown (lines 353-397)** — Remove `createPortal`, replace with inline absolute div:
-```tsx
-{showingResults && (
-  <div
-    className="absolute top-full left-0 right-0 mt-2 rounded-2xl overflow-hidden shadow-2xl border border-border"
-    dir="rtl"
-    style={{ zIndex: 9
+### 4. Gradient fade (line 488)
+`z-[9]` → `z-[5]`
+
+### 5. SVG wave (line 494)
+`z-10` → `z-[5]`
+
+## Result
+- Search dropdown: z-9999 (highest)
+- Hero content: z-20
+- Wave + gradient: z-5 (decorative, lowest)
+
