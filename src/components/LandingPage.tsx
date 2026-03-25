@@ -445,8 +445,8 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
 
         {/* Logged-in search inside glass area */}
         {currentUser && (
-          <section className="relative z-10 px-4 pb-4">
-            <div className="max-w-lg mx-auto relative">
+          <section className="relative z-20 px-4 pb-4">
+            <div className="max-w-lg mx-auto relative" style={{ position: 'relative', zIndex: 9999 }}>
               <div className="relative">
                 <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/70 pointer-events-none" />
                 <Input
