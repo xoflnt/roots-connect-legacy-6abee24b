@@ -202,7 +202,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         </div>
 
         {/* Hero content */}
-        <section className="relative z-10 flex flex-col items-center justify-center px-4 text-center pb-4" style={{ paddingTop: "max(3rem, calc(env(safe-area-inset-top) + 1rem))" }}>
+        <section className="relative z-20 flex flex-col items-center justify-center px-4 text-center pb-4" style={{ paddingTop: "max(3rem, calc(env(safe-area-inset-top) + 1rem))" }}>
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-accent to-transparent" />
 
           {/* Top-left: Theme + Font */}
