@@ -19,9 +19,12 @@ export default defineConfig(({ mode }) => ({
     VitePWA({
       registerType: "autoUpdate",
       workbox: {
-        navigateFallbackDenylist: [/^\/~oauth/, /^\/api\/auth/, /^\/auth/],
-        navigateFallback: "/index.html",
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+      navigateFallbackDenylist: [/^\/~oauth/, /^\/api\/auth/, /^\/auth/],
+      navigateFallback: "/index.html",
+      globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+      additionalManifestEntries: [
+        { url: '/offline.html', revision: '1' }
+      ],
         cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
@@ -70,6 +73,28 @@ export default defineConfig(({ mode }) => ({
         start_url: "/",
         categories: ["lifestyle", "social"],
         prefer_related_applications: false,
+        id: "/?source=pwa",
+        screenshots: [
+          {
+            src: "pwa/icon-512x512.png",
+            sizes: "512x512",
+            type: "image/png",
+            form_factor: "narrow",
+            label: "بوابة تراث الخنيني",
+          },
+        ],
+        shortcuts: [
+          {
+            name: "البحث",
+            url: "/?view=navigate&source=shortcut",
+            icons: [{ src: "pwa/icon-96x96.png", sizes: "96x96" }],
+          },
+          {
+            name: "الشجرة",
+            url: "/?view=map&source=shortcut",
+            icons: [{ src: "pwa/icon-96x96.png", sizes: "96x96" }],
+          },
+        ],
         icons: [
           { src: "/pwa/icon-48x48.png", sizes: "48x48", type: "image/png" },
           { src: "/pwa/icon-72x72.png", sizes: "72x72", type: "image/png" },
@@ -78,9 +103,11 @@ export default defineConfig(({ mode }) => ({
           { src: "/pwa/icon-144x144.png", sizes: "144x144", type: "image/png" },
           { src: "/pwa/icon-152x152.png", sizes: "152x152", type: "image/png" },
           { src: "/pwa/icon-180x180.png", sizes: "180x180", type: "image/png" },
-          { src: "/pwa/icon-192x192.png", sizes: "192x192", type: "image/png", purpose: "any maskable" },
+          { src: "/pwa/icon-192x192.png", sizes: "192x192", type: "image/png", purpose: "any" },
           { src: "/pwa/icon-384x384.png", sizes: "384x384", type: "image/png" },
-          { src: "/pwa/icon-512x512.png", sizes: "512x512", type: "image/png", purpose: "any maskable" },
+          { src: "/pwa/icon-512x512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+          { src: "/pwa/icon-192x192.png", sizes: "192x192", type: "image/png", purpose: "maskable" },
+          { src: "/pwa/icon-512x512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
         ],
       },
     }),
