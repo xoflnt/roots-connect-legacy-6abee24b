@@ -181,27 +181,25 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
       <OnboardingModal forceOpen={forceOnboarding} />
 
       {/* ─── Hero with liquid glass ─── */}
-      <div className="relative overflow-hidden">
-        {/* Background image */}
-        <picture>
-          <source media="(max-width: 768px)" srcSet="/images/hero-bg-mobile.jpg" />
-          <img
-            src="/images/hero-bg.jpg"
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover object-top pointer-events-none select-none"
+      <div className="relative overflow-x-hidden">
+        {/* Background image + overlays (clipped container) */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <picture>
+            <source media="(max-width: 768px)" srcSet="/images/hero-bg-mobile.jpg" />
+            <img
+              src="/images/hero-bg.jpg"
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover object-top select-none"
+            />
+          </picture>
+          <div className="absolute inset-0 dark:bg-black/50 bg-transparent" />
+          <div
+            className="absolute inset-0"
+            style={{
+              background: 'linear-gradient(to bottom, rgba(15,42,30,0.45) 0%, rgba(15,42,30,0.35) 40%, rgba(15,42,30,0.55) 75%, hsl(var(--background)) 100%)',
+            }}
           />
-        </picture>
-
-        {/* Dark mode overlay */}
-        <div className="absolute inset-0 dark:bg-black/50 bg-transparent pointer-events-none" />
-
-        {/* Dark gradient overlay */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background: 'linear-gradient(to bottom, rgba(15,42,30,0.45) 0%, rgba(15,42,30,0.35) 40%, rgba(15,42,30,0.55) 75%, hsl(var(--background)) 100%)',
-          }}
-        />
+        </div>
 
         {/* Hero content */}
         <section className="relative z-10 flex flex-col items-center justify-center px-4 text-center pb-4" style={{ paddingTop: "max(3rem, calc(env(safe-area-inset-top) + 1rem))" }}>
