@@ -481,42 +481,6 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         </div>
       </div>
 
-      {/* ─── 3. Search (logged-in only, below dashboard) ─── */}
-      {currentUser && (
-        <section className="py-4 px-4">
-          <div className="max-w-lg mx-auto relative z-20">
-            <div className="relative">
-              <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
-              <Input
-                placeholder="ابحث عن أي فرد في العائلة..."
-                value={query}
-                onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
-                onFocus={() => query.trim() && setOpen(true)}
-                onBlur={() => setTimeout(() => setOpen(false), 200)}
-                className="pr-12 pl-4 h-12 text-base rounded-2xl bg-card border-border shadow-sm focus:ring-2 focus:ring-accent placeholder:text-muted-foreground"
-              />
-            </div>
-            {showingResults && (
-              <div className="absolute top-full mt-2 w-full bg-card border border-border rounded-2xl shadow-xl z-50 overflow-hidden max-h-72 overflow-y-auto">
-                {filtered.map((m) => {
-                  const subtitle = getMemberSubtitle(m);
-                  return (
-                    <button
-                      key={m.id}
-                      className="w-full text-right px-5 py-3 text-foreground hover:bg-muted transition-colors border-b border-border/30 last:border-b-0"
-                      style={{ minHeight: 48 }}
-                      onMouseDown={() => { onSearchSelect(m.id); setQuery(m.name); setOpen(false); }}
-                    >
-                      <span className="font-bold block">{getLineageLabel(m)}</span>
-                      {subtitle && <span className="text-xs text-muted-foreground">{subtitle}</span>}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </section>
-      )}
 
       {/* ─── 4. كلمة الموثّق ─── */}
       <section className="py-6 px-4">
