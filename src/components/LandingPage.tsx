@@ -215,6 +215,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
           </p>
           <div className="h-px bg-gradient-to-r from-transparent via-white/40 to-transparent max-w-xs mx-auto" />
         </motion.div>
+      </section>
 
       {/* ─── 2A. Personal Dashboard (logged-in) ─── */}
       {currentUser && dashboardData && (
