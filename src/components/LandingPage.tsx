@@ -208,21 +208,33 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
           </div>
         )}
 
-        <motion.div
-          className="max-w-lg mx-auto space-y-2 w-full relative z-10 mt-auto mb-6"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
-        >
-          <TreePine className="h-10 w-10 text-white mx-auto" style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.4))' }} />
-          <h1 className="text-2xl font-extrabold text-white leading-tight" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.4)' }}>
-            بـوابـة تـراث الخـنـيـنـي
-          </h1>
-          <p className="text-sm text-white/80" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.4)' }}>
-            فرع الزلفي
-          </p>
-          <div className="h-px bg-gradient-to-r from-transparent via-white/40 to-transparent max-w-xs mx-auto" />
-        </motion.div>
+        <div className="relative w-full flex flex-col items-center text-center pt-8 pb-6 overflow-hidden rounded-b-3xl z-10 mt-auto mb-6">
+          <img
+            src="/images/hero-bg-mobile.jpg"
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover object-top pointer-events-none select-none"
+            style={{
+              opacity: 0.18,
+              maskImage: 'linear-gradient(to bottom, black 0%, black 60%, transparent 100%)',
+              WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 60%, transparent 100%)',
+            }}
+          />
+          <motion.div
+            className="max-w-lg mx-auto space-y-2 w-full relative z-10"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+          >
+            <TreePine className="h-10 w-10 text-white mx-auto" style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.4))' }} />
+            <h1 className="text-2xl font-extrabold text-white leading-tight" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.4)' }}>
+              بـوابـة تـراث الخـنـيـنـي
+            </h1>
+            <p className="text-sm text-white/80" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.4)' }}>
+              فرع الزلفي
+            </p>
+            <div className="h-px bg-gradient-to-r from-transparent via-white/40 to-transparent max-w-xs mx-auto" />
+          </motion.div>
+        </div>
       </section>
 
       {/* ─── 2A. Personal Dashboard (logged-in) ─── */}
