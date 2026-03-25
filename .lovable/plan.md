@@ -1,44 +1,26 @@
 
 
-# Add Mobile Hero Background + Wave Edge
+# Add Subtle Background Image Behind Title Block
 
-## Files
-- **Copy**: `user-uploads://IMG_8307.jpeg` → `public/images/hero-bg-mobile.jpg`
-- **Edit**: `src/components/LandingPage.tsx` (lines 176-218)
+## Single file: `src/components/LandingPage.tsx`
 
-## Changes in `src/components/LandingPage.tsx`
+### Lines 211-225 — Wrap title motion.div in a relative container
 
-### Line 177 — Hero section classes
-Replace `min-h-[45vh]` with `min-h-[55vh] md:min-h-[50vh]`
+The current `motion.div` (lines 211-225) contains the TreePine icon, title, subtitle, and gold divider. Wrap it in a new `div` with the subtle background image.
 
-### Lines 182-183 — Replace image + overlay
-Replace the current `<img>` and gradient `<div>` with:
-
-1. **`<picture>` element** serving portrait image on mobile:
+**Current:**
 ```tsx
-<picture>
-  <source media="(max-width: 768px)" srcSet="/images/hero-bg-mobile.jpg" />
-  <img src="/images/hero-bg.jpg" alt="" className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none" />
-</picture>
+<motion.div
+  className="max-w-lg mx-auto space-y-2 w-full relative z-10 mt-auto mb-6"
+  ...
+>
+  <TreePine ... />
+  <h1 ...>بـوابـة تـراث الخـنـيـنـي</h1>
+  <p ...>فرع الزلفي</p>
+  <div className="h-px bg-gradient-to-r ..." />
+</motion.div>
 ```
 
-2. **Updated gradient overlay** with explicit sand-color bottom fade:
+**New:**
 ```tsx
-<div className="absolute inset-0" style={{
-  background: 'linear-gradient(to bottom, rgba(27,84,56,0.4) 0%, transparent 40%, rgba(246,243,238,0.8) 80%, rgba(246,243,238,1) 100%)'
-}} />
-```
-
-3. **SVG wave** at bottom for organic edge:
-```tsx
-<div className="absolute bottom-0 left-0 right-0 w-full overflow-hidden leading-none z-10">
-  <svg viewBox="0 0 1440 80" xmlns="http://www.w3.org/2000/svg"
-    className="w-full h-16 sm:h-20 fill-background" preserveAspectRatio="none">
-    <path d="M0,40 C360,80 1080,0 1440,40 L1440,80 L0,80 Z" />
-  </svg>
-</div>
-```
-
-### Lines 203-217 — Title block
-Add `mt-auto mb-6` to the `motion.div` className to push title toward bottom. Increase text shadow intensity to `rgba(0,0,0,0.4)`.
-
+<div className="relative w-full flex flex-col items-center text-center pt-8 pb-6 overflow-hidden rounded
