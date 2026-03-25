@@ -254,13 +254,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                   </div>
                   <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                     {dashboardData.branch && (
-                      <span
-                        className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                        style={{
-                          backgroundColor: dashboardData.branchStyle?.bg,
-                          color: dashboardData.branchStyle?.text,
-                        }}
-                      >
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/20 text-white border border-white/30">
                         {dashboardData.branch.label}
                       </span>
                     )}
