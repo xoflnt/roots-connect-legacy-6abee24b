@@ -157,9 +157,9 @@ export async function registerVerifiedUser(user: Omit<VerifiedUser, "verifiedAt"
     hijriBirthDate: user.hijriBirthDate,
   });
 
-  // Also update member phone in DB
+  // Also update member birth date in DB using the newly verified phone for auth
   if (user.hijriBirthDate) {
-    await updateMember(user.memberId, { birth_year: user.hijriBirthDate });
+    await updateMember(user.memberId, { birth_year: user.hijriBirthDate }, undefined, user.phone);
   }
 }
 
