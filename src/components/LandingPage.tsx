@@ -173,22 +173,8 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
       <OnboardingModal forceOpen={forceOnboarding} />
 
       {/* ─── 1. Hero (compact) ─── */}
-      <section
-        className="relative flex flex-col items-center justify-center px-4 text-center pb-4 overflow-hidden min-h-[55vh] md:min-h-[50vh]"
-        style={{
-          paddingTop: "max(3rem, calc(env(safe-area-inset-top) + 1rem))",
-        }}
-      >
-        <picture>
-          <source media="(max-width: 768px)" srcSet="/images/hero-bg-mobile.jpg" />
-          <img src="/images/hero-bg.jpg" alt="" className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none" />
-        </picture>
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(27,84,56,0.4) 0%, transparent 40%, rgba(246,243,238,0.8) 80%, rgba(246,243,238,1) 100%)' }} />
-        <div className="absolute bottom-0 left-0 right-0 w-full overflow-hidden leading-none z-10">
-          <svg viewBox="0 0 1440 80" xmlns="http://www.w3.org/2000/svg" className="w-full h-16 sm:h-20 fill-background" preserveAspectRatio="none">
-            <path d="M0,40 C360,80 1080,0 1440,40 L1440,80 L0,80 Z" />
-          </svg>
-        </div>
+      <section className="relative flex flex-col items-center justify-center px-4 text-center pb-4" style={{ paddingTop: "max(3rem, calc(env(safe-area-inset-top) + 1rem))" }}>
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-accent to-transparent" />
 
         {/* Top-left: Theme + Font */}
         <div className="absolute left-4 z-30 flex items-center gap-1.5" style={{ top: "max(1rem, env(safe-area-inset-top))" }}>
@@ -200,7 +186,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
           <div className="absolute right-4 z-30" style={{ top: "max(1rem, env(safe-area-inset-top))" }}>
             <button
               onClick={() => navigate("/admin")}
-              className="h-9 w-9 rounded-lg text-white/70 hover:text-white hover:bg-white/10 flex items-center justify-center transition-colors"
+              className="h-9 w-9 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 flex items-center justify-center transition-colors"
               aria-label="لوحة الإدارة"
             >
               <Shield className="h-5 w-5" />
@@ -208,33 +194,21 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
           </div>
         )}
 
-        <div className="relative w-full flex flex-col items-center text-center pt-8 pb-6 overflow-hidden rounded-b-3xl z-10 mt-auto mb-6">
-          <img
-            src="/images/hero-bg-mobile.jpg"
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover object-top pointer-events-none select-none"
-            style={{
-              opacity: 0.18,
-              maskImage: 'linear-gradient(to bottom, black 0%, black 60%, transparent 100%)',
-              WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 60%, transparent 100%)',
-            }}
-          />
-          <motion.div
-            className="max-w-lg mx-auto space-y-2 w-full relative z-10"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
-          >
-            <TreePine className="h-10 w-10 text-white mx-auto" style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.4))' }} />
-            <h1 className="text-2xl font-extrabold text-white leading-tight" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.4)' }}>
-              بـوابـة تـراث الخـنـيـنـي
-            </h1>
-            <p className="text-sm text-white/80" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.4)' }}>
-              فرع الزلفي
-            </p>
-            <div className="h-px bg-gradient-to-r from-transparent via-white/40 to-transparent max-w-xs mx-auto" />
-          </motion.div>
-        </div>
+        <motion.div
+          className="max-w-lg mx-auto space-y-2 w-full"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        >
+          <TreePine className="h-10 w-10 text-primary mx-auto" />
+          <h1 className="text-2xl font-extrabold text-primary leading-tight">
+            بـوابـة تـراث الخـنـيـنـي
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            فرع الزلفي
+          </p>
+          <div className="h-px bg-gradient-to-r from-transparent via-accent to-transparent max-w-xs mx-auto" />
+        </motion.div>
       </section>
 
       {/* ─── 2A. Personal Dashboard (logged-in) ─── */}

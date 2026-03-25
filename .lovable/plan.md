@@ -1,26 +1,40 @@
 
 
-# Add Subtle Background Image Behind Title Block
+# Build Data Health Admin Section
 
-## Single file: `src/components/LandingPage.tsx`
+## Files to Create
 
-### Lines 211-225 — Wrap title motion.div in a relative container
+### 1. `src/hooks/admin/useDataHealth.ts`
+Custom hook that runs 5 client-side checks against `getAllMembers()`:
+- **Missing birth year** (warning) — members without `birth_year`
+- **No spouse** (info) — living males at depth ≥ 3 without spouses
+- **Orphaned father_id** (critical) — `father_id` points to nonexistent member
+- **Duplicate names** (warning) — same `name` + `father_id` combo
+- **Missing mother** (info) — no `والدت` pattern in notes
 
-The current `motion.div` (lines 211-225) contains the TreePine icon, title, subtitle, and gold divider. Wrap it in a new `div` with the subtle background image.
+Computes a health score (0-100) weighted by severity. Returns `{ health, isLoading }`.
 
-**Current:**
-```tsx
-<motion.div
-  className="max-w-lg mx-auto space-y-2 w-full relative z-10 mt-auto mb-6"
-  ...
->
-  <TreePine ... />
-  <h1 ...>بـوابـة تـراث الخـنـيـنـي</h1>
-  <p ...>فرع الزلفي</p>
-  <div className="h-px bg-gradient-to-r ..." />
-</motion.div>
-```
+### 2. `src/components/admin/data-health/HealthScoreRing.tsx`
+SVG circular progress ring (120px). Color shifts green/amber/red based on score. Center shows `toArabicNum(score)٪`.
 
-**New:**
-```tsx
-<div className="relative w-full flex flex-col items-center text-center pt-8 pb-6 overflow-hidden rounded
+### 3. `src/components/admin/data-health/DataHealthPage.tsx`
+Main page with:
+- Score ring at top
+- 5 collapsible category cards (using shadcn Collapsible), each showing severity icon, label, count badge
+- Expanded view lists affected members (name + branch badge), capped at 20 with overflow text
+- "إعادة الفحص" refresh button
+- RTL, all numbers via `toArabicNum`
+
+## Files to Modify
+
+### 4. `src/pages/Admin.tsx`
+- Add import for `DataHealthPage`
+- Add `{section === "data-health" && <DataHealthPage />}`
+- Add `"data-health"` to the fallback exclusion list
+
+### 5. `src/components/admin/AdminSidebar.tsx`
+Uncomment the `data-health` nav item only (keep content/analytics/settings commented).
+
+### 6. `src/components/admin/AdminBottomBar.tsx`
+Add `data-health` tab with `Activity` icon and label "صحة البيانات" to `MAIN_TABS` (now 5 tabs total — fits mobile bar).
+
