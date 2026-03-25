@@ -491,7 +491,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
           }}
         />
         {/* SVG wave */}
-        <div className="absolute bottom-0 left-0 right-0 overflow-hidden z-10">
+        <div className="absolute bottom-0 left-0 right-0 overflow-hidden z-[5]">
           <svg viewBox="0 0 1440 60" className="w-full h-10 fill-background" preserveAspectRatio="none">
             <path d="M0,0 C240,60 480,60 720,30 C960,0 1200,0 1440,30 L1440,60 L0,60 Z" />
           </svg>
