@@ -174,15 +174,11 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
 
       {/* ─── 1. Hero (compact) ─── */}
       <section
-        className="relative flex flex-col items-center justify-center px-4 text-center pb-4"
+        className="relative flex flex-col items-center justify-center px-4 text-center pb-4 overflow-hidden bg-background"
         style={{
           paddingTop: "max(3rem, calc(env(safe-area-inset-top) + 1rem))",
-          backgroundImage: 'url(/images/hero-bg.jpg)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
         }}
       >
-        <div className="absolute inset-0 bg-background/75" />
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-accent to-transparent" />
 
         {/* Top-left: Theme + Font */}
@@ -218,6 +214,16 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
           </p>
           <div className="h-px bg-gradient-to-r from-transparent via-accent to-transparent max-w-xs mx-auto" />
         </motion.div>
+
+        <img
+          src="/images/hero-bg.jpg"
+          alt=""
+          className="absolute bottom-0 left-0 right-0 w-full h-48 object-cover object-top opacity-40 pointer-events-none select-none"
+          style={{
+            maskImage: 'linear-gradient(to bottom, transparent 0%, black 60%)',
+            WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 60%)',
+          }}
+        />
       </section>
 
       {/* ─── 2A. Personal Dashboard (logged-in) ─── */}
