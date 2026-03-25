@@ -202,7 +202,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         </div>
 
         {/* Hero content */}
-        <section className="relative z-10 flex flex-col items-center justify-center px-4 text-center pb-4" style={{ paddingTop: "max(3rem, calc(env(safe-area-inset-top) + 1rem))" }}>
+        <section className="relative z-20 flex flex-col items-center justify-center px-4 text-center pb-4" style={{ paddingTop: "max(3rem, calc(env(safe-area-inset-top) + 1rem))" }}>
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-accent to-transparent" />
 
           {/* Top-left: Theme + Font */}
@@ -334,7 +334,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
               </h2>
 
               {/* Guest search */}
-              <div className="relative">
+              <div className="relative" style={{ position: 'relative', zIndex: 9999 }}>
                 <div className="relative">
                   <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/70 pointer-events-none" />
                   <Input
@@ -445,8 +445,8 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
 
         {/* Logged-in search inside glass area */}
         {currentUser && (
-          <section className="relative z-10 px-4 pb-4">
-            <div className="max-w-lg mx-auto relative">
+          <section className="relative z-20 px-4 pb-4">
+            <div className="max-w-lg mx-auto relative" style={{ position: 'relative', zIndex: 9999 }}>
               <div className="relative">
                 <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/70 pointer-events-none" />
                 <Input
@@ -485,13 +485,13 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         )}
 
         {/* Gradient fade before wave */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 z-[9]"
+        <div className="absolute bottom-0 left-0 right-0 h-32 z-[5]"
           style={{
             background: 'linear-gradient(to bottom, transparent 0%, hsl(var(--background) / 0.6) 50%, hsl(var(--background)) 100%)'
           }}
         />
         {/* SVG wave */}
-        <div className="absolute bottom-0 left-0 right-0 overflow-hidden z-10">
+        <div className="absolute bottom-0 left-0 right-0 overflow-hidden z-[5]">
           <svg viewBox="0 0 1440 60" className="w-full h-10 fill-background" preserveAspectRatio="none">
             <path d="M0,0 C240,60 480,60 720,30 C960,0 1200,0 1440,30 L1440,60 L0,60 Z" />
           </svg>
