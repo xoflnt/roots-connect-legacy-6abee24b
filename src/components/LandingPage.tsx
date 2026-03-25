@@ -475,7 +475,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         {/* Gradient fade before wave */}
         <div className="absolute bottom-0 left-0 right-0 h-32 z-[9]"
           style={{
-            background: 'linear-gradient(to bottom, transparent 0%, rgba(246,243,238,0.6) 50%, rgba(246,243,238,1) 100%)'
+            background: 'linear-gradient(to bottom, transparent 0%, hsl(var(--background) / 0.6) 50%, hsl(var(--background)) 100%)'
           }}
         />
         {/* SVG wave */}
