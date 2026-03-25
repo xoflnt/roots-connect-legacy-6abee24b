@@ -67,11 +67,16 @@ export async function getMembers(): Promise<FamilyMember[]> {
   }));
 }
 
-export async function updateMember(id: string, data: Partial<FamilyMember>, adminToken?: string): Promise<void> {
+export async function updateMember(
+  id: string,
+  data: Partial<FamilyMember>,
+  adminToken?: string,
+  requesterPhone?: string,
+): Promise<void> {
   const headers = adminToken ? { "x-admin-token": adminToken } : undefined;
-  const stored = localStorage.getItem("khunaini-current-user");
-  const requesterPhone = stored ? JSON.parse(stored)?.phone : undefined;
-  await callFamilyApi("update-member", { id, data, requesterPhone }, headers);
+  const phone = requesterPhone
+    || JSON.parse(localStorage.getItem("khunaini-current-user") || '{}')?.phone;
+  await callFamilyApi("update-member", { id, data, requesterPhone: phone }, headers);
 }
 
 export async function deleteMember(memberId: string, adminToken: string): Promise<void> {

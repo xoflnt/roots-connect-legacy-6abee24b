@@ -154,23 +154,29 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
         : undefined;
 
       const { updateMember } = await import("@/services/dataService");
-      const memberUpdates: Record<string, string> = { phone: `+966${phone}` };
+      const fullPhone = `+966${phone}`;
+      const memberUpdates: Record<string, string> = { phone: fullPhone };
       if (dateStr) {
         memberUpdates.birth_year = dateStr;
       }
-      await updateMember(selectedMember.id, memberUpdates);
+
+      // Step 1: Register as verified user FIRST (creates the auth record)
       await registerVerifiedUser({
         memberId: selectedMember.id,
         memberName: selectedMember.name,
-        phone: `+966${phone}`,
+        phone: fullPhone,
         hijriBirthDate: dateStr,
       });
 
+      // Step 2: Now update member with explicit phone (self-check will pass)
+      await updateMember(selectedMember.id, memberUpdates, undefined, fullPhone);
+
+      // Step 3: Children updates with explicit phone
       const verifiedIds = getVerifiedMemberIds();
       for (const [childId, cDate] of Object.entries(childrenDates)) {
         if (cDate.year && !verifiedIds.has(childId)) {
           const childDateStr = `${cDate.year}/${cDate.month || "1"}/${cDate.day || "1"}`;
-          await updateMember(childId, { birth_year: childDateStr });
+          await updateMember(childId, { birth_year: childDateStr }, undefined, fullPhone);
         }
       }
 
