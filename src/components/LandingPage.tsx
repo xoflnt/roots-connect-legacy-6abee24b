@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo, useEffect, useCallback } from "react";
-import { createPortal } from "react-dom";
+
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, TreePine, ChevronDown, Users, Layers, Crown, User, UserRound, Heart, Quote, Send, BookOpen, Shield, ScrollText, Smartphone, Share, BadgeCheck, Scale, BookOpenText, Map as MapIcon, BookMarked, AlignJustify, ChevronLeft, Compass, GitBranch, Download, Check, Share2, AlertTriangle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -127,8 +127,6 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
   const [aboutOpen, setAboutOpen] = useState(false);
   const [showNasabSheet, setShowNasabSheet] = useState(false);
   const [nasabQuery, setNasabQuery] = useState("");
-  const guestSearchRef = useRef<HTMLDivElement>(null);
-  const loggedSearchRef = useRef<HTMLDivElement>(null);
   const stats = useMemo(computeStats, [dataReady]);
   const navigate = useNavigate();
   const { currentUser } = useAuth();
@@ -183,27 +181,25 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
       <OnboardingModal forceOpen={forceOnboarding} />
 
       {/* ─── Hero with liquid glass ─── */}
-      <div className="relative overflow-hidden">
-        {/* Background image */}
-        <picture>
-          <source media="(max-width: 768px)" srcSet="/images/hero-bg-mobile.jpg" />
-          <img
-            src="/images/hero-bg.jpg"
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover object-top pointer-events-none select-none"
+      <div className="relative overflow-x-hidden">
+        {/* Background image + overlays (clipped container) */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <picture>
+            <source media="(max-width: 768px)" srcSet="/images/hero-bg-mobile.jpg" />
+            <img
+              src="/images/hero-bg.jpg"
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover object-top select-none"
+            />
+          </picture>
+          <div className="absolute inset-0 dark:bg-black/50 bg-transparent" />
+          <div
+            className="absolute inset-0"
+            style={{
+              background: 'linear-gradient(to bottom, rgba(15,42,30,0.45) 0%, rgba(15,42,30,0.35) 40%, rgba(15,42,30,0.55) 75%, hsl(var(--background)) 100%)',
+            }}
           />
-        </picture>
-
-        {/* Dark mode overlay */}
-        <div className="absolute inset-0 dark:bg-black/50 bg-transparent pointer-events-none" />
-
-        {/* Dark gradient overlay */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background: 'linear-gradient(to bottom, rgba(15,42,30,0.45) 0%, rgba(15,42,30,0.35) 40%, rgba(15,42,30,0.55) 75%, hsl(var(--background)) 100%)',
-          }}
-        />
+        </div>
 
         {/* Hero content */}
         <section className="relative z-10 flex flex-col items-center justify-center px-4 text-center pb-4" style={{ paddingTop: "max(3rem, calc(env(safe-area-inset-top) + 1rem))" }}>
@@ -338,7 +334,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
               </h2>
 
               {/* Guest search */}
-              <div ref={guestSearchRef} className="relative">
+              <div className="relative">
                 <div className="relative">
                   <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/70 pointer-events-none" />
                   <Input
@@ -350,30 +346,18 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                     className="pr-12 pl-4 h-14 text-base rounded-2xl backdrop-blur-md bg-white/15 border border-white/30 text-white placeholder:text-white/60 shadow-lg focus:ring-2 focus:ring-accent"
                   />
                 </div>
-                {showingResults && guestSearchRef.current && createPortal(
+                {showingResults && (
                   <div
+                    className="absolute top-full left-0 right-0 mt-2 rounded-2xl overflow-hidden shadow-2xl border border-border max-h-80 overflow-y-auto"
                     dir="rtl"
-                    style={{
-                      position: 'fixed',
-                      top: guestSearchRef.current.getBoundingClientRect().bottom + 4,
-                      left: guestSearchRef.current.getBoundingClientRect().left,
-                      width: guestSearchRef.current.getBoundingClientRect().width,
-                      zIndex: 99999,
-                      backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '16px',
-                      overflow: 'hidden',
-                      boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
-                      maxHeight: '320px',
-                      overflowY: 'auto',
-                    }}
+                    style={{ zIndex: 9999, backgroundColor: 'hsl(var(--card))' }}
                   >
                     {filtered.map((m) => {
                       const subtitle = getMemberSubtitle(m);
                       return (
                         <button
                           key={m.id}
-                          className="w-full text-right px-4 py-3 text-foreground hover:bg-muted cursor-pointer border-b border-border last:border-0"
+                          className="w-full text-right px-4 py-3 hover:bg-muted cursor-pointer border-b border-border last:border-0"
                           style={{ minHeight: 48, backgroundColor: 'hsl(var(--card))', color: 'hsl(var(--foreground))' }}
                           onMouseDown={() => { onSearchSelect(m.id); setQuery(m.name); setOpen(false); }}
                         >
@@ -382,8 +366,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                         </button>
                       );
                     })}
-                  </div>,
-                  document.body
+                  </div>
                 )}
               </div>
 
@@ -463,7 +446,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         {/* Logged-in search inside glass area */}
         {currentUser && (
           <section className="relative z-10 px-4 pb-4">
-            <div ref={loggedSearchRef} className="max-w-lg mx-auto relative">
+            <div className="max-w-lg mx-auto relative">
               <div className="relative">
                 <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/70 pointer-events-none" />
                 <Input
@@ -475,30 +458,18 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                   className="pr-12 pl-4 h-12 text-base rounded-2xl backdrop-blur-md bg-white/15 border border-white/30 text-white placeholder:text-white/60 shadow-lg focus:ring-2 focus:ring-accent"
                 />
               </div>
-              {showingResults && loggedSearchRef.current && createPortal(
+              {showingResults && (
                 <div
+                  className="absolute top-full left-0 right-0 mt-2 rounded-2xl overflow-hidden shadow-2xl border border-border max-h-80 overflow-y-auto"
                   dir="rtl"
-                  style={{
-                    position: 'fixed',
-                    top: loggedSearchRef.current.getBoundingClientRect().bottom + 4,
-                    left: loggedSearchRef.current.getBoundingClientRect().left,
-                    width: loggedSearchRef.current.getBoundingClientRect().width,
-                    zIndex: 99999,
-                    backgroundColor: 'hsl(var(--card))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '16px',
-                    overflow: 'hidden',
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
-                    maxHeight: '320px',
-                    overflowY: 'auto',
-                  }}
+                  style={{ zIndex: 9999, backgroundColor: 'hsl(var(--card))' }}
                 >
                   {filtered.map((m) => {
                     const subtitle = getMemberSubtitle(m);
                     return (
                       <button
                         key={m.id}
-                        className="w-full text-right px-4 py-3 text-foreground hover:bg-muted cursor-pointer border-b border-border last:border-0"
+                        className="w-full text-right px-4 py-3 hover:bg-muted cursor-pointer border-b border-border last:border-0"
                         style={{ minHeight: 48, backgroundColor: 'hsl(var(--card))', color: 'hsl(var(--foreground))' }}
                         onMouseDown={() => { onSearchSelect(m.id); setQuery(m.name); setOpen(false); }}
                       >
@@ -507,8 +478,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                       </button>
                     );
                   })}
-                </div>,
-                document.body
+                </div>
               )}
             </div>
           </section>
@@ -522,8 +492,8 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         />
         {/* SVG wave */}
         <div className="absolute bottom-0 left-0 right-0 overflow-hidden z-10">
-          <svg viewBox="0 0 1440 60" className="w-full h-8 fill-background" preserveAspectRatio="none">
-            <path d="M0,30 C480,60 960,0 1440,30 L1440,60 L0,60 Z" />
+          <svg viewBox="0 0 1440 60" className="w-full h-10 fill-background" preserveAspectRatio="none">
+            <path d="M0,0 C240,60 480,60 720,30 C960,0 1200,0 1440,30 L1440,60 L0,60 Z" />
           </svg>
         </div>
       </div>
