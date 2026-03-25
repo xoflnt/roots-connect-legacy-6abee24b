@@ -173,7 +173,16 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
       <OnboardingModal forceOpen={forceOnboarding} />
 
       {/* ─── 1. Hero (compact) ─── */}
-      <section className="relative flex flex-col items-center justify-center px-4 text-center pb-4" style={{ paddingTop: "max(3rem, calc(env(safe-area-inset-top) + 1rem))" }}>
+      <section
+        className="relative flex flex-col items-center justify-center px-4 text-center pb-4"
+        style={{
+          paddingTop: "max(3rem, calc(env(safe-area-inset-top) + 1rem))",
+          backgroundImage: 'url(/images/hero-bg.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        <div className="absolute inset-0 bg-background/75" />
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-accent to-transparent" />
 
         {/* Top-left: Theme + Font */}
