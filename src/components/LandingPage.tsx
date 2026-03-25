@@ -174,12 +174,13 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
 
       {/* ─── 1. Hero (compact) ─── */}
       <section
-        className="relative flex flex-col items-center justify-center px-4 text-center pb-4 overflow-hidden bg-background"
+        className="relative flex flex-col items-center justify-center px-4 text-center pb-4 overflow-hidden min-h-[45vh]"
         style={{
           paddingTop: "max(3rem, calc(env(safe-area-inset-top) + 1rem))",
         }}
       >
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-accent to-transparent" />
+        <img src="/images/hero-bg.jpg" alt="" className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none" />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(27,84,56,0.55) 0%, transparent 50%, var(--background) 100%)' }} />
 
         {/* Top-left: Theme + Font */}
         <div className="absolute left-4 z-30 flex items-center gap-1.5" style={{ top: "max(1rem, env(safe-area-inset-top))" }}>
@@ -191,7 +192,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
           <div className="absolute right-4 z-30" style={{ top: "max(1rem, env(safe-area-inset-top))" }}>
             <button
               onClick={() => navigate("/admin")}
-              className="h-9 w-9 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 flex items-center justify-center transition-colors"
+              className="h-9 w-9 rounded-lg text-white/70 hover:text-white hover:bg-white/10 flex items-center justify-center transition-colors"
               aria-label="لوحة الإدارة"
             >
               <Shield className="h-5 w-5" />
@@ -200,31 +201,20 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         )}
 
         <motion.div
-          className="max-w-lg mx-auto space-y-2 w-full"
+          className="max-w-lg mx-auto space-y-2 w-full relative z-10"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
-          <TreePine className="h-10 w-10 text-primary mx-auto" />
-          <h1 className="text-2xl font-extrabold text-primary leading-tight">
+          <TreePine className="h-10 w-10 text-white mx-auto" style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))' }} />
+          <h1 className="text-2xl font-extrabold text-white leading-tight" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.3)' }}>
             بـوابـة تـراث الخـنـيـنـي
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-white/80" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.3)' }}>
             فرع الزلفي
           </p>
-          <div className="h-px bg-gradient-to-r from-transparent via-accent to-transparent max-w-xs mx-auto" />
+          <div className="h-px bg-gradient-to-r from-transparent via-white/40 to-transparent max-w-xs mx-auto" />
         </motion.div>
-
-        <img
-          src="/images/hero-bg.jpg"
-          alt=""
-          className="absolute bottom-0 left-0 right-0 w-full h-64 sm:h-80 md:h-96 object-cover object-center opacity-60 pointer-events-none select-none"
-          style={{
-            maskImage: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.8) 40%, black 70%)',
-            WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.8) 40%, black 70%)',
-          }}
-        />
-      </section>
 
       {/* ─── 2A. Personal Dashboard (logged-in) ─── */}
       {currentUser && dashboardData && (
