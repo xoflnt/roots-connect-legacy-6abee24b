@@ -1,36 +1,54 @@
 
 
-# Fix Search Results Dropdown — Solid Background
-
-## Problem
-Both search dropdowns (guest line 341, logged-in line 449) already use `bg-card` which should be opaque, but the parent wrapper's `z-index` and the glass hero behind them may cause visual blending on some devices.
+# Fix Search Dropdown Z-Index & Dark Mode Hero
 
 ## Changes — Single file: `src/components/LandingPage.tsx`
 
-### Fix 1: Guest search wrapper (line 328)
-Change `z-20` → `z-40` on the wrapper div so the dropdown clears all hero glass elements.
+### FIX 1: Search Results Z-Index (4 locations)
 
-### Fix 2: Guest search dropdown (line 341)
-Add `shadow-2xl` (already has `shadow-xl`) and explicit solid background to ensure opacity:
-```
-className="absolute top-full mt-2 w-full bg-card border border-border rounded-2xl shadow-2xl z-50 overflow-hidden max-h-72 overflow-y-auto"
-style={{ backgroundColor: 'var(--card)' }}
-```
-The inline `backgroundColor` with CSS variable guarantees the card color is applied as a solid layer even if Tailwind's `bg-card` gets overridden by parent glass styles.
+**Guest search wrapper (line 328):** Wrap with `style={{ zIndex: 9999 }}`
 
-### Fix 3: Logged-in search wrapper (line 436)
-Change `z-20` → `z-40`.
-
-### Fix 4: Logged-in search dropdown (line 449)
-Same treatment as guest dropdown — add `shadow-2xl` and inline `backgroundColor`:
+**Guest dropdown (line 341):** Add inline `zIndex: 9999` and `backgroundColor` on each result item:
+```tsx
+<div className="absolute top-full left-0 right-0 mt-1 rounded-2xl overflow-hidden shadow-2xl border border-border"
+  style={{ zIndex: 9999, backgroundColor: 'hsl(var(--card))' }}>
+  {filtered.map((m) => (
+    <button style={{ minHeight: 48, backgroundColor: 'hsl(var(--card))' }}
+      className="w-full text-right px-4 py-3 text-foreground hover:bg-muted cursor-pointer border-b border-border last:border-0">
 ```
-className="absolute top-full mt-2 w-full bg-card border border-border rounded-2xl shadow-2xl z-50 overflow-hidden max-h-72 overflow-y-auto"
-style={{ backgroundColor: 'var(--card)' }}
+
+**Logged-in search wrapper (line 436):** Same `style={{ zIndex: 9999 }}`
+
+**Logged-in dropdown (line 449):** Same treatment as guest dropdown.
+
+### FIX 2: Dark Mode Hero (3 locations)
+
+**Add dark mode overlay (after line 185, after `</picture>`):**
+```tsx
+<div className="absolute inset-0 dark:bg-black/50 bg-transparent pointer-events-none" />
+```
+
+**Main gradient overlay (line 191):** Replace hardcoded `rgba(246,243,238,1)` with CSS variable:
+```tsx
+background: `linear-gradient(to bottom,
+  rgba(15,42,30,0.45) 0%,
+  transparent 40%,
+  rgba(15,42,30,0.55) 75%,
+  hsl(var(--background)) 100%)`
+```
+
+**Wave fade gradient (line 473):** Same fix — replace hardcoded light color:
+```tsx
+background: `linear-gradient(to bottom,
+  transparent 0%,
+  hsl(var(--background) / 0.6) 50%,
+  hsl(var(--background)) 100%)`
 ```
 
 ## Summary
-- Line 328: `z-20` → `z-40`
-- Line 341: `shadow-xl` → `shadow-2xl`, add inline `style`
-- Line 436: `z-20` → `z-40`
-- Line 449: `shadow-xl` → `shadow-2xl`, add inline `style`
+- Lines 185-186: Insert dark mode overlay div
+- Line 191: Use `hsl(var(--background))` instead of `rgba(246,243,238,1)`
+- Lines 328, 341: Guest search — zIndex 9999, solid bg on items
+- Lines 436, 449: Logged-in search — same treatment
+- Line 473: Wave fade gradient — use CSS variable
 
