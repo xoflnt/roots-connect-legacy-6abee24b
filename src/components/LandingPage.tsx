@@ -214,11 +214,11 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
-          <TreePine className="h-10 w-10 text-white mx-auto" style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))' }} />
-          <h1 className="text-2xl font-extrabold text-white leading-tight" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.3)' }}>
+          <TreePine className="h-10 w-10 text-white mx-auto" style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.4))' }} />
+          <h1 className="text-2xl font-extrabold text-white leading-tight" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.4)' }}>
             بـوابـة تـراث الخـنـيـنـي
           </h1>
-          <p className="text-sm text-white/80" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.3)' }}>
+          <p className="text-sm text-white/80" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.4)' }}>
             فرع الزلفي
           </p>
           <div className="h-px bg-gradient-to-r from-transparent via-white/40 to-transparent max-w-xs mx-auto" />
