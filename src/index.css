@@ -179,6 +179,7 @@
   * {
     @apply border-border;
     touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
 
   html {
@@ -198,11 +199,54 @@
     opacity: 1;
   }
 
+  nav, button, [role="button"], .card-interactive {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  img {
+    -webkit-touch-callout: none;
+  }
+
   /* Allow pinch-to-zoom on family tree canvas */
   .react-flow,
   .react-flow * {
     touch-action: auto !important;
   }
+}
+
+/* Prevent pull-to-refresh in standalone mode */
+@media (display-mode: standalone) {
+  html, body {
+    overscroll-behavior: none;
+  }
+}
+
+/* View Transitions */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root) {
+  animation: vt-fade-out 200ms ease-out;
+}
+
+::view-transition-new(root) {
+  animation: vt-fade-in 200ms ease-in;
+}
+
+@keyframes vt-fade-out {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(-20px); }
+}
+
+@keyframes vt-fade-in {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*) { animation: none !important; }
 }
 
 @layer utilities {

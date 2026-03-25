@@ -6,10 +6,14 @@ import { MemberListPage } from "@/components/admin/members/MemberListPage";
 import { RequestsPage } from "@/components/admin/requests/RequestsPage";
 import { UsersPage } from "@/components/admin/users/UsersPage";
 import { DataHealthPage } from "@/components/admin/data-health/DataHealthPage";
+import { useRequests } from "@/hooks/admin/useRequests";
+import { usePWABadge } from "@/hooks/usePWABadge";
 import type { AdminSection } from "@/types/admin";
 
 function AdminContent() {
   const [section, setSection] = useState<AdminSection>("dashboard");
+  const { pendingCount } = useRequests();
+  usePWABadge(pendingCount);
 
   const handleLogout = () => {
     sessionStorage.removeItem("khunaini-admin-token");
