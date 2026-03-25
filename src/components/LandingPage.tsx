@@ -243,11 +243,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
               {/* Top row: avatar + name + badges */}
               <div className="flex items-center gap-3">
                 <div
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                    dashboardData.member.gender === "F"
-                      ? "bg-female-light text-female"
-                      : "bg-male-light text-male"
-                  }`}
+                  className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-white/15 text-white"
                 >
                   {dashboardData.member.gender === "F" ? <UserRound className="h-5 w-5" /> : <User className="h-5 w-5" />}
                 </div>
