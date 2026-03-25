@@ -1,36 +1,44 @@
 
 
-# Redesign Hero as Cinematic Landscape Header
+# Add Mobile Hero Background + Wave Edge
 
-## Single file: `src/components/LandingPage.tsx`
+## Files
+- **Copy**: `user-uploads://IMG_8307.jpeg` → `public/images/hero-bg-mobile.jpg`
+- **Edit**: `src/components/LandingPage.tsx` (lines 176-218)
 
-### Change 1: Hero section wrapper (line 176-181)
-- Remove `bg-background` from className
-- Add `min-h-[45vh]` for taller hero
-- Keep `overflow-hidden`, `relative`, flex centering, padding
+## Changes in `src/components/LandingPage.tsx`
 
-### Change 2: Replace image + add overlays (lines 218-226)
-Remove current bottom-positioned `<img>` with mask. Replace with:
+### Line 177 — Hero section classes
+Replace `min-h-[45vh]` with `min-h-[55vh] md:min-h-[50vh]`
 
-1. **Full-bleed background image** right after the section opens (before controls):
+### Lines 182-183 — Replace image + overlay
+Replace the current `<img>` and gradient `<div>` with:
+
+1. **`<picture>` element** serving portrait image on mobile:
 ```tsx
-<img src="/images/hero-bg.jpg" alt="" className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none" />
+<picture>
+  <source media="(max-width: 768px)" srcSet="/images/hero-bg-mobile.jpg" />
+  <img src="/images/hero-bg.jpg" alt="" className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none" />
+</picture>
 ```
 
-2. **Gradient overlay** for text readability + bottom fade:
+2. **Updated gradient overlay** with explicit sand-color bottom fade:
 ```tsx
-<div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(27,84,56,0.55) 0%, transparent 50%, var(--background) 100%)' }} />
+<div className="absolute inset-0" style={{
+  background: 'linear-gradient(to bottom, rgba(27,84,56,0.4) 0%, transparent 40%, rgba(246,243,238,0.8) 80%, rgba(246,243,238,1) 100%)'
+}} />
 ```
 
-### Change 3: Restyle title text (lines 208-215)
-- `TreePine`: `text-primary` → `text-white` + textShadow
-- `h1`: `text-primary` → `text-white` + textShadow
-- `p` ("فرع الزلفي"): `text-muted-foreground` → `text-white/80` + textShadow
-- All get `style={{ textShadow: '0 2px 12px rgba(0,0,0,0.3)' }}`
+3. **SVG wave** at bottom for organic edge:
+```tsx
+<div className="absolute bottom-0 left-0 right-0 w-full overflow-hidden leading-none z-10">
+  <svg viewBox="0 0 1440 80" xmlns="http://www.w3.org/2000/svg"
+    className="w-full h-16 sm:h-20 fill-background" preserveAspectRatio="none">
+    <path d="M0,40 C360,80 1080,0 1440,40 L1440,80 L0,80 Z" />
+  </svg>
+</div>
+```
 
-### Change 4: Remove top accent line (line 182)
-The green gradient line is no longer needed with the cinematic header.
-
-### What stays unchanged
-Everything below line 227 (search bar, dashboard, buttons grid) remains exactly as-is on `bg-background`.
+### Lines 203-217 — Title block
+Add `mt-auto mb-6` to the `motion.div` className to push title toward bottom. Increase text shadow intensity to `rgba(0,0,0,0.4)`.
 
