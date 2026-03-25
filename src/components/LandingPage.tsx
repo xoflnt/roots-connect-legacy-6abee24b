@@ -174,13 +174,21 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
 
       {/* ─── 1. Hero (compact) ─── */}
       <section
-        className="relative flex flex-col items-center justify-center px-4 text-center pb-4 overflow-hidden min-h-[45vh]"
+        className="relative flex flex-col items-center justify-center px-4 text-center pb-4 overflow-hidden min-h-[55vh] md:min-h-[50vh]"
         style={{
           paddingTop: "max(3rem, calc(env(safe-area-inset-top) + 1rem))",
         }}
       >
-        <img src="/images/hero-bg.jpg" alt="" className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none" />
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(27,84,56,0.55) 0%, transparent 50%, var(--background) 100%)' }} />
+        <picture>
+          <source media="(max-width: 768px)" srcSet="/images/hero-bg-mobile.jpg" />
+          <img src="/images/hero-bg.jpg" alt="" className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none" />
+        </picture>
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(27,84,56,0.4) 0%, transparent 40%, rgba(246,243,238,0.8) 80%, rgba(246,243,238,1) 100%)' }} />
+        <div className="absolute bottom-0 left-0 right-0 w-full overflow-hidden leading-none z-10">
+          <svg viewBox="0 0 1440 80" xmlns="http://www.w3.org/2000/svg" className="w-full h-16 sm:h-20 fill-background" preserveAspectRatio="none">
+            <path d="M0,40 C360,80 1080,0 1440,40 L1440,80 L0,80 Z" />
+          </svg>
+        </div>
 
         {/* Top-left: Theme + Font */}
         <div className="absolute left-4 z-30 flex items-center gap-1.5" style={{ top: "max(1rem, env(safe-area-inset-top))" }}>
