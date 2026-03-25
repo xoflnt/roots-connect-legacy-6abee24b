@@ -174,13 +174,21 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
 
       {/* ─── 1. Hero (compact) ─── */}
       <section
-        className="relative flex flex-col items-center justify-center px-4 text-center pb-4 overflow-hidden min-h-[45vh]"
+        className="relative flex flex-col items-center justify-center px-4 text-center pb-4 overflow-hidden min-h-[55vh] md:min-h-[50vh]"
         style={{
           paddingTop: "max(3rem, calc(env(safe-area-inset-top) + 1rem))",
         }}
       >
-        <img src="/images/hero-bg.jpg" alt="" className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none" />
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(27,84,56,0.55) 0%, transparent 50%, var(--background) 100%)' }} />
+        <picture>
+          <source media="(max-width: 768px)" srcSet="/images/hero-bg-mobile.jpg" />
+          <img src="/images/hero-bg.jpg" alt="" className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none" />
+        </picture>
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(27,84,56,0.4) 0%, transparent 40%, rgba(246,243,238,0.8) 80%, rgba(246,243,238,1) 100%)' }} />
+        <div className="absolute bottom-0 left-0 right-0 w-full overflow-hidden leading-none z-10">
+          <svg viewBox="0 0 1440 80" xmlns="http://www.w3.org/2000/svg" className="w-full h-16 sm:h-20 fill-background" preserveAspectRatio="none">
+            <path d="M0,40 C360,80 1080,0 1440,40 L1440,80 L0,80 Z" />
+          </svg>
+        </div>
 
         {/* Top-left: Theme + Font */}
         <div className="absolute left-4 z-30 flex items-center gap-1.5" style={{ top: "max(1rem, env(safe-area-inset-top))" }}>
@@ -201,16 +209,16 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         )}
 
         <motion.div
-          className="max-w-lg mx-auto space-y-2 w-full relative z-10"
+          className="max-w-lg mx-auto space-y-2 w-full relative z-10 mt-auto mb-6"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
-          <TreePine className="h-10 w-10 text-white mx-auto" style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))' }} />
-          <h1 className="text-2xl font-extrabold text-white leading-tight" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.3)' }}>
+          <TreePine className="h-10 w-10 text-white mx-auto" style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.4))' }} />
+          <h1 className="text-2xl font-extrabold text-white leading-tight" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.4)' }}>
             بـوابـة تـراث الخـنـيـنـي
           </h1>
-          <p className="text-sm text-white/80" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.3)' }}>
+          <p className="text-sm text-white/80" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.4)' }}>
             فرع الزلفي
           </p>
           <div className="h-px bg-gradient-to-r from-transparent via-white/40 to-transparent max-w-xs mx-auto" />
