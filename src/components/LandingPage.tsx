@@ -184,11 +184,14 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
           />
         </picture>
 
+        {/* Dark mode overlay */}
+        <div className="absolute inset-0 dark:bg-black/50 bg-transparent pointer-events-none" />
+
         {/* Dark gradient overlay */}
         <div
           className="absolute inset-0"
           style={{
-            background: 'linear-gradient(to bottom, rgba(15,42,30,0.45) 0%, rgba(15,42,30,0.35) 40%, rgba(15,42,30,0.55) 75%, rgba(246,243,238,1) 100%)',
+            background: 'linear-gradient(to bottom, rgba(15,42,30,0.45) 0%, rgba(15,42,30,0.35) 40%, rgba(15,42,30,0.55) 75%, hsl(var(--background)) 100%)',
           }}
         />
 
@@ -325,7 +328,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
               </h2>
 
               {/* Guest search */}
-              <div className="relative z-40">
+              <div className="relative" style={{ zIndex: 9999 }}>
                 <div className="relative">
                   <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/70 pointer-events-none" />
                   <Input
@@ -338,14 +341,15 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                   />
                 </div>
                 {showingResults && (
-                  <div className="absolute top-full mt-2 w-full bg-card border border-border rounded-2xl shadow-2xl z-50 overflow-hidden max-h-72 overflow-y-auto" style={{ backgroundColor: 'hsl(var(--card))' }}>
+                  <div className="absolute top-full left-0 right-0 mt-1 rounded-2xl overflow-hidden shadow-2xl border border-border"
+                    style={{ zIndex: 9999, backgroundColor: 'hsl(var(--card))' }}>
                     {filtered.map((m) => {
                       const subtitle = getMemberSubtitle(m);
                       return (
                         <button
                           key={m.id}
-                          className="w-full text-right px-5 py-3 text-foreground hover:bg-muted transition-colors border-b border-border/30 last:border-b-0"
-                          style={{ minHeight: 48 }}
+                          className="w-full text-right px-4 py-3 text-foreground hover:bg-muted cursor-pointer border-b border-border last:border-0"
+                          style={{ minHeight: 48, backgroundColor: 'hsl(var(--card))' }}
                           onMouseDown={() => { onSearchSelect(m.id); setQuery(m.name); setOpen(false); }}
                         >
                           <span className="font-bold block">{getLineageLabel(m)}</span>
@@ -433,7 +437,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         {/* Logged-in search inside glass area */}
         {currentUser && (
           <section className="relative z-10 px-4 pb-4">
-            <div className="max-w-lg mx-auto relative z-40">
+            <div className="max-w-lg mx-auto relative" style={{ zIndex: 9999 }}>
               <div className="relative">
                 <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/70 pointer-events-none" />
                 <Input
@@ -446,14 +450,15 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                 />
               </div>
               {showingResults && (
-                <div className="absolute top-full mt-2 w-full bg-card border border-border rounded-2xl shadow-2xl z-50 overflow-hidden max-h-72 overflow-y-auto" style={{ backgroundColor: 'hsl(var(--card))' }}>
+                <div className="absolute top-full left-0 right-0 mt-1 rounded-2xl overflow-hidden shadow-2xl border border-border"
+                  style={{ zIndex: 9999, backgroundColor: 'hsl(var(--card))' }}>
                   {filtered.map((m) => {
                     const subtitle = getMemberSubtitle(m);
                     return (
                       <button
                         key={m.id}
-                        className="w-full text-right px-5 py-3 text-foreground hover:bg-muted transition-colors border-b border-border/30 last:border-b-0"
-                        style={{ minHeight: 48 }}
+                        className="w-full text-right px-4 py-3 text-foreground hover:bg-muted cursor-pointer border-b border-border last:border-0"
+                        style={{ minHeight: 48, backgroundColor: 'hsl(var(--card))' }}
                         onMouseDown={() => { onSearchSelect(m.id); setQuery(m.name); setOpen(false); }}
                       >
                         <span className="font-bold block">{getLineageLabel(m)}</span>
@@ -470,7 +475,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         {/* Gradient fade before wave */}
         <div className="absolute bottom-0 left-0 right-0 h-32 z-[9]"
           style={{
-            background: 'linear-gradient(to bottom, transparent 0%, rgba(246,243,238,0.6) 50%, rgba(246,243,238,1) 100%)'
+            background: 'linear-gradient(to bottom, transparent 0%, hsl(var(--background) / 0.6) 50%, hsl(var(--background)) 100%)'
           }}
         />
         {/* SVG wave */}
