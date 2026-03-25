@@ -148,6 +148,13 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
     };
   }, []);
 
+  // Close search on scroll so portaled dropdown doesn't drift
+  useEffect(() => {
+    const h = () => setOpen(false);
+    window.addEventListener('scroll', h, true);
+    return () => window.removeEventListener('scroll', h, true);
+  }, []);
+
   const pillarStats = useMemo(() => PILLARS.map((p) => ({ ...p, descendants: getDescendantCount(p.id) })), [dataReady]);
 
   // Dashboard data for logged-in user
