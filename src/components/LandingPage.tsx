@@ -218,10 +218,10 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         <img
           src="/images/hero-bg.jpg"
           alt=""
-          className="absolute bottom-0 left-0 right-0 w-full h-48 object-cover object-top opacity-40 pointer-events-none select-none"
+          className="absolute bottom-0 left-0 right-0 w-full h-56 sm:h-72 md:h-80 object-cover object-top opacity-50 pointer-events-none select-none"
           style={{
-            maskImage: 'linear-gradient(to bottom, transparent 0%, black 60%)',
-            WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 60%)',
+            maskImage: 'linear-gradient(to bottom, transparent 0%, black 50%)',
+            WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 50%)',
           }}
         />
       </section>
