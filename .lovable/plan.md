@@ -1,40 +1,36 @@
 
 
-# Build Data Health Admin Section
+# Add Hero Background Image
 
-## Files to Create
+## Changes
 
-### 1. `src/hooks/admin/useDataHealth.ts`
-Custom hook that runs 5 client-side checks against `getAllMembers()`:
-- **Missing birth year** (warning) — members without `birth_year`
-- **No spouse** (info) — living males at depth ≥ 3 without spouses
-- **Orphaned father_id** (critical) — `father_id` points to nonexistent member
-- **Duplicate names** (warning) — same `name` + `father_id` combo
-- **Missing mother** (info) — no `والدت` pattern in notes
+### 1. Copy image to `public/images/hero-bg.jpg`
+Copy the uploaded watercolor desert image to the public directory.
 
-Computes a health score (0-100) weighted by severity. Returns `{ health, isLoading }`.
+### 2. Modify `src/components/LandingPage.tsx` (line 176)
 
-### 2. `src/components/admin/data-health/HealthScoreRing.tsx`
-SVG circular progress ring (120px). Color shifts green/amber/red based on score. Center shows `toArabicNum(score)٪`.
+Current hero section opening tag:
+```tsx
+<section className="relative flex flex-col items-center justify-center px-4 text-center pb-4" style={{ paddingTop: "max(3rem, calc(env(safe-area-inset-top) + 1rem))" }}>
+```
 
-### 3. `src/components/admin/data-health/DataHealthPage.tsx`
-Main page with:
-- Score ring at top
-- 5 collapsible category cards (using shadcn Collapsible), each showing severity icon, label, count badge
-- Expanded view lists affected members (name + branch badge), capped at 20 with overflow text
-- "إعادة الفحص" refresh button
-- RTL, all numbers via `toArabicNum`
+Change to add background image in the inline style and keep `relative` positioning (already present). Then add an overlay div right after the opening tag:
 
-## Files to Modify
+```tsx
+<section
+  className="relative flex flex-col items-center justify-center px-4 text-center pb-4"
+  style={{
+    paddingTop: "max(3rem, calc(env(safe-area-inset-top) + 1rem))",
+    backgroundImage: 'url(/images/hero-bg.jpg)',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+  }}
+>
+  <div className="absolute inset-0 bg-background/75" />
+  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-accent to-transparent" />
+```
 
-### 4. `src/pages/Admin.tsx`
-- Add import for `DataHealthPage`
-- Add `{section === "data-health" && <DataHealthPage />}`
-- Add `"data-health"` to the fallback exclusion list
+Remove the old gradient line (line 177) since it's now included after the overlay. All existing children already sit above the overlay due to the section's stacking context.
 
-### 5. `src/components/admin/AdminSidebar.tsx`
-Uncomment the `data-health` nav item only (keep content/analytics/settings commented).
-
-### 6. `src/components/admin/AdminBottomBar.tsx`
-Add `data-health` tab with `Activity` icon and label "صحة البيانات" to `MAIN_TABS` (now 5 tabs total — fits mobile bar).
+**Files**: Copy `user-uploads://IMG_8303.jpeg` → `public/images/hero-bg.jpg`, edit `src/components/LandingPage.tsx` (lines 176-177).
 
