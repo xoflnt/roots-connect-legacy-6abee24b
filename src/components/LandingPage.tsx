@@ -243,11 +243,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
               {/* Top row: avatar + name + badges */}
               <div className="flex items-center gap-3">
                 <div
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                    dashboardData.member.gender === "F"
-                      ? "bg-female-light text-female"
-                      : "bg-male-light text-male"
-                  }`}
+                  className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-white/15 text-white"
                 >
                   {dashboardData.member.gender === "F" ? <UserRound className="h-5 w-5" /> : <User className="h-5 w-5" />}
                 </div>
@@ -258,13 +254,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                   </div>
                   <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                     {dashboardData.branch && (
-                      <span
-                        className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                        style={{
-                          backgroundColor: dashboardData.branchStyle?.bg,
-                          color: dashboardData.branchStyle?.text,
-                        }}
-                      >
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/20 text-white border border-white/30">
                         {dashboardData.branch.label}
                       </span>
                     )}
@@ -440,50 +430,57 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
           </div>
         </section>
 
-        {/* SVG wave at bottom */}
+        {/* Logged-in search inside glass area */}
+        {currentUser && (
+          <section className="relative z-10 px-4 pb-4">
+            <div className="max-w-lg mx-auto relative z-20">
+              <div className="relative">
+                <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/70 pointer-events-none" />
+                <Input
+                  placeholder="ابحث عن أي فرد في العائلة..."
+                  value={query}
+                  onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
+                  onFocus={() => query.trim() && setOpen(true)}
+                  onBlur={() => setTimeout(() => setOpen(false), 200)}
+                  className="pr-12 pl-4 h-12 text-base rounded-2xl backdrop-blur-md bg-white/15 border border-white/30 text-white placeholder:text-white/60 shadow-lg focus:ring-2 focus:ring-accent"
+                />
+              </div>
+              {showingResults && (
+                <div className="absolute top-full mt-2 w-full bg-card border border-border rounded-2xl shadow-xl z-50 overflow-hidden max-h-72 overflow-y-auto">
+                  {filtered.map((m) => {
+                    const subtitle = getMemberSubtitle(m);
+                    return (
+                      <button
+                        key={m.id}
+                        className="w-full text-right px-5 py-3 text-foreground hover:bg-muted transition-colors border-b border-border/30 last:border-b-0"
+                        style={{ minHeight: 48 }}
+                        onMouseDown={() => { onSearchSelect(m.id); setQuery(m.name); setOpen(false); }}
+                      >
+                        <span className="font-bold block">{getLineageLabel(m)}</span>
+                        {subtitle && <span className="text-xs text-muted-foreground">{subtitle}</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* Gradient fade before wave */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 z-[9]"
+          style={{
+            background: 'linear-gradient(to bottom, transparent 0%, rgba(246,243,238,0.6) 50%, rgba(246,243,238,1) 100%)'
+          }}
+        />
+        {/* SVG wave */}
         <div className="absolute bottom-0 left-0 right-0 overflow-hidden z-10">
-          <svg viewBox="0 0 1440 60" className="w-full h-12 fill-background" preserveAspectRatio="none">
+          <svg viewBox="0 0 1440 60" className="w-full h-8 fill-background" preserveAspectRatio="none">
             <path d="M0,30 C480,60 960,0 1440,30 L1440,60 L0,60 Z" />
           </svg>
         </div>
       </div>
 
-      {/* ─── 3. Search (logged-in only, below dashboard) ─── */}
-      {currentUser && (
-        <section className="py-4 px-4">
-          <div className="max-w-lg mx-auto relative z-20">
-            <div className="relative">
-              <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
-              <Input
-                placeholder="ابحث عن أي فرد في العائلة..."
-                value={query}
-                onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
-                onFocus={() => query.trim() && setOpen(true)}
-                onBlur={() => setTimeout(() => setOpen(false), 200)}
-                className="pr-12 pl-4 h-12 text-base rounded-2xl bg-card border-border shadow-sm focus:ring-2 focus:ring-accent placeholder:text-muted-foreground"
-              />
-            </div>
-            {showingResults && (
-              <div className="absolute top-full mt-2 w-full bg-card border border-border rounded-2xl shadow-xl z-50 overflow-hidden max-h-72 overflow-y-auto">
-                {filtered.map((m) => {
-                  const subtitle = getMemberSubtitle(m);
-                  return (
-                    <button
-                      key={m.id}
-                      className="w-full text-right px-5 py-3 text-foreground hover:bg-muted transition-colors border-b border-border/30 last:border-b-0"
-                      style={{ minHeight: 48 }}
-                      onMouseDown={() => { onSearchSelect(m.id); setQuery(m.name); setOpen(false); }}
-                    >
-                      <span className="font-bold block">{getLineageLabel(m)}</span>
-                      {subtitle && <span className="text-xs text-muted-foreground">{subtitle}</span>}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </section>
-      )}
 
       {/* ─── 4. كلمة الموثّق ─── */}
       <section className="py-6 px-4">
