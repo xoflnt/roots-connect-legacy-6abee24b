@@ -334,7 +334,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
               </h2>
 
               {/* Guest search */}
-              <div className="relative">
+              <div className="relative" style={{ position: 'relative', zIndex: 9999 }}>
                 <div className="relative">
                   <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/70 pointer-events-none" />
                   <Input
