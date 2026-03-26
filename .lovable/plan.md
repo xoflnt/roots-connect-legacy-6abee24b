@@ -1,63 +1,78 @@
 
 
-# Fix All PWA Issues
+# Fix Search Bar Visibility & Dropdown Stacking
 
-## Files to modify
+## Problem
+1. Search dropdown renders behind wave/gradient (z-[5] vs z-9999 — but hero `overflow-x-hidden` on line 184 may still clip)
+2. Search input blends into hero background
+3. Results need guaranteed solid background
 
-### 1. `vite.config.ts` — Icons, manifest fields, offline fallback
+## Changes — `src/components/LandingPage.tsx` + `src/index.css`
 
-**Separate maskable icons** (lines 81-83): Split combined `"any maskable"` into separate entries.
+### 1. Boost search wrapper z-index (both locations)
 
-**Add manifest fields** after line 72:
-- `id: '/?source=pwa'`
-- `screenshots` array with narrow form factor
-- `shortcuts` for search and tree views
+**Guest search (line 337):** Change `zIndex: 9999` → `zIndex: 99999`
 
-**Add offline fallback** in workbox config (after line 25):
+**Logged-in search (line 449):** Change `zIndex: 9999` → `zIndex: 99999`
+
+**Both dropdowns (lines 353, 465):** Change `zIndex: 9999` → `zIndex: 99999` and add full inline styles:
+```tsx
+style={{
+  position: 'absolute',
+  top: '100%',
+  left: 0,
+  right: 0,
+  zIndex: 99999,
+  backgroundColor: 'hsl(var(--card))',
+  border: '1px solid hsl(var(--border))',
+  borderRadius: '12px',
+  marginTop: '4px',
+  overflow: 'hidden',
+  boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+}}
 ```
-additionalManifestEntries: [
-  { url: '/offline.html', revision: '1' }
-],
+
+### 2. Search input glass styling (both inputs)
+
+**Guest input (line 346)** and **logged-in input (line 458):** Replace className/add inline style:
+```tsx
+className="pr-12 pl-4 h-14 text-base rounded-2xl hero-search"
+style={{
+  backgroundColor: 'rgba(255,255,255,0.25)',
+  backdropFilter: 'blur(12px)',
+  WebkitBackdropFilter: 'blur(12px)',
+  border: '1.5px solid rgba(255,255,255,0.6)',
+  color: 'white',
+  boxShadow: '0 2px 12px rgba(0,0,0,0.15)',
+}}
 ```
 
-### 2. `index.html` — Dark mode theme-color
+### 3. Result item solid background
 
-Replace single `<meta name="theme-color" content="#123026" />` with two media-query variants:
-- Light: `#123026`
-- Dark: `#0a1a10`
+Both result buttons (lines 360, 472) — update inline style:
+```tsx
+style={{
+  padding: '12px 16px',
+  cursor: 'pointer',
+  backgroundColor: 'hsl(var(--card))',
+  borderBottom: '1px solid hsl(var(--border))',
+  textAlign: 'right',
+  fontSize: '16px',
+  color: 'hsl(var(--foreground))',
+  minHeight: 48,
+}}
+```
 
-### 3. `src/index.css` — Native feel CSS
+### 4. Placeholder CSS in `src/index.css`
 
-Add to `@layer base` section:
-- `-webkit-tap-highlight-color: transparent` on `*`
-- `user-select: none` on `nav, button, .card-interactive`
-- `overscroll-behavior: none` in `@media (display-mode: standalone)`
-- `-webkit-touch-callout: none` on `img`
+Add under `@layer utilities`:
+```css
+.hero-search::placeholder {
+  color: rgba(255,255,255,0.7);
+}
+```
 
-Add view transition CSS:
-- `@view-transition { navigation: auto; }` with fade+slide keyframes
-- `prefers-reduced-motion` guard
-
-Note: `touch-action: manipulation` already exists on `*` (line 181).
-
-### 4. `src/hooks/usePWABadge.ts` — New file
-
-Create hook that calls `navigator.setAppBadge(count)` / `clearAppBadge()` based on a count parameter, with feature detection.
-
-### 5. `src/pages/Admin.tsx` — Use badge hook
-
-Import `usePWABadge` and `useRequests`. Call `usePWABadge(pendingCount)` inside `AdminContent` to show pending request count on the app icon.
-
-### 6. View Transitions in `src/App.tsx`
-
-This project uses `react-router-dom` with `<BrowserRouter>`. The CSS `@view-transition { navigation: auto }` rule handles MPA-style transitions automatically for supported browsers. No JS changes needed — the CSS alone enables it for browsers that support it, and it's ignored by others.
-
-## Summary of changes
-| File | Change |
-|------|--------|
-| `vite.config.ts` | Split maskable icons, add id/screenshots/shortcuts, add offline fallback |
-| `index.html` | Dark mode theme-color meta tag |
-| `src/index.css` | Native feel CSS + view transitions |
-| `src/hooks/usePWABadge.ts` | New file — app badge hook |
-| `src/pages/Admin.tsx` | Use badge hook with pending requests count |
+### Files
+- `src/components/LandingPage.tsx` — search input styling, dropdown z-index, result item styles
+- `src/index.css` — placeholder color rule
 
