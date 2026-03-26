@@ -117,6 +117,12 @@ const BRANCH_HEX: Record<string, string> = {
   '400': '#ea580c',
 };
 
+function getGenerationHex(depth: number): string {
+  if (depth <= 3) return '#D4A82B';
+  if (depth <= 6) return '#1B5438';
+  return '#2B5EA7';
+}
+
 const PILLAR_COLORS = [
   { bg: "bg-pillar-1", border: "border-pillar-1-border", icon: "text-pillar-1-text" },
   { bg: "bg-pillar-2", border: "border-pillar-2-border", icon: "text-pillar-2-text" },
@@ -191,10 +197,13 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         {/* Background image + overlays (clipped container) */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <picture>
-            <source media="(max-width: 768px)" srcSet="/images/hero-bg-mobile.jpg" />
+            <source media="(max-width: 768px)" srcSet="/images/hero-bg-mobile.webp" type="image/webp" />
+            <source srcSet="/images/hero-bg.webp" type="image/webp" />
             <img
               src="/images/hero-bg.jpg"
               alt=""
+              fetchPriority="high"
+              decoding="async"
               className="absolute inset-0 w-full h-full object-cover object-top select-none"
             />
           </picture>
@@ -270,20 +279,40 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                   <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                     {dashboardData.branch && (
                       <span
-                        className="text-[10px] font-bold px-3 py-0.5 rounded-full border"
+                        className="text-[10px] font-bold px-3 py-0.5 rounded-full"
                         style={{
-                          backgroundColor: `${BRANCH_HEX[dashboardData.branch.pillarId] || '#C9A84C'}33`,
-                          borderColor: `${BRANCH_HEX[dashboardData.branch.pillarId] || '#C9A84C'}66`,
+                          backgroundColor: `${BRANCH_HEX[dashboardData.branch.pillarId] || '#C9A84C'}55`,
+                          border: `1.5px solid ${BRANCH_HEX[dashboardData.branch.pillarId] || '#C9A84C'}99`,
                           color: 'white',
                           backdropFilter: 'blur(8px)',
                           WebkitBackdropFilter: 'blur(8px)',
-                          textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+                          textShadow: '0 1px 3px rgba(0,0,0,0.6)',
+                          fontWeight: '600',
                         }}
                       >
                         {dashboardData.branch.label}
                       </span>
                     )}
-                    <HeritageBadge type="generation" generationNum={dashboardData.depth} />
+                    {(() => {
+                      const genHex = getGenerationHex(dashboardData.depth);
+                      return (
+                        <span
+                          className="text-[10px] font-bold px-3 py-0.5 rounded-full flex items-center gap-1"
+                          style={{
+                            backgroundColor: `${genHex}55`,
+                            border: `1.5px solid ${genHex}99`,
+                            color: 'white',
+                            backdropFilter: 'blur(8px)',
+                            WebkitBackdropFilter: 'blur(8px)',
+                            textShadow: '0 1px 3px rgba(0,0,0,0.6)',
+                            fontWeight: '600',
+                          }}
+                        >
+                          <Layers className="h-3 w-3" />
+                          الجيل {dashboardData.depth.toLocaleString('ar-SA')}
+                        </span>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>
