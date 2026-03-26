@@ -192,7 +192,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
               className="absolute inset-0 w-full h-full object-cover object-top select-none"
             />
           </picture>
-          <div className="absolute inset-0 dark:bg-black/50 bg-transparent" />
+          <div className="absolute inset-0 dark:bg-black/30 bg-transparent" />
           <div
             className="absolute inset-0"
             style={{
