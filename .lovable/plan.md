@@ -1,100 +1,46 @@
 
 
-# Build In-App Notification System
+# Build Admin Notifications Section
 
-## Architecture Overview
-
-The `notifications` table uses `verified_users.id` (UUID) as `user_id`, but `CurrentUser` in AuthContext only stores `memberId`/`phone` — not the UUID. The table has RLS blocking all client access (service_role only). Two key changes are needed beyond the UI:
-
-1. **Return UUID from registration** so the client can store it
-2. **Add RLS policies** for anon to SELECT and UPDATE own notifications (needed for realtime subscriptions)
-3. **Resolve UUID for existing users** via a new edge function action
+## Overview
+Add a "Notifications" section to the admin panel for sending broadcast/targeted notifications, with history view. Requires a new edge function action, a hook, a page component, and navigation updates.
 
 ## Changes
 
-### 1. Database Migration — Add anon RLS policies on `notifications`
+### 1. `src/types/admin.ts` — Add `'notifications'` to `AdminSection` type
 
-```sql
--- Allow anon to read their own notifications
-CREATE POLICY "anon_select_own_notifications"
-  ON public.notifications FOR SELECT TO anon, authenticated
-  USING (true);
+### 2. `supabase/functions/family-api/index.ts` — Add `send-notification` endpoint
+Insert before the final `"Invalid endpoint"` return (line 387). Admin-only, validates token. Accepts `title`, `body`, `type`, `user_ids`. If no `user_ids`, fetches all `verified_users` and inserts one notification row per user.
 
--- Allow anon to update own notifications (mark read)
-CREATE POLICY "anon_update_own_notifications"
-  ON public.notifications FOR UPDATE TO anon, authenticated
-  USING (true)
-  WITH CHECK (true);
-```
+### 3. Create `src/hooks/admin/useAdminNotifications.ts`
+- `sendNotification({ title, body, type, user_ids })` — calls `family-api/send-notification` with admin token from `sessionStorage("khunaini-admin-token")`
+- Loads recent broadcast history from `notifications` table (deduplicated by title+timestamp)
+- Returns `{ sendNotification, isSending, history, isLoading }`
 
-Note: user_id is a UUID (not guessable), and notifications contain no sensitive PII. The client filters by user_id in queries. This enables realtime subscriptions.
+### 4. Create `src/components/admin/notifications/NotificationsPage.tsx`
+RTL admin page with:
+- **Send form**: title input, body textarea, type select (broadcast/info/new_member), recipient radio (all vs specific user with search), send button with loading state
+- **History**: list of past broadcasts with title, body (truncated), relative Arabic time, type badge
+- Uses `useAdminNotifications()` hook
+- Consistent styling with existing admin pages (RequestsPage pattern)
 
-### 2. Edge Function: `family-api/index.ts`
+### 5. `src/pages/Admin.tsx` — Add notifications route
+Import `NotificationsPage`, add `{section === 'notifications' && <NotificationsPage />}`
 
-**Modify `register-user` action** (line 118-129): Return the `verified_users.id` UUID in the response after upsert.
+### 6. `src/components/admin/AdminSidebar.tsx` — Add nav item
+Add `{ id: 'notifications', label: 'الإشعارات', icon: Bell }` to `NAV_ITEMS`
 
-**Add `get-my-user-id` action**: Given a phone number, return the `verified_users.id` UUID. This allows existing logged-in users (who registered before this change) to resolve their UUID.
-
-### 3. `src/contexts/AuthContext.tsx`
-
-Add optional `verifiedUserId?: string` to `CurrentUser` interface. This stores the `verified_users.id` UUID for notification queries.
-
-### 4. `src/services/dataService.ts`
-
-- Update `registerVerifiedUser` to return the UUID from the edge function response
-- Add `getMyUserId(phone: string)` function to call the new edge action
-
-### 5. `src/components/OnboardingModal.tsx`
-
-After `registerVerifiedUser`, store the returned UUID in the `login()` call as `verifiedUserId`.
-
-### 6. Create `src/hooks/useNotifications.ts`
-
-- Accepts `userId: string | null` (the verified_users UUID)
-- If no userId, resolves it via `getMyUserId(phone)` on first load
-- Fetches notifications from Supabase client SDK (now allowed by RLS)
-- Subscribes to realtime INSERT events
-- Shows toast on new notification via sonner
-- Exposes: `notifications`, `unreadCount`, `isLoading`, `markAsRead`, `markAllAsRead`
-- All numbers use Eastern Arabic digits
-
-### 7. Create `src/components/NotificationBell.tsx`
-
-- Bell icon with red unread badge (Eastern Arabic count, "٩+" for >9)
-- On mobile: opens a Drawer from bottom
-- On desktop: opens a Popover
-- Header: "الإشعارات" + "تحديد الكل كمقروء" button
-- Empty state: "لا توجد إشعارات"
-- Each notification item:
-  - Icon by type (CheckCircle/XCircle/Megaphone/UserPlus/Info)
-  - Title (bold if unread), body text
-  - Relative Arabic time (using existing `relativeArabicTime`)
-  - Unread items get `bg-primary/5` background
-  - Tap marks as read
-  - Min 48px tap target
-- Full RTL, dir="rtl"
-
-### 8. `src/components/AppHeader.tsx`
-
-- Import NotificationBell
-- Add it to the header icons area (before guide button), only for logged-in users
-- Pass the user's verifiedUserId (or phone for resolution)
-
-### 9. `src/App.tsx`
-
-The Sonner toaster already exists (line 51). Add `position="top-center"` and `dir="rtl"` props to the existing Sonner import.
+### 7. `src/components/admin/AdminBottomBar.tsx` — Add tab
+Add `{ id: 'notifications', label: 'الإشعارات', icon: Bell }` to `MAIN_TABS`
 
 ## Files Summary
-
 | File | Action |
 |------|--------|
-| Migration SQL | Add anon SELECT/UPDATE policies on notifications |
-| `supabase/functions/family-api/index.ts` | Return UUID from register-user, add get-my-user-id |
-| `src/contexts/AuthContext.tsx` | Add `verifiedUserId` to CurrentUser |
-| `src/services/dataService.ts` | Return UUID from register, add getMyUserId |
-| `src/components/OnboardingModal.tsx` | Store verifiedUserId on login |
-| `src/hooks/useNotifications.ts` | New — notification fetching + realtime |
-| `src/components/NotificationBell.tsx` | New — bell UI with drawer/popover |
-| `src/components/AppHeader.tsx` | Add NotificationBell for logged-in users |
-| `src/App.tsx` | Configure Sonner position/RTL |
+| `src/types/admin.ts` | Add `'notifications'` to union |
+| `supabase/functions/family-api/index.ts` | Add `send-notification` endpoint |
+| `src/hooks/admin/useAdminNotifications.ts` | Create — send + history |
+| `src/components/admin/notifications/NotificationsPage.tsx` | Create — admin UI |
+| `src/pages/Admin.tsx` | Add route |
+| `src/components/admin/AdminSidebar.tsx` | Add nav item |
+| `src/components/admin/AdminBottomBar.tsx` | Add tab |
 
