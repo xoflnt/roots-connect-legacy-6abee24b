@@ -4,6 +4,7 @@ import {
   FileText,
   UserCheck,
   Activity,
+  Bell,
 } from "lucide-react";
 import type { AdminSection } from "@/types/admin";
 
