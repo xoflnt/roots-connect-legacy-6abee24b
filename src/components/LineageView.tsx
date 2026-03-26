@@ -338,7 +338,7 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                             const br = getBranch(member.id);
                             const bs = br ? getBranchStyle(br.pillarId) : null;
                             return br && bs ? (
-                              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: bs.bg, color: bs.text }}>
+                              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: bs.bg, color: bs.text, opacity: 0.7 }}>
                                 {br.label}
                               </span>
                             ) : null;
@@ -375,15 +375,6 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                       )}
                     </div>
                     <div className="flex items-center gap-2 mt-2 flex-wrap">
-                      <div
-                        className="inline-block px-2.5 py-1 rounded-lg text-xs font-bold"
-                        style={{
-                          backgroundColor: `${dotColor}20`,
-                          color: dotColor,
-                        }}
-                      >
-                        الجيل {toArabicNum(genNum)}
-                      </div>
                       {ageText && (
                         canSeeAge(member.id, isLoggedIn) ? (
                           <span className="text-xs text-accent font-semibold">{ageText}</span>
