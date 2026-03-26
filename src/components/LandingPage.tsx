@@ -268,7 +268,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         {currentUser && dashboardData && (
           <section className="relative z-10 py-4 px-4">
             <motion.div
-              className="max-w-lg mx-auto rounded-2xl border border-white/35 backdrop-blur-sm bg-white/15 p-4 space-y-4"
+              className="max-w-lg mx-auto glass-premium rounded-3xl p-4 space-y-4"
               initial={{ opacity: 0, scale: 0.97, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ ...gentleSpring, delay: 0.1 }}
