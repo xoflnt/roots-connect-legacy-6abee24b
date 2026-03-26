@@ -341,9 +341,20 @@ className="flex flex-col items-center gap-1 rounded-xl backdrop-blur-sm bg-white
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, ease: "easeOut", delay: 0.15 }}
             >
-              <h2 className="text-lg font-bold text-white" style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>
-                اكتشف موقعك في شجرة العائلة
-              </h2>
+              <div style={{ position: 'relative', isolation: 'isolate' as const, display: 'inline-block' }}>
+                <div style={{
+                  position: 'absolute',
+                  inset: '-6px -12px',
+                  borderRadius: '10px',
+                  backdropFilter: 'blur(4px)',
+                  WebkitBackdropFilter: 'blur(4px)',
+                  background: 'rgba(0,0,0,0.15)',
+                  zIndex: -1,
+                }} />
+                <h2 className="text-lg font-bold text-white" style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>
+                  اكتشف موقعك في شجرة العائلة
+                </h2>
+              </div>
 
               {/* Guest search */}
               <div className="relative" style={{ position: 'relative', zIndex: 99999 }}>
