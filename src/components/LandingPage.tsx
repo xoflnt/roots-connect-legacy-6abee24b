@@ -111,6 +111,12 @@ function StatCard({ icon: Icon, label, value, suffix, highlight }: { icon: React
   );
 }
 
+const BRANCH_HEX: Record<string, string> = {
+  '300': '#16a34a',
+  '200': '#C9A84C',
+  '400': '#ea580c',
+};
+
 const PILLAR_COLORS = [
   { bg: "bg-pillar-1", border: "border-pillar-1-border", icon: "text-pillar-1-text" },
   { bg: "bg-pillar-2", border: "border-pillar-2-border", icon: "text-pillar-2-text" },
@@ -229,25 +235,14 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
           >
-            <div style={{ position: 'relative', isolation: 'isolate' as const }}>
-              <div style={{
-                position: 'absolute',
-                inset: '-8px -16px',
-                borderRadius: '12px',
-                backdropFilter: 'blur(4px)',
-                WebkitBackdropFilter: 'blur(4px)',
-                background: 'rgba(0,0,0,0.15)',
-                zIndex: -1,
-              }} />
-              <TreePine className="h-10 w-10 text-white mx-auto" style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.8))' }} />
-              <h1 className="text-2xl font-extrabold text-white leading-tight" style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>
-                بـوابـة تـراث الخـنـيـنـي
-              </h1>
-              <p className="text-sm text-white/90" style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>
-                فرع الزلفي
-              </p>
-              <div className="h-px bg-gradient-to-r from-transparent via-accent to-transparent max-w-xs mx-auto" />
-            </div>
+            <TreePine className="h-10 w-10 text-white mx-auto" style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.8))' }} />
+            <h1 className="text-2xl font-extrabold text-white leading-tight" style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>
+              بـوابـة تـراث الخـنـيـنـي
+            </h1>
+            <p className="text-sm text-white/90" style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>
+              فرع الزلفي
+            </p>
+            <div className="h-px bg-gradient-to-r from-transparent via-accent to-transparent max-w-xs mx-auto" />
           </motion.div>
         </section>
 
@@ -274,7 +269,17 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                   </div>
                   <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                     {dashboardData.branch && (
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/20 text-white border border-white/30">
+                      <span
+                        className="text-[10px] font-bold px-3 py-0.5 rounded-full border"
+                        style={{
+                          backgroundColor: `${BRANCH_HEX[dashboardData.branch.pillarId] || '#C9A84C'}33`,
+                          borderColor: `${BRANCH_HEX[dashboardData.branch.pillarId] || '#C9A84C'}66`,
+                          color: 'white',
+                          backdropFilter: 'blur(8px)',
+                          WebkitBackdropFilter: 'blur(8px)',
+                          textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+                        }}
+                      >
                         {dashboardData.branch.label}
                       </span>
                     )}
@@ -341,20 +346,9 @@ className="flex flex-col items-center gap-1 rounded-xl backdrop-blur-sm bg-white
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, ease: "easeOut", delay: 0.15 }}
             >
-              <div style={{ position: 'relative', isolation: 'isolate' as const, display: 'inline-block' }}>
-                <div style={{
-                  position: 'absolute',
-                  inset: '-6px -12px',
-                  borderRadius: '10px',
-                  backdropFilter: 'blur(4px)',
-                  WebkitBackdropFilter: 'blur(4px)',
-                  background: 'rgba(0,0,0,0.15)',
-                  zIndex: -1,
-                }} />
-                <h2 className="text-lg font-bold text-white" style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>
-                  اكتشف موقعك في شجرة العائلة
-                </h2>
-              </div>
+              <h2 className="text-lg font-bold text-white" style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>
+                اكتشف موقعك في شجرة العائلة
+              </h2>
 
               {/* Guest search */}
               <div className="relative" style={{ position: 'relative', zIndex: 99999 }}>
