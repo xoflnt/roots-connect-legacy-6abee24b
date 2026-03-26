@@ -443,7 +443,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                 whileHover={{ scale: 1.03, transition: springConfig }}
                 whileTap={{ scale: 0.97 }}
                 onClick={action.onClick}
-                className="flex flex-col items-center gap-1.5 rounded-2xl backdrop-blur-md bg-white/10 border border-white/20 p-3 min-h-[72px] text-center hover:bg-white/20 transition-all"
+                className="flex flex-col items-center gap-1.5 rounded-2xl backdrop-blur-sm bg-white/12 border border-white/30 p-3 min-h-[72px] text-center hover:bg-white/20 transition-all"
               >
                 <action.icon className="h-5 w-5 text-white/90" />
                 <span className="text-xs font-medium text-white/85">{action.label}</span>
