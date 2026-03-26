@@ -1,29 +1,48 @@
 
 
-# Fix Push Notifications — 4 Changes
+# Fix send-push-notification Edge Function
+
+## Issues with the proposed code
+
+The user's implementation has three problems that would cause it to fail:
+
+1. **`VAPID_SUBJECT` secret doesn't exist** — only `VAPID_PUBLIC_KEY` and `VAPID_PRIVATE_KEY` are configured. Must hardcode `mailto:admin@khunaini.app` or add a new secret.
+
+2. **PKCS8 import won't work** — VAPID private keys generated for Web Push are raw 32-byte EC P-256 keys in base64url format. `crypto.subtle.importKey("pkcs8", ...)` expects a completely different format (DER-encoded PKCS8). Must use JWK import instead:
+   ```typescript
+   const jwk = {
+     kty: "EC", crv: "P-256",
+     d: privateKeyBase64url,
+     x: publicX, y: publicY
+   };
+   await crypto.subtle.importKey("jwk", jwk, { name: "ECDSA", namedCurve: "P-256" }, false, ["sign"]);
+   ```
+
+3. **Custom aesgcm encryption is fragile** — The content encryption implementation has incorrect HKDF info/context construction. One wrong byte breaks everything silently. Better to use the `aes128gcm` encoding with proper RFC 8291 implementation.
+
+## Recommended approach
+
+Instead of a fully manual implementation, use a **minimal, tested Web Push library** that works in Deno. The `jsr:@nicolo-ribaudo/web-push` package is a lightweight alternative that handles key import correctly.
+
+However, since the user wants a manual approach, I'll fix the three issues above:
+- Use JWK for private key import (extract x,y from the public key)
+- Hardcode subject as `mailto:admin@khunaini.app`
+- Implement RFC 8291 aes128gcm encoding correctly
+- Keep CORS headers for compatibility with family-api calls
 
 ## Changes
 
-### 1. Replace `npm:web-push` with `jsr:@negrel/webpush` in edge function
+### `supabase/functions/send-push-notification/index.ts` — Full replacement
 
-**File**: `supabase/functions/send-push-notification/index.ts`
+Replace with a manual implementation that:
+- Imports VAPID private key via JWK format (extracting x/y coordinates from the 65-byte uncompressed public key)
+- Signs VAPID JWT with `crypto.subtle.sign("ECDSA")`
+- Encrypts payload using RFC 8291 `aes128gcm` content encoding
+- Keeps CORS headers and the same request/response interface
+- Uses hardcoded `mailto:admin@khunaini.app` as VAPID subject
+- Handles 410/404 expired subscription cleanup
 
-Remove `import webpush from "npm:web-push@3.6.7"` and replace with `ApplicationServer` from `jsr:@negrel/webpush`. Replace `webpush.setVapidDetails()` + `webpush.sendNotification()` with the native Deno-compatible `ApplicationServer.new()` + `subscriber.pushTextMessage()` pattern. Handle expired subscriptions by checking error messages for 410/Gone status.
+### No other files change
 
-### 2. Database migration — Fix RLS on `push_subscriptions`
+The calling code in `family-api` and client hooks remain the same — only the internal implementation of this edge function changes.
 
-The `upsert` needs both INSERT and UPDATE permissions. Current policy only allows INSERT for anon.
-
-```sql
-DROP POLICY IF EXISTS "anon_insert_push_subscriptions" ON public.push_subscriptions;
-CREATE POLICY "anon_upsert_push_subscriptions" ON public.push_subscriptions
-  FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
-```
-
-### 3. Add debug logging to `usePushNotifications.ts`
-
-Add `console.log` statements at key points: subscribe() entry, permission result, subscription creation, DB save result, and auto-subscribe effect trigger.
-
-### 4. Add delayed auto-subscribe trigger
-
-Replace the auto-subscribe `useEffect` with a version that uses a 2-second `setTimeout` to ensure the service worker is ready before attempting subscription. Remove `
