@@ -445,8 +445,8 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                 onClick={action.onClick}
                 className="flex flex-col items-center gap-1.5 rounded-2xl backdrop-blur-sm bg-white/12 border border-white/30 p-3 min-h-[72px] text-center hover:bg-white/20 transition-all"
               >
-                <action.icon className="h-5 w-5 text-white/90" />
-                <span className="text-xs font-medium text-white/85">{action.label}</span>
+                <action.icon className="h-5 w-5 text-white" />
+                <span className="text-xs font-medium text-white" style={{ textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>{action.label}</span>
               </motion.button>
             ))}
           </motion.div>
