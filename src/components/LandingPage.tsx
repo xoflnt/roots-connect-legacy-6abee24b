@@ -345,7 +345,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                     onBlur={() => setTimeout(() => setOpen(false), 200)}
                     className="pr-12 pl-4 h-14 text-base rounded-2xl hero-search"
                     style={{
-                      backgroundColor: 'rgba(255,255,255,0.25)',
+                     backgroundColor: 'rgba(255,255,255,0.18)',
                       backdropFilter: 'blur(12px)',
                       WebkitBackdropFilter: 'blur(12px)',
                       border: '1.5px solid rgba(255,255,255,0.6)',
