@@ -196,7 +196,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
           <div
             className="absolute inset-0"
             style={{
-              background: 'linear-gradient(to bottom, rgba(15,42,30,0.45) 0%, rgba(15,42,30,0.35) 40%, rgba(15,42,30,0.55) 75%, hsl(var(--background)) 100%)',
+              background: 'linear-gradient(to bottom, rgba(15,42,30,0.25) 0%, transparent 35%, rgba(246,243,238,0.85) 80%, rgba(246,243,238,1) 100%)',
             }}
           />
         </div>
