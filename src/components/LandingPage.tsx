@@ -373,6 +373,7 @@ className="flex flex-col items-center gap-1 rounded-xl glass-base p-2.5 min-h-[5
                   </motion.button>
                 ))}
               </motion.div>
+            </LiquidGlass>
             </motion.div>
           </section>
         )}
