@@ -375,15 +375,6 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                       )}
                     </div>
                     <div className="flex items-center gap-2 mt-2 flex-wrap">
-                      <div
-                        className="inline-block px-2.5 py-1 rounded-lg text-xs font-bold"
-                        style={{
-                          backgroundColor: `${dotColor}20`,
-                          color: dotColor,
-                        }}
-                      >
-                        الجيل {toArabicNum(genNum)}
-                      </div>
                       {ageText && (
                         canSeeAge(member.id, isLoggedIn) ? (
                           <span className="text-xs text-accent font-semibold">{ageText}</span>
