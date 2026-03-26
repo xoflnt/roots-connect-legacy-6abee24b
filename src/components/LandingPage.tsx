@@ -466,7 +466,7 @@ className="flex flex-col items-center gap-1 rounded-xl glass-base p-2.5 min-h-[5
                 <Button
                   onClick={() => setForceOnboarding(true)}
                   variant="outline"
-                  className="flex-1 min-h-[48px] rounded-2xl font-bold text-base gap-2 backdrop-blur-sm bg-white/12 border border-white/30 text-white/90 hover:bg-white/20"
+                  className="flex-1 min-h-[48px] rounded-2xl font-bold text-base gap-2 glass-base text-white/90 hover:bg-white/20"
                 >
                   <User className="h-5 w-5" />
                   سجّل دخولك
