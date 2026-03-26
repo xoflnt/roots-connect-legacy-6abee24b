@@ -403,7 +403,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
               <div className="flex gap-3">
                 <Button
                   onClick={onBrowseTree}
-                  className="flex-1 min-h-[48px] rounded-2xl font-bold text-base gap-2 backdrop-blur-md bg-white/20 border border-white/40 text-white hover:bg-white/30"
+                  className="flex-1 min-h-[48px] rounded-2xl font-bold text-base gap-2 backdrop-blur-sm bg-white/18 border border-white/40 text-white hover:bg-white/30"
                 >
                   <TreePine className="h-5 w-5" />
                   تصفح الشجرة
