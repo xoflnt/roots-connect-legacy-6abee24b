@@ -44,6 +44,7 @@ const LoadingSpinner = () => (
 
 const App = () => (
   <ErrorBoundary>
+    <LiquidGlassSVGFilter />
     <ThemeProvider>
         <AuthProvider>
           <QueryClientProvider client={queryClient}>
