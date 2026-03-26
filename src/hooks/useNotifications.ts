@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { getMyUserId } from "@/services/dataService";
+
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { toast } from "sonner";
 
@@ -46,7 +46,13 @@ export function useNotifications() {
       if (!currentUser.phone) return;
 
       console.log(`[Notifications] Resolving userId attempt ${attempt}...`);
-      const id = await getMyUserId(currentUser.phone);
+      const { data } = await supabase
+        .from("verified_users_lookup" as any)
+        .select("id")
+        .eq("phone", currentUser.phone)
+        .maybeSingle();
+
+      const id = (data as any)?.id || null;
 
       if (id && !cancelled) {
         setUserId(id);
