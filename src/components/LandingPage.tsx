@@ -195,7 +195,16 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
       {/* ─── Hero with liquid glass ─── */}
       <div className="relative">
         {/* Background image + overlays (clipped container) */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <svg style={{ display: 'none' }}>
+          <defs>
+            <filter id="liquid-glass-filter" x="-10%" y="-10%" width="120%" height="120%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.008" numOctaves="1" seed="5" result="turbulence" />
+              <feGaussianBlur in="turbulence" stdDeviation="2" result="softMap" />
+              <feDisplacementMap in="SourceGraphic" in2="softMap" scale="18" xChannelSelector="R" yChannelSelector="G" />
+            </filter>
+          </defs>
+        </svg>
+        <div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ filter: 'url(#liquid-glass-filter)' }}>
           <picture>
             <source media="(max-width: 768px)" srcSet="/images/hero-bg-mobile.webp" type="image/webp" />
             <source srcSet="/images/hero-bg.webp" type="image/webp" />
@@ -259,7 +268,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         {currentUser && dashboardData && (
           <section className="relative z-10 py-4 px-4">
             <motion.div
-              className="max-w-lg mx-auto rounded-2xl border border-white/35 backdrop-blur-sm bg-white/15 p-4 space-y-4"
+              className="max-w-lg mx-auto glass-premium rounded-3xl p-4 space-y-4"
               initial={{ opacity: 0, scale: 0.97, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ ...gentleSpring, delay: 0.1 }}
@@ -329,7 +338,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                   { label: "الأجداد", value: dashboardData.ancestors.length - 1 },
                   { label: "الأشقاء", value: dashboardData.siblings.length },
                 ].map((s) => (
-                  <motion.div key={s.label} variants={staggerItem} className="rounded-xl backdrop-blur-sm bg-white/12 border border-white/30 py-2 px-1">
+                  <motion.div key={s.label} variants={staggerItem} className="rounded-xl glass-base py-2 px-1">
 <div className="text-lg font-extrabold text-white" style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>{s.value.toLocaleString("ar-SA")}</div>
                     <div className="text-xs text-white/85 font-medium" style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>{s.label}</div>
                   </motion.div>
@@ -354,7 +363,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
                     onClick={action.onClick}
-className="flex flex-col items-center gap-1 rounded-xl backdrop-blur-sm bg-white/12 border border-white/30 p-2.5 min-h-[56px] text-xs font-medium text-white hover:bg-white/18 transition-colors"
+className="flex flex-col items-center gap-1 rounded-xl glass-base p-2.5 min-h-[56px] text-xs font-medium text-white hover:bg-white/18 transition-colors"
                     style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}
                   >
                     <action.icon className="h-5 w-5 text-white" />
@@ -449,7 +458,7 @@ className="flex flex-col items-center gap-1 rounded-xl backdrop-blur-sm bg-white
               <div className="flex gap-3">
                 <Button
                   onClick={onBrowseTree}
-                  className="flex-1 min-h-[48px] rounded-2xl font-bold text-base gap-2 backdrop-blur-sm bg-white/18 border border-white/40 text-white hover:bg-white/30"
+                  className="flex-1 min-h-[48px] rounded-2xl font-bold text-base gap-2 glass-base text-white hover:bg-white/30"
                 >
                   <TreePine className="h-5 w-5" />
                   تصفح الشجرة
@@ -457,7 +466,7 @@ className="flex flex-col items-center gap-1 rounded-xl backdrop-blur-sm bg-white
                 <Button
                   onClick={() => setForceOnboarding(true)}
                   variant="outline"
-                  className="flex-1 min-h-[48px] rounded-2xl font-bold text-base gap-2 backdrop-blur-sm bg-white/12 border border-white/30 text-white/90 hover:bg-white/20"
+                  className="flex-1 min-h-[48px] rounded-2xl font-bold text-base gap-2 glass-base text-white/90 hover:bg-white/20"
                 >
                   <User className="h-5 w-5" />
                   سجّل دخولك
@@ -489,7 +498,7 @@ className="flex flex-col items-center gap-1 rounded-xl backdrop-blur-sm bg-white
                 whileHover={{ scale: 1.03, transition: springConfig }}
                 whileTap={{ scale: 0.97 }}
                 onClick={action.onClick}
-                className="flex flex-col items-center gap-1.5 rounded-2xl backdrop-blur-sm bg-white/12 border border-white/30 p-3 min-h-[72px] text-center hover:bg-white/20 transition-all"
+                className="flex flex-col items-center gap-1.5 rounded-2xl glass-base p-3 min-h-[72px] text-center hover:bg-white/20 transition-all"
               >
                 <action.icon className="h-5 w-5 text-white" />
                 <span className="text-xs font-medium text-white" style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>{action.label}</span>
@@ -503,7 +512,7 @@ className="flex flex-col items-center gap-1 rounded-xl backdrop-blur-sm bg-white
           <div className="max-w-lg mx-auto flex gap-2">
             <button
               onClick={() => setRequestOpen(true)}
-              className="flex-1 rounded-2xl backdrop-blur-sm bg-white/12 border border-white/25 min-h-[48px] flex items-center justify-center gap-2 text-sm text-white font-medium hover:bg-white/20 transition-colors"
+              className="flex-1 rounded-2xl glass-base min-h-[48px] flex items-center justify-center gap-2 text-sm text-white font-medium hover:bg-white/20 transition-colors"
 style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}
             >
               <Send className="h-4 w-4" />
@@ -511,7 +520,7 @@ style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 
             </button>
             <button
               onClick={() => navigate('/guide')}
-              className="flex-1 rounded-2xl backdrop-blur-sm bg-white/12 border border-white/25 min-h-[48px] flex items-center justify-center gap-2 text-sm text-white font-medium hover:bg-white/20 transition-colors"
+              className="flex-1 rounded-2xl glass-base min-h-[48px] flex items-center justify-center gap-2 text-sm text-white font-medium hover:bg-white/20 transition-colors"
 style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}
             >
               <BookOpen className="h-4 w-4" />
