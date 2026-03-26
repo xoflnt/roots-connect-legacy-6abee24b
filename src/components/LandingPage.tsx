@@ -507,22 +507,14 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         {/* Bottom action buttons */}
         <section className="relative z-10 px-4 pb-6">
           <div className="max-w-lg mx-auto flex gap-2">
-            <button
-              onClick={() => setRequestOpen(true)}
-              className="flex-1 rounded-2xl glass-base min-h-[48px] flex items-center justify-center gap-2 text-sm text-white font-medium hover:bg-white/20 transition-colors"
-style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)', background: 'rgba(255, 255, 255, 0.18)', backdropFilter: 'blur(10px) saturate(130%)', WebkitBackdropFilter: 'blur(10px) saturate(130%)', border: '1px solid rgba(255, 255, 255, 0.35)', color: 'rgba(255, 255, 255, 0.95)' }}
-            >
+            <LiquidGlass level={1} borderRadius={12} onClick={() => setRequestOpen(true)} className="flex-1 min-h-[48px] flex items-center justify-center gap-2 text-sm text-white font-medium cursor-pointer" style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>
               <Send className="h-4 w-4" />
               أرسل طلب تعديل
-            </button>
-            <button
-              onClick={() => navigate('/guide')}
-              className="flex-1 rounded-2xl glass-base min-h-[48px] flex items-center justify-center gap-2 text-sm text-white font-medium hover:bg-white/20 transition-colors"
-style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)', background: 'rgba(255, 255, 255, 0.18)', backdropFilter: 'blur(10px) saturate(130%)', WebkitBackdropFilter: 'blur(10px) saturate(130%)', border: '1px solid rgba(255, 255, 255, 0.35)', color: 'rgba(255, 255, 255, 0.95)' }}
-            >
+            </LiquidGlass>
+            <LiquidGlass level={1} borderRadius={12} onClick={() => navigate('/guide')} className="flex-1 min-h-[48px] flex items-center justify-center gap-2 text-sm text-white font-medium cursor-pointer" style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>
               <BookOpen className="h-4 w-4" />
               دليل الاستخدام
-            </button>
+            </LiquidGlass>
           </div>
         </section>
 
