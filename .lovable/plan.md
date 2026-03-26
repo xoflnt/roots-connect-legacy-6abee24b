@@ -1,27 +1,54 @@
 
 
-# Add Soft Dark Halo Text Shadow to Hero Text
+# Add Adaptive Backdrop Behind Key Hero Text
 
 ## Changes — single file: `src/components/LandingPage.tsx`
 
-The new unified text shadow for all hero text elements:
+### Approach
+
+Create a reusable inline wrapper pattern that places a subtle frosted glass layer (`backdrop-filter: blur(4px)` + `rgba(0,0,0,0.15)`) behind text blocks. All existing text shadows remain untouched.
+
+### 1. Title block (lines 226–240)
+
+Wrap the `motion.div` children (TreePine + h1 + subtitle + divider) in a relative container with a pseudo-backdrop `div`:
+
+```tsx
+<div style={{ position: 'relative', isolation: 'isolate' }}>
+  <div style={{
+    position: 'absolute',
+    inset: '-8px -16px',
+    borderRadius: '12px',
+    backdropFilter: 'blur(4px)',
+    WebkitBackdropFilter: 'blur(4px)',
+    background: 'rgba(0,0,0,0.15)',
+    zIndex: -1,
+  }} />
+  <TreePine ... />
+  <h1 ...>بـوابـة تـراث الخـنـيـنـي</h1>
+  <p ...>فرع الزلفي</p>
+  <div className="h-px ..." />
+</div>
 ```
-textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)'
+
+### 2. Guest heading "اكتشف موقعك" (line 333)
+
+Wrap the `<h2>` in the same pattern:
+
+```tsx
+<div style={{ position: 'relative', isolation: 'isolate', display: 'inline-block' }}>
+  <div style={{ position: 'absolute', inset: '-6px -12px', borderRadius: '10px', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', background: 'rgba(0,0,0,0.15)', zIndex: -1 }} />
+  <h2 ...>اكتشف موقعك في شجرة العائلة</h2>
+</div>
 ```
 
-### Elements to update
+### 3. No changes to card labels
 
-| Location | Line(s) | Current textShadow |
-|----------|---------|-------------------|
-| h1 title "بوابة تراث الخنيني" | 233 | `0 2px 16px …, 0 1px 4px …` |
-| Subtitle "فرع الزلفي" | 236 | same as title |
-| User name in dashboard card | 261 | `0 2px 8px rgba(0,0,0,0.5)` |
-| Stats labels (الأبناء etc.) | 289 | `0 1px 4px rgba(0,0,0,0.6)` |
-| Stats numbers | 288 | none — add it |
-| Action button labels (نسبي/قرابة/ملفي) | 312-316 | none — add it |
-| Guest heading "اكتشف موقعك" | 332 | `0 2px 16px …, 0 1px 4px …` |
-| Quick Actions labels | 449 | `0 1px 4px rgba(0,0,0,0.6)` |
-| Bottom buttons (أرسل طلب / دليل) | 461, 469 | `0 1px 4px rgba(0,0,0,0.6)` |
+Card labels already sit inside glass cards (`bg-white/15 backdrop-blur-sm`). Adding another backdrop layer would double-blur and look muddy. Skip per visual judgment.
 
-All replaced with the same halo shadow. No other changes.
+### 4. All existing textShadow values remain exactly as they are
+
+### Summary
+- 2 backdrop wrappers added (title block + guest heading)
+- No existing styles modified
+- Subtle adaptive blur ensures readability against any background region
 
