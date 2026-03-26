@@ -421,6 +421,13 @@ serve(async (req) => {
       return json({ success: true, sent: targetIds.length });
     }
 
+    // ─── GET VAPID PUBLIC KEY (public) ───
+    if (path === "get-vapid-key" && req.method === "POST") {
+      const vapidKey = Deno.env.get("VAPID_PUBLIC_KEY");
+      if (!vapidKey) return json({ error: "VAPID key not configured" }, 500);
+      return json({ vapidPublicKey: vapidKey });
+    }
+
     return json({ error: "Invalid endpoint" }, 400);
   } catch (error) {
     console.error("[family-api] Error:", error);

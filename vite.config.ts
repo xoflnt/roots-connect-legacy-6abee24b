@@ -19,6 +19,7 @@ export default defineConfig(({ mode }) => ({
     VitePWA({
       registerType: "autoUpdate",
       workbox: {
+      importScripts: ['/push-handler.js'],
       navigateFallbackDenylist: [/^\/~oauth/, /^\/api\/auth/, /^\/auth/],
       navigateFallback: "/index.html",
       globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],

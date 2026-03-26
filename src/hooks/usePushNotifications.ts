@@ -1,8 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-const VAPID_PUBLIC_KEY = "REPLACE_WITH_VAPID_PUBLIC_KEY";
-
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
@@ -14,18 +12,39 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
   return outputArray;
 }
 
+async function fetchVapidKey(): Promise<string | null> {
+  try {
+    const { data, error } = await supabase.functions.invoke("family-api/get-vapid-key");
+    if (error || !data?.vapidPublicKey) return null;
+    return data.vapidPublicKey;
+  } catch {
+    return null;
+  }
+}
+
 export function usePushNotifications(userId: string | null) {
   const [permission, setPermission] = useState<NotificationPermission>(
     typeof Notification !== "undefined" ? Notification.permission : "default"
   );
+  const [vapidKey, setVapidKey] = useState<string | null>(null);
+
   const isSupported =
     typeof window !== "undefined" &&
     "serviceWorker" in navigator &&
     "PushManager" in window &&
     "Notification" in window;
 
+  // Fetch VAPID key once
+  useEffect(() => {
+    if (isSupported) {
+      fetchVapidKey().then((key) => {
+        if (key) setVapidKey(key);
+      });
+    }
+  }, [isSupported]);
+
   const subscribe = useCallback(async () => {
-    if (!isSupported || !userId) return;
+    if (!isSupported || !userId || !vapidKey) return;
 
     try {
       const perm = await Notification.requestPermission();
@@ -38,9 +57,10 @@ export function usePushNotifications(userId: string | null) {
       let subscription = await registration.pushManager.getSubscription();
 
       if (!subscription) {
+        const appServerKey = urlBase64ToUint8Array(vapidKey);
         subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+          applicationServerKey: appServerKey as unknown as BufferSource,
         });
         console.log("[Push] New subscription created");
       }
@@ -50,7 +70,6 @@ export function usePushNotifications(userId: string | null) {
       const p256dh = subJson.keys!.p256dh!;
       const auth = subJson.keys!.auth!;
 
-      // Upsert subscription
       const { error } = await supabase.from("push_subscriptions").upsert(
         {
           user_id: userId,
@@ -70,14 +89,14 @@ export function usePushNotifications(userId: string | null) {
     } catch (err) {
       console.error("[Push] Subscribe error:", err);
     }
-  }, [isSupported, userId]);
+  }, [isSupported, userId, vapidKey]);
 
-  // Auto-subscribe when userId becomes available
+  // Auto-subscribe when userId and vapidKey are available
   useEffect(() => {
-    if (userId && isSupported && permission === "default") {
+    if (userId && isSupported && vapidKey && permission === "default") {
       subscribe();
     }
-  }, [userId, isSupported, permission, subscribe]);
+  }, [userId, isSupported, vapidKey, permission, subscribe]);
 
   return { isSupported, permission, subscribe };
 }

@@ -126,5 +126,8 @@ export function useNotifications() {
     setUnreadCount(0);
   }, [userId]);
 
-  return { notifications, unreadCount, isLoading, markAsRead, markAllAsRead };
+  // Integrate push notifications
+  const push = usePushNotifications(userId);
+
+  return { notifications, unreadCount, isLoading, markAsRead, markAllAsRead, push };
 }
