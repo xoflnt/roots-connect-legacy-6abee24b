@@ -44,6 +44,10 @@
 
 @layer base {
   :root {
+    --glass-blur: 12px;
+    --glass-saturate: 180%;
+    --glass-bg: rgba(255, 255, 255, 0.15);
+    --glass-border: rgba(255, 255, 255, 0.25);
     
     --background: 38 30% 96%;
     --foreground: 152 42% 13%;
