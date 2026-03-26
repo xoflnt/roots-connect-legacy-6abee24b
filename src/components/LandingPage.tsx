@@ -229,14 +229,25 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
           >
-            <TreePine className="h-10 w-10 text-white mx-auto" style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.8))' }} />
-            <h1 className="text-2xl font-extrabold text-white leading-tight" style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>
-              بـوابـة تـراث الخـنـيـنـي
-            </h1>
-            <p className="text-sm text-white/90" style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>
-              فرع الزلفي
-            </p>
-            <div className="h-px bg-gradient-to-r from-transparent via-accent to-transparent max-w-xs mx-auto" />
+            <div style={{ position: 'relative', isolation: 'isolate' as const }}>
+              <div style={{
+                position: 'absolute',
+                inset: '-8px -16px',
+                borderRadius: '12px',
+                backdropFilter: 'blur(4px)',
+                WebkitBackdropFilter: 'blur(4px)',
+                background: 'rgba(0,0,0,0.15)',
+                zIndex: -1,
+              }} />
+              <TreePine className="h-10 w-10 text-white mx-auto" style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.8))' }} />
+              <h1 className="text-2xl font-extrabold text-white leading-tight" style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>
+                بـوابـة تـراث الخـنـيـنـي
+              </h1>
+              <p className="text-sm text-white/90" style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>
+                فرع الزلفي
+              </p>
+              <div className="h-px bg-gradient-to-r from-transparent via-accent to-transparent max-w-xs mx-auto" />
+            </div>
           </motion.div>
         </section>
 
