@@ -338,7 +338,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                   { label: "الأجداد", value: dashboardData.ancestors.length - 1 },
                   { label: "الأشقاء", value: dashboardData.siblings.length },
                 ].map((s) => (
-                  <motion.div key={s.label} variants={staggerItem} className="rounded-xl backdrop-blur-sm bg-white/12 border border-white/30 py-2 px-1">
+                  <motion.div key={s.label} variants={staggerItem} className="rounded-xl glass-base py-2 px-1">
 <div className="text-lg font-extrabold text-white" style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>{s.value.toLocaleString("ar-SA")}</div>
                     <div className="text-xs text-white/85 font-medium" style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>{s.label}</div>
                   </motion.div>
