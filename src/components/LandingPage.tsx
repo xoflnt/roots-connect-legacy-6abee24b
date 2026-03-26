@@ -329,7 +329,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, ease: "easeOut", delay: 0.15 }}
             >
-              <h2 className="text-lg font-bold text-white" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.5)' }}>
+              <h2 className="text-lg font-bold text-white" style={{ textShadow: '0 2px 16px rgba(0,0,0,0.8), 0 1px 4px rgba(0,0,0,0.9)' }}>
                 اكتشف موقعك في شجرة العائلة
               </h2>
 
