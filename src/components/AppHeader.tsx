@@ -1,6 +1,7 @@
 import { TreePine, Home, Map, Compass, GitFork, AlignJustify, Users, UserCircle, BookOpen, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ThemeToggle } from "./ThemeToggle";
+import { NotificationBell } from "./NotificationBell";
 
 import { SearchBar } from "./SearchBar";
 import { ResetViewButton } from "./ResetViewButton";
