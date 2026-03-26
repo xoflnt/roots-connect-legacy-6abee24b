@@ -117,6 +117,12 @@ const BRANCH_HEX: Record<string, string> = {
   '400': '#ea580c',
 };
 
+function getGenerationHex(depth: number): string {
+  if (depth <= 3) return '#D4A82B';
+  if (depth <= 6) return '#1B5438';
+  return '#2B5EA7';
+}
+
 const PILLAR_COLORS = [
   { bg: "bg-pillar-1", border: "border-pillar-1-border", icon: "text-pillar-1-text" },
   { bg: "bg-pillar-2", border: "border-pillar-2-border", icon: "text-pillar-2-text" },
