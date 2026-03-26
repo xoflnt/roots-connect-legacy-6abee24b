@@ -25,17 +25,29 @@ setCatchHandler(async ({ request }) => {
 });
 
 // Push notification handler
-self.addEventListener('push', (event) => {
-  const data = event.data?.json() || {};
+self.addEventListener('push', function(event) {
   event.waitUntil(
-    self.registration.showNotification(data.title || 'إشعار جديد', {
-      body: data.body || '',
-      icon: '/pwa/icon-192x192.png',
-      badge: '/pwa/icon-96x96.png',
-      dir: 'rtl',
-      lang: 'ar',
-      data: { url: data.url || '/' },
-    })
+    (async () => {
+      try {
+        const data = event.data?.json() ?? {};
+        return self.registration.showNotification(
+          data.title || 'إشعار جديد',
+          {
+            body: data.body || 'لديك تحديث جديد',
+            icon: '/pwa/icon-192x192.png',
+            badge: '/pwa/icon-96x96.png',
+            dir: 'rtl',
+            lang: 'ar',
+            data: { url: data.url || '/' },
+          }
+        );
+      } catch (err) {
+        return self.registration.showNotification(
+          'إشعار جديد',
+          { body: 'لديك تحديث جديد' }
+        );
+      }
+    })()
   );
 });
 
