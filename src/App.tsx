@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { LiquidGlassSVGFilter } from './components/LiquidGlass';
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "sonner";
 import { Toaster } from "@/components/ui/toaster";
@@ -43,6 +44,7 @@ const LoadingSpinner = () => (
 
 const App = () => (
   <ErrorBoundary>
+    <LiquidGlassSVGFilter />
     <ThemeProvider>
         <AuthProvider>
           <QueryClientProvider client={queryClient}>

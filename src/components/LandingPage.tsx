@@ -23,6 +23,7 @@ import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/component
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Input as SheetInput } from "@/components/ui/input";
 import { staggerContainer, staggerItem, gentleSpring, springConfig } from "@/lib/animations";
+import { LiquidGlass } from "@/components/LiquidGlass";
 
 interface LandingPageProps {
   onSearchSelect: (memberId: string) => void;
@@ -268,12 +269,12 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         {currentUser && dashboardData && (
           <section className="relative z-10 py-4 px-4">
             <motion.div
-              className="max-w-lg mx-auto glass-premium rounded-3xl p-4 space-y-4"
-              style={{ background: 'rgba(255, 255, 255, 0.28)', backdropFilter: 'blur(16px) saturate(140%) brightness(115%)', WebkitBackdropFilter: 'blur(16px) saturate(140%) brightness(115%)' }}
+              className="max-w-lg mx-auto"
               initial={{ opacity: 0, scale: 0.97, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ ...gentleSpring, delay: 0.1 }}
             >
+            <LiquidGlass level={3} borderRadius={24} className="p-4 space-y-4">
               {/* Top row: avatar + name + badges */}
               <div className="flex items-center gap-3">
                 <div
@@ -339,9 +340,11 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                   { label: "الأجداد", value: dashboardData.ancestors.length - 1 },
                   { label: "الأشقاء", value: dashboardData.siblings.length },
                 ].map((s) => (
-                  <motion.div key={s.label} variants={staggerItem} className="rounded-xl glass-base py-2 px-1" style={{ background: 'rgba(255, 255, 255, 0.22)', backdropFilter: 'blur(12px) saturate(130%) brightness(112%)', WebkitBackdropFilter: 'blur(12px) saturate(130%) brightness(112%)' }}>
+                  <motion.div key={s.label} variants={staggerItem}>
+                  <LiquidGlass level={2} borderRadius={16} className="py-2 px-1 text-center">
 <div className="text-lg font-extrabold text-white" style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>{s.value.toLocaleString("ar-SA")}</div>
                     <div className="text-xs text-white/85 font-medium" style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>{s.label}</div>
+                  </LiquidGlass>
                   </motion.div>
                 ))}
               </motion.div>
@@ -358,20 +361,20 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                   { label: "قرابة", icon: Scale, onClick: () => onBrowseTree() },
                   { label: "ملفي", icon: User, onClick: () => navigate("/profile") },
                 ].map((action) => (
-                  <motion.button
+                  <motion.div
                     key={action.label}
                     variants={staggerItem}
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
-                    onClick={action.onClick}
-className="flex flex-col items-center gap-1 rounded-xl glass-base p-2.5 min-h-[56px] text-xs font-medium text-white hover:bg-white/18 transition-colors"
-                    style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)', background: 'rgba(255, 255, 255, 0.22)', backdropFilter: 'blur(12px) saturate(130%) brightness(112%)', WebkitBackdropFilter: 'blur(12px) saturate(130%) brightness(112%)' }}
                   >
+                  <LiquidGlass level={2} borderRadius={16} onClick={action.onClick} className="flex flex-col items-center gap-1 p-2.5 min-h-[56px] text-xs font-medium text-white cursor-pointer">
                     <action.icon className="h-5 w-5 text-white" />
-                    {action.label}
-                  </motion.button>
+                    <span style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>{action.label}</span>
+                  </LiquidGlass>
+                  </motion.div>
                 ))}
               </motion.div>
+            </LiquidGlass>
             </motion.div>
           </section>
         )}
@@ -457,23 +460,14 @@ className="flex flex-col items-center gap-1 rounded-xl glass-base p-2.5 min-h-[5
 
               {/* Guest action buttons */}
               <div className="flex gap-3">
-                <Button
-                  onClick={onBrowseTree}
-                  className="flex-1 min-h-[48px] rounded-2xl font-bold text-base gap-2 glass-base text-white hover:bg-white/30"
-                  style={{ background: 'rgba(255, 255, 255, 0.18)', backdropFilter: 'blur(10px) saturate(130%)', WebkitBackdropFilter: 'blur(10px) saturate(130%)', border: '1px solid rgba(255, 255, 255, 0.35)', color: 'rgba(255, 255, 255, 0.95)' }}
-                >
+                <LiquidGlass level={1} borderRadius={16} onClick={onBrowseTree} className="flex-1 min-h-[48px] flex items-center justify-center font-bold text-base gap-2 text-white cursor-pointer">
                   <TreePine className="h-5 w-5" />
                   تصفح الشجرة
-                </Button>
-                <Button
-                  onClick={() => setForceOnboarding(true)}
-                  variant="outline"
-                  className="flex-1 min-h-[48px] rounded-2xl font-bold text-base gap-2 glass-base text-white/90 hover:bg-white/20"
-                  style={{ background: 'rgba(255, 255, 255, 0.18)', backdropFilter: 'blur(10px) saturate(130%)', WebkitBackdropFilter: 'blur(10px) saturate(130%)', border: '1px solid rgba(255, 255, 255, 0.35)', color: 'rgba(255, 255, 255, 0.95)' }}
-                >
+                </LiquidGlass>
+                <LiquidGlass level={1} borderRadius={16} onClick={() => setForceOnboarding(true)} className="flex-1 min-h-[48px] flex items-center justify-center font-bold text-base gap-2 text-white/90 cursor-pointer">
                   <User className="h-5 w-5" />
                   سجّل دخولك
-                </Button>
+                </LiquidGlass>
               </div>
             </motion.div>
           </section>
@@ -495,18 +489,17 @@ className="flex flex-col items-center gap-1 rounded-xl glass-base p-2.5 min-h-[5
               { label: "فروع", icon: GitBranch, onClick: () => { onBrowseTree(); window.dispatchEvent(new CustomEvent('switch-to-branches')); } },
               { label: "القائمة", icon: AlignJustify, onClick: () => { onBrowseTree(); window.dispatchEvent(new CustomEvent('switch-to-list')); } },
             ].map((action) => (
-              <motion.button
+              <motion.div
                 key={action.label}
                 variants={staggerItem}
                 whileHover={{ scale: 1.03, transition: springConfig }}
                 whileTap={{ scale: 0.97 }}
-                onClick={action.onClick}
-                className="flex flex-col items-center gap-1.5 rounded-2xl glass-base p-3 min-h-[72px] text-center hover:bg-white/20 transition-all"
-                style={{ background: 'rgba(255, 255, 255, 0.20)', backdropFilter: 'blur(10px) saturate(130%)', WebkitBackdropFilter: 'blur(10px) saturate(130%)' }}
               >
+              <LiquidGlass level={1} borderRadius={14} onClick={action.onClick} className="flex flex-col items-center gap-1.5 p-3 min-h-[72px] text-center cursor-pointer">
                 <action.icon className="h-5 w-5 text-white" />
                 <span className="text-xs font-medium text-white" style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>{action.label}</span>
-              </motion.button>
+              </LiquidGlass>
+              </motion.div>
             ))}
           </motion.div>
         </section>
@@ -514,22 +507,14 @@ className="flex flex-col items-center gap-1 rounded-xl glass-base p-2.5 min-h-[5
         {/* Bottom action buttons */}
         <section className="relative z-10 px-4 pb-6">
           <div className="max-w-lg mx-auto flex gap-2">
-            <button
-              onClick={() => setRequestOpen(true)}
-              className="flex-1 rounded-2xl glass-base min-h-[48px] flex items-center justify-center gap-2 text-sm text-white font-medium hover:bg-white/20 transition-colors"
-style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)', background: 'rgba(255, 255, 255, 0.18)', backdropFilter: 'blur(10px) saturate(130%)', WebkitBackdropFilter: 'blur(10px) saturate(130%)', border: '1px solid rgba(255, 255, 255, 0.35)', color: 'rgba(255, 255, 255, 0.95)' }}
-            >
+            <LiquidGlass level={1} borderRadius={12} onClick={() => setRequestOpen(true)} className="flex-1 min-h-[48px] flex items-center justify-center gap-2 text-sm text-white font-medium cursor-pointer" style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>
               <Send className="h-4 w-4" />
               أرسل طلب تعديل
-            </button>
-            <button
-              onClick={() => navigate('/guide')}
-              className="flex-1 rounded-2xl glass-base min-h-[48px] flex items-center justify-center gap-2 text-sm text-white font-medium hover:bg-white/20 transition-colors"
-style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)', background: 'rgba(255, 255, 255, 0.18)', backdropFilter: 'blur(10px) saturate(130%)', WebkitBackdropFilter: 'blur(10px) saturate(130%)', border: '1px solid rgba(255, 255, 255, 0.35)', color: 'rgba(255, 255, 255, 0.95)' }}
-            >
+            </LiquidGlass>
+            <LiquidGlass level={1} borderRadius={12} onClick={() => navigate('/guide')} className="flex-1 min-h-[48px] flex items-center justify-center gap-2 text-sm text-white font-medium cursor-pointer" style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>
               <BookOpen className="h-4 w-4" />
               دليل الاستخدام
-            </button>
+            </LiquidGlass>
           </div>
         </section>
 
