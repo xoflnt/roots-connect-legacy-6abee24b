@@ -460,6 +460,7 @@ className="flex flex-col items-center gap-1 rounded-xl glass-base p-2.5 min-h-[5
                 <Button
                   onClick={onBrowseTree}
                   className="flex-1 min-h-[48px] rounded-2xl font-bold text-base gap-2 glass-base text-white hover:bg-white/30"
+                  style={{ background: 'rgba(255, 255, 255, 0.18)', backdropFilter: 'blur(10px) saturate(130%)', WebkitBackdropFilter: 'blur(10px) saturate(130%)', border: '1px solid rgba(255, 255, 255, 0.35)', color: 'rgba(255, 255, 255, 0.95)' }}
                 >
                   <TreePine className="h-5 w-5" />
                   تصفح الشجرة
