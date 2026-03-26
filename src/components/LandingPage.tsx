@@ -229,7 +229,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
           >
-            <TreePine className="h-10 w-10 text-white mx-auto" style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.4))' }} />
+            <TreePine className="h-10 w-10 text-white mx-auto" style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.8))' }} />
             <h1 className="text-2xl font-extrabold text-white leading-tight" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.5)' }}>
               بـوابـة تـراث الخـنـيـنـي
             </h1>
