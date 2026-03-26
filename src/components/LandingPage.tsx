@@ -279,20 +279,40 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                   <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                     {dashboardData.branch && (
                       <span
-                        className="text-[10px] font-bold px-3 py-0.5 rounded-full border"
+                        className="text-[10px] font-bold px-3 py-0.5 rounded-full"
                         style={{
-                          backgroundColor: `${BRANCH_HEX[dashboardData.branch.pillarId] || '#C9A84C'}33`,
-                          borderColor: `${BRANCH_HEX[dashboardData.branch.pillarId] || '#C9A84C'}66`,
+                          backgroundColor: `${BRANCH_HEX[dashboardData.branch.pillarId] || '#C9A84C'}55`,
+                          border: `1.5px solid ${BRANCH_HEX[dashboardData.branch.pillarId] || '#C9A84C'}99`,
                           color: 'white',
                           backdropFilter: 'blur(8px)',
                           WebkitBackdropFilter: 'blur(8px)',
-                          textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+                          textShadow: '0 1px 3px rgba(0,0,0,0.6)',
+                          fontWeight: '600',
                         }}
                       >
                         {dashboardData.branch.label}
                       </span>
                     )}
-                    <HeritageBadge type="generation" generationNum={dashboardData.depth} />
+                    {(() => {
+                      const genHex = getGenerationHex(dashboardData.depth);
+                      return (
+                        <span
+                          className="text-[10px] font-bold px-3 py-0.5 rounded-full flex items-center gap-1"
+                          style={{
+                            backgroundColor: `${genHex}55`,
+                            border: `1.5px solid ${genHex}99`,
+                            color: 'white',
+                            backdropFilter: 'blur(8px)',
+                            WebkitBackdropFilter: 'blur(8px)',
+                            textShadow: '0 1px 3px rgba(0,0,0,0.6)',
+                            fontWeight: '600',
+                          }}
+                        >
+                          <Layers className="h-3 w-3" />
+                          الجيل {dashboardData.depth.toLocaleString('ar-SA')}
+                        </span>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>
