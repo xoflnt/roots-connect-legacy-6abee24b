@@ -418,6 +418,22 @@ serve(async (req) => {
         .insert(rows);
 
       if (insertErr) return json({ error: insertErr.message }, 500);
+
+      // Trigger push notifications
+      try {
+        const pushUrl = `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-push-notification`;
+        await fetch(pushUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+          },
+          body: JSON.stringify({ user_ids: targetIds, title, body }),
+        });
+      } catch (pushErr) {
+        console.error("[family-api] Push notification error:", pushErr);
+      }
+
       return json({ success: true, sent: targetIds.length });
     }
 
