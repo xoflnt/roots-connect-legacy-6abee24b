@@ -489,18 +489,17 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
               { label: "فروع", icon: GitBranch, onClick: () => { onBrowseTree(); window.dispatchEvent(new CustomEvent('switch-to-branches')); } },
               { label: "القائمة", icon: AlignJustify, onClick: () => { onBrowseTree(); window.dispatchEvent(new CustomEvent('switch-to-list')); } },
             ].map((action) => (
-              <motion.button
+              <motion.div
                 key={action.label}
                 variants={staggerItem}
                 whileHover={{ scale: 1.03, transition: springConfig }}
                 whileTap={{ scale: 0.97 }}
-                onClick={action.onClick}
-                className="flex flex-col items-center gap-1.5 rounded-2xl glass-base p-3 min-h-[72px] text-center hover:bg-white/20 transition-all"
-                style={{ background: 'rgba(255, 255, 255, 0.20)', backdropFilter: 'blur(10px) saturate(130%)', WebkitBackdropFilter: 'blur(10px) saturate(130%)' }}
               >
+              <LiquidGlass level={1} borderRadius={14} onClick={action.onClick} className="flex flex-col items-center gap-1.5 p-3 min-h-[72px] text-center cursor-pointer">
                 <action.icon className="h-5 w-5 text-white" />
                 <span className="text-xs font-medium text-white" style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>{action.label}</span>
-              </motion.button>
+              </LiquidGlass>
+              </motion.div>
             ))}
           </motion.div>
         </section>
