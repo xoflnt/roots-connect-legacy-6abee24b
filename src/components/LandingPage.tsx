@@ -111,6 +111,12 @@ function StatCard({ icon: Icon, label, value, suffix, highlight }: { icon: React
   );
 }
 
+const BRANCH_HEX: Record<string, string> = {
+  '300': '#16a34a',
+  '200': '#C9A84C',
+  '400': '#ea580c',
+};
+
 const PILLAR_COLORS = [
   { bg: "bg-pillar-1", border: "border-pillar-1-border", icon: "text-pillar-1-text" },
   { bg: "bg-pillar-2", border: "border-pillar-2-border", icon: "text-pillar-2-text" },
