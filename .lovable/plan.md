@@ -1,30 +1,77 @@
 
 
-# Fix Search Results Visibility in LandingPage.tsx
+# Create Notifications & Push Subscriptions Tables
 
-## Root Cause
+## Adjustments from original SQL
 
-The hero container on line 184 has `overflow-x-hidden`. In CSS, when you set `overflow-x: hidden` on an element, the browser automatically changes `overflow-y` from `visible` to `auto`. This means content that extends below the hero boundary (like the search dropdown) gets clipped — even though only `x` was set to hidden.
+Per project guidelines, the `CHECK` constraint on `notifications.type` must be replaced with a **validation trigger** (CHECK constraints cause restoration failures with time-based or mutable logic, and the project standard is to use triggers).
 
-The background images are already wrapped in their own `overflow-hidden` container (line 186), making the `overflow-x-hidden` on the outer hero div redundant.
+Also, the `verified_users.id` column is a UUID — the foreign key references are valid.
 
-## Fix — Single file: `src/components/LandingPage.tsx`
+## Migration SQL
 
-### Line 184 — Remove `overflow-x-hidden`
+Two tables, indexes, RLS, realtime, and a validation trigger — all in one migration:
 
+```sql
+-- 1. Notifications table
+CREATE TABLE public.notifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES public.verified_users(id) ON DELETE CASCADE,
+  title VARCHAR(255) NOT NULL,
+  body TEXT NOT NULL,
+  type TEXT NOT NULL DEFAULT 'info',
+  is_read BOOLEAN NOT NULL DEFAULT false,
+  data JSONB DEFAULT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  read_at TIMESTAMPTZ DEFAULT NULL
+);
+
+-- Validation trigger instead of CHECK constraint
+CREATE OR REPLACE FUNCTION public.validate_notification_type()
+RETURNS TRIGGER LANGUAGE plpgsql AS $$
+BEGIN
+  IF NEW.type NOT IN ('approval','rejection','broadcast','new_member','info') THEN
+    RAISE EXCEPTION 'Invalid notification type: %', NEW.type;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER trg_validate_notification_type
+  BEFORE INSERT OR UPDATE ON public.notifications
+  FOR EACH ROW EXECUTE FUNCTION public.validate_notification_type();
+
+CREATE INDEX idx_notifications_user_unread
+  ON public.notifications (user_id, created_at DESC)
+  WHERE is_read = false;
+
+ALTER PUBLICATION supabase_realtime ADD TABLE public.notifications;
+ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "service_role_all" ON public.notifications
+  FOR ALL TO service_role USING (true) WITH CHECK (true);
+
+-- 2. Push subscriptions table
+CREATE TABLE public.push_subscriptions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES public.verified_users(id) ON DELETE CASCADE,
+  endpoint TEXT NOT NULL,
+  p256dh TEXT NOT NULL,
+  auth TEXT NOT NULL,
+  user_agent TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(endpoint)
+);
+
+ALTER TABLE public.push_subscriptions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "service_role_all" ON public.push_subscriptions
+  FOR ALL TO service_role USING (true) WITH CHECK (true);
 ```
-FROM: <div className="relative overflow-x-hidden">
-TO:   <div className="relative">
-```
 
-This allows the search dropdown to extend below the hero section naturally. The background images remain clipped by their own inner wrapper (line 186: `<div className="absolute inset-0 overflow-hidden pointer-events-none">`).
-
-### Verify no horizontal overflow
-
-The wave SVG container (line 552) already has its own `overflow-hidden`. No other absolute-positioned element inside the hero should cause horizontal overflow once the background is contained.
-
-## Result
-- Search dropdown (both guest and logged-in) will render visibly above all content
-- Background images stay clipped in their own container
-- Wave/gradient remain below search via z-index hierarchy (z-[5] vs z-99999)
+## Notes
+- Both tables only allow `service_role` access (edge functions) — no client-side SDK access
+- Realtime enabled on `notifications` for live updates
+- Partial index on unread notifications for fast queries
+- Validation trigger enforces allowed notification types
 
