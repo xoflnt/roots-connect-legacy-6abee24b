@@ -181,7 +181,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
       <OnboardingModal forceOpen={forceOnboarding} />
 
       {/* ─── Hero with liquid glass ─── */}
-      <div className="relative overflow-x-hidden">
+      <div className="relative">
         {/* Background image + overlays (clipped container) */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <picture>
