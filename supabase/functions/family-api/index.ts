@@ -384,6 +384,43 @@ serve(async (req) => {
       return json({ success: true });
     }
 
+    // ─── SEND NOTIFICATION (admin only) ───
+    if (path === "send-notification" && req.method === "POST") {
+      if (!(await validateAdminToken(req, supabase))) {
+        return json({ error: "Unauthorized" }, 401);
+      }
+
+      const { title, body, type, user_ids } = await req.json();
+      if (!title || !body) return json({ error: "title and body required" }, 400);
+
+      let targetIds = user_ids;
+      if (!targetIds || targetIds.length === 0) {
+        const { data: allUsers } = await supabase
+          .from("verified_users")
+          .select("id");
+        targetIds = (allUsers || []).map((u: any) => u.id);
+      }
+
+      if (targetIds.length === 0) {
+        return json({ error: "No users found" }, 400);
+      }
+
+      const rows = targetIds.map((uid: string) => ({
+        user_id: uid,
+        title,
+        body,
+        type: type || "broadcast",
+        is_read: false,
+      }));
+
+      const { error: insertErr } = await supabase
+        .from("notifications")
+        .insert(rows);
+
+      if (insertErr) return json({ error: insertErr.message }, 500);
+      return json({ success: true, sent: targetIds.length });
+    }
+
     return json({ error: "Invalid endpoint" }, 400);
   } catch (error) {
     console.error("[family-api] Error:", error);
