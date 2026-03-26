@@ -197,10 +197,13 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         {/* Background image + overlays (clipped container) */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <picture>
-            <source media="(max-width: 768px)" srcSet="/images/hero-bg-mobile.jpg" />
+            <source media="(max-width: 768px)" srcSet="/images/hero-bg-mobile.webp" type="image/webp" />
+            <source srcSet="/images/hero-bg.webp" type="image/webp" />
             <img
               src="/images/hero-bg.jpg"
               alt=""
+              fetchPriority="high"
+              decoding="async"
               className="absolute inset-0 w-full h-full object-cover object-top select-none"
             />
           </picture>
