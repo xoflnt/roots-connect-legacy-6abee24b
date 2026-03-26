@@ -26,7 +26,7 @@ const CONFIG = {
   generation: {
     label: "الجيل",
     icon: Layers,
-    className: "bg-secondary text-secondary-foreground border-border/50",
+    className: "bg-secondary/40 text-secondary-foreground border-secondary/60 backdrop-blur-sm",
   },
   documenter: {
     label: "موثق الشجرة",
