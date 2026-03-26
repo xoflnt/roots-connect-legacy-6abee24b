@@ -411,7 +411,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                 <Button
                   onClick={() => setForceOnboarding(true)}
                   variant="outline"
-                  className="flex-1 min-h-[48px] rounded-2xl font-bold text-base gap-2 backdrop-blur-md bg-white/10 border border-white/30 text-white/90 hover:bg-white/20"
+                  className="flex-1 min-h-[48px] rounded-2xl font-bold text-base gap-2 backdrop-blur-sm bg-white/12 border border-white/30 text-white/90 hover:bg-white/20"
                 >
                   <User className="h-5 w-5" />
                   سجّل دخولك
