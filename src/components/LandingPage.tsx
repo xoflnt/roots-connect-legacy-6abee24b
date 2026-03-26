@@ -269,7 +269,17 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                   </div>
                   <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                     {dashboardData.branch && (
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/20 text-white border border-white/30">
+                      <span
+                        className="text-[10px] font-bold px-3 py-0.5 rounded-full border"
+                        style={{
+                          backgroundColor: `${BRANCH_HEX[dashboardData.branch.pillarId] || '#C9A84C'}33`,
+                          borderColor: `${BRANCH_HEX[dashboardData.branch.pillarId] || '#C9A84C'}66`,
+                          color: 'white',
+                          backdropFilter: 'blur(8px)',
+                          WebkitBackdropFilter: 'blur(8px)',
+                          textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+                        }}
+                      >
                         {dashboardData.branch.label}
                       </span>
                     )}
