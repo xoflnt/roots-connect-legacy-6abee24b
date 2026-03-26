@@ -498,7 +498,7 @@ className="flex flex-col items-center gap-1 rounded-xl glass-base p-2.5 min-h-[5
                 whileHover={{ scale: 1.03, transition: springConfig }}
                 whileTap={{ scale: 0.97 }}
                 onClick={action.onClick}
-                className="flex flex-col items-center gap-1.5 rounded-2xl backdrop-blur-sm bg-white/12 border border-white/30 p-3 min-h-[72px] text-center hover:bg-white/20 transition-all"
+                className="flex flex-col items-center gap-1.5 rounded-2xl glass-base p-3 min-h-[72px] text-center hover:bg-white/20 transition-all"
               >
                 <action.icon className="h-5 w-5 text-white" />
                 <span className="text-xs font-medium text-white" style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>{action.label}</span>
