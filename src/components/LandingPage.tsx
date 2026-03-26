@@ -286,7 +286,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                 ].map((s) => (
                   <motion.div key={s.label} variants={staggerItem} className="rounded-xl backdrop-blur-sm bg-white/12 border border-white/30 py-2 px-1">
                     <div className="text-lg font-extrabold text-white">{s.value.toLocaleString("ar-SA")}</div>
-                    <div className="text-xs text-white/70 font-medium">{s.label}</div>
+                    <div className="text-xs text-white/85 font-medium" style={{ textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>{s.label}</div>
                   </motion.div>
                 ))}
               </motion.div>
