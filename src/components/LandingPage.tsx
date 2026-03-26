@@ -192,11 +192,11 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
               className="absolute inset-0 w-full h-full object-cover object-top select-none"
             />
           </picture>
-          <div className="absolute inset-0 dark:bg-black/50 bg-transparent" />
+          <div className="absolute inset-0 dark:bg-black/30 bg-transparent" />
           <div
             className="absolute inset-0"
             style={{
-              background: 'linear-gradient(to bottom, rgba(15,42,30,0.45) 0%, rgba(15,42,30,0.35) 40%, rgba(15,42,30,0.55) 75%, hsl(var(--background)) 100%)',
+              background: 'linear-gradient(to bottom, rgba(15,42,30,0.25) 0%, transparent 35%, rgba(246,243,238,0.85) 80%, rgba(246,243,238,1) 100%)',
             }}
           />
         </div>
@@ -244,7 +244,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         {currentUser && dashboardData && (
           <section className="relative z-10 py-4 px-4">
             <motion.div
-              className="max-w-lg mx-auto rounded-2xl border border-white/20 backdrop-blur-md bg-white/10 p-4 space-y-4"
+              className="max-w-lg mx-auto rounded-2xl border border-white/35 backdrop-blur-sm bg-white/15 p-4 space-y-4"
               initial={{ opacity: 0, scale: 0.97, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ ...gentleSpring, delay: 0.1 }}
@@ -284,7 +284,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                   { label: "الأجداد", value: dashboardData.ancestors.length - 1 },
                   { label: "الأشقاء", value: dashboardData.siblings.length },
                 ].map((s) => (
-                  <motion.div key={s.label} variants={staggerItem} className="rounded-xl backdrop-blur-sm bg-white/10 border border-white/15 py-2 px-1">
+                  <motion.div key={s.label} variants={staggerItem} className="rounded-xl backdrop-blur-sm bg-white/12 border border-white/30 py-2 px-1">
                     <div className="text-lg font-extrabold text-white">{s.value.toLocaleString("ar-SA")}</div>
                     <div className="text-xs text-white/70 font-medium">{s.label}</div>
                   </motion.div>
@@ -309,7 +309,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
                     onClick={action.onClick}
-                    className="flex flex-col items-center gap-1 rounded-xl backdrop-blur-sm bg-white/10 border border-white/15 p-2.5 min-h-[56px] text-xs font-medium text-white/90 hover:bg-white/20 transition-colors"
+                    className="flex flex-col items-center gap-1 rounded-xl backdrop-blur-sm bg-white/12 border border-white/30 p-2.5 min-h-[56px] text-xs font-medium text-white/90 hover:bg-white/18 transition-colors"
                   >
                     <action.icon className="h-5 w-5 text-white" />
                     {action.label}
@@ -345,7 +345,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                     onBlur={() => setTimeout(() => setOpen(false), 200)}
                     className="pr-12 pl-4 h-14 text-base rounded-2xl hero-search"
                     style={{
-                      backgroundColor: 'rgba(255,255,255,0.25)',
+                     backgroundColor: 'rgba(255,255,255,0.18)',
                       backdropFilter: 'blur(12px)',
                       WebkitBackdropFilter: 'blur(12px)',
                       border: '1.5px solid rgba(255,255,255,0.6)',
@@ -403,7 +403,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
               <div className="flex gap-3">
                 <Button
                   onClick={onBrowseTree}
-                  className="flex-1 min-h-[48px] rounded-2xl font-bold text-base gap-2 backdrop-blur-md bg-white/20 border border-white/40 text-white hover:bg-white/30"
+                  className="flex-1 min-h-[48px] rounded-2xl font-bold text-base gap-2 backdrop-blur-sm bg-white/18 border border-white/40 text-white hover:bg-white/30"
                 >
                   <TreePine className="h-5 w-5" />
                   تصفح الشجرة
@@ -411,7 +411,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                 <Button
                   onClick={() => setForceOnboarding(true)}
                   variant="outline"
-                  className="flex-1 min-h-[48px] rounded-2xl font-bold text-base gap-2 backdrop-blur-md bg-white/10 border border-white/30 text-white/90 hover:bg-white/20"
+                  className="flex-1 min-h-[48px] rounded-2xl font-bold text-base gap-2 backdrop-blur-sm bg-white/12 border border-white/30 text-white/90 hover:bg-white/20"
                 >
                   <User className="h-5 w-5" />
                   سجّل دخولك
@@ -443,7 +443,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                 whileHover={{ scale: 1.03, transition: springConfig }}
                 whileTap={{ scale: 0.97 }}
                 onClick={action.onClick}
-                className="flex flex-col items-center gap-1.5 rounded-2xl backdrop-blur-md bg-white/10 border border-white/20 p-3 min-h-[72px] text-center hover:bg-white/20 transition-all"
+                className="flex flex-col items-center gap-1.5 rounded-2xl backdrop-blur-sm bg-white/12 border border-white/30 p-3 min-h-[72px] text-center hover:bg-white/20 transition-all"
               >
                 <action.icon className="h-5 w-5 text-white/90" />
                 <span className="text-xs font-medium text-white/85">{action.label}</span>
@@ -457,14 +457,14 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
           <div className="max-w-lg mx-auto flex gap-2">
             <button
               onClick={() => setRequestOpen(true)}
-              className="flex-1 rounded-2xl backdrop-blur-md bg-white/10 border border-white/25 min-h-[48px] flex items-center justify-center gap-2 text-sm text-white/80 font-medium hover:bg-white/20 transition-colors"
+              className="flex-1 rounded-2xl backdrop-blur-sm bg-white/12 border border-white/25 min-h-[48px] flex items-center justify-center gap-2 text-sm text-white/80 font-medium hover:bg-white/20 transition-colors"
             >
               <Send className="h-4 w-4" />
               أرسل طلب تعديل
             </button>
             <button
               onClick={() => navigate('/guide')}
-              className="flex-1 rounded-2xl backdrop-blur-md bg-white/10 border border-white/25 min-h-[48px] flex items-center justify-center gap-2 text-sm text-white/80 font-medium hover:bg-white/20 transition-colors"
+              className="flex-1 rounded-2xl backdrop-blur-sm bg-white/12 border border-white/25 min-h-[48px] flex items-center justify-center gap-2 text-sm text-white/80 font-medium hover:bg-white/20 transition-colors"
             >
               <BookOpen className="h-4 w-4" />
               دليل الاستخدام
@@ -486,7 +486,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                   onBlur={() => setTimeout(() => setOpen(false), 200)}
                   className="pr-12 pl-4 h-12 text-base rounded-2xl hero-search"
                   style={{
-                    backgroundColor: 'rgba(255,255,255,0.25)',
+                    backgroundColor: 'rgba(255,255,255,0.18)',
                     backdropFilter: 'blur(12px)',
                     WebkitBackdropFilter: 'blur(12px)',
                     border: '1.5px solid rgba(255,255,255,0.6)',
