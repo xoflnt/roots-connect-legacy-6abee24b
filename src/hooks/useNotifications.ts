@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { getMyUserId } from "@/services/dataService";
+
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { toast } from "sonner";
 

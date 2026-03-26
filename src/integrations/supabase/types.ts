@@ -214,6 +214,13 @@ export type Database = {
             referencedRelation: "verified_users"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "verified_users_lookup"
+            referencedColumns: ["id"]
+          },
         ]
       }
       otp_verifications: {
@@ -297,6 +304,13 @@ export type Database = {
             referencedRelation: "verified_users"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "push_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "verified_users_lookup"
+            referencedColumns: ["id"]
+          },
         ]
       }
       verified_users: {
@@ -343,7 +357,21 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      verified_users_lookup: {
+        Row: {
+          id: string | null
+          phone: string | null
+        }
+        Insert: {
+          id?: string | null
+          phone?: string | null
+        }
+        Update: {
+          id?: string | null
+          phone?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
