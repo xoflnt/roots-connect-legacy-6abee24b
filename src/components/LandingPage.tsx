@@ -457,14 +457,14 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
           <div className="max-w-lg mx-auto flex gap-2">
             <button
               onClick={() => setRequestOpen(true)}
-              className="flex-1 rounded-2xl backdrop-blur-md bg-white/10 border border-white/25 min-h-[48px] flex items-center justify-center gap-2 text-sm text-white/80 font-medium hover:bg-white/20 transition-colors"
+              className="flex-1 rounded-2xl backdrop-blur-sm bg-white/12 border border-white/25 min-h-[48px] flex items-center justify-center gap-2 text-sm text-white/80 font-medium hover:bg-white/20 transition-colors"
             >
               <Send className="h-4 w-4" />
               أرسل طلب تعديل
             </button>
             <button
               onClick={() => navigate('/guide')}
-              className="flex-1 rounded-2xl backdrop-blur-md bg-white/10 border border-white/25 min-h-[48px] flex items-center justify-center gap-2 text-sm text-white/80 font-medium hover:bg-white/20 transition-colors"
+              className="flex-1 rounded-2xl backdrop-blur-sm bg-white/12 border border-white/25 min-h-[48px] flex items-center justify-center gap-2 text-sm text-white/80 font-medium hover:bg-white/20 transition-colors"
             >
               <BookOpen className="h-4 w-4" />
               دليل الاستخدام
