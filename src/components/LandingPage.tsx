@@ -230,10 +230,10 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
             transition={{ duration: 0.4, ease: "easeOut" }}
           >
             <TreePine className="h-10 w-10 text-white mx-auto" style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.8))' }} />
-            <h1 className="text-2xl font-extrabold text-white leading-tight" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.5)' }}>
+            <h1 className="text-2xl font-extrabold text-white leading-tight" style={{ textShadow: '0 2px 16px rgba(0,0,0,0.8), 0 1px 4px rgba(0,0,0,0.9)' }}>
               بـوابـة تـراث الخـنـيـنـي
             </h1>
-            <p className="text-sm text-white/80" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.5)' }}>
+            <p className="text-sm text-white/90" style={{ textShadow: '0 2px 16px rgba(0,0,0,0.8), 0 1px 4px rgba(0,0,0,0.9)' }}>
               فرع الزلفي
             </p>
             <div className="h-px bg-gradient-to-r from-transparent via-accent to-transparent max-w-xs mx-auto" />
