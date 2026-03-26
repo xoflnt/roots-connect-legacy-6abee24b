@@ -338,7 +338,7 @@ export function LineageView({ memberId, onSelectMember }: LineageViewProps) {
                             const br = getBranch(member.id);
                             const bs = br ? getBranchStyle(br.pillarId) : null;
                             return br && bs ? (
-                              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: bs.bg, color: bs.text, opacity: 0.7 }}>
+                              <span className="text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap" style={{ backgroundColor: bs.bg, color: bs.text, borderColor: bs.stroke + '40' }}>
                                 {br.label}
                               </span>
                             ) : null;
