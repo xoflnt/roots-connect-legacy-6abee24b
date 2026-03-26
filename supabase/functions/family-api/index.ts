@@ -115,7 +115,7 @@ serve(async (req) => {
         return json({ error: "memberId, memberName, phone required" }, 400);
       }
 
-      await supabase.from("verified_users").upsert(
+      const { data: upserted } = await supabase.from("verified_users").upsert(
         {
           member_id: memberId,
           member_name: memberName,
@@ -124,9 +124,24 @@ serve(async (req) => {
           verified_at: new Date().toISOString(),
         },
         { onConflict: "member_id" }
-      );
+      ).select("id").single();
 
-      return json({ success: true });
+      return json({ success: true, verifiedUserId: upserted?.id || null });
+    }
+
+    // ─── GET MY USER ID (public — returns verified_users UUID by phone) ───
+    if (path === "get-my-user-id" && req.method === "POST") {
+      const { phone } = await req.json();
+      if (!phone) return json({ error: "phone required" }, 400);
+
+      const { data: vu } = await supabase
+        .from("verified_users")
+        .select("id")
+        .eq("phone", phone)
+        .single();
+
+      if (!vu) return json({ error: "Not found" }, 404);
+      return json({ verifiedUserId: vu.id });
     }
 
     // ─── UPDATE MEMBER (auth-gated) ───

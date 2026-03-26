@@ -149,8 +149,8 @@ export async function markRequestDone(requestId: string, adminToken: string): Pr
 
 // ─── Verified Users (via edge function) ───
 
-export async function registerVerifiedUser(user: Omit<VerifiedUser, "verifiedAt">): Promise<void> {
-  await callFamilyApi("register-user", {
+export async function registerVerifiedUser(user: Omit<VerifiedUser, "verifiedAt">): Promise<string | null> {
+  const result = await callFamilyApi("register-user", {
     memberId: user.memberId,
     memberName: user.memberName,
     phone: user.phone,
@@ -160,6 +160,18 @@ export async function registerVerifiedUser(user: Omit<VerifiedUser, "verifiedAt"
   // Also update member birth date in DB using the newly verified phone for auth
   if (user.hijriBirthDate) {
     await updateMember(user.memberId, { birth_year: user.hijriBirthDate }, undefined, user.phone);
+  }
+
+  return result?.verifiedUserId || null;
+}
+
+/** Get verified_users UUID by phone */
+export async function getMyUserId(phone: string): Promise<string | null> {
+  try {
+    const result = await callFamilyApi("get-my-user-id", { phone });
+    return result?.verifiedUserId || null;
+  } catch {
+    return null;
   }
 }
 

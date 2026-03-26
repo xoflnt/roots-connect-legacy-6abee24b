@@ -123,6 +123,7 @@ export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHom
             مرحباً بك في بوابة تراث الخنيني
           </span>
         )}
+        {isLoggedIn && <NotificationBell />}
         <Button
           variant="ghost"
           size="icon"

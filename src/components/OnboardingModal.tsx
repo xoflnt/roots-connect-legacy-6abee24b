@@ -199,6 +199,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
         memberName: selectedMember.name,
         phone: `+966${phone}`,
         hijriBirthDate: dateStr,
+        verifiedUserId: verifiedUserId || undefined,
       });
     } catch {
       toast.error("حدث خطأ أثناء الحفظ");

@@ -5,6 +5,7 @@ export interface CurrentUser {
   memberName: string;
   phone: string;
   hijriBirthDate?: string;
+  verifiedUserId?: string;
 }
 
 interface AuthContextType {
