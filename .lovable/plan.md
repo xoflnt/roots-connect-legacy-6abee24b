@@ -1,78 +1,30 @@
 
 
-# Fix Search Bar Visibility & Dropdown Stacking
+# Fix Search Results Visibility in LandingPage.tsx
 
-## Problem
-1. Search dropdown renders behind wave/gradient (z-[5] vs z-9999 — but hero `overflow-x-hidden` on line 184 may still clip)
-2. Search input blends into hero background
-3. Results need guaranteed solid background
+## Root Cause
 
-## Changes — `src/components/LandingPage.tsx` + `src/index.css`
+The hero container on line 184 has `overflow-x-hidden`. In CSS, when you set `overflow-x: hidden` on an element, the browser automatically changes `overflow-y` from `visible` to `auto`. This means content that extends below the hero boundary (like the search dropdown) gets clipped — even though only `x` was set to hidden.
 
-### 1. Boost search wrapper z-index (both locations)
+The background images are already wrapped in their own `overflow-hidden` container (line 186), making the `overflow-x-hidden` on the outer hero div redundant.
 
-**Guest search (line 337):** Change `zIndex: 9999` → `zIndex: 99999`
+## Fix — Single file: `src/components/LandingPage.tsx`
 
-**Logged-in search (line 449):** Change `zIndex: 9999` → `zIndex: 99999`
+### Line 184 — Remove `overflow-x-hidden`
 
-**Both dropdowns (lines 353, 465):** Change `zIndex: 9999` → `zIndex: 99999` and add full inline styles:
-```tsx
-style={{
-  position: 'absolute',
-  top: '100%',
-  left: 0,
-  right: 0,
-  zIndex: 99999,
-  backgroundColor: 'hsl(var(--card))',
-  border: '1px solid hsl(var(--border))',
-  borderRadius: '12px',
-  marginTop: '4px',
-  overflow: 'hidden',
-  boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
-}}
+```
+FROM: <div className="relative overflow-x-hidden">
+TO:   <div className="relative">
 ```
 
-### 2. Search input glass styling (both inputs)
+This allows the search dropdown to extend below the hero section naturally. The background images remain clipped by their own inner wrapper (line 186: `<div className="absolute inset-0 overflow-hidden pointer-events-none">`).
 
-**Guest input (line 346)** and **logged-in input (line 458):** Replace className/add inline style:
-```tsx
-className="pr-12 pl-4 h-14 text-base rounded-2xl hero-search"
-style={{
-  backgroundColor: 'rgba(255,255,255,0.25)',
-  backdropFilter: 'blur(12px)',
-  WebkitBackdropFilter: 'blur(12px)',
-  border: '1.5px solid rgba(255,255,255,0.6)',
-  color: 'white',
-  boxShadow: '0 2px 12px rgba(0,0,0,0.15)',
-}}
-```
+### Verify no horizontal overflow
 
-### 3. Result item solid background
+The wave SVG container (line 552) already has its own `overflow-hidden`. No other absolute-positioned element inside the hero should cause horizontal overflow once the background is contained.
 
-Both result buttons (lines 360, 472) — update inline style:
-```tsx
-style={{
-  padding: '12px 16px',
-  cursor: 'pointer',
-  backgroundColor: 'hsl(var(--card))',
-  borderBottom: '1px solid hsl(var(--border))',
-  textAlign: 'right',
-  fontSize: '16px',
-  color: 'hsl(var(--foreground))',
-  minHeight: 48,
-}}
-```
-
-### 4. Placeholder CSS in `src/index.css`
-
-Add under `@layer utilities`:
-```css
-.hero-search::placeholder {
-  color: rgba(255,255,255,0.7);
-}
-```
-
-### Files
-- `src/components/LandingPage.tsx` — search input styling, dropdown z-index, result item styles
-- `src/index.css` — placeholder color rule
+## Result
+- Search dropdown (both guest and logged-in) will render visibly above all content
+- Background images stay clipped in their own container
+- Wave/gradient remain below search via z-index hierarchy (z-[5] vs z-99999)
 
