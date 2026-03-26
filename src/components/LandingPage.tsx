@@ -258,7 +258,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-base font-bold text-white truncate" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.5)' }}>{(() => { const parts = currentUser.memberName.split(' '); parts[0] = applyTatweel(parts[0]); return parts.join(' '); })()}</span>
+                    <span className="text-base font-bold text-white truncate" style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>{(() => { const parts = currentUser.memberName.split(' '); parts[0] = applyTatweel(parts[0]); return parts.join(' '); })()}</span>
                     <BadgeCheck className="h-4 w-4 text-green-400 shrink-0" />
                   </div>
                   <div className="flex items-center gap-1.5 mt-1 flex-wrap">
