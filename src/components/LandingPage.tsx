@@ -460,23 +460,14 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
 
               {/* Guest action buttons */}
               <div className="flex gap-3">
-                <Button
-                  onClick={onBrowseTree}
-                  className="flex-1 min-h-[48px] rounded-2xl font-bold text-base gap-2 glass-base text-white hover:bg-white/30"
-                  style={{ background: 'rgba(255, 255, 255, 0.18)', backdropFilter: 'blur(10px) saturate(130%)', WebkitBackdropFilter: 'blur(10px) saturate(130%)', border: '1px solid rgba(255, 255, 255, 0.35)', color: 'rgba(255, 255, 255, 0.95)' }}
-                >
+                <LiquidGlass level={1} borderRadius={16} onClick={onBrowseTree} className="flex-1 min-h-[48px] flex items-center justify-center font-bold text-base gap-2 text-white cursor-pointer">
                   <TreePine className="h-5 w-5" />
                   تصفح الشجرة
-                </Button>
-                <Button
-                  onClick={() => setForceOnboarding(true)}
-                  variant="outline"
-                  className="flex-1 min-h-[48px] rounded-2xl font-bold text-base gap-2 glass-base text-white/90 hover:bg-white/20"
-                  style={{ background: 'rgba(255, 255, 255, 0.18)', backdropFilter: 'blur(10px) saturate(130%)', WebkitBackdropFilter: 'blur(10px) saturate(130%)', border: '1px solid rgba(255, 255, 255, 0.35)', color: 'rgba(255, 255, 255, 0.95)' }}
-                >
+                </LiquidGlass>
+                <LiquidGlass level={1} borderRadius={16} onClick={() => setForceOnboarding(true)} className="flex-1 min-h-[48px] flex items-center justify-center font-bold text-base gap-2 text-white/90 cursor-pointer">
                   <User className="h-5 w-5" />
                   سجّل دخولك
-                </Button>
+                </LiquidGlass>
               </div>
             </motion.div>
           </section>
