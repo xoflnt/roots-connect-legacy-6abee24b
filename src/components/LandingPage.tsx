@@ -269,12 +269,12 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         {currentUser && dashboardData && (
           <section className="relative z-10 py-4 px-4">
             <motion.div
-              className="max-w-lg mx-auto glass-premium rounded-3xl p-4 space-y-4"
-              style={{ background: 'rgba(255, 255, 255, 0.28)', backdropFilter: 'blur(16px) saturate(140%) brightness(115%)', WebkitBackdropFilter: 'blur(16px) saturate(140%) brightness(115%)' }}
+              className="max-w-lg mx-auto"
               initial={{ opacity: 0, scale: 0.97, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ ...gentleSpring, delay: 0.1 }}
             >
+            <LiquidGlass level={3} borderRadius={24} className="p-4 space-y-4">
               {/* Top row: avatar + name + badges */}
               <div className="flex items-center gap-3">
                 <div
