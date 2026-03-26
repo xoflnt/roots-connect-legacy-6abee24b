@@ -161,7 +161,7 @@ export function OnboardingModal({ forceOpen }: OnboardingModalProps) {
       }
 
       // Step 1: Register as verified user FIRST (creates the auth record)
-      await registerVerifiedUser({
+      const verifiedUserId = await registerVerifiedUser({
         memberId: selectedMember.id,
         memberName: selectedMember.name,
         phone: fullPhone,
