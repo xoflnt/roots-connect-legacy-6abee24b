@@ -23,6 +23,7 @@ import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/component
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Input as SheetInput } from "@/components/ui/input";
 import { staggerContainer, staggerItem, gentleSpring, springConfig } from "@/lib/animations";
+import { LiquidGlass } from "@/components/LiquidGlass";
 
 interface LandingPageProps {
   onSearchSelect: (memberId: string) => void;
