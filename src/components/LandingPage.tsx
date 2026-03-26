@@ -512,7 +512,7 @@ className="flex flex-col items-center gap-1 rounded-xl glass-base p-2.5 min-h-[5
           <div className="max-w-lg mx-auto flex gap-2">
             <button
               onClick={() => setRequestOpen(true)}
-              className="flex-1 rounded-2xl backdrop-blur-sm bg-white/12 border border-white/25 min-h-[48px] flex items-center justify-center gap-2 text-sm text-white font-medium hover:bg-white/20 transition-colors"
+              className="flex-1 rounded-2xl glass-base min-h-[48px] flex items-center justify-center gap-2 text-sm text-white font-medium hover:bg-white/20 transition-colors"
 style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}
             >
               <Send className="h-4 w-4" />
