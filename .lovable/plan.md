@@ -1,46 +1,59 @@
 
 
-# Build Admin Notifications Section
+# Fix userId Resolution in useNotifications
 
-## Overview
-Add a "Notifications" section to the admin panel for sending broadcast/targeted notifications, with history view. Requires a new edge function action, a hook, a page component, and navigation updates.
+## Problem
+The `resolvedRef` guard prevents retries if `getMyUserId()` fails or returns null. userId stays null forever, so no realtime subscription is created.
+
+## Important constraint
+The `verified_users` table has RLS blocking all client SELECT (`block_all_select_verified_users` → `false`). A direct `supabase.from('verified_users').select(...)` from the client **will fail**. Must keep using the `getMyUserId()` edge function call.
 
 ## Changes
 
-### 1. `src/types/admin.ts` — Add `'notifications'` to `AdminSection` type
+### 1. `src/hooks/useNotifications.ts`
 
-### 2. `supabase/functions/family-api/index.ts` — Add `send-notification` endpoint
-Insert before the final `"Invalid endpoint"` return (line 387). Admin-only, validates token. Accepts `title`, `body`, `type`, `user_ids`. If no `user_ids`, fetches all `verified_users` and inserts one notification row per user.
+Replace the resolution logic:
+- Remove `resolvedRef`
+- Remove `useRef` import
+- Initialize `userId` from `currentUser?.verifiedUserId` (already done)
+- New resolution effect: if `isLoggedIn` and `currentUser?.phone` exists but `userId` is null, call `getMyUserId(currentUser.phone)` via edge function. On success, set userId and persist via `login()`. On failure, just set `isLoading(false)` — no ref blocking retries (the effect will re-run if `currentUser` changes).
+- Add `console.log('[Notifications] userId resolved:', userId)` after resolution
 
-### 3. Create `src/hooks/admin/useAdminNotifications.ts`
-- `sendNotification({ title, body, type, user_ids })` — calls `family-api/send-notification` with admin token from `sessionStorage("khunaini-admin-token")`
-- Loads recent broadcast history from `notifications` table (deduplicated by title+timestamp)
-- Returns `{ sendNotification, isSending, history, isLoading }`
+```typescript
+useEffect(() => {
+  if (!isLoggedIn || !currentUser) {
+    setIsLoading(false);
+    return;
+  }
+  if (userId) return; // already resolved
 
-### 4. Create `src/components/admin/notifications/NotificationsPage.tsx`
-RTL admin page with:
-- **Send form**: title input, body textarea, type select (broadcast/info/new_member), recipient radio (all vs specific user with search), send button with loading state
-- **History**: list of past broadcasts with title, body (truncated), relative Arabic time, type badge
-- Uses `useAdminNotifications()` hook
-- Consistent styling with existing admin pages (RequestsPage pattern)
+  const resolve = async () => {
+    // Try localStorage first
+    if (currentUser.verifiedUserId) {
+      setUserId(currentUser.verifiedUserId);
+      return;
+    }
+    // Resolve via edge function
+    if (currentUser.phone) {
+      const id = await getMyUserId(currentUser.phone);
+      if (id) {
+        setUserId(id);
+        login({ ...currentUser, verifiedUserId: id });
+        console.log('[Notifications] userId resolved:', id);
+      } else {
+        console.log('[Notifications] userId resolution failed');
+        setIsLoading(false);
+      }
+    }
+  };
+  resolve();
+}, [isLoggedIn, currentUser, userId, login]);
+```
 
-### 5. `src/pages/Admin.tsx` — Add notifications route
-Import `NotificationsPage`, add `{section === 'notifications' && <NotificationsPage />}`
+### 2. `src/components/NotificationBell.tsx`
 
-### 6. `src/components/admin/AdminSidebar.tsx` — Add nav item
-Add `{ id: 'notifications', label: 'الإشعارات', icon: Bell }` to `NAV_ITEMS`
+No changes needed — it already calls `useNotifications()` with no props and doesn't accept a userId prop.
 
-### 7. `src/components/admin/AdminBottomBar.tsx` — Add tab
-Add `{ id: 'notifications', label: 'الإشعارات', icon: Bell }` to `MAIN_TABS`
-
-## Files Summary
-| File | Action |
-|------|--------|
-| `src/types/admin.ts` | Add `'notifications'` to union |
-| `supabase/functions/family-api/index.ts` | Add `send-notification` endpoint |
-| `src/hooks/admin/useAdminNotifications.ts` | Create — send + history |
-| `src/components/admin/notifications/NotificationsPage.tsx` | Create — admin UI |
-| `src/pages/Admin.tsx` | Add route |
-| `src/components/admin/AdminSidebar.tsx` | Add nav item |
-| `src/components/admin/AdminBottomBar.tsx` | Add tab |
+### Files modified
+- `src/hooks/useNotifications.ts` — remove resolvedRef, fix resolution logic, add debug logging
 
