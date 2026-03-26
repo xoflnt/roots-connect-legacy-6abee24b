@@ -334,7 +334,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
               </h2>
 
               {/* Guest search */}
-              <div className="relative" style={{ position: 'relative', zIndex: 9999 }}>
+              <div className="relative" style={{ position: 'relative', zIndex: 99999 }}>
                 <div className="relative">
                   <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/70 pointer-events-none" />
                   <Input
@@ -343,22 +343,51 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                     onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
                     onFocus={() => query.trim() && setOpen(true)}
                     onBlur={() => setTimeout(() => setOpen(false), 200)}
-                    className="pr-12 pl-4 h-14 text-base rounded-2xl backdrop-blur-md bg-white/15 border border-white/30 text-white placeholder:text-white/60 shadow-lg focus:ring-2 focus:ring-accent"
+                    className="pr-12 pl-4 h-14 text-base rounded-2xl hero-search"
+                    style={{
+                      backgroundColor: 'rgba(255,255,255,0.25)',
+                      backdropFilter: 'blur(12px)',
+                      WebkitBackdropFilter: 'blur(12px)',
+                      border: '1.5px solid rgba(255,255,255,0.6)',
+                      color: 'white',
+                      boxShadow: '0 2px 12px rgba(0,0,0,0.15)',
+                    }}
                   />
                 </div>
                 {showingResults && (
                   <div
-                    className="absolute top-full left-0 right-0 mt-2 rounded-2xl overflow-hidden shadow-2xl border border-border max-h-80 overflow-y-auto"
                     dir="rtl"
-                    style={{ zIndex: 9999, backgroundColor: 'hsl(var(--card))' }}
+                    style={{
+                      position: 'absolute',
+                      top: '100%',
+                      left: 0,
+                      right: 0,
+                      zIndex: 99999,
+                      backgroundColor: 'hsl(var(--card))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '12px',
+                      marginTop: '4px',
+                      overflow: 'hidden',
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+                      maxHeight: 320,
+                      overflowY: 'auto',
+                    }}
                   >
                     {filtered.map((m) => {
                       const subtitle = getMemberSubtitle(m);
                       return (
                         <button
                           key={m.id}
-                          className="w-full text-right px-4 py-3 hover:bg-muted cursor-pointer border-b border-border last:border-0"
-                          style={{ minHeight: 48, backgroundColor: 'hsl(var(--card))', color: 'hsl(var(--foreground))' }}
+                          className="w-full hover:bg-muted cursor-pointer"
+                          style={{
+                            padding: '12px 16px',
+                            backgroundColor: 'hsl(var(--card))',
+                            borderBottom: '1px solid hsl(var(--border))',
+                            textAlign: 'right',
+                            fontSize: '16px',
+                            color: 'hsl(var(--foreground))',
+                            minHeight: 48,
+                          }}
                           onMouseDown={() => { onSearchSelect(m.id); setQuery(m.name); setOpen(false); }}
                         >
                           <span className="font-bold block">{getLineageLabel(m)}</span>
