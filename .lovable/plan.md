@@ -1,68 +1,87 @@
 
 
-# Two Fixes in LandingPage.tsx
+# Three Fixes in LandingPage.tsx
 
-## FIX 1: Remove backdrop boxes
+## FIX 1: Stronger branch badge color
 
-Remove both backdrop wrapper divs that create visible boxes behind text:
+**Line 274–281** — increase opacity values and add font weight:
 
-**Title block (lines 232–250):** Remove the outer `<div style={{ position: 'relative', isolation: 'isolate' }}>` wrapper and its absolute backdrop child div. Keep TreePine, h1, p, and divider as direct children of the `motion.div`.
-
-**Guest heading (lines 344–357):** Same — remove the wrapper and backdrop div, keep the `<h2>` directly. All text shadows remain untouched.
-
-## FIX 2: Colored glass branch badge
-
-**Line 277** — the dashboard branch badge currently:
 ```tsx
-<span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/20 text-white border border-white/30">
-  {dashboardData.branch.label}
-</span>
+style={{
+  backgroundColor: `${branchHex}55`,  // was 33
+  borderColor: `${branchHex}99`,       // was 66
+  border: '1.5px solid',
+  borderColor: `${branchHex}99`,
+  color: 'white',
+  backdropFilter: 'blur(8px)',
+  WebkitBackdropFilter: 'blur(8px)',
+  textShadow: '0 1px 3px rgba(0,0,0,0.6)',
+  fontWeight: '600',
+}}
 ```
 
-Replace with a styled span using `dashboardData.branchStyle` (already available — contains `bg` and `text` hex colors from `getBranchStyle()`). The branch hex colors are:
-- Nasser (300): `#16a34a`
-- Mohammad (200): `#C9A84C`
-- Abdulaziz (400): `#ea580c`
+## FIX 2: Colored generation badge
 
-`branchStyle.text` holds the saturated color. Use it for tinted glass:
+**Line 286** — replace `<HeritageBadge type="generation" .../>` with an inline styled span matching the branch badge aesthetic. Add a generation color map near `BRANCH_HEX`:
 
+```ts
+function getGenerationHex(depth: number): string {
+  if (depth <= 3) return '#D4A82B';  // amber
+  if (depth <= 6) return '#1B5438';  // green
+  return '#2B5EA7';                   // blue
+}
+```
+
+Render as:
 ```tsx
 <span
-  className="text-[10px] font-bold px-3 py-0.5 rounded-full border"
+  className="text-[10px] font-bold px-3 py-0.5 rounded-full border flex items-center gap-1"
   style={{
-    backgroundColor: `${dashboardData.branchStyle.text}33`,
-    borderColor: `${dashboardData.branchStyle.text}66`,
+    backgroundColor: `${genHex}55`,
+    borderColor: `${genHex}99`,
+    border: '1.5px solid',
+    borderColor: `${genHex}99`,
     color: 'white',
     backdropFilter: 'blur(8px)',
     WebkitBackdropFilter: 'blur(8px)',
-    textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+    textShadow: '0 1px 3px rgba(0,0,0,0.6)',
+    fontWeight: '600',
   }}
 >
-  {dashboardData.branch.label}
+  <Layers className="h-3 w-3" />
+  الجيل {dashboardData.depth.toLocaleString('ar-SA')}
 </span>
 ```
 
-Wait — `branchStyle` uses HSL strings like `hsl(155 45% 30%)`, not hex. Need to map pillar IDs to hex colors instead. Use `dashboardData.branch.pillarId` to pick from a local map:
+Import `Layers` from lucide-react (already used elsewhere).
 
-```ts
-const BRANCH_HEX: Record<string, string> = {
-  '300': '#16a34a',
-  '200': '#C9A84C',
-  '400': '#ea580c',
-};
-const branchHex = BRANCH_HEX[dashboardData.branch.pillarId] || '#C9A84C';
+## FIX 3: Convert images to WebP + optimize `<picture>`
+
+**Cannot convert images in plan mode** — image conversion requires running a script. Will be done during implementation.
+
+**Lines 193–200** — update `<picture>` element:
+
+```tsx
+<picture>
+  <source media="(max-width: 768px)" srcSet="/images/hero-bg-mobile.webp" type="image/webp" />
+  <source srcSet="/images/hero-bg.webp" type="image/webp" />
+  <img
+    src="/images/hero-bg.jpg"
+    alt=""
+    fetchPriority="high"
+    decoding="async"
+    className="absolute inset-0 w-full h-full object-cover object-top select-none"
+  />
+</picture>
 ```
 
-Then use `branchHex` in the style.
+JPG kept as fallback in `<img src>`.
 
-### Technical details
+## Files
 
-| Location | Action |
-|----------|--------|
-| Lines 232–250 | Remove wrapper div + backdrop div, keep inner content |
-| Lines 344–357 | Remove wrapper div + backdrop div, keep `<h2>` |
-| Line 277 | Replace plain badge with colored glass badge using hex branch colors |
-| Near line 114 | Add `BRANCH_HEX` map constant |
-
-Single file: `src/components/LandingPage.tsx`
+| File | Action |
+|------|--------|
+| `src/components/LandingPage.tsx` | Update badge styles + picture element |
+| `public/images/hero-bg.webp` | Create (convert from jpg) |
+| `public/images/hero-bg-mobile.webp` | Create (convert from jpg) |
 
