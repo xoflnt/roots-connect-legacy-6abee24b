@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { getMyUserId } from "@/services/dataService";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { toast } from "sonner";
 
 export interface AppNotification {
@@ -125,5 +126,8 @@ export function useNotifications() {
     setUnreadCount(0);
   }, [userId]);
 
-  return { notifications, unreadCount, isLoading, markAsRead, markAllAsRead };
+  // Integrate push notifications
+  const push = usePushNotifications(userId);
+
+  return { notifications, unreadCount, isLoading, markAsRead, markAllAsRead, push };
 }
