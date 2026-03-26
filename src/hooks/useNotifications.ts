@@ -24,7 +24,7 @@ export function useNotifications() {
   const [isLoading, setIsLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(currentUser?.verifiedUserId || null);
 
-  // Resolve userId
+  // Resolve userId with retry
   useEffect(() => {
     if (!isLoggedIn || !currentUser) {
       setIsLoading(false);
@@ -32,25 +32,36 @@ export function useNotifications() {
     }
     if (userId) return;
 
-    const resolve = async () => {
+    let cancelled = false;
+
+    const resolve = async (attempt: number) => {
       if (currentUser.verifiedUserId) {
-        setUserId(currentUser.verifiedUserId);
-        console.log("[Notifications] userId from cache:", currentUser.verifiedUserId);
+        if (!cancelled) {
+          setUserId(currentUser.verifiedUserId);
+          console.log("[Notifications] userId from cache:", currentUser.verifiedUserId);
+        }
         return;
       }
-      if (currentUser.phone) {
-        const id = await getMyUserId(currentUser.phone);
-        if (id) {
-          setUserId(id);
-          login({ ...currentUser, verifiedUserId: id });
-          console.log("[Notifications] userId resolved:", id);
-        } else {
-          console.log("[Notifications] userId resolution failed");
-          setIsLoading(false);
-        }
+
+      if (!currentUser.phone) return;
+
+      console.log(`[Notifications] Resolving userId attempt ${attempt}...`);
+      const id = await getMyUserId(currentUser.phone);
+
+      if (id && !cancelled) {
+        setUserId(id);
+        login({ ...currentUser, verifiedUserId: id });
+        console.log("[Notifications] userId resolved:", id);
+      } else if (!cancelled && attempt < 3) {
+        setTimeout(() => resolve(attempt + 1), 3000);
+      } else if (!cancelled) {
+        console.warn("[Notifications] userId resolution failed after retries");
+        setIsLoading(false);
       }
     };
-    resolve();
+
+    resolve(1);
+    return () => { cancelled = true; };
   }, [isLoggedIn, currentUser, userId, login]);
 
   // Fetch notifications

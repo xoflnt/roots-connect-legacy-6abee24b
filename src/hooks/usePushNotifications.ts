@@ -93,7 +93,7 @@ export function usePushNotifications(userId: string | null) {
 
   // Auto-subscribe when userId and vapidKey are available
   useEffect(() => {
-    if (userId && isSupported && vapidKey && permission === "default") {
+    if (userId && isSupported && vapidKey && permission !== "denied") {
       subscribe();
     }
   }, [userId, isSupported, vapidKey, permission, subscribe]);
