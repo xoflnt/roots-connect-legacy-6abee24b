@@ -4,6 +4,7 @@ import {
   FileText,
   UserCheck,
   Activity,
+  Bell,
   BookOpen,
   BarChart2,
   Settings,
