@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { getMyUserId } from "@/services/dataService";
@@ -21,26 +21,35 @@ export function useNotifications() {
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const resolvedRef = useRef(false);
   const [userId, setUserId] = useState<string | null>(currentUser?.verifiedUserId || null);
 
-  // Resolve userId if not stored
+  // Resolve userId
   useEffect(() => {
-    if (!isLoggedIn || !currentUser || userId || resolvedRef.current) {
-      if (!isLoggedIn) setIsLoading(false);
+    if (!isLoggedIn || !currentUser) {
+      setIsLoading(false);
       return;
     }
-    resolvedRef.current = true;
+    if (userId) return;
 
-    getMyUserId(currentUser.phone).then((id) => {
-      if (id) {
-        setUserId(id);
-        // Persist for future sessions
-        login({ ...currentUser, verifiedUserId: id });
-      } else {
-        setIsLoading(false);
+    const resolve = async () => {
+      if (currentUser.verifiedUserId) {
+        setUserId(currentUser.verifiedUserId);
+        console.log("[Notifications] userId from cache:", currentUser.verifiedUserId);
+        return;
       }
-    });
+      if (currentUser.phone) {
+        const id = await getMyUserId(currentUser.phone);
+        if (id) {
+          setUserId(id);
+          login({ ...currentUser, verifiedUserId: id });
+          console.log("[Notifications] userId resolved:", id);
+        } else {
+          console.log("[Notifications] userId resolution failed");
+          setIsLoading(false);
+        }
+      }
+    };
+    resolve();
   }, [isLoggedIn, currentUser, userId, login]);
 
   // Fetch notifications
