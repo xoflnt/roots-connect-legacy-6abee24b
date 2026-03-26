@@ -1,43 +1,28 @@
 
 
-# Adjust Hero Background & Glass Effects
+# Fix Text Readability in Hero Section
 
 ## Changes — single file: `src/components/LandingPage.tsx`
 
-### FIX 1: Lighter overlay — image more visible
+### FIX 1: Title and subtitle (lines 233-237)
+- Title `textShadow`: `'0 2px 8px rgba(0,0,0,0.5)'` → `'0 2px 16px rgba(0,0,0,0.8), 0 1px 4px rgba(0,0,0,0.9)'`
+- Subtitle: `text-white/80` → `text-white/90`, same stronger textShadow
 
-| Line(s) | Current | New |
-|---------|---------|-----|
-| 195 | `dark:bg-black/50` | `dark:bg-black/30` |
-| 199 | `rgba(15,42,30,0.45) 0%, rgba(15,42,30,0.35) 40%, rgba(15,42,30,0.55) 75%` | `rgba(15,42,30,0.25) 0%, transparent 35%, rgba(246,243,238,0.85) 80%, rgba(246,243,238,1) 100%` |
+### FIX 2: TreePine icon (line 232)
+- `filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.4))'` → `'drop-shadow(0 2px 8px rgba(0,0,0,0.8))'`
 
-### FIX 2: Lighter glass elements
+### FIX 3: Glass card text
+- **Stats labels** (line 289): `text-white/70` → `text-white/85`, add `style={{ textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}`
+- **Action button labels** (line 312): `text-white/90` → `text-white`
+- **Quick Actions icon** (line 448): `text-white/90` → `text-white`
+- **Quick Actions label** (line 449): `text-white/85` → `text-white`, add textShadow
 
-**Dashboard card** (line 247):
-- `bg-white/10` → `bg-white/15`, `border-white/20` → `border-white/35`, `backdrop-blur-md` → `backdrop-blur-sm`
+### FIX 4: Guest heading (line 332)
+- `textShadow`: `'0 2px 8px rgba(0,0,0,0.5)'` → `'0 2px 16px rgba(0,0,0,0.8), 0 1px 4px rgba(0,0,0,0.9)'`
 
-**Dashboard stats row** (line 287):
-- `bg-white/10` → `bg-white/12`, `border-white/15` → `border-white/30`
-
-**Dashboard action buttons** (line 312):
-- `bg-white/10` → `bg-white/12`, `border-white/15` → `border-white/30`, `hover:bg-white/20` → `hover:bg-white/18`
-
-**Guest action buttons** (lines 406, 414):
-- Browse tree: `bg-white/20` → `bg-white/18`, `backdrop-blur-md` → `backdrop-blur-sm`
-- Login: `bg-white/10` → `bg-white/12`, `backdrop-blur-md` → `backdrop-blur-sm`
-
-**Quick Actions grid** (line 446):
-- `bg-white/10` → `bg-white/12`, `border-white/20` → `border-white/30`, `backdrop-blur-md` → `backdrop-blur-sm`
-
-**Bottom buttons** (lines 460, 467):
-- `bg-white/10` → `bg-white/12`, `backdrop-blur-md` → `backdrop-blur-sm`
-
-**Search bars** (lines 348, 489):
-- `rgba(255,255,255,0.25)` → `rgba(255,255,255,0.18)`
-
-**Logged-in search** (line 487–495): same search bar change
+### FIX 5: Bottom buttons (lines 460, 467)
+- `text-white/80` → `text-white`, add `style={{ textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}`
 
 ### Summary
-- Total: ~15 class/style tweaks across one file
-- Goal: background image clearly visible in upper half, lighter glass feel, text stays readable, natural fade to page background
+~10 targeted text style tweaks. No glass/blur/background changes.
 
