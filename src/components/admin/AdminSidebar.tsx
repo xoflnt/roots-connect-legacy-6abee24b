@@ -25,6 +25,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'requests',    label: 'الطلبات',        icon: FileText },
   { id: 'users',       label: 'المستخدمون',     icon: UserCheck },
   { id: 'data-health', label: 'صحة البيانات',   icon: Activity },
+  { id: 'notifications', label: 'الإشعارات',     icon: Bell },
   // Hidden until implemented:
   // { id: 'content',     label: 'المحتوى',        icon: BookOpen },
   // { id: 'analytics',   label: 'الإحصائيات',     icon: BarChart2 },

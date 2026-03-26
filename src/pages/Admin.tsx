@@ -34,7 +34,8 @@ function AdminContent() {
       {section === "requests" && <RequestsPage />}
       {section === "users" && <UsersPage />}
       {section === "data-health" && <DataHealthPage />}
-      {!["dashboard", "members", "requests", "users", "data-health"].includes(section) && (
+      {section === "notifications" && <NotificationsPage />}
+      {!["dashboard", "members", "requests", "users", "data-health", "notifications"].includes(section) && (
         <div className="p-6 text-center text-muted-foreground" dir="rtl">
           <p className="text-lg">{section}</p>
           <p className="text-sm mt-2">قيد التطوير</p>

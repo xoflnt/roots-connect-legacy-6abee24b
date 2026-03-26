@@ -4,6 +4,7 @@ export type AdminSection =
   | 'requests'
   | 'users'
   | 'data-health'
+  | 'notifications'
   | 'content'
   | 'analytics'
   | 'settings';
