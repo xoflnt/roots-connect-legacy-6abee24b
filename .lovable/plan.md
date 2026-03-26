@@ -1,22 +1,21 @@
 
 
-# Clear push_subscriptions Table
+# Fix Push Handler in src/sw.ts
 
-## Problem
-Need to delete all existing push subscriptions so users re-subscribe with the new injectManifest service worker.
+## Changes
 
-## Approach
-Run a migration with `TRUNCATE` on the `push_subscriptions` table. This is a schema-level operation that clears all rows efficiently.
+### 1. `src/sw.ts` — Replace push event listener
+
+Replace the current `push` listener (lines 28–40) with the user's exact code that adds:
+- `async` IIFE inside `waitUntil` for proper error handling
+- `try/catch` so a malformed payload still shows a fallback notification
+- Default body text `'لديك تحديث جديد'`
+
+### 2. Database migration — Clear push_subscriptions
 
 ```sql
-TRUNCATE TABLE public.push_subscriptions;
+DELETE FROM push_subscriptions;
 ```
 
-## What happens next
-- All 3 existing subscription rows are removed
-- On next app open, `usePushNotifications` will detect no existing subscription and create a new one registered under the new service worker
-- The new `src/sw.ts` (injectManifest) will handle push events directly
-
-## Files
-No code changes needed — migration only.
+Forces re-subscription with the updated service worker.
 
