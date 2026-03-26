@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import webpush from "npm:web-push@3.6.7";
+import { ApplicationServer } from "jsr:@negrel/webpush";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -23,14 +23,13 @@ serve(async (req) => {
       );
     }
 
-    const vapidPublic = Deno.env.get("VAPID_PUBLIC_KEY")!;
-    const vapidPrivate = Deno.env.get("VAPID_PRIVATE_KEY")!;
-
-    webpush.setVapidDetails(
-      "mailto:admin@khunaini.app",
-      vapidPublic,
-      vapidPrivate
-    );
+    const appServer = await ApplicationServer.new({
+      contactInformation: "mailto:admin@khunaini.app",
+      vapidKeys: {
+        publicKey: Deno.env.get("VAPID_PUBLIC_KEY")!,
+        privateKey: Deno.env.get("VAPID_PRIVATE_KEY")!,
+      },
+    });
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -54,19 +53,20 @@ serve(async (req) => {
     let sent = 0;
 
     for (const sub of subs) {
-      const pushSub = {
-        endpoint: sub.endpoint,
-        keys: { p256dh: sub.p256dh, auth: sub.auth },
-      };
-
       try {
-        await webpush.sendNotification(pushSub, payload);
+        const subscriber = appServer.subscribe({
+          endpoint: sub.endpoint,
+          keys: { p256dh: sub.p256dh, auth: sub.auth },
+        });
+        await subscriber.pushTextMessage(payload, {});
         sent++;
       } catch (err: any) {
-        if (err.statusCode === 410 || err.statusCode === 404) {
+        const msg = err?.message || "";
+        const status = err?.statusCode || err?.status;
+        if (status === 410 || status === 404 || msg.includes("410") || msg.includes("Gone")) {
           expiredIds.push(sub.id);
         } else {
-          console.error(`Push failed for ${sub.endpoint}:`, err.statusCode, err.message);
+          console.error(`[Push] Failed for ${sub.endpoint}:`, msg);
         }
       }
     }

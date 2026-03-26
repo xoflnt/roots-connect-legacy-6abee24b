@@ -15,7 +15,11 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
 async function fetchVapidKey(): Promise<string | null> {
   try {
     const { data, error } = await supabase.functions.invoke("family-api/get-vapid-key");
-    if (error || !data?.vapidPublicKey) return null;
+    if (error || !data?.vapidPublicKey) {
+      console.warn("[Push] Failed to fetch VAPID key:", error);
+      return null;
+    }
+    console.log("[Push] VAPID key fetched successfully");
     return data.vapidPublicKey;
   } catch {
     return null;
@@ -44,12 +48,14 @@ export function usePushNotifications(userId: string | null) {
   }, [isSupported]);
 
   const subscribe = useCallback(async () => {
+    console.log("[Push] subscribe() called", { userId, permission, isSupported, hasVapidKey: !!vapidKey });
+
     if (!isSupported || !userId || !vapidKey) return;
 
     try {
       const perm = await Notification.requestPermission();
       setPermission(perm);
-      console.log("[Push] Permission:", perm);
+      console.log("[Push] Permission result:", perm);
 
       if (perm !== "granted") return;
 
@@ -62,7 +68,9 @@ export function usePushNotifications(userId: string | null) {
           userVisibleOnly: true,
           applicationServerKey: appServerKey as unknown as BufferSource,
         });
-        console.log("[Push] New subscription created");
+        console.log("[Push] New subscription created:", subscription.endpoint?.slice(0, 60));
+      } else {
+        console.log("[Push] Existing subscription found:", subscription.endpoint?.slice(0, 60));
       }
 
       const subJson = subscription.toJSON();
@@ -89,14 +97,27 @@ export function usePushNotifications(userId: string | null) {
     } catch (err) {
       console.error("[Push] Subscribe error:", err);
     }
-  }, [isSupported, userId, vapidKey]);
+  }, [isSupported, userId, vapidKey, permission]);
 
   // Auto-subscribe when userId and vapidKey are available
   useEffect(() => {
-    if (userId && isSupported && vapidKey && permission !== "denied") {
+    console.log("[Push] Auto-subscribe check:", {
+      userId: !!userId,
+      hasVapidKey: !!vapidKey,
+      isSupported,
+      permission,
+    });
+
+    if (!userId || !vapidKey || !isSupported) return;
+    if (permission === "denied") return;
+
+    // Small delay to ensure SW is ready
+    const timer = setTimeout(() => {
       subscribe();
-    }
-  }, [userId, isSupported, vapidKey, permission, subscribe]);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [userId, vapidKey, isSupported]);
 
   return { isSupported, permission, subscribe };
 }
