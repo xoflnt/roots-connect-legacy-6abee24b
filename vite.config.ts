@@ -17,47 +17,14 @@ export default defineConfig(({ mode }) => ({
     react(),
     mode === "development" && componentTagger(),
     VitePWA({
-      registerType: "autoUpdate",
-      workbox: {
-      importScripts: ['/push-handler.js'],
-      navigateFallbackDenylist: [/^\/~oauth/, /^\/api\/auth/, /^\/auth/],
-      navigateFallback: "/index.html",
-      globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
-      additionalManifestEntries: [
-        { url: '/offline.html', revision: '1' }
-      ],
-        cleanupOutdatedCaches: true,
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/.*\.supabase\.co\//,
-            handler: "NetworkFirst",
-            options: {
-              cacheName: "api-cache",
-              expiration: { maxEntries: 50, maxAgeSeconds: 300 },
-              networkTimeoutSeconds: 10,
-            },
-          },
-          {
-            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/,
-            handler: "CacheFirst",
-            options: {
-              cacheName: "image-cache",
-              expiration: { maxEntries: 100, maxAgeSeconds: 30 * 24 * 60 * 60 },
-            },
-          },
-          {
-            urlPattern: /^https:\/\/fonts\.googleapis\.com\//,
-            handler: "StaleWhileRevalidate",
-            options: { cacheName: "google-fonts-stylesheets" },
-          },
-          {
-            urlPattern: /^https:\/\/fonts\.gstatic\.com\//,
-            handler: "CacheFirst",
-            options: {
-              cacheName: "google-fonts-webfonts",
-              expiration: { maxEntries: 20, maxAgeSeconds: 365 * 24 * 60 * 60 },
-            },
-          },
+      strategies: "injectManifest",
+      srcDir: "src",
+      filename: "sw.ts",
+      registerType: "prompt",
+      injectManifest: {
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        additionalManifestEntries: [
+          { url: '/offline.html', revision: '1' }
         ],
       },
       manifest: {
