@@ -309,7 +309,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
                     onClick={action.onClick}
-                    className="flex flex-col items-center gap-1 rounded-xl backdrop-blur-sm bg-white/10 border border-white/15 p-2.5 min-h-[56px] text-xs font-medium text-white/90 hover:bg-white/20 transition-colors"
+                    className="flex flex-col items-center gap-1 rounded-xl backdrop-blur-sm bg-white/12 border border-white/30 p-2.5 min-h-[56px] text-xs font-medium text-white/90 hover:bg-white/18 transition-colors"
                   >
                     <action.icon className="h-5 w-5 text-white" />
                     {action.label}
