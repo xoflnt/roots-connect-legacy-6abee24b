@@ -198,16 +198,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
       {/* ─── Hero with liquid glass ─── */}
       <div className="relative">
         {/* Background image + overlays (clipped container) */}
-        <svg style={{ display: 'none' }}>
-          <defs>
-            <filter id="liquid-glass-filter" x="-10%" y="-10%" width="120%" height="120%">
-              <feTurbulence type="fractalNoise" baseFrequency="0.008" numOctaves="1" seed="5" result="turbulence" />
-              <feGaussianBlur in="turbulence" stdDeviation="2" result="softMap" />
-              <feDisplacementMap in="SourceGraphic" in2="softMap" scale="18" xChannelSelector="R" yChannelSelector="G" />
-            </filter>
-          </defs>
-        </svg>
-        <div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ filter: 'url(#liquid-glass-filter)' }}>
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <picture>
             <source media="(max-width: 768px)" srcSet="/images/hero-bg-mobile.webp" type="image/webp" />
             <source srcSet="/images/hero-bg.webp" type="image/webp" />
