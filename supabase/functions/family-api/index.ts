@@ -144,6 +144,81 @@ serve(async (req) => {
       return json({ success: true, slug: inserted.slug, familyId: inserted.id });
     }
 
+    // ─── SUPER ADMIN: LOGIN (public) ───
+    if (path === "super-admin-login" && req.method === "POST") {
+      const { password } = body;
+      const superPassword = Deno.env.get("NASABY_SUPER_ADMIN_PASSWORD");
+      if (!superPassword || password !== superPassword) {
+        return json({ error: "Unauthorized" }, 401);
+      }
+      const sessionToken = "super-" + crypto.randomUUID() + "-" + Date.now();
+      const expiresAt = new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(); // 4h
+      await supabase.from("admin_sessions").insert({ token: sessionToken, expires_at: expiresAt });
+      return json({ token: sessionToken, expiresAt });
+    }
+
+    // ─── SUPER ADMIN: GET ALL FAMILIES (requires super token) ───
+    if (path === "get-all-families" && req.method === "POST") {
+      if (!(await validateAdminToken(req, supabase))) {
+        return json({ error: "Unauthorized" }, 401);
+      }
+
+      const { data: families, error: fErr } = await supabase
+        .from("families")
+        .select("id, slug, name, subdomain, is_active, created_at")
+        .order("created_at", { ascending: false });
+
+      if (fErr) return json({ error: fErr.message }, 500);
+
+      // Get member counts per family
+      const { data: memberCounts } = await supabase
+        .from("family_members")
+        .select("family_id")
+        .not("is_archived", "eq", true);
+
+      const countMap: Record<string, number> = {};
+      for (const row of memberCounts || []) {
+        const fid = (row as any).family_id;
+        if (fid) countMap[fid] = (countMap[fid] || 0) + 1;
+      }
+
+      // Get verified user counts per family
+      const { data: userCounts } = await supabase
+        .from("verified_users")
+        .select("family_id");
+
+      const userCountMap: Record<string, number> = {};
+      for (const row of userCounts || []) {
+        const fid = (row as any).family_id;
+        if (fid) userCountMap[fid] = (userCountMap[fid] || 0) + 1;
+      }
+
+      const enriched = (families || []).map((f: any) => ({
+        ...f,
+        member_count: countMap[f.id] || 0,
+        user_count: userCountMap[f.id] || 0,
+      }));
+
+      return json({ families: enriched });
+    }
+
+    // ─── SUPER ADMIN: TOGGLE FAMILY STATUS ───
+    if (path === "toggle-family-status" && req.method === "POST") {
+      if (!(await validateAdminToken(req, supabase))) {
+        return json({ error: "Unauthorized" }, 401);
+      }
+      const { familyId: targetFamilyId, isActive } = body;
+      if (!targetFamilyId) return json({ error: "familyId required" }, 400);
+
+      const { error: updateErr } = await supabase
+        .from("families")
+        .update({ is_active: !!isActive })
+        .eq("id", targetFamilyId);
+
+      if (updateErr) return json({ error: updateErr.message }, 500);
+      return json({ success: true });
+    }
+
     // ─── Resolve slug for multi-tenant scoping (all other actions) ───
     const slug: string = body.slug || "khunaini";
     const familyId = await resolveFamilyId(supabase, slug);

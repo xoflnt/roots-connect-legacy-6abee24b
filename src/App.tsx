@@ -35,6 +35,7 @@ const Guide = lazyRetry(() => import("./pages/Guide.tsx"));
 const Documents = lazyRetry(() => import("./pages/Documents.tsx"));
 const RegisterFamily = lazyRetry(() => import("./pages/RegisterFamily.tsx"));
 const NasabyLanding = lazyRetry(() => import("./pages/NasabyLanding.tsx"));
+const SuperAdmin = lazyRetry(() => import("./pages/SuperAdmin.tsx"));
 import NotFound from "./pages/NotFound.tsx";
 import { useFamilyContext } from "@/contexts/FamilyContext";
 
@@ -76,6 +77,7 @@ const App = () => (
                   <Route path="/admin" element={<Suspense fallback={<LoadingSpinner />}><Admin /></Suspense>} />
                   <Route path="/documents" element={<Suspense fallback={<LoadingSpinner />}><Documents /></Suspense>} />
                   <Route path="/register" element={<Suspense fallback={<LoadingSpinner />}><RegisterFamily /></Suspense>} />
+                  <Route path="/super-admin" element={<Suspense fallback={<LoadingSpinner />}><SuperAdmin /></Suspense>} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>
