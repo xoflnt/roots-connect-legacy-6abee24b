@@ -17,6 +17,7 @@ import { trackVisit } from "@/services/dataService";
 import { getAllMembers, getDescendantCount, searchMembers, loadMembers, getMemberById, getChildrenOf, getAncestorChain, getDepth } from "@/services/familyService";
 import { PILLARS, DOCUMENTER_ID, ADMIN_MEMBER_IDS, getBranch, getBranchStyle } from "@/utils/branchUtils";
 import { useAuth } from "@/contexts/AuthContext";
+import { useFamilyContext } from "@/contexts/FamilyContext";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { HeritageBadge } from "@/components/HeritageBadge";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
@@ -131,6 +132,7 @@ const PILLAR_COLORS = [
 ];
 
 export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: LandingPageProps) {
+  const { familyName } = useFamilyContext();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [requestOpen, setRequestOpen] = useState(false);
@@ -256,7 +258,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
           >
             <TreePine className="h-10 w-10 text-white mx-auto" style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.8))' }} />
             <h1 className="text-2xl font-extrabold text-white leading-tight" style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>
-              بـوابـة تـراث الخـنـيـنـي
+              {applyTatweel(`بوابة تراث ${familyName || 'الخنيني'}`)}
             </h1>
             <p className="text-sm text-white/90" style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>
               فرع الزلفي
@@ -589,13 +591,13 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         )}
 
         {/* Gradient fade before wave */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 z-[5]"
+        <div className="absolute bottom-0 left-0 right-0 h-32 z-[5] pointer-events-none"
           style={{
             background: 'linear-gradient(to bottom, transparent 0%, hsl(var(--background) / 0.6) 50%, hsl(var(--background)) 100%)'
           }}
         />
         {/* SVG wave */}
-        <div className="absolute bottom-0 left-0 right-0 overflow-hidden z-[5]">
+        <div className="absolute bottom-0 left-0 right-0 overflow-hidden z-[5] pointer-events-none">
           <svg viewBox="0 0 1440 60" className="w-full h-10 fill-background" preserveAspectRatio="none">
             <path d="M0,0 C240,60 480,60 720,30 C960,0 1200,0 1440,30 L1440,60 L0,60 Z" />
           </svg>
@@ -871,7 +873,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
 
       {/* ─── 11. Footer ─── */}
       <footer className="py-6 text-center text-sm text-muted-foreground border-t border-border/30 space-y-3">
-        <p>شجرة عائلة الخنيني — حفظ الإرث للأجيال القادمة</p>
+        <p>شجرة {familyName || 'عائلة الخنيني'} — حفظ الإرث للأجيال القادمة</p>
         <div className="flex justify-center gap-3">
           <Button
             variant="ghost"

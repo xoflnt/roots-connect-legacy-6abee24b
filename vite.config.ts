@@ -22,7 +22,7 @@ export default defineConfig(({ mode }) => ({
       filename: "sw.ts",
       registerType: "prompt",
       injectManifest: {
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        globPatterns: ["**/*.{js,css,html,ico,png,jpg,webp,svg,woff2}"],
         additionalManifestEntries: [
           { url: '/offline.html', revision: '1' }
         ],
