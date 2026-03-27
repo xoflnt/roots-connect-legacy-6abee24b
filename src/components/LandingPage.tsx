@@ -267,7 +267,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ ...gentleSpring, delay: 0.1 }}
             >
-            <LiquidGlass level={3} borderRadius={24} className="p-4 space-y-4">
+            <div className="p-4 space-y-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl">
               {/* Top row: avatar + name + badges */}
               <div className="flex items-center gap-3">
                 <div
@@ -367,7 +367,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
                   </motion.div>
                 ))}
               </motion.div>
-            </LiquidGlass>
+            </div>
             </motion.div>
           </section>
         )}
