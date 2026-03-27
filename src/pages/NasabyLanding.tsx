@@ -70,7 +70,7 @@ export default function NasabyLanding() {
         <header className="relative z-20 flex items-center justify-between px-4 md:px-8" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))" }}>
           <div className="flex items-center gap-2">
             <TreePine className="h-6 w-6 text-white" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }} />
-            <span className="text-lg font-extrabold text-white" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>نسابي</span>
+            <span className="text-lg font-extrabold text-white" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>نسبي</span>
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
@@ -107,7 +107,7 @@ export default function NasabyLanding() {
       <section className="py-16 md:py-24 px-4">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl md:text-3xl font-extrabold text-foreground text-center mb-12">
-            لماذا نسابي؟
+            لماذا نسبي؟
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {FEATURES.map((f) => (
@@ -131,7 +131,7 @@ export default function NasabyLanding() {
               شاهد المنصة مباشرة
             </h2>
             <p className="text-muted-foreground">
-              عائلة الخنيني — أول عائلة على منصة نسابي
+              عائلة الخنيني — أول عائلة على منصة نسبي
             </p>
           </div>
 
@@ -200,7 +200,7 @@ export default function NasabyLanding() {
         <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <TreePine className="h-4 w-4 text-primary" />
-            <span className="font-bold text-foreground">نسابي</span>
+            <span className="font-bold text-foreground">نسبي</span>
             <span>— جميع الحقوق محفوظة</span>
           </div>
           <div className="flex items-center gap-4">

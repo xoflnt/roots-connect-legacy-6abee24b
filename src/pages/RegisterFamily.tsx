@@ -104,7 +104,7 @@ export default function RegisterFamily() {
         <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
           <TreePine className="h-5 w-5 text-primary" />
         </div>
-        <h1 className="text-lg font-extrabold text-foreground">نسابي</h1>
+        <h1 className="text-lg font-extrabold text-foreground">نسبي</h1>
       </header>
 
       {/* Main */}

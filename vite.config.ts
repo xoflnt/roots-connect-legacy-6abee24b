@@ -28,9 +28,9 @@ export default defineConfig(({ mode }) => ({
         ],
       },
       manifest: {
-        name: "شجرة عائلة الخنيني - فرع الزلفي",
-        short_name: "الخنيني",
-        description: "بوابة تراث الخنيني — فرع الزلفي",
+        name: "نسبي — منصة شجرة العائلة",
+        short_name: "نسبي",
+        description: "منصة عربية متخصصة لتوثيق شجرة العائلة",
         theme_color: "#123026",
         background_color: "#F6F4F0",
         display: "standalone",
@@ -48,7 +48,7 @@ export default defineConfig(({ mode }) => ({
             sizes: "512x512",
             type: "image/png",
             form_factor: "narrow",
-            label: "بوابة تراث الخنيني",
+            label: "نسبي",
           },
         ],
         shortcuts: [
