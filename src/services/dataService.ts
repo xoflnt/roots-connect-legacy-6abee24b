@@ -29,11 +29,29 @@ export interface VerifiedUser {
   verifiedAt: string;
 }
 
+// ─── Multi-tenant state ───
+
+let _currentSlug = "khunaini";
+let _currentFamilyId: string | null = null;
+
+export function setCurrentFamily(slug: string, familyId: string) {
+  _currentSlug = slug;
+  _currentFamilyId = familyId;
+}
+
+export function getCurrentSlug(): string {
+  return _currentSlug;
+}
+
+export function getCurrentFamilyId(): string | null {
+  return _currentFamilyId;
+}
+
 // ─── Edge function helper ───
 
 async function callFamilyApi(action: string, body: Record<string, unknown>, headers?: Record<string, string>) {
   const { data, error } = await supabase.functions.invoke("family-api/" + action, {
-    body,
+    body: { slug: _currentSlug, ...body },
     headers,
   });
   if (error) throw error;
@@ -43,10 +61,16 @@ async function callFamilyApi(action: string, body: Record<string, unknown>, head
 // ─── Members (from cloud DB — phone excluded) ───
 
 export async function getMembers(): Promise<FamilyMember[]> {
-  const { data, error } = await supabase
+  let query = supabase
     .from("family_members")
     .select("id, name, gender, father_id, birth_year, death_year, spouses, notes, is_archived")
     .order("created_at", { ascending: true });
+
+  if (_currentFamilyId) {
+    query = query.eq("family_id", _currentFamilyId);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     console.error("[dataService] getMembers error:", error);
@@ -100,6 +124,7 @@ export async function submitRequest(req: Omit<FamilyRequest, "id" | "status" | "
       notes: req.notes || null,
       submitted_by: req.submittedBy || null,
       status: "pending",
+      family_id: _currentFamilyId,
     });
 
   if (error) throw error;

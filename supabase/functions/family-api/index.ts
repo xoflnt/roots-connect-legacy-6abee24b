@@ -55,6 +55,24 @@ async function validateAdminToken(req: Request, supabase: ReturnType<typeof getS
   return true;
 }
 
+/** Resolve a family slug to its UUID. Returns null if not found or inactive. */
+async function resolveFamilyId(supabase: ReturnType<typeof getSupabaseAdmin>, slug: string): Promise<string | null> {
+  const { data } = await supabase
+    .from("families")
+    .select("id")
+    .eq("slug", slug)
+    .eq("is_active", true)
+    .single();
+  return data?.id ?? null;
+}
+
+/** SHA-256 hash a string, return hex. */
+async function sha256(input: string): Promise<string> {
+  const encoded = new TextEncoder().encode(input);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", encoded);
+  return [...new Uint8Array(hashBuffer)].map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -65,9 +83,75 @@ serve(async (req) => {
     const path = url.pathname.split("/").filter(Boolean).pop();
     const supabase = getSupabaseAdmin();
 
+    // ─── Parse body once ───
+    let body: any = {};
+    if (req.method === "POST") {
+      try { body = await req.json(); } catch { /* empty body OK for some endpoints */ }
+    }
+
+    // ─── CREATE FAMILY (public — before family resolution, family doesn't exist yet) ───
+    if (path === "create-family" && req.method === "POST") {
+      const { name, slug: newSlug, adminPassword, passcode } = body;
+
+      // Validate inputs
+      if (!name || name.trim().length < 2) {
+        return json({ error: "اسم العائلة مطلوب (حرفين على الأقل)" }, 400);
+      }
+      if (!newSlug || !/^[a-z][a-z0-9-]{2,29}$/.test(newSlug)) {
+        return json({ error: "الاسم المختصر غير صالح" }, 400);
+      }
+      if (!adminPassword || adminPassword.length < 6) {
+        return json({ error: "كلمة مرور الأدمن مطلوبة (٦ أحرف على الأقل)" }, 400);
+      }
+      if (!passcode || !/^\d{4,8}$/.test(passcode)) {
+        return json({ error: "رمز الدخول مطلوب (٤-٨ أرقام)" }, 400);
+      }
+
+      // Check slug uniqueness
+      const { data: existing } = await supabase
+        .from("families")
+        .select("id")
+        .eq("slug", newSlug)
+        .maybeSingle();
+
+      if (existing) {
+        return json({ error: "هذا الاسم المختصر مستخدم بالفعل" }, 409);
+      }
+
+      // Hash passwords
+      const adminPasswordHash = await sha256(adminPassword);
+      const passcodeHash = await sha256(passcode);
+
+      // Insert family
+      const { data: inserted, error: insertErr } = await supabase
+        .from("families")
+        .insert({
+          name: name.trim(),
+          slug: newSlug,
+          subdomain: newSlug,
+          admin_password_hash: adminPasswordHash,
+          passcode_hash: passcodeHash,
+          is_active: true,
+        })
+        .select("id, slug")
+        .single();
+
+      if (insertErr) {
+        console.error("[family-api] create-family error:", insertErr);
+        return json({ error: "حدث خطأ أثناء إنشاء المنصة" }, 500);
+      }
+
+      return json({ success: true, slug: inserted.slug, familyId: inserted.id });
+    }
+
+    // ─── Resolve slug for multi-tenant scoping (all other actions) ───
+    const slug: string = body.slug || "khunaini";
+    const familyId = await resolveFamilyId(supabase, slug);
+    if (!familyId) return json({ error: "Family not found" }, 404);
+
     // ─── VERIFY PASSCODE (public, no auth needed) ───
     if (path === "verify-passcode" && req.method === "POST") {
-      const { passcode } = await req.json();
+      const { passcode } = body;
       const correctPasscode = Deno.env.get("FAMILY_PASSCODE");
       if (!correctPasscode || passcode !== correctPasscode) {
         return json({ valid: false });
@@ -80,13 +164,14 @@ serve(async (req) => {
       if (!(await validateAdminToken(req, supabase))) {
         return json({ error: "Unauthorized" }, 401);
       }
-      const { requestId } = await req.json();
+      const { requestId } = body;
       if (!requestId) return json({ error: "requestId required" }, 400);
 
       await supabase
         .from("family_requests")
         .update({ status: "completed" })
-        .eq("id", requestId);
+        .eq("id", requestId)
+        .eq("family_id", familyId);
 
       return json({ success: true });
     }
@@ -110,7 +195,7 @@ serve(async (req) => {
 
     // ─── REGISTER VERIFIED USER (public — from onboarding) ───
     if (path === "register-user" && req.method === "POST") {
-      const { memberId, memberName, phone, hijriBirthDate } = await req.json();
+      const { memberId, memberName, phone, hijriBirthDate } = body;
       if (!memberId || !memberName || !phone) {
         return json({ error: "memberId, memberName, phone required" }, 400);
       }
@@ -122,6 +207,7 @@ serve(async (req) => {
           phone,
           hijri_birth_date: hijriBirthDate || null,
           verified_at: new Date().toISOString(),
+          family_id: familyId,
         },
         { onConflict: "member_id" }
       ).select("id").single();
@@ -131,13 +217,14 @@ serve(async (req) => {
 
     // ─── GET MY USER ID (public — returns verified_users UUID by phone) ───
     if (path === "get-my-user-id" && req.method === "POST") {
-      const { phone } = await req.json();
+      const { phone } = body;
       if (!phone) return json({ error: "phone required" }, 400);
 
       const { data: vu } = await supabase
         .from("verified_users")
         .select("id")
         .eq("phone", phone)
+        .eq("family_id", familyId)
         .single();
 
       if (!vu) return json({ error: "Not found" }, 404);
@@ -146,7 +233,7 @@ serve(async (req) => {
 
     // ─── UPDATE MEMBER (auth-gated) ───
     if (path === "update-member" && req.method === "POST") {
-      const { id, data: updates, requesterPhone } = await req.json();
+      const { id, data: updates, requesterPhone } = body;
       if (!id) return json({ error: "id required" }, 400);
 
       // Path 1: Admin token
@@ -156,13 +243,14 @@ serve(async (req) => {
         isAdmin = await validateAdminToken(req, supabase);
       }
 
-      // Path 2: Verified self
+      // Path 2: Verified self (scoped to family)
       let isSelf = false;
       if (!isAdmin && requesterPhone) {
         const { data: vu } = await supabase
           .from("verified_users")
           .select("member_id")
           .eq("phone", requesterPhone)
+          .eq("family_id", familyId)
           .single();
         isSelf = vu?.member_id === id;
       }
@@ -183,7 +271,8 @@ serve(async (req) => {
       await supabase
         .from("family_members")
         .update({ ...updates, updated_at: new Date().toISOString() })
-        .eq("id", id);
+        .eq("id", id)
+        .eq("family_id", familyId);
 
       return json({ success: true });
     }
@@ -193,7 +282,7 @@ serve(async (req) => {
       if (!(await validateAdminToken(req, supabase))) {
         return json({ error: "Unauthorized" }, 401);
       }
-      const { member } = await req.json();
+      const { member } = body;
       if (!member?.id || !member?.name || !member?.gender) {
         return json({ error: "member with id, name, gender required" }, 400);
       }
@@ -208,6 +297,7 @@ serve(async (req) => {
         spouses: member.spouses || null,
         phone: member.phone || null,
         notes: member.notes || null,
+        family_id: familyId,
       });
 
       return json({ success: true });
@@ -222,6 +312,7 @@ serve(async (req) => {
       const { data, error } = await supabase
         .from("family_requests")
         .select("*")
+        .eq("family_id", familyId)
         .order("created_at", { ascending: false });
 
       if (error) return json({ error: error.message }, 500);
@@ -236,7 +327,8 @@ serve(async (req) => {
 
       const { data, error } = await supabase
         .from("verified_users")
-        .select("*");
+        .select("*")
+        .eq("family_id", familyId);
 
       if (error) return json({ error: error.message }, 500);
       return json({ users: data || [] });
@@ -246,7 +338,8 @@ serve(async (req) => {
     if (path === "get-verified-ids" && req.method === "POST") {
       const { data, error } = await supabase
         .from("verified_users")
-        .select("member_id");
+        .select("member_id")
+        .eq("family_id", familyId);
 
       if (error) return json({ error: error.message }, 500);
       return json({ ids: (data || []).map((r: any) => r.member_id) });
@@ -257,14 +350,15 @@ serve(async (req) => {
       if (!(await validateAdminToken(req, supabase))) {
         return json({ error: "Unauthorized" }, 401);
       }
-      const { memberId } = await req.json();
+      const { memberId } = body;
       if (!memberId) return json({ error: "memberId required" }, 400);
 
-      // Check children
+      // Check children within this family
       const { count } = await supabase
         .from("family_members")
         .select("id", { count: "exact", head: true })
-        .eq("father_id", memberId);
+        .eq("father_id", memberId)
+        .eq("family_id", familyId);
 
       if ((count ?? 0) > 0) {
         return json({ error: "يوجد أبناء مسجلون" }, 400);
@@ -273,7 +367,8 @@ serve(async (req) => {
       const { error: delError } = await supabase
         .from("family_members")
         .delete()
-        .eq("id", memberId);
+        .eq("id", memberId)
+        .eq("family_id", familyId);
 
       if (delError) return json({ error: delError.message }, 500);
       return json({ success: true });
@@ -284,13 +379,14 @@ serve(async (req) => {
       if (!(await validateAdminToken(req, supabase))) {
         return json({ error: "Unauthorized" }, 401);
       }
-      const { memberId } = await req.json();
+      const { memberId } = body;
       if (!memberId) return json({ error: "memberId required" }, 400);
 
       const { error: archiveError } = await supabase
         .from("family_members")
         .update({ is_archived: true, archived_at: new Date().toISOString() })
-        .eq("id", memberId);
+        .eq("id", memberId)
+        .eq("family_id", familyId);
 
       if (archiveError) return json({ error: archiveError.message }, 500);
       return json({ success: true });
@@ -307,7 +403,7 @@ serve(async (req) => {
         targetMemberId, targetMemberName,
         spouseName, childName, childGender,
         adminNote,
-      } = await req.json();
+      } = body;
 
       if (!requestId) return json({ error: "requestId required" }, 400);
 
@@ -317,6 +413,7 @@ serve(async (req) => {
             .from("family_members")
             .select("spouses, name")
             .eq("id", targetMemberId)
+            .eq("family_id", familyId)
             .single();
 
           const current = member?.spouses?.trim() || "";
@@ -325,13 +422,15 @@ serve(async (req) => {
           await supabase
             .from("family_members")
             .update({ spouses: updated, updated_at: new Date().toISOString() })
-            .eq("id", targetMemberId);
+            .eq("id", targetMemberId)
+            .eq("family_id", familyId);
         }
 
         if (type === "add_child") {
           const { data: allIds } = await supabase
             .from("family_members")
-            .select("id");
+            .select("id")
+            .eq("family_id", familyId);
 
           const ids = (allIds || []).map((r: any) => r.id);
           const newId = generateMemberId(targetMemberId, ids);
@@ -340,6 +439,7 @@ serve(async (req) => {
             .from("family_members")
             .select("name")
             .eq("id", targetMemberId)
+            .eq("family_id", familyId)
             .single();
 
           const fatherName = father?.name || targetMemberName || "";
@@ -350,6 +450,7 @@ serve(async (req) => {
             name: fullName,
             gender: childGender || "M",
             father_id: targetMemberId,
+            family_id: familyId,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           });
@@ -362,7 +463,8 @@ serve(async (req) => {
       await supabase
         .from("family_requests")
         .update({ status: newStatus, notes: adminNote || null })
-        .eq("id", requestId);
+        .eq("id", requestId)
+        .eq("family_id", familyId);
 
       return json({ success: true });
     }
@@ -372,13 +474,14 @@ serve(async (req) => {
       if (!(await validateAdminToken(req, supabase))) {
         return json({ error: "Unauthorized" }, 401);
       }
-      const { userId } = await req.json();
+      const { userId } = body;
       if (!userId) return json({ error: "userId required" }, 400);
 
       const { error: delErr } = await supabase
         .from("verified_users")
         .delete()
-        .eq("id", userId);
+        .eq("id", userId)
+        .eq("family_id", familyId);
 
       if (delErr) return json({ error: delErr.message }, 500);
       return json({ success: true });
@@ -390,14 +493,15 @@ serve(async (req) => {
         return json({ error: "Unauthorized" }, 401);
       }
 
-      const { title, body, type, user_ids } = await req.json();
-      if (!title || !body) return json({ error: "title and body required" }, 400);
+      const { title, body: notifBody, type, user_ids } = body;
+      if (!title || !notifBody) return json({ error: "title and body required" }, 400);
 
       let targetIds = user_ids;
       if (!targetIds || targetIds.length === 0) {
         const { data: allUsers } = await supabase
           .from("verified_users")
-          .select("id");
+          .select("id")
+          .eq("family_id", familyId);
         targetIds = (allUsers || []).map((u: any) => u.id);
       }
 
@@ -408,9 +512,10 @@ serve(async (req) => {
       const rows = targetIds.map((uid: string) => ({
         user_id: uid,
         title,
-        body,
+        body: notifBody,
         type: type || "broadcast",
         is_read: false,
+        family_id: familyId,
       }));
 
       const { error: insertErr } = await supabase
@@ -428,7 +533,7 @@ serve(async (req) => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
           },
-          body: JSON.stringify({ user_ids: targetIds, title, body }),
+          body: JSON.stringify({ user_ids: targetIds, title, body: notifBody }),
         });
       } catch (pushErr) {
         console.error("[family-api] Push notification error:", pushErr);

@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 
 import { AuthProvider } from "@/contexts/AuthContext";
+import { FamilyProvider } from "@/contexts/FamilyContext";
 import { SWUpdateBanner } from "@/components/SWUpdateBanner";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -32,6 +33,7 @@ const Admin = lazyRetry(() => import("./pages/Admin.tsx"));
 const Profile = lazyRetry(() => import("./pages/Profile.tsx"));
 const Guide = lazyRetry(() => import("./pages/Guide.tsx"));
 const Documents = lazyRetry(() => import("./pages/Documents.tsx"));
+const RegisterFamily = lazyRetry(() => import("./pages/RegisterFamily.tsx"));
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -46,13 +48,14 @@ const App = () => (
   <ErrorBoundary>
     <LiquidGlassSVGFilter />
     <ThemeProvider>
+      <FamilyProvider>
         <AuthProvider>
           <QueryClientProvider client={queryClient}>
             <TooltipProvider>
               <Toaster />
               <Sonner position="top-center" dir="rtl" richColors closeButton />
               <SWUpdateBanner />
-              
+
               <BrowserRouter>
                 <Routes>
                   <Route path="/" element={<Suspense fallback={<LoadingSpinner />}><Index /></Suspense>} />
@@ -61,12 +64,14 @@ const App = () => (
                   <Route path="/guide" element={<Suspense fallback={<LoadingSpinner />}><Guide /></Suspense>} />
                   <Route path="/admin" element={<Suspense fallback={<LoadingSpinner />}><Admin /></Suspense>} />
                   <Route path="/documents" element={<Suspense fallback={<LoadingSpinner />}><Documents /></Suspense>} />
+                  <Route path="/register" element={<Suspense fallback={<LoadingSpinner />}><RegisterFamily /></Suspense>} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>
             </TooltipProvider>
           </QueryClientProvider>
         </AuthProvider>
+      </FamilyProvider>
     </ThemeProvider>
   </ErrorBoundary>
 );

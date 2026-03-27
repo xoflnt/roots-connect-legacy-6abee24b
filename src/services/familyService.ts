@@ -1,6 +1,6 @@
 import { familyMembers as staticMembers, type FamilyMember } from "@/data/familyData";
 import { parseArabicYear } from "@/utils/ageCalculator";
-import { getMembers, loadVerifiedMemberIds } from "./dataService";
+import { getMembers, loadVerifiedMemberIds, getCurrentSlug } from "./dataService";
 
 // Mutable merged data — call refreshMembers() after any cloud update
 let mergedMembers: FamilyMember[] = [...staticMembers];
@@ -24,45 +24,54 @@ function buildMaps(members: FamilyMember[]) {
 // Initial build with static data (synchronous fallback)
 buildMaps([...staticMembers]);
 
-/** Load members from cloud and rebuild maps (static = source of truth) */
+/** Load members from cloud and rebuild maps (static = source of truth for khunaini) */
 export async function loadMembers(): Promise<void> {
   try {
     const [cloudMembers] = await Promise.all([
       getMembers(),
       loadVerifiedMemberIds(),
     ]);
-    // Helper: strip null/undefined so cloud never blanks static data
-    const stripNulls = (obj: Record<string, unknown>): Record<string, unknown> => {
-      const clean: Record<string, unknown> = {};
-      for (const [k, v] of Object.entries(obj)) {
-        if (v !== null && v !== undefined && v !== "") clean[k] = v;
-      }
-      return clean;
-    };
 
-    const staticMap = new Map(staticMembers.map(m => [m.id, m]));
-    const cloudMap = new Map(cloudMembers.map(m => [m.id, m]));
+    const isKhunaini = getCurrentSlug() === "khunaini";
 
-    // Start with ALL static members as base — cloud only enriches
-    const merged: FamilyMember[] = staticMembers.map(m => {
-      if (!cloudMap.has(m.id)) return m;
-      return { ...m, ...stripNulls(cloudMap.get(m.id) as unknown as Record<string, unknown>) } as FamilyMember;
-    });
+    if (isKhunaini) {
+      // Khunaini: merge cloud with static data (static = base)
+      const stripNulls = (obj: Record<string, unknown>): Record<string, unknown> => {
+        const clean: Record<string, unknown> = {};
+        for (const [k, v] of Object.entries(obj)) {
+          if (v !== null && v !== undefined && v !== "") clean[k] = v;
+        }
+        return clean;
+      };
 
-    // Add any cloud-only members not in static
-    cloudMembers.forEach(m => {
-      if (!staticMap.has(m.id)) merged.push(m);
-    });
+      const staticMap = new Map(staticMembers.map(m => [m.id, m]));
+      const cloudMap = new Map(cloudMembers.map(m => [m.id, m]));
 
-    // Filter out archived members from public views
-    const active = merged.filter(m => !m.is_archived);
-    console.log(`[familyService] merged ${merged.length} members, ${active.length} active (static=${staticMembers.length}, cloud=${cloudMembers.length})`);
-    buildMaps(active);
+      const merged: FamilyMember[] = staticMembers.map(m => {
+        if (!cloudMap.has(m.id)) return m;
+        return { ...m, ...stripNulls(cloudMap.get(m.id) as unknown as Record<string, unknown>) } as FamilyMember;
+      });
+
+      cloudMembers.forEach(m => {
+        if (!staticMap.has(m.id)) merged.push(m);
+      });
+
+      const active = merged.filter(m => !m.is_archived);
+      console.log(`[familyService] khunaini merged ${merged.length} members, ${active.length} active (static=${staticMembers.length}, cloud=${cloudMembers.length})`);
+      buildMaps(active);
+    } else {
+      // Other families: pure cloud data, no static merge
+      const active = cloudMembers.filter(m => !m.is_archived);
+      console.log(`[familyService] ${getCurrentSlug()} loaded ${active.length} members from cloud`);
+      buildMaps(active);
+    }
+
     initialized = true;
   } catch (e) {
     console.error("[familyService] loadMembers error, using static fallback:", e);
     if (!initialized) {
-      buildMaps([...staticMembers]);
+      const isKhunaini = getCurrentSlug() === "khunaini";
+      buildMaps(isKhunaini ? [...staticMembers] : []);
     }
   }
 }
