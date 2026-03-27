@@ -34,7 +34,9 @@ const Profile = lazyRetry(() => import("./pages/Profile.tsx"));
 const Guide = lazyRetry(() => import("./pages/Guide.tsx"));
 const Documents = lazyRetry(() => import("./pages/Documents.tsx"));
 const RegisterFamily = lazyRetry(() => import("./pages/RegisterFamily.tsx"));
+const NasabyLanding = lazyRetry(() => import("./pages/NasabyLanding.tsx"));
 import NotFound from "./pages/NotFound.tsx";
+import { useFamilyContext } from "@/contexts/FamilyContext";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +45,15 @@ const LoadingSpinner = () => (
     <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
   </div>
 );
+
+/** Show marketing landing on bare domain, family Index on subdomains */
+function HomePage() {
+  const { isMarketingSite } = useFamilyContext();
+  if (isMarketingSite) {
+    return <Suspense fallback={<LoadingSpinner />}><NasabyLanding /></Suspense>;
+  }
+  return <Suspense fallback={<LoadingSpinner />}><Index /></Suspense>;
+}
 
 const App = () => (
   <ErrorBoundary>
@@ -58,7 +69,7 @@ const App = () => (
 
               <BrowserRouter>
                 <Routes>
-                  <Route path="/" element={<Suspense fallback={<LoadingSpinner />}><Index /></Suspense>} />
+                  <Route path="/" element={<HomePage />} />
                   <Route path="/person/:id" element={<Suspense fallback={<LoadingSpinner />}><PersonPage /></Suspense>} />
                   <Route path="/profile" element={<Suspense fallback={<LoadingSpinner />}><Profile /></Suspense>} />
                   <Route path="/guide" element={<Suspense fallback={<LoadingSpinner />}><Guide /></Suspense>} />

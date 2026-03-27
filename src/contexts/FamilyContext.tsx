@@ -3,16 +3,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { setCurrentFamily } from "@/services/dataService";
 
 interface FamilyContextType {
-  slug: string;
+  slug: string | null;
   familyId: string | null;
   familyName: string;
   isLoading: boolean;
   notFound: boolean;
+  isMarketingSite: boolean;
 }
 
 const FamilyContext = createContext<FamilyContextType | null>(null);
 
-function resolveSlug(): string {
+function resolveSlug(): string | null {
   // 1. Check ?family= query param
   const params = new URLSearchParams(window.location.search);
   const fromParam = params.get("family");
@@ -26,18 +27,24 @@ function resolveSlug(): string {
     if (sub !== "www" && /^[a-z][a-z0-9-]{2,29}$/.test(sub)) return sub;
   }
 
-  // 3. Default
-  return "khunaini";
+  // 3. Localhost defaults to khunaini for dev convenience
+  if (hostname === "localhost" || hostname === "127.0.0.1") return "khunaini";
+
+  // 4. Bare domain (nasaby.app) → marketing site, no family
+  return null;
 }
 
 export function FamilyProvider({ children }: { children: ReactNode }) {
   const [slug] = useState(resolveSlug);
   const [familyId, setFamilyId] = useState<string | null>(null);
   const [familyName, setFamilyName] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(slug !== null);
   const [notFound, setNotFound] = useState(false);
+  const isMarketingSite = slug === null;
 
   useEffect(() => {
+    if (!slug) return; // Marketing site — no family to resolve
+
     let cancelled = false;
 
     async function load() {
@@ -66,7 +73,7 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
     return () => { cancelled = true; };
   }, [slug]);
 
-  if (notFound) {
+  if (!isMarketingSite && notFound) {
     return (
       <div className="min-h-[100dvh] bg-background flex items-center justify-center p-4" dir="rtl">
         <div className="text-center space-y-4 max-w-md">
@@ -81,7 +88,7 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <FamilyContext.Provider value={{ slug, familyId, familyName, isLoading, notFound }}>
+    <FamilyContext.Provider value={{ slug, familyId, familyName, isLoading, notFound, isMarketingSite }}>
       {children}
     </FamilyContext.Provider>
   );
