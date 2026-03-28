@@ -48,15 +48,13 @@ export default function DemoPage() {
     }
   });
 
-  // Login the visitor after render (data is already injected)
+  // Login the visitor — ALWAYS override any existing user for demo
   useEffect(() => {
-    if (!currentUser && demoReady) {
-      login({
-        memberId: demoReady.visitorId,
-        memberName: demoReady.visitorName,
-        phone: "0500000000",
-      });
-    }
+    login({
+      memberId: demoReady.visitorId,
+      memberName: demoReady.visitorName,
+      phone: "0500000000",
+    });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (

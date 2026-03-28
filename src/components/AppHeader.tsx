@@ -11,6 +11,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFamilyContext } from "@/contexts/FamilyContext";
 import { ADMIN_MEMBER_IDS } from "@/utils/branchUtils";
+import { applyTatweel } from "@/utils/tatweelUtils";
 
 export type ViewMode = "map" | "navigate" | "branches" | "list" | "kinship";
 
@@ -60,7 +61,7 @@ export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHom
           <TreePine className="h-4.5 w-4.5 text-primary" />
         </div>
         <h1 className="text-base md:text-lg font-extrabold text-foreground tracking-tight hidden sm:block">
-          بـوابـة تـراث الخـنـيـنـي
+          {applyTatweel(`بوابة تراث ${familyName || 'العائلة'}`)}
         </h1>
       </div>
 

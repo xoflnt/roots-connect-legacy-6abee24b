@@ -13,7 +13,7 @@ import {
   getAllMembers,
   getMemberById,
 } from "@/services/familyService";
-import { PILLARS, getBranchStyle, getBranch, DOCUMENTER_ID } from "@/utils/branchUtils";
+import { PILLARS, getPillars, getBranchStyle, getBranch, DOCUMENTER_ID } from "@/utils/branchUtils";
 import { formatAge, parseArabicYear } from "@/utils/ageCalculator";
 import { HeritageBadge } from "@/components/HeritageBadge";
 import { PersonDetails } from "@/components/PersonDetails";
@@ -179,7 +179,7 @@ function MobileBranchesView() {
 
   const stats = useBranchStats(selectedBranch);
   const branchStyle = getBranchStyle(selectedBranch);
-  const pillar = PILLARS.find((p) => p.id === selectedBranch);
+  const pillar = getPillars().find((p) => p.id === selectedBranch);
 
   const handleBranchSwitch = useCallback((id: string) => {
     setSelectedBranch(id);
@@ -197,7 +197,7 @@ function MobileBranchesView() {
       {/* ── BRANCH TABS ── */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border/30 p-2">
         <div className="flex gap-1.5">
-          {PILLARS.map((p) => {
+          {getPillars().map((p) => {
             const style = getBranchStyle(p.id);
             const isActive = selectedBranch === p.id;
             return (
@@ -478,7 +478,7 @@ export function BranchesView() {
   }, []);
 
   const branchData = useMemo(
-    () => PILLARS.map((pillar) => ({ ...pillar, count: getDescendantCount(pillar.id), style: getBranchStyle(pillar.id), children: sortByBirth(getChildrenOf(pillar.id)) })),
+    () => getPillars().map((pillar) => ({ ...pillar, count: getDescendantCount(pillar.id), style: getBranchStyle(pillar.id), children: sortByBirth(getChildrenOf(pillar.id)) })),
     []
   );
 

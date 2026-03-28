@@ -16,7 +16,7 @@ import { FamilyCard } from "./FamilyCard";
 import { GenerationBandNode } from "./GenerationBandNode";
 import { PersonDetails } from "./PersonDetails";
 import type { FamilyMember } from "@/data/familyData";
-import { getBranch, PILLARS } from "@/utils/branchUtils";
+import { getBranch, PILLARS, getPillars } from "@/utils/branchUtils";
 import { getChildrenOf } from "@/services/familyService";
 import { useAuth } from "@/contexts/AuthContext";
 import { springConfig, gentleSpring } from "@/lib/animations";
@@ -430,7 +430,7 @@ export const FamilyTree = forwardRef<FamilyTreeRef, FamilyTreeProps>(function Fa
                     <p className="text-xs font-semibold text-foreground mb-1.5">الفرع:</p>
                     <div className="flex flex-wrap gap-1.5">
                       <FilterPill active={filters.branch === 'all'} onClick={() => setFilters(f => ({ ...f, branch: 'all' }))}>الكل</FilterPill>
-                      {PILLARS.map(p => (
+                      {getPillars().map(p => (
                         <FilterPill
                           key={p.id}
                           active={filters.branch === p.id}

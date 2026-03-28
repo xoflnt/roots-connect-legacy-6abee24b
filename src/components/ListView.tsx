@@ -7,7 +7,7 @@ import { getAllMembers, inferMotherName, sortByBirth } from "@/services/familySe
 import { BRANCH_COLORS } from "@/hooks/useTreeLayout";
 import { formatAge } from "@/utils/ageCalculator";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PILLARS, getBranch, getBranchStyle, DOCUMENTER_ID } from "@/utils/branchUtils";
+import { PILLARS, getPillars, getBranch, getBranchStyle, DOCUMENTER_ID } from "@/utils/branchUtils";
 import { HeritageBadge } from "./HeritageBadge";
 import { useAuth } from "@/contexts/AuthContext";
 import { canSeeAge, canSeeMotherName, privateLabel, getSpouseLabel } from "@/utils/privacyUtils";
@@ -91,7 +91,7 @@ export function ListView({ onSelectMember }: ListViewProps) {
             <TabsTrigger value="all" className="rounded-lg text-xs px-3 py-2 font-bold">
               الكل
             </TabsTrigger>
-            {PILLARS.map((p) => (
+            {getPillars().map((p) => (
               <TabsTrigger key={p.id} value={p.id} className="rounded-lg text-xs px-3 py-2 font-bold">
                 {p.label}
               </TabsTrigger>
