@@ -44,6 +44,9 @@ export async function loadMembers(): Promise<void> {
       loadVerifiedMemberIds(),
     ]);
 
+    // Guard 2: check AFTER async — demo may have been activated while we waited
+    if (_demoMode) return;
+
     const isKhunaini = getCurrentSlug() === "khunaini";
 
     if (isKhunaini) {
@@ -80,6 +83,7 @@ export async function loadMembers(): Promise<void> {
 
     initialized = true;
   } catch (e) {
+    if (_demoMode) return; // Don't fallback to static data if demo is active
     console.error("[familyService] loadMembers error, using static fallback:", e);
     if (!initialized) {
       const isKhunaini = getCurrentSlug() === "khunaini";

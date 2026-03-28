@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
   Shield, Lock, Loader2, TreePine, Users, ExternalLink,
-  ToggleLeft, ToggleRight, RefreshCw, Home,
+  ToggleLeft, ToggleRight, RefreshCw, Home, FileText, Copy, MessageCircle,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -24,6 +24,18 @@ interface FamilyRow {
   user_count: number;
 }
 
+interface DemoLead {
+  id: string;
+  family_name: string;
+  contact_name: string;
+  phone: string;
+  estimated_members: string | null;
+  subdomain: string | null;
+  created_at: string;
+}
+
+type SuperAdminTab = "families" | "demo-leads";
+
 function getSuperToken(): string | null {
   const token = sessionStorage.getItem(TOKEN_KEY);
   const expiry = sessionStorage.getItem(EXPIRY_KEY);
@@ -40,10 +52,17 @@ export default function SuperAdmin() {
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState("");
 
+  // Tabs
+  const [activeTab, setActiveTab] = useState<SuperAdminTab>("families");
+
   // Data
   const [families, setFamilies] = useState<FamilyRow[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+
+  // Demo leads
+  const [demoLeads, setDemoLeads] = useState<DemoLead[]>([]);
+  const [leadsLoading, setLeadsLoading] = useState(false);
 
   const handleLogin = async () => {
     if (!pass.trim()) return;
@@ -90,9 +109,28 @@ export default function SuperAdmin() {
     }
   }, []);
 
+  const loadDemoLeads = useCallback(async () => {
+    setLeadsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("demo_leads")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      setDemoLeads(data || []);
+    } catch {
+      toast.error("فشل تحميل طلبات الديمو");
+    } finally {
+      setLeadsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    if (token) loadFamilies();
-  }, [token, loadFamilies]);
+    if (token) {
+      loadFamilies();
+      loadDemoLeads();
+    }
+  }, [token, loadFamilies, loadDemoLeads]);
 
   const handleToggle = async (familyId: string, currentActive: boolean) => {
     const t = getSuperToken();
@@ -120,6 +158,17 @@ export default function SuperAdmin() {
     sessionStorage.removeItem(EXPIRY_KEY);
     setToken(null);
     setFamilies([]);
+    setDemoLeads([]);
+  };
+
+  const copyPhone = (phone: string) => {
+    navigator.clipboard.writeText(phone);
+    toast.success("تم نسخ الرقم");
+  };
+
+  const openWhatsApp = (phone: string) => {
+    const cleaned = phone.replace(/^0/, "");
+    window.open(`https://wa.me/966${cleaned}`, "_blank");
   };
 
   // Stats
@@ -208,76 +257,175 @@ export default function SuperAdmin() {
             ))}
           </div>
 
+          {/* Tab Switcher */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setActiveTab("families")}
+              className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-colors ${
+                activeTab === "families"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+              }`}
+            >
+              العائلات المسجلة
+              <Badge variant="secondary" className="text-[10px] mr-1.5 align-middle">{totalFamilies.toLocaleString("ar-SA")}</Badge>
+            </button>
+            <button
+              onClick={() => setActiveTab("demo-leads")}
+              className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-colors ${
+                activeTab === "demo-leads"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+              }`}
+            >
+              طلبات الديمو
+              <Badge variant="secondary" className="text-[10px] mr-1.5 align-middle">{demoLeads.length.toLocaleString("ar-SA")}</Badge>
+            </button>
+          </div>
+
           {/* Families table */}
-          <section className="bg-card border border-border/50 rounded-2xl shadow-sm overflow-hidden">
-            <div className="p-4 border-b border-border/30 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-foreground">العائلات المسجلة</h2>
-              <Badge variant="secondary" className="text-xs">{totalFamilies.toLocaleString("ar-SA")}</Badge>
-            </div>
+          {activeTab === "families" && (
+            <section className="bg-card border border-border/50 rounded-2xl shadow-sm overflow-hidden">
+              <div className="p-4 border-b border-border/30 flex items-center justify-between">
+                <h2 className="text-lg font-bold text-foreground">العائلات المسجلة</h2>
+                <Badge variant="secondary" className="text-xs">{totalFamilies.toLocaleString("ar-SA")}</Badge>
+              </div>
 
-            {isLoading ? (
-              <div className="p-8 flex justify-center">
-                <Loader2 className="h-6 w-6 animate-spin text-primary" />
-              </div>
-            ) : families.length === 0 ? (
-              <div className="p-8 text-center text-muted-foreground text-sm">
-                لا توجد عائلات مسجلة
-              </div>
-            ) : (
-              <div className="divide-y divide-border/30">
-                {families.map((f) => (
-                  <div key={f.id} className="p-4 flex items-center gap-4">
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-bold text-foreground">{f.name}</span>
-                        <Badge variant={f.is_active ? "default" : "secondary"} className="text-[10px]">
-                          {f.is_active ? "نشطة" : "معطلة"}
-                        </Badge>
+              {isLoading ? (
+                <div className="p-8 flex justify-center">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : families.length === 0 ? (
+                <div className="p-8 text-center text-muted-foreground text-sm">
+                  لا توجد عائلات مسجلة
+                </div>
+              ) : (
+                <div className="divide-y divide-border/30">
+                  {families.map((f) => (
+                    <div key={f.id} className="p-4 flex items-center gap-4">
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-bold text-foreground">{f.name}</span>
+                          <Badge variant={f.is_active ? "default" : "secondary"} className="text-[10px]">
+                            {f.is_active ? "نشطة" : "معطلة"}
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1 font-mono" dir="ltr">{f.slug}.nasaby.app</p>
+                        <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground">
+                          <span>{f.member_count.toLocaleString("ar-SA")} عضو</span>
+                          <span>{f.user_count.toLocaleString("ar-SA")} مسجّل</span>
+                          <span>{new Date(f.created_at).toLocaleDateString("ar-SA")}</span>
+                        </div>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-1 font-mono" dir="ltr">{f.slug}.nasaby.app</p>
-                      <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground">
-                        <span>{f.member_count.toLocaleString("ar-SA")} عضو</span>
-                        <span>{f.user_count.toLocaleString("ar-SA")} مسجّل</span>
-                        <span>{new Date(f.created_at).toLocaleDateString("ar-SA")}</span>
+
+                      {/* Actions */}
+                      <div className="flex items-center gap-2 shrink-0">
+                        <a
+                          href={`https://${f.slug}.nasaby.app`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="h-9 w-9 rounded-xl border border-border/50 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                          title="زيارة المنصة"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
+                        <button
+                          onClick={() => handleToggle(f.id, f.is_active)}
+                          disabled={togglingId === f.id}
+                          className={`h-9 w-9 rounded-xl border flex items-center justify-center transition-colors ${
+                            f.is_active
+                              ? "border-destructive/30 text-destructive hover:bg-destructive/10"
+                              : "border-emerald-400/30 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+                          }`}
+                          title={f.is_active ? "تعطيل" : "تفعيل"}
+                        >
+                          {togglingId === f.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : f.is_active ? (
+                            <ToggleRight className="h-4 w-4" />
+                          ) : (
+                            <ToggleLeft className="h-4 w-4" />
+                          )}
+                        </button>
                       </div>
                     </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
 
-                    {/* Actions */}
-                    <div className="flex items-center gap-2 shrink-0">
-                      <a
-                        href={`https://${f.slug}.nasaby.app`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="h-9 w-9 rounded-xl border border-border/50 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                        title="زيارة المنصة"
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                      </a>
-                      <button
-                        onClick={() => handleToggle(f.id, f.is_active)}
-                        disabled={togglingId === f.id}
-                        className={`h-9 w-9 rounded-xl border flex items-center justify-center transition-colors ${
-                          f.is_active
-                            ? "border-destructive/30 text-destructive hover:bg-destructive/10"
-                            : "border-emerald-400/30 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
-                        }`}
-                        title={f.is_active ? "تعطيل" : "تفعيل"}
-                      >
-                        {togglingId === f.id ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : f.is_active ? (
-                          <ToggleRight className="h-4 w-4" />
-                        ) : (
-                          <ToggleLeft className="h-4 w-4" />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                ))}
+          {/* Demo Leads */}
+          {activeTab === "demo-leads" && (
+            <section className="bg-card border border-border/50 rounded-2xl shadow-sm overflow-hidden">
+              <div className="p-4 border-b border-border/30 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-primary" />
+                  <h2 className="text-lg font-bold text-foreground">طلبات الديمو</h2>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button variant="ghost" size="icon" onClick={loadDemoLeads} className="h-8 w-8 rounded-xl" title="تحديث">
+                    <RefreshCw className={`h-3.5 w-3.5 ${leadsLoading ? "animate-spin" : ""}`} />
+                  </Button>
+                  <Badge variant="secondary" className="text-xs">{demoLeads.length.toLocaleString("ar-SA")}</Badge>
+                </div>
               </div>
-            )}
-          </section>
+
+              {leadsLoading ? (
+                <div className="p-8 flex justify-center">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : demoLeads.length === 0 ? (
+                <div className="p-8 text-center text-muted-foreground text-sm">
+                  لا توجد طلبات ديمو
+                </div>
+              ) : (
+                <div className="divide-y divide-border/30">
+                  {demoLeads.map((lead) => (
+                    <div key={lead.id} className="p-4 space-y-2">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-bold text-foreground">{lead.family_name}</span>
+                            {lead.subdomain && (
+                              <span className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded" dir="ltr">
+                                {lead.subdomain}.nasaby.app
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-1">{lead.contact_name}</p>
+                          <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground">
+                            <span dir="ltr">{lead.phone}</span>
+                            {lead.estimated_members && <span>{lead.estimated_members} فرد تقريباً</span>}
+                            <span>{new Date(lead.created_at).toLocaleDateString("ar-SA", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <button
+                            onClick={() => copyPhone(lead.phone)}
+                            className="h-9 w-9 rounded-xl border border-border/50 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                            title="نسخ الرقم"
+                          >
+                            <Copy className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => openWhatsApp(lead.phone)}
+                            className="h-9 w-9 rounded-xl border border-emerald-400/30 flex items-center justify-center text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+                            title="واتساب"
+                          >
+                            <MessageCircle className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
         </div>
       </main>
     </div>

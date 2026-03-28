@@ -50,9 +50,13 @@ const LoadingSpinner = () => (
 
 /** Show marketing landing on bare domain, demo for unknown slugs, family Index for registered families */
 function HomePage() {
-  const { isMarketingSite, isDemo } = useFamilyContext();
+  const { isMarketingSite, isDemo, isLoading } = useFamilyContext();
   if (isMarketingSite) {
     return <Suspense fallback={<LoadingSpinner />}><NasabyLanding /></Suspense>;
+  }
+  // CRITICAL: Don't render ANYTHING until we know if it's demo or not
+  if (isLoading) {
+    return <LoadingSpinner />;
   }
   if (isDemo) {
     return <Suspense fallback={<LoadingSpinner />}><DemoPage /></Suspense>;
