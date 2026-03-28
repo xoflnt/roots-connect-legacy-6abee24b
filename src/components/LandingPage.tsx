@@ -55,6 +55,7 @@ function useCountUp(target: number, duration = 1500) {
 function computeStats() {
   const allMembers = getAllMembers();
   const total = allMembers.length;
+  if (total === 0) return { total: 0, generations: 0, males: 0, females: 0, topMaleName: "", topMaleCount: 0, topFemaleName: "", topFemaleCount: 0 };
   const roots = allMembers.filter((m) => !m.father_id);
   const childrenMap = new Map<string | null, string[]>();
   for (const m of allMembers) {
@@ -186,7 +187,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
     return { member, branch, branchStyle, depth, children, ancestors, siblings };
   }, [currentUser, dataReady]);
 
-  useEffect(() => { trackVisit(); }, []);
+  useEffect(() => { try { trackVisit(); } catch {} }, []);
   useEffect(() => { loadMembers().finally(() => setDataReady(true)); }, []);
   const filtered = searchMembers(query);
   const showingResults = open && filtered.length > 0;
@@ -631,19 +632,19 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
             {applyTatweel("ركائز العائلة")}
           </div>
           <h2 className="text-2xl md:text-4xl font-extrabold text-foreground">
-            أبناء زيد الثلاثة — أعمدة الفرع
+            فروع العائلة الرئيسية
           </h2>
           <p className="text-muted-foreground text-sm md:text-base max-w-xl mx-auto">
-            يقوم فرع الزلفي على ثلاثة أعمام هم أبناء زيد، ومنهم تفرّعت جميع عائلات الخنيني في الزلفي
+            الفروع التي تتكون منها شجرة عائلة {familyName || "العائلة"}
           </p>
           <motion.div
-            className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-4"
+            className={`grid grid-cols-1 ${pillarStats.length <= 3 ? 'md:grid-cols-3' : 'md:grid-cols-4'} gap-4 md:gap-6 mt-4`}
             variants={staggerContainer}
             initial="initial"
             animate="animate"
           >
             {pillarStats.map((pillar, i) => {
-              const colors = PILLAR_COLORS[i];
+              const colors = PILLAR_COLORS[i % PILLAR_COLORS.length];
               return (
                 <motion.div
                   key={pillar.id}
