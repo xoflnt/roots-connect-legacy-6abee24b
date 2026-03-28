@@ -7,6 +7,7 @@ let mergedMembers: FamilyMember[] = [...staticMembers];
 let memberMap = new Map<string, FamilyMember>();
 let childrenMap = new Map<string, FamilyMember[]>();
 let initialized = false;
+let _demoMode = false;
 
 function buildMaps(members: FamilyMember[]) {
   mergedMembers = members;
@@ -24,8 +25,19 @@ function buildMaps(members: FamilyMember[]) {
 // Initial build with static data (synchronous fallback)
 buildMaps([...staticMembers]);
 
+/**
+ * Inject demo data — bypasses Supabase entirely.
+ * After calling this, all functions (searchMembers, findKinship, etc.) operate on demo data.
+ */
+export function injectDemoData(members: FamilyMember[]): void {
+  _demoMode = true;
+  initialized = true;
+  buildMaps(members);
+}
+
 /** Load members from cloud and rebuild maps (static = source of truth for khunaini) */
 export async function loadMembers(): Promise<void> {
+  if (_demoMode) return; // Demo data already injected, skip Supabase
   try {
     const [cloudMembers] = await Promise.all([
       getMembers(),
@@ -78,6 +90,7 @@ export async function loadMembers(): Promise<void> {
 
 /** Call after updateMember / addMember to refresh all maps from cloud */
 export async function refreshMembers(): Promise<void> {
+  if (_demoMode) return;
   await loadMembers();
 }
 

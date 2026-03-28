@@ -11,17 +11,16 @@ interface FamilyContextType {
   isMarketingSite: boolean;
   isDemo: boolean;
   demoFamilyName: string | null;
+  demoFirstName: string | null;
 }
 
 const FamilyContext = createContext<FamilyContextType | null>(null);
 
 function resolveSlug(): string | null {
-  // 1. Check ?family= query param
   const params = new URLSearchParams(window.location.search);
   const fromParam = params.get("family");
   if (fromParam && /^[a-z][a-z0-9-]{2,29}$/.test(fromParam)) return fromParam;
 
-  // 2. Check subdomain (e.g. khunaini.nasaby.app)
   const hostname = window.location.hostname;
   const parts = hostname.split(".");
   if (parts.length >= 3) {
@@ -29,17 +28,16 @@ function resolveSlug(): string | null {
     if (sub !== "www" && /^[a-z][a-z0-9-]{2,29}$/.test(sub)) return sub;
   }
 
-  // 3. Localhost defaults to khunaini for dev convenience
   if (hostname === "localhost" || hostname === "127.0.0.1") return "khunaini";
-
-  // 4. Bare domain (nasaby.app) → marketing site, no family
   return null;
 }
 
-/** Try to extract an Arabic family name from the subdomain via URL param */
 function resolveDemoFamilyName(): string | null {
-  const params = new URLSearchParams(window.location.search);
-  return params.get("name") || null;
+  return new URLSearchParams(window.location.search).get("name") || null;
+}
+
+function resolveDemoFirstName(): string | null {
+  return new URLSearchParams(window.location.search).get("firstName") || null;
 }
 
 export function FamilyProvider({ children }: { children: ReactNode }) {
@@ -50,10 +48,11 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
   const [notFound, setNotFound] = useState(false);
   const [isDemo, setIsDemo] = useState(false);
   const [demoFamilyName] = useState(resolveDemoFamilyName);
+  const [demoFirstName] = useState(resolveDemoFirstName);
   const isMarketingSite = slug === null;
 
   useEffect(() => {
-    if (!slug) return; // Marketing site — no family to resolve
+    if (!slug) return;
 
     let cancelled = false;
 
@@ -68,8 +67,8 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
       if (cancelled) return;
 
       if (error || !data) {
-        // Slug not found in DB → show demo instead of 404
         setIsDemo(true);
+        setFamilyName(resolveDemoFamilyName() || slug || "العائلة");
         setIsLoading(false);
         return;
       }
@@ -85,7 +84,7 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
   }, [slug]);
 
   return (
-    <FamilyContext.Provider value={{ slug, familyId, familyName, isLoading, notFound, isMarketingSite, isDemo, demoFamilyName }}>
+    <FamilyContext.Provider value={{ slug, familyId, familyName, isLoading, notFound, isMarketingSite, isDemo, demoFamilyName, demoFirstName }}>
       {children}
     </FamilyContext.Provider>
   );

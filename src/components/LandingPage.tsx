@@ -15,7 +15,7 @@ import { OnboardingModal } from "@/components/OnboardingModal";
 import { SubmitRequestForm } from "@/components/SubmitRequestForm";
 import { trackVisit } from "@/services/dataService";
 import { getAllMembers, getDescendantCount, searchMembers, loadMembers, getMemberById, getChildrenOf, getAncestorChain, getDepth } from "@/services/familyService";
-import { PILLARS, DOCUMENTER_ID, ADMIN_MEMBER_IDS, getBranch, getBranchStyle } from "@/utils/branchUtils";
+import { PILLARS, getPillars, DOCUMENTER_ID, ADMIN_MEMBER_IDS, getBranch, getBranchStyle } from "@/utils/branchUtils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFamilyContext } from "@/contexts/FamilyContext";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
@@ -168,7 +168,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
     return () => window.removeEventListener('scroll', h, true);
   }, []);
 
-  const pillarStats = useMemo(() => PILLARS.map((p) => ({ ...p, descendants: getDescendantCount(p.id) })), [dataReady]);
+  const pillarStats = useMemo(() => getPillars().map((p) => ({ ...p, descendants: getDescendantCount(p.id) })), [dataReady]);
 
   // Dashboard data for logged-in user
   const dashboardData = useMemo(() => {
@@ -596,8 +596,8 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
       </div>
 
 
-      {/* ─── 4. كلمة الموثّق ─── */}
-      <section className="py-6 px-4">
+      {/* ─── 4. كلمة الموثّق (only for Khunaini) ─── */}
+      {getMemberById(DOCUMENTER_ID) && <section className="py-6 px-4">
         <div className="max-w-lg mx-auto text-center space-y-4">
           <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-documenter text-documenter-foreground font-bold text-sm">
             <ScrollText className="h-4 w-4" />
@@ -622,7 +622,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
             </div>
           </div>
         </div>
-      </section>
+      </section>}
 
       {/* ─── 5. Three Pillars ─── */}
       <section className="py-8 px-4 border-t border-border/30">

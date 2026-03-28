@@ -4,16 +4,10 @@
  * so the same surname always yields the same tree.
  */
 
-export interface DemoMember {
-  id: string;
-  name: string;
-  gender: "M" | "F";
-  father_id: string | null;
-  birth_year: string | null;
-  death_year: string | null;
-  spouses: string | null;
-  notes: string | null;
-}
+import type { FamilyMember } from "@/data/familyData";
+
+// Alias for backward compat — DemoMember is now FamilyMember
+export type DemoMember = FamilyMember;
 
 // ─── Name pools ───
 
@@ -346,4 +340,44 @@ export function getDemoBranches(members: DemoMember[]): { id: string; name: stri
     const firstName = head.name.split(" ")[0];
     return { id: bid, name: firstName, count };
   });
+}
+
+/**
+ * Insert the visitor as a real member in the demo tree.
+ * Places them as a sibling of Gen-3 members (child of a Gen-2 pillar head).
+ */
+export function insertVisitorMember(
+  members: FamilyMember[],
+  firstName: string,
+  familySurname: string
+): { members: FamilyMember[]; visitorId: string } {
+  const gen2Ids = members.filter(m => m.father_id === "D100" && m.gender === "M").map(m => m.id);
+  const gen3Males = members.filter(m => m.father_id && gen2Ids.includes(m.father_id) && m.gender === "M");
+
+  // Pick a father seeded by firstName
+  let hash = 0;
+  for (let i = 0; i < firstName.length; i++) hash = ((hash << 5) - hash + firstName.charCodeAt(i)) | 0;
+  const father = gen3Males[Math.abs(hash) % gen3Males.length];
+
+  const visitorId = "D_VISITOR";
+  const visitor: FamilyMember = {
+    id: visitorId,
+    name: `${firstName} بن ${father.name.split(" ")[0]}`,
+    gender: "M" as const,
+    father_id: father.id,
+    birth_year: "١٤٢٠",
+    notes: `والدته: سارة ${familySurname === "العائلة" ? "السالم" : familySurname.replace(/^ال/, "ال")}`,
+  };
+
+  return { members: [...members, visitor], visitorId };
+}
+
+/** Get pillars formatted for branchUtils.setDemoPillars() */
+export function getDemoPillars(members: FamilyMember[]): { id: string; label: string; name: string }[] {
+  const sons = members.filter(m => m.father_id === "D100" && m.gender === "M");
+  return sons.map(son => ({
+    id: son.id,
+    label: `فرع ${son.name.split(" ")[0]}`,
+    name: son.name,
+  }));
 }

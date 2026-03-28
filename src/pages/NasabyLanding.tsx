@@ -59,23 +59,31 @@ function arabicToSlug(name: string): string {
 }
 
 function DemoInput() {
+  const [firstName, setFirstName] = useState("");
   const [familyInput, setFamilyInput] = useState("");
   const slug = arabicToSlug(familyInput);
-  const canGo = familyInput.trim().length >= 2;
+  const canGo = firstName.trim().length >= 2 && familyInput.trim().length >= 2;
 
   const go = () => {
     if (!canGo) return;
     const name = familyInput.trim().replace(/^(عائلة|آل)\s*/, '');
-    window.location.href = `https://${slug}.nasaby.app?name=${encodeURIComponent(name)}`;
+    const first = firstName.trim();
+    window.location.href = `https://${slug}.nasaby.app?name=${encodeURIComponent(name)}&firstName=${encodeURIComponent(first)}`;
   };
 
   return (
     <div className="max-w-md mx-auto space-y-3">
       <Input
+        value={firstName}
+        onChange={e => setFirstName(e.target.value)}
+        placeholder="اسمك الأول... مثال: سعود"
+        className="h-14 rounded-2xl text-base text-center"
+      />
+      <Input
         value={familyInput}
         onChange={e => setFamilyInput(e.target.value)}
         onKeyDown={e => e.key === "Enter" && go()}
-        placeholder="اكتب اسم عائلتك... مثال: العتيبي"
+        placeholder="اسم عائلتك... مثال: العتيبي"
         className="h-14 rounded-2xl text-base text-center"
       />
       {familyInput.trim() && (
@@ -90,7 +98,7 @@ function DemoInput() {
         className="w-full min-h-[52px] rounded-2xl font-bold text-base bg-accent text-accent-foreground hover:bg-accent/90"
       >
         <Eye className="h-5 w-5 ml-2" />
-        شوف الديمو
+        شوف منصة عائلتك
       </Button>
     </div>
   );
