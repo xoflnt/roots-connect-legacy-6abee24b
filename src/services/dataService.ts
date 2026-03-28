@@ -218,15 +218,18 @@ export async function getVerifiedUsers(adminToken: string): Promise<VerifiedUser
   }
 }
 
-// ─── Verified Member IDs (public — no PII) ───
+// ─── Verified Member IDs (public — no PII except phone for authed members) ───
 
 let verifiedIdsCache: Set<string> | null = null;
+let verifiedPhonesCache: Record<string, string> = {};
 
 export async function loadVerifiedMemberIds(): Promise<Set<string>> {
   try {
     const result = await callFamilyApi("get-verified-ids", {});
     const ids: string[] = result?.ids || [];
+    const phones: Record<string, string> = result?.phones || {};
     verifiedIdsCache = new Set(ids);
+    verifiedPhonesCache = phones;
     return verifiedIdsCache;
   } catch (e) {
     console.error("[dataService] loadVerifiedMemberIds error:", e);
@@ -236,6 +239,10 @@ export async function loadVerifiedMemberIds(): Promise<Set<string>> {
 
 export function getVerifiedMemberIds(): Set<string> {
   return verifiedIdsCache || new Set();
+}
+
+export function getVerifiedPhone(memberId: string): string | null {
+  return verifiedPhonesCache[memberId] || null;
 }
 
 // ─── Visit Tracking (cloud DB) ───

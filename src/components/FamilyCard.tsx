@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
-import { Plus, Minus, UserPlus, Heart, BadgeCheck } from "lucide-react";
+import { Plus, Minus, UserPlus, Heart, BadgeCheck, Phone } from "lucide-react";
 import { WhatsAppIcon } from "./WhatsAppIcon";
 import { downloadVCard } from "@/utils/vcard";
 import type { FamilyMember } from "@/data/familyData";
@@ -27,6 +27,59 @@ type FamilyCardData = FamilyMember & {
 
 function toArabicDigit(n: number): string {
   return n.toLocaleString("ar-SA");
+}
+
+function ContactMenu({ phone, name, onWhatsApp, onSaveContact }: {
+  phone: string;
+  name: string;
+  onWhatsApp: (e: React.MouseEvent) => void;
+  onSaveContact: (e: React.MouseEvent) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
+        className="flex items-center justify-center w-6 h-6 rounded-full bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 transition-colors"
+        title="تواصل"
+      >
+        <Phone className="h-3 w-3" />
+      </button>
+      {open && (
+        <div
+          className="absolute top-full mt-1 right-0 z-50 bg-card border border-border/50 rounded-xl shadow-xl overflow-hidden min-w-[140px]"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            onClick={(e) => { onWhatsApp(e); setOpen(false); }}
+            className="w-full flex items-center gap-2 px-3 py-2.5 text-xs font-medium text-foreground hover:bg-muted transition-colors"
+          >
+            <WhatsAppIcon className="h-3.5 w-3.5 text-[#25D366]" />
+            واتساب
+          </button>
+          <div className="h-px bg-border/30" />
+          <button
+            onClick={(e) => { onSaveContact(e); setOpen(false); }}
+            className="w-full flex items-center gap-2 px-3 py-2.5 text-xs font-medium text-foreground hover:bg-muted transition-colors"
+          >
+            <UserPlus className="h-3.5 w-3.5 text-primary" />
+            حفظ جهة اتصال
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function FamilyCardComponent({ data, selected }: NodeProps) {
@@ -286,25 +339,7 @@ function FamilyCardComponent({ data, selected }: NodeProps) {
             {childrenCount} أبناء
           </span>
         )}
-        {phone && (
-          <>
-            <button
-              onClick={handleWhatsApp}
-              className="flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 transition-colors"
-              title="تواصل عبر واتساب"
-            >
-              <WhatsAppIcon className="h-2.5 w-2.5" />
-              واتساب
-            </button>
-            <button
-              onClick={handleSaveContact}
-              className="flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-              title="حفظ جهة اتصال"
-            >
-              <UserPlus className="h-2.5 w-2.5" />
-            </button>
-          </>
-        )}
+        {phone && <ContactMenu phone={phone} name={member.name} onWhatsApp={handleWhatsApp} onSaveContact={handleSaveContact} />}
       </div>
 
       {/* Heritage badges */}

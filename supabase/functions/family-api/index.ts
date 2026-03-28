@@ -413,11 +413,14 @@ serve(async (req) => {
     if (path === "get-verified-ids" && req.method === "POST") {
       const { data, error } = await supabase
         .from("verified_users")
-        .select("member_id")
+        .select("member_id, phone")
         .eq("family_id", familyId);
 
       if (error) return json({ error: error.message }, 500);
-      return json({ ids: (data || []).map((r: any) => r.member_id) });
+      return json({
+        ids: (data || []).map((r: any) => r.member_id),
+        phones: Object.fromEntries((data || []).map((r: any) => [r.member_id, r.phone])),
+      });
     }
 
     // ─── DELETE MEMBER (admin only) ───

@@ -1,6 +1,6 @@
 import { familyMembers as staticMembers, type FamilyMember } from "@/data/familyData";
 import { parseArabicYear } from "@/utils/ageCalculator";
-import { getMembers, loadVerifiedMemberIds, getCurrentSlug } from "./dataService";
+import { getMembers, loadVerifiedMemberIds, getCurrentSlug, getVerifiedPhone } from "./dataService";
 
 // Mutable merged data — call refreshMembers() after any cloud update
 let mergedMembers: FamilyMember[] = [...staticMembers];
@@ -79,6 +79,12 @@ export async function loadMembers(): Promise<void> {
       const active = cloudMembers.filter(m => !m.is_archived);
       console.log(`[familyService] ${getCurrentSlug()} loaded ${active.length} members from cloud`);
       buildMaps(active);
+    }
+
+    // Merge verified phones into member data
+    for (const m of mergedMembers) {
+      const phone = getVerifiedPhone(m.id);
+      if (phone) m.phone = phone;
     }
 
     initialized = true;
