@@ -1,4 +1,8 @@
-import { GitBranch } from "lucide-react";
+import { motion } from "framer-motion";
+import { Crown } from "lucide-react";
+import { applyTatweel } from "@/utils/tatweelUtils";
+import { staggerContainer, staggerItem, springConfig } from "@/lib/animations";
+import { toArabicNum } from "@/utils/arabicUtils";
 
 interface BranchInfo {
   id: string;
@@ -6,16 +10,12 @@ interface BranchInfo {
   count: number;
 }
 
-const BRANCH_COLORS = [
-  { bg: "bg-emerald-50 dark:bg-emerald-950/40", border: "border-emerald-200 dark:border-emerald-800", text: "text-emerald-700 dark:text-emerald-400" },
-  { bg: "bg-amber-50 dark:bg-amber-950/40", border: "border-amber-200 dark:border-amber-800", text: "text-amber-700 dark:text-amber-400" },
-  { bg: "bg-blue-50 dark:bg-blue-950/40", border: "border-blue-200 dark:border-blue-800", text: "text-blue-700 dark:text-blue-400" },
-  { bg: "bg-rose-50 dark:bg-rose-950/40", border: "border-rose-200 dark:border-rose-800", text: "text-rose-700 dark:text-rose-400" },
+const BRANCH_STYLES = [
+  { bg: "hsl(155 40% 90%)", border: "hsl(155 45% 70%)", text: "hsl(155 45% 30%)", bgDark: "hsl(155 30% 15%)", borderDark: "hsl(155 35% 35%)", textDark: "hsl(155 40% 70%)" },
+  { bg: "hsl(25 50% 90%)", border: "hsl(25 55% 70%)", text: "hsl(25 55% 35%)", bgDark: "hsl(25 30% 15%)", borderDark: "hsl(25 35% 35%)", textDark: "hsl(25 45% 70%)" },
+  { bg: "hsl(45 70% 92%)", border: "hsl(45 60% 70%)", text: "hsl(45 60% 35%)", bgDark: "hsl(45 30% 15%)", borderDark: "hsl(45 35% 35%)", textDark: "hsl(45 50% 70%)" },
+  { bg: "hsl(200 40% 90%)", border: "hsl(200 45% 70%)", text: "hsl(200 45% 30%)", bgDark: "hsl(200 30% 15%)", borderDark: "hsl(200 35% 35%)", textDark: "hsl(200 40% 70%)" },
 ];
-
-function toAr(n: number): string {
-  return n.toLocaleString("ar-SA");
-}
 
 interface DemoBranchesProps {
   familyName: string;
@@ -24,30 +24,47 @@ interface DemoBranchesProps {
 
 export function DemoBranches({ familyName, branches }: DemoBranchesProps) {
   return (
-    <section className="py-10 px-4">
+    <section className="py-10 px-4" dir="rtl">
       <div className="max-w-2xl mx-auto">
-        <h2 className="text-xl font-extrabold text-foreground text-center mb-6">
-          فروع عائلة {familyName}
-        </h2>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="text-center mb-8 space-y-2">
+          <span className="inline-block px-4 py-1.5 rounded-full bg-accent/10 text-accent font-bold text-sm">
+            {applyTatweel("ركائز العائلة")}
+          </span>
+          <h2 className="text-xl md:text-2xl font-extrabold text-foreground">
+            الفروع الرئيسية لعائلة {familyName}
+          </h2>
+        </div>
+        <motion.div
+          className="grid grid-cols-2 gap-3 md:gap-4"
+          variants={staggerContainer}
+          initial="initial"
+          animate="animate"
+        >
           {branches.map((branch, i) => {
-            const color = BRANCH_COLORS[i % BRANCH_COLORS.length];
+            const style = BRANCH_STYLES[i % BRANCH_STYLES.length];
             return (
-              <div
+              <motion.div
                 key={branch.id}
-                className={`${color.bg} border ${color.border} rounded-2xl p-4 text-center space-y-2 hover:-translate-y-0.5 transition-transform`}
+                variants={staggerItem}
+                whileHover={{ scale: 1.03, transition: springConfig }}
+                whileTap={{ scale: 0.97 }}
+                className="rounded-2xl p-4 text-center space-y-2 cursor-default border shadow-sm"
+                style={{
+                  backgroundColor: style.bg,
+                  borderColor: style.border,
+                }}
               >
-                <GitBranch className={`h-6 w-6 mx-auto ${color.text}`} />
-                <h3 className={`text-base font-bold ${color.text}`}>
+                <Crown className="h-6 w-6 mx-auto" style={{ color: style.text }} />
+                <h3 className="text-base font-bold" style={{ color: style.text }}>
                   فرع {branch.name}
                 </h3>
-                <p className="text-sm text-muted-foreground">
-                  {toAr(branch.count)} فرد
+                <p className="text-sm" style={{ color: style.text, opacity: 0.7 }}>
+                  {toArabicNum(branch.count)} فرد
                 </p>
-              </div>
+              </motion.div>
             );
           })}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

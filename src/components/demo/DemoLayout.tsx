@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { TreePine, Home, Moon, Sun } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
+import { applyTatweel } from "@/utils/tatweelUtils";
 import { DemoBanner } from "./DemoBanner";
 import { DemoContactModal } from "./DemoContactModal";
 
@@ -20,16 +21,18 @@ export function DemoLayout({ familyName, subdomain, children }: DemoLayoutProps)
     <div className="min-h-[100dvh] bg-background" dir="rtl">
       <DemoBanner familyName={familyName} onContact={openContact} />
 
-      {/* Header */}
+      {/* Header with glass effect */}
       <header
-        className="sticky top-0 z-50 flex items-center justify-between gap-2 px-4 py-3 border-b border-border/40 bg-card/80 backdrop-blur-xl"
+        className="sticky top-0 z-50 flex items-center justify-between gap-2 px-4 py-3 border-b border-border/40 bg-card/80 backdrop-blur-xl shadow-sm"
         style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }}
       >
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
             <TreePine className="h-4.5 w-4.5 text-primary" />
           </div>
-          <span className="text-base font-extrabold text-foreground">بوابة تراث {familyName}</span>
+          <span className="text-base font-extrabold text-foreground">
+            {applyTatweel(`بوابة تراث ${familyName}`)}
+          </span>
         </div>
         <div className="flex items-center gap-1.5">
           <button

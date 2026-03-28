@@ -3,6 +3,7 @@ import { useDemoFamily } from "@/hooks/useDemoFamily";
 import { useFamilyContext } from "@/contexts/FamilyContext";
 import { DemoLayout } from "@/components/demo/DemoLayout";
 import { DemoHero } from "@/components/demo/DemoHero";
+import { DemoStats } from "@/components/demo/DemoStats";
 import { DemoBranches } from "@/components/demo/DemoBranches";
 import { DemoAboutFamily } from "@/components/demo/DemoAboutFamily";
 import { DemoQuickActions, type DemoTab } from "@/components/demo/DemoQuickActions";
@@ -12,7 +13,7 @@ import { DemoKinship } from "@/components/demo/DemoKinship";
 import { DemoMemberList } from "@/components/demo/DemoMemberList";
 import { DemoFooter } from "@/components/demo/DemoFooter";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { User, ChevronLeft } from "lucide-react";
+import { User, ChevronLeft, TreePine, Trees, Search, Scale, AlignJustify } from "lucide-react";
 import { getDemoAncestorChain, getDemoChildren, getDemoDepth } from "@/services/demoService";
 import type { DemoMember } from "@/data/demoFamilyData";
 
@@ -52,7 +53,9 @@ export default function DemoPage() {
             members={members}
             totalCount={totalCount}
             onSelectMember={handleSelectMember}
+            onTabChange={handleTabChange}
           />
+          <DemoStats members={members} />
           <DemoBranches familyName={familyName} branches={branches} />
           <DemoAboutFamily familyName={familyName} />
           <DemoQuickActions onTabChange={handleTabChange} />
@@ -84,27 +87,35 @@ export default function DemoPage() {
         </div>
       )}
 
-      {/* Bottom nav for tabs */}
+      {/* Bottom nav for tabs — glass effect */}
       {activeTab !== "home" && (
         <nav
-          className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-center gap-2 px-4 py-2.5 border-t border-border/40 bg-card/95 backdrop-blur-md"
-          style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}
+          className="fixed bottom-0 left-0 right-0 z-50 flex items-stretch justify-around border-t border-border/40 bg-background/95 backdrop-blur-md shadow-[0_-2px_10px_rgba(0,0,0,0.08)]"
+          style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+          dir="rtl"
         >
           <button
             onClick={() => handleTabChange("home")}
-            className="px-4 py-2 rounded-xl text-sm font-bold text-primary hover:bg-primary/10 transition-colors"
+            className="flex-1 flex flex-col items-center justify-center gap-0.5 min-h-[56px] text-primary font-bold text-[10px]"
           >
+            <TreePine className="h-5 w-5" />
             الرئيسية
           </button>
-          {(["tree", "search", "kinship", "list"] as DemoTab[]).map(tab => (
+          {([
+            { tab: "tree" as DemoTab, label: "الشجرة", icon: Trees },
+            { tab: "search" as DemoTab, label: "بحث", icon: Search },
+            { tab: "kinship" as DemoTab, label: "قرابة", icon: Scale },
+            { tab: "list" as DemoTab, label: "قائمة", icon: AlignJustify },
+          ]).map(({ tab, label, icon: Icon }) => (
             <button
               key={tab}
               onClick={() => handleTabChange(tab)}
-              className={`px-3 py-2 rounded-xl text-xs font-medium transition-colors ${
-                activeTab === tab ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"
+              className={`flex-1 flex flex-col items-center justify-center gap-0.5 min-h-[56px] text-[10px] font-medium transition-colors ${
+                activeTab === tab ? "text-primary" : "text-muted-foreground"
               }`}
             >
-              {{ tree: "الشجرة", search: "بحث", kinship: "قرابة", list: "قائمة" }[tab]}
+              <Icon className="h-5 w-5" />
+              {label}
             </button>
           ))}
         </nav>

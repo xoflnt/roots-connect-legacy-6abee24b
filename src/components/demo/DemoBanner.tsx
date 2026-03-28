@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { X, MessageCircle } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, MessageCircle, Sparkles } from "lucide-react";
 
 interface DemoBannerProps {
   familyName: string;
@@ -11,32 +12,39 @@ export function DemoBanner({ familyName, onContact }: DemoBannerProps) {
   if (!visible) return null;
 
   return (
-    <div
-      className="sticky top-0 z-[100] flex items-center justify-between gap-2 px-4 py-2.5 text-sm font-medium"
-      style={{
-        background: "linear-gradient(135deg, hsl(42 65% 50%), hsl(35 70% 45%))",
-        color: "white",
-        textShadow: "0 1px 2px rgba(0,0,0,0.2)",
-      }}
-      dir="rtl"
-    >
-      <p className="flex-1 text-center">
-        هذا عرض تجريبي لمنصة عائلة {familyName} — تواصل معنا لتفعيل منصتك
-      </p>
-      <button
-        onClick={onContact}
-        className="shrink-0 flex items-center gap-1 bg-white/20 hover:bg-white/30 rounded-lg px-3 py-1 text-xs font-bold transition-colors"
+    <AnimatePresence>
+      <motion.div
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: -50, opacity: 0 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        className="sticky top-0 z-[100] flex items-center justify-between gap-2 px-4 py-2.5 text-sm font-medium"
+        style={{
+          background: "linear-gradient(135deg, hsl(42 65% 50%), hsl(35 70% 45%), hsl(42 65% 50%))",
+          color: "white",
+          textShadow: "0 1px 2px rgba(0,0,0,0.2)",
+        }}
+        dir="rtl"
       >
-        <MessageCircle className="h-3.5 w-3.5" />
-        تواصل معنا
-      </button>
-      <button
-        onClick={() => setVisible(false)}
-        className="shrink-0 w-7 h-7 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors"
-        aria-label="إغلاق"
-      >
-        <X className="h-4 w-4" />
-      </button>
-    </div>
+        <p className="flex-1 text-center flex items-center justify-center gap-1.5">
+          <Sparkles className="h-4 w-4" />
+          هذا عرض تجريبي لمنصة عائلة {familyName} — تواصل معنا لتفعيل منصتك
+        </p>
+        <button
+          onClick={onContact}
+          className="shrink-0 flex items-center gap-1 bg-white/20 hover:bg-white/30 rounded-lg px-3 py-1 text-xs font-bold transition-colors"
+        >
+          <MessageCircle className="h-3.5 w-3.5" />
+          تواصل معنا
+        </button>
+        <button
+          onClick={() => setVisible(false)}
+          className="shrink-0 w-7 h-7 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors"
+          aria-label="إغلاق"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </motion.div>
+    </AnimatePresence>
   );
 }
