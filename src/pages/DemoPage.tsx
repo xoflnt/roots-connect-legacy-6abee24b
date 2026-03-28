@@ -60,9 +60,7 @@ export default function DemoPage() {
   return (
     <>
       <DemoBanner familyName={surname} onContact={() => setContactOpen(true)} />
-      <div style={{ paddingTop: "44px" }}>
-        <Index />
-      </div>
+      <Index />
       <DemoContactModal
         open={contactOpen}
         onClose={() => setContactOpen(false)}

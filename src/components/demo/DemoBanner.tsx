@@ -12,31 +12,31 @@ export function DemoBanner({ familyName, onContact }: DemoBannerProps) {
 
   return (
     <div
-      className="fixed top-0 left-0 right-0 z-[9999] flex items-center justify-center gap-3 px-4 py-2.5 text-sm font-bold shadow-lg"
+      className="relative z-[60] flex items-center justify-center gap-3 px-4 py-2 text-sm font-bold"
       style={{
         background: "linear-gradient(135deg, hsl(42 65% 50%), hsl(35 70% 45%), hsl(42 65% 50%))",
         color: "white",
-        paddingTop: "max(0.625rem, env(safe-area-inset-top))",
+        paddingTop: "max(0.5rem, env(safe-area-inset-top))",
       }}
       dir="rtl"
     >
-      <span className="flex items-center gap-1.5 flex-1 justify-center">
-        <Sparkles className="h-4 w-4 shrink-0" />
+      <span className="flex items-center gap-1.5 flex-1 justify-center text-xs md:text-sm">
+        <Sparkles className="h-3.5 w-3.5 shrink-0" />
         هذا عرض تجريبي لمنصة عائلة {familyName}
       </span>
       <button
         onClick={onContact}
-        className="shrink-0 bg-black/20 hover:bg-black/30 px-3 py-1 rounded-lg text-xs font-bold transition-colors"
+        className="shrink-0 bg-black/20 hover:bg-black/30 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors flex items-center gap-1"
       >
-        <MessageCircle className="h-3.5 w-3.5 inline ml-1" />
+        <MessageCircle className="h-3 w-3" />
         تواصل معنا
       </button>
       <button
         onClick={() => setVisible(false)}
-        className="shrink-0 w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors text-white/70 hover:text-white"
+        className="shrink-0 w-5 h-5 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors text-white/70 hover:text-white"
         aria-label="إغلاق"
       >
-        <X className="h-4 w-4" />
+        <X className="h-3.5 w-3.5" />
       </button>
     </div>
   );
