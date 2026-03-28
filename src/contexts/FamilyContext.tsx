@@ -9,6 +9,8 @@ interface FamilyContextType {
   isLoading: boolean;
   notFound: boolean;
   isMarketingSite: boolean;
+  isDemo: boolean;
+  demoFamilyName: string | null;
 }
 
 const FamilyContext = createContext<FamilyContextType | null>(null);
@@ -34,12 +36,20 @@ function resolveSlug(): string | null {
   return null;
 }
 
+/** Try to extract an Arabic family name from the subdomain via URL param */
+function resolveDemoFamilyName(): string | null {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("name") || null;
+}
+
 export function FamilyProvider({ children }: { children: ReactNode }) {
   const [slug] = useState(resolveSlug);
   const [familyId, setFamilyId] = useState<string | null>(null);
   const [familyName, setFamilyName] = useState("");
   const [isLoading, setIsLoading] = useState(slug !== null);
   const [notFound, setNotFound] = useState(false);
+  const [isDemo, setIsDemo] = useState(false);
+  const [demoFamilyName] = useState(resolveDemoFamilyName);
   const isMarketingSite = slug === null;
 
   useEffect(() => {
@@ -58,7 +68,8 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
       if (cancelled) return;
 
       if (error || !data) {
-        setNotFound(true);
+        // Slug not found in DB → show demo instead of 404
+        setIsDemo(true);
         setIsLoading(false);
         return;
       }
@@ -73,22 +84,8 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
     return () => { cancelled = true; };
   }, [slug]);
 
-  if (!isMarketingSite && notFound) {
-    return (
-      <div className="min-h-[100dvh] bg-background flex items-center justify-center p-4" dir="rtl">
-        <div className="text-center space-y-4 max-w-md">
-          <h1 className="text-4xl font-extrabold text-foreground">٤٠٤</h1>
-          <p className="text-lg text-muted-foreground font-bold">عائلة غير موجودة</p>
-          <p className="text-sm text-muted-foreground">
-            لا توجد عائلة مسجلة بالاسم المختصر: <span className="font-mono text-foreground" dir="ltr">{slug}</span>
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <FamilyContext.Provider value={{ slug, familyId, familyName, isLoading, notFound, isMarketingSite }}>
+    <FamilyContext.Provider value={{ slug, familyId, familyName, isLoading, notFound, isMarketingSite, isDemo, demoFamilyName }}>
       {children}
     </FamilyContext.Provider>
   );

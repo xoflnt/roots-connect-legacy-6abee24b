@@ -36,6 +36,7 @@ const Documents = lazyRetry(() => import("./pages/Documents.tsx"));
 const RegisterFamily = lazyRetry(() => import("./pages/RegisterFamily.tsx"));
 const NasabyLanding = lazyRetry(() => import("./pages/NasabyLanding.tsx"));
 const SuperAdmin = lazyRetry(() => import("./pages/SuperAdmin.tsx"));
+const DemoPage = lazyRetry(() => import("./pages/DemoPage.tsx"));
 import NotFound from "./pages/NotFound.tsx";
 import { useFamilyContext } from "@/contexts/FamilyContext";
 
@@ -47,11 +48,14 @@ const LoadingSpinner = () => (
   </div>
 );
 
-/** Show marketing landing on bare domain, family Index on subdomains */
+/** Show marketing landing on bare domain, demo for unknown slugs, family Index for registered families */
 function HomePage() {
-  const { isMarketingSite } = useFamilyContext();
+  const { isMarketingSite, isDemo } = useFamilyContext();
   if (isMarketingSite) {
     return <Suspense fallback={<LoadingSpinner />}><NasabyLanding /></Suspense>;
+  }
+  if (isDemo) {
+    return <Suspense fallback={<LoadingSpinner />}><DemoPage /></Suspense>;
   }
   return <Suspense fallback={<LoadingSpinner />}><Index /></Suspense>;
 }

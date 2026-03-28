@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { TreePine, Lock, Smartphone, Trees, Check, ExternalLink, MessageCircle } from "lucide-react";
+import { TreePine, Lock, Smartphone, Trees, Check, ExternalLink, MessageCircle, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 const FEATURES = [
@@ -35,6 +37,64 @@ const PRICING_FEATURES = [
   "لوحة إدارة للمسؤول",
   "تعمل على الجوال",
 ];
+
+/** Transliterate Arabic family name to a slug for subdomain */
+function arabicToSlug(name: string): string {
+  const map: Record<string, string> = {
+    'ا':'a','أ':'a','إ':'i','آ':'a','ب':'b','ت':'t','ث':'th','ج':'j','ح':'h','خ':'kh',
+    'د':'d','ذ':'dh','ر':'r','ز':'z','س':'s','ش':'sh','ص':'s','ض':'d','ط':'t','ظ':'z',
+    'ع':'a','غ':'gh','ف':'f','ق':'q','ك':'k','ل':'l','م':'m','ن':'n','ه':'h','و':'w',
+    'ي':'y','ة':'h','ى':'a','ئ':'y','ؤ':'w',
+  };
+  return name
+    .replace(/[\u0610-\u061A\u064B-\u065F\u0670\u0640]/g, '')
+    .replace(/^(ال|عائلة|آل|بنو|بني)\s*/g, '')
+    .trim()
+    .split('')
+    .map(ch => map[ch] || (ch === ' ' ? '-' : /[a-z0-9-]/.test(ch) ? ch : ''))
+    .join('')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .toLowerCase() || 'demo';
+}
+
+function DemoInput() {
+  const [familyInput, setFamilyInput] = useState("");
+  const slug = arabicToSlug(familyInput);
+  const canGo = familyInput.trim().length >= 2;
+
+  const go = () => {
+    if (!canGo) return;
+    const name = familyInput.trim().replace(/^(عائلة|آل)\s*/, '');
+    window.location.href = `https://${slug}.nasaby.app?name=${encodeURIComponent(name)}`;
+  };
+
+  return (
+    <div className="max-w-md mx-auto space-y-3">
+      <Input
+        value={familyInput}
+        onChange={e => setFamilyInput(e.target.value)}
+        onKeyDown={e => e.key === "Enter" && go()}
+        placeholder="اكتب اسم عائلتك... مثال: العتيبي"
+        className="h-14 rounded-2xl text-base text-center"
+      />
+      {familyInput.trim() && (
+        <p className="text-xs text-muted-foreground" dir="ltr">
+          {slug}.nasaby.app
+        </p>
+      )}
+      <Button
+        onClick={go}
+        disabled={!canGo}
+        size="lg"
+        className="w-full min-h-[52px] rounded-2xl font-bold text-base bg-accent text-accent-foreground hover:bg-accent/90"
+      >
+        <Eye className="h-5 w-5 ml-2" />
+        شوف الديمو
+      </Button>
+    </div>
+  );
+}
 
 export default function NasabyLanding() {
   const navigate = useNavigate();
@@ -161,6 +221,19 @@ export default function NasabyLanding() {
               <ExternalLink className="h-4 w-4" />
             </a>
           </div>
+        </div>
+      </section>
+
+      {/* ═══════ DEMO CTA ═══════ */}
+      <section className="py-16 md:py-24 px-4 bg-primary/5">
+        <div className="max-w-2xl mx-auto text-center space-y-6">
+          <h2 className="text-2xl md:text-3xl font-extrabold text-foreground">
+            شوف منصة عائلتك في ثواني
+          </h2>
+          <p className="text-muted-foreground text-sm">
+            اكتب اسم عائلتك وشاهد كيف ستبدو منصتك التجريبية
+          </p>
+          <DemoInput />
         </div>
       </section>
 
