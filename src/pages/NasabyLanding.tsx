@@ -3,16 +3,19 @@ import { motion } from "framer-motion";
 import {
   TreePine, Trees, Link2, ScrollText, Search, Shield, Smartphone,
   PenLine, Database, Rocket, MessageCircle, Check, ChevronDown, Eye,
+  Loader2, Send,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { applyTatweel } from "@/utils/tatweelUtils";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
-const WHATSAPP_NUMBER = "966500000000"; // TODO: استبدله برقمك الحقيقي
+const WHATSAPP_NUMBER = "966544033920";
 
 const FEATURES = [
   {
@@ -234,6 +237,110 @@ function FaqItem({ q, a }: { q: string; a: string }) {
         <p className="px-4 pb-4 text-sm text-muted-foreground leading-relaxed">{a}</p>
       </CollapsibleContent>
     </Collapsible>
+  );
+}
+
+// ─── Contact Form ─────────────────────────────────────────────────────────────
+
+function ContactForm() {
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [familyName, setFamilyName] = useState("");
+  const [members, setMembers] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  const canSubmit = name.trim().length >= 2 && /^05\d{8}$/.test(phone) && familyName.trim().length >= 2 && !submitting;
+
+  const handleSubmit = async () => {
+    if (!canSubmit) return;
+    setSubmitting(true);
+    try {
+      await supabase.from("demo_leads").insert({
+        family_name: familyName.trim(),
+        contact_name: name.trim(),
+        phone: phone.trim(),
+        estimated_members: members.trim() || null,
+        subdomain: null,
+      });
+
+      try {
+        await supabase.functions.invoke("notify-demo-lead", {
+          body: {
+            family_name: familyName.trim(),
+            contact_name: name.trim(),
+            phone: phone.trim(),
+            estimated_members: members.trim() || null,
+            subdomain: "landing-page",
+          },
+        });
+      } catch {}
+
+      setSubmitted(true);
+    } catch {
+      toast.error("حدث خطأ، حاول مرة ثانية");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (submitted) {
+    return (
+      <div className="bg-card border border-border/50 rounded-2xl p-8 shadow-sm text-center space-y-4 max-w-md mx-auto">
+        <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center mx-auto">
+          <Check className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
+        </div>
+        <h3 className="text-xl font-extrabold text-foreground">شكراً لتواصلك!</h3>
+        <p className="text-sm text-muted-foreground">سنتواصل معك خلال ٢٤ ساعة</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-card border border-border/50 rounded-2xl p-6 shadow-sm max-w-md mx-auto space-y-4">
+      <div className="text-center space-y-1">
+        <h3 className="text-lg font-extrabold text-foreground">أرسل طلبك</h3>
+        <p className="text-xs text-muted-foreground">نرد خلال ٢٤ ساعة</p>
+      </div>
+
+      <div className="space-y-3">
+        <Input
+          value={name}
+          onChange={e => setName(e.target.value)}
+          placeholder="الاسم الكامل *"
+          className="rounded-xl h-12"
+        />
+        <Input
+          value={phone}
+          onChange={e => setPhone(e.target.value.replace(/[^0-9]/g, "").slice(0, 10))}
+          placeholder="رقم الجوال (05xxxxxxxx) *"
+          className="rounded-xl h-12"
+          dir="ltr"
+          inputMode="tel"
+        />
+        <Input
+          value={familyName}
+          onChange={e => setFamilyName(e.target.value)}
+          placeholder="اسم العائلة *"
+          className="rounded-xl h-12"
+        />
+        <Input
+          value={members}
+          onChange={e => setMembers(e.target.value)}
+          placeholder="عدد أفراد العائلة التقريبي (اختياري)"
+          className="rounded-xl h-12"
+        />
+      </div>
+
+      <Button
+        onClick={handleSubmit}
+        disabled={!canSubmit}
+        className="w-full min-h-[48px] rounded-xl font-bold text-base"
+      >
+        {submitting ? <Loader2 className="h-5 w-5 animate-spin ml-2" /> : <Send className="h-5 w-5 ml-2" />}
+        أرسل طلبك
+      </Button>
+    </div>
   );
 }
 
@@ -517,11 +624,11 @@ export default function NasabyLanding() {
       </section>
 
       {/* ══════════════════════════════════════════════
-          ٧. PRICING
+          ٧. PRICING + CONTACT FORM
       ══════════════════════════════════════════════ */}
       <section className="py-16 md:py-24 px-4 bg-background">
-        <div className="max-w-3xl mx-auto text-center space-y-8">
-          <motion.div {...fadeInUp} className="space-y-3">
+        <div className="max-w-4xl mx-auto space-y-8">
+          <motion.div {...fadeInUp} className="text-center space-y-3">
             <h2 className="text-2xl md:text-3xl font-extrabold text-foreground">
               {applyTatweel("كل عائلة لها احتياج مختلف")}
             </h2>
@@ -530,34 +637,39 @@ export default function NasabyLanding() {
             </p>
           </motion.div>
 
-          <motion.div
-            {...fadeInUp}
-            transition={{ delay: 0.1 }}
-            className="bg-card border-2 border-accent/30 rounded-3xl p-8 shadow-lg max-w-sm mx-auto space-y-6"
-          >
-            <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto">
-              <TreePine className="h-8 w-8 text-accent" />
-            </div>
-            <h3 className="text-xl font-extrabold text-foreground">باقة مخصصة لعائلتك</h3>
-            <ul className="space-y-3 text-right">
-              {PRICING_FEATURES.map((f) => (
-                <li key={f} className="flex items-center gap-3 text-sm text-foreground">
-                  <Check className="h-5 w-5 text-accent shrink-0" />
-                  <span>{f}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start max-w-3xl mx-auto">
+            {/* بطاقة المميزات */}
+            <motion.div
+              {...fadeInUp}
+              className="bg-card border-2 border-accent/30 rounded-2xl p-6 shadow-sm space-y-5"
+            >
+              <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto">
+                <TreePine className="h-7 w-7 text-accent" />
+              </div>
+              <h3 className="text-lg font-extrabold text-foreground text-center">باقة مخصصة لعائلتك</h3>
+              <ul className="space-y-2.5 text-right">
+                {PRICING_FEATURES.map((f) => (
+                  <li key={f} className="flex items-center gap-2.5 text-sm text-foreground">
+                    <Check className="h-4 w-4 text-accent shrink-0" />
+                    <span>{f}</span>
+                  </li>
+                ))}
+              </ul>
               <Button
                 onClick={() => window.open(`https://wa.me/${WHATSAPP_NUMBER}`, "_blank")}
-                className="w-full min-h-[52px] rounded-xl font-bold text-base bg-emerald-600 hover:bg-emerald-700 text-white"
+                variant="outline"
+                className="w-full min-h-[48px] rounded-xl font-bold text-sm border-emerald-400/50 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
               >
-                <MessageCircle className="h-5 w-5 ml-2" />
-                تواصل معنا عبر واتساب
+                <MessageCircle className="h-4 w-4 ml-2" />
+                أو تواصل عبر واتساب
               </Button>
-              <p className="text-xs text-muted-foreground">نرد خلال ٢٤ ساعة</p>
-            </div>
-          </motion.div>
+            </motion.div>
+
+            {/* فورم التواصل */}
+            <motion.div {...fadeInUp} transition={{ delay: 0.1 }}>
+              <ContactForm />
+            </motion.div>
+          </div>
         </div>
       </section>
 

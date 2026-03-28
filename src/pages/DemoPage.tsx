@@ -53,7 +53,7 @@ export default function DemoPage() {
     login({
       memberId: demoReady.visitorId,
       memberName: demoReady.visitorName,
-      phone: "0500000000",
+      phone: "0544033920",
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

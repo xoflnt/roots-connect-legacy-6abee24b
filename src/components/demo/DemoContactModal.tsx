@@ -37,16 +37,14 @@ export function DemoContactModal({ open, onClose, familyName, subdomain }: DemoC
 
       // Fire-and-forget email notification
       try {
-        await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/notify-demo-lead`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
+        await supabase.functions.invoke("notify-demo-lead", {
+          body: {
             family_name: familyName,
             contact_name: name.trim(),
             phone: phone.trim(),
             estimated_members: estimatedMembers.trim() || null,
             subdomain,
-          }),
+          },
         });
       } catch (e) {
         console.warn("Email notification failed:", e);

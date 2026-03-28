@@ -136,7 +136,7 @@ export default function RegisterFamily() {
               <Input
                 value={familyName}
                 onChange={(e) => setFamilyName(e.target.value)}
-                placeholder="مثال: عائلة الخنيني"
+                placeholder="مثال: عائلة العتيبي"
                 className="rounded-xl h-12 text-base"
                 maxLength={50}
               />
@@ -151,7 +151,7 @@ export default function RegisterFamily() {
               <Input
                 value={slug}
                 onChange={(e) => handleSlugChange(e.target.value)}
-                placeholder="khunaini"
+                placeholder="alataibi"
                 className="rounded-xl h-12 text-base font-mono"
                 dir="ltr"
                 maxLength={30}
