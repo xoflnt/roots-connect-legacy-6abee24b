@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useFamilyContext } from "@/contexts/FamilyContext";
 import { staggerContainer, staggerItem } from "@/lib/animations";
 import { guideMockups } from "@/components/guide/GuideMockups";
 import {
@@ -304,6 +305,7 @@ function useCardActions() {
 /* ── Main component ──────────────────────────────── */
 export default function Guide() {
   const navigate = useNavigate();
+  const { familyName } = useFamilyContext();
   const actionMap = useCardActions();
 
   return (
@@ -339,7 +341,7 @@ export default function Guide() {
             تعرّف على المنصة
           </div>
           <h2 className="text-2xl md:text-3xl font-extrabold text-foreground">
-            كيف تستخدم بوابة تراث الخنيني
+            كيف تستخدم بوابة تراث {familyName || 'العائلة'}
           </h2>
           <p className="text-muted-foreground text-sm max-w-xl mx-auto">
             دليل شامل لجميع خصائص المنصة مع شروحات مبسطة
@@ -439,7 +441,7 @@ export default function Guide() {
         >
           <TreePine className="h-8 w-8 mx-auto opacity-90" />
           <h3 className="text-lg font-bold">جاهز؟ ابدأ الاستكشاف</h3>
-          <p className="text-sm opacity-80">شجرة عائلة الخنيني في انتظارك</p>
+          <p className="text-sm opacity-80">شجرة {familyName || 'العائلة'} في انتظارك</p>
           <Button
             onClick={() => navigate("/")}
             className="bg-white/20 hover:bg-white/30 text-primary-foreground rounded-xl px-6 py-3 min-h-[44px] font-medium"

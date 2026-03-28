@@ -9,6 +9,7 @@ import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
 import { Button } from "./ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
+import { useFamilyContext } from "@/contexts/FamilyContext";
 import { ADMIN_MEMBER_IDS } from "@/utils/branchUtils";
 
 export type ViewMode = "map" | "navigate" | "branches" | "list" | "kinship";
@@ -33,6 +34,7 @@ const navItems: { value: ViewMode; label: string; icon: typeof Map }[] = [
 export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHome, isLineageActive }: AppHeaderProps) {
   const isMobile = useIsMobile();
   const { currentUser, isLoggedIn } = useAuth();
+  const { familyName } = useFamilyContext();
   const navigate = useNavigate();
   const isAdmin = isLoggedIn && currentUser && ADMIN_MEMBER_IDS.includes(currentUser.memberId);
 
@@ -120,7 +122,7 @@ export function AppHeader({ onSearch, onReset, activeView, onViewChange, onGoHom
           </>
         ) : (
           <span className="hidden sm:block text-xs text-muted-foreground font-medium px-2">
-            مرحباً بك في بوابة تراث الخنيني
+            مرحباً بك في بوابة تراث {familyName || 'العائلة'}
           </span>
         )}
         {isLoggedIn && <NotificationBell />}

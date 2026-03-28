@@ -133,7 +133,7 @@ const PILLAR_COLORS = [
 ];
 
 export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: LandingPageProps) {
-  const { familyName } = useFamilyContext();
+  const { familyName, isDemo } = useFamilyContext();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [requestOpen, setRequestOpen] = useState(false);
@@ -250,11 +250,13 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
           >
             <TreePine className="h-10 w-10 text-white mx-auto" style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.8))' }} />
             <h1 className="text-2xl font-extrabold text-white leading-tight" style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>
-              {applyTatweel(`بوابة تراث ${familyName || 'الخنيني'}`)}
+              {applyTatweel(`بوابة تراث ${familyName || 'العائلة'}`)}
             </h1>
-            <p className="text-sm text-white/90" style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>
-              فرع الزلفي
-            </p>
+            {!isDemo && (
+              <p className="text-sm text-white/90" style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>
+                فرع الزلفي
+              </p>
+            )}
             <div className="h-px bg-gradient-to-r from-transparent via-accent to-transparent max-w-xs mx-auto" />
           </motion.div>
         </section>
@@ -498,19 +500,21 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
           </motion.div>
         </section>
 
-        {/* Bottom action buttons */}
-        <section className="relative z-10 px-4 pb-6">
-          <div className="max-w-lg mx-auto flex gap-2">
-            <div onClick={() => setRequestOpen(true)} className="flex-1 min-h-[48px] flex items-center justify-center gap-2 text-sm text-white font-medium cursor-pointer bg-white/10 backdrop-blur-md border border-white/20 rounded-xl" style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>
-              <Send className="h-4 w-4" />
-              أرسل طلب تعديل
+        {/* Bottom action buttons (hide in demo) */}
+        {!isDemo && (
+          <section className="relative z-10 px-4 pb-6">
+            <div className="max-w-lg mx-auto flex gap-2">
+              <div onClick={() => setRequestOpen(true)} className="flex-1 min-h-[48px] flex items-center justify-center gap-2 text-sm text-white font-medium cursor-pointer bg-white/10 backdrop-blur-md border border-white/20 rounded-xl" style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>
+                <Send className="h-4 w-4" />
+                أرسل طلب تعديل
+              </div>
+              <div onClick={() => navigate('/guide')} className="flex-1 min-h-[48px] flex items-center justify-center gap-2 text-sm text-white font-medium cursor-pointer bg-white/10 backdrop-blur-md border border-white/20 rounded-xl" style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>
+                <BookOpen className="h-4 w-4" />
+                دليل الاستخدام
+              </div>
             </div>
-            <div onClick={() => navigate('/guide')} className="flex-1 min-h-[48px] flex items-center justify-center gap-2 text-sm text-white font-medium cursor-pointer bg-white/10 backdrop-blur-md border border-white/20 rounded-xl" style={{ textShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.8)' }}>
-              <BookOpen className="h-4 w-4" />
-              دليل الاستخدام
-            </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* Logged-in search inside glass area */}
         {currentUser && (
@@ -708,8 +712,8 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
         </div>
       </section>
 
-      {/* ─── 8. Historical Documents ─── */}
-      <section className="py-8 px-4 border-t border-border/30">
+      {/* ─── 8. Historical Documents (hide in demo) ─── */}
+      {!isDemo && <section className="py-8 px-4 border-t border-border/30">
         <div className="max-w-2xl mx-auto text-center space-y-5">
           <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-accent/15 text-accent font-bold text-sm">
             <ScrollText className="h-4 w-4" />
@@ -731,10 +735,10 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
             استعرض المستندات
           </Button>
         </div>
-      </section>
+      </section>}
 
       {/* ─── 9. PWA Install (compact, no tabs) ─── */}
-      {showInstallSection && !window.matchMedia('(display-mode: standalone)').matches && !(window.navigator as any).standalone && (
+      {!isDemo && showInstallSection && !window.matchMedia('(display-mode: standalone)').matches && !(window.navigator as any).standalone && (
         <section className="py-4 px-4">
           <div className="max-w-lg mx-auto rounded-2xl border bg-card/80 backdrop-blur-sm p-4 space-y-3">
             <div className="flex flex-col items-center text-center gap-1">
@@ -833,28 +837,37 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
           <h2 className="text-xl md:text-2xl font-extrabold text-foreground">
             جذور ممتدة عبر الأجيال
           </h2>
-          <Collapsible open={aboutOpen} onOpenChange={setAboutOpen}>
-            <div className="space-y-4 text-base text-muted-foreground leading-loose text-right">
+          {isDemo ? (
+            <div className="space-y-4 text-base text-muted-foreground/60 leading-loose text-right italic">
               <p>
-                تنحدر عائلة <strong className="text-foreground">الخنيني</strong> من{" "}
-                <strong className="text-foreground">حميد</strong> من الحماضا من حماد من{" "}
-                <strong className="text-foreground">بني العنبر بن عمرو بن تميم</strong>، إحدى أعرق القبائل العربية.
-                ويُعدّ <strong className="text-foreground">محمد بن سلامة</strong> أول من حمل لقب
-                الخنيني، ليُصبح هذا الاسم رمزًا للعائلة عبر الأجيال.
+                هنا يمكنكم كتابة قصة عائلة <strong className="text-foreground not-italic">{familyName || 'العائلة'}</strong> وتاريخها ونسبها.
+                يمكنكم ذكر أصل العائلة، والمنطقة التي تنتمي إليها، وأبرز المحطات في تاريخ العائلة.
               </p>
-              <CollapsibleContent>
-                <p>
-                  تضرب جذور العائلة في نجد، وقد توارثت قيم الكرم والشجاعة والتماسك الأسري جيلاً بعد جيل.
-                  هذه المنصة الرقمية هي خطوة لحفظ هذا الإرث العريق وتسهيل التواصل بين أبناء العائلة.
-                </p>
-              </CollapsibleContent>
             </div>
-            <CollapsibleTrigger asChild>
-              <Button variant="ghost" className="text-xs text-muted-foreground mt-2">
-                {aboutOpen ? "إخفاء ↑" : "اقرأ المزيد ↓"}
-              </Button>
-            </CollapsibleTrigger>
-          </Collapsible>
+          ) : (
+            <Collapsible open={aboutOpen} onOpenChange={setAboutOpen}>
+              <div className="space-y-4 text-base text-muted-foreground leading-loose text-right">
+                <p>
+                  تنحدر عائلة <strong className="text-foreground">الخنيني</strong> من{" "}
+                  <strong className="text-foreground">حميد</strong> من الحماضا من حماد من{" "}
+                  <strong className="text-foreground">بني العنبر بن عمرو بن تميم</strong>، إحدى أعرق القبائل العربية.
+                  ويُعدّ <strong className="text-foreground">محمد بن سلامة</strong> أول من حمل لقب
+                  الخنيني، ليُصبح هذا الاسم رمزًا للعائلة عبر الأجيال.
+                </p>
+                <CollapsibleContent>
+                  <p>
+                    تضرب جذور العائلة في نجد، وقد توارثت قيم الكرم والشجاعة والتماسك الأسري جيلاً بعد جيل.
+                    هذه المنصة الرقمية هي خطوة لحفظ هذا الإرث العريق وتسهيل التواصل بين أبناء العائلة.
+                  </p>
+                </CollapsibleContent>
+              </div>
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" className="text-xs text-muted-foreground mt-2">
+                  {aboutOpen ? "إخفاء ↑" : "اقرأ المزيد ↓"}
+                </Button>
+              </CollapsibleTrigger>
+            </Collapsible>
+          )}
           <div className="flex items-center justify-center gap-4 pt-2">
             <div className="h-px w-16 bg-accent/30" />
             <div className="w-2 h-2 rounded-full bg-accent/50" />
@@ -865,7 +878,7 @@ export function LandingPage({ onSearchSelect, onBrowseTree, onBrowseBranch }: La
 
       {/* ─── 11. Footer ─── */}
       <footer className="py-6 text-center text-sm text-muted-foreground border-t border-border/30 space-y-3">
-        <p>شجرة {familyName || 'عائلة الخنيني'} — حفظ الإرث للأجيال القادمة</p>
+        <p>شجرة {familyName || 'العائلة'} — حفظ الإرث للأجيال القادمة</p>
         <div className="flex justify-center gap-3">
           <Button
             variant="ghost"

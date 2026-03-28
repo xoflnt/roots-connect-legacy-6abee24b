@@ -7,6 +7,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 
 import { DocumentViewer } from "@/components/DocumentViewer";
 import { useAuth } from "@/contexts/AuthContext";
+import { useFamilyContext } from "@/contexts/FamilyContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -37,6 +38,7 @@ interface Comment {
 export default function Documents() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
+  const { familyName } = useFamilyContext();
   const [selectedDoc, setSelectedDoc] = useState<HistoricalDocument | null>(null);
 
   // Likes state
@@ -188,7 +190,7 @@ export default function Documents() {
       <div className="max-w-4xl mx-auto px-4 py-8 md:py-12">
         <div className="text-center mb-10 space-y-3 animate-fade-in">
           <p className="text-muted-foreground text-sm md:text-base max-w-xl mx-auto leading-relaxed">
-            أرشيف للوثائق والمستندات التاريخية المتعلقة بعائلة الخنيني
+            أرشيف للوثائق والمستندات التاريخية المتعلقة بعائلة {familyName || 'العائلة'}
           </p>
           <div className="flex items-center justify-center gap-4">
             <div className="h-px w-12 bg-accent/30" />
